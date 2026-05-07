@@ -896,9 +896,6 @@
     <data name="tour_history_room_not_found" xml:space="preserve">
         <value>The room {0} does not exist.</value>
     </data>
-    <data name="tour_history_sent" xml:space="preserve">
-        <value>Tournament history sent.</value>
-    </data>
     <data name="countries_game_turn_ending_soon" xml:space="preserve">
         <value>Time is running out ! {0} seconds left.</value>
     </data>

@@ -82,7 +82,6 @@ public class TourHistoryCommand : Command
                 Entries = entries
             });
 
-        context.ReplyLocalizedMessage("tour_history_sent");
         context.ReplyHtml(template.RemoveNewlines().RemoveWhitespacesBetweenTags(), rankAware: true);
     }
 }
