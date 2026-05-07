@@ -365,6 +365,51 @@ public class CommandExecutorTest
     }
 
     [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldRunCommand_WhenIsPrivateMessageAndCommandHasRoomRestriction()
+    {
+        // Arrange
+        var commandName = "restrictedCommand";
+        var command = Substitute.For<ICommand>();
+        var runSignal = new TaskCompletionSource<bool>();
+        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
+        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _context.IsPrivateMessage.Returns(true);
+        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
+        command.IsAllowedInPrivateMessage.Returns(true);
+        command.RoomRestriction.Returns(["someroom"]);
+        _context.RoomId.Returns("otherroom");
+        command.When(x => x.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()))
+            .Do(_ => runSignal.TrySetResult(true));
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+
+        // Assert
+        await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldNotRunCommand_WhenNotPrivateMessageAndRoomNotInRestriction()
+    {
+        // Arrange
+        var commandName = "restrictedCommand";
+        var command = Substitute.For<ICommand>();
+        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
+        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _context.IsPrivateMessage.Returns(false);
+        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
+        command.RoomRestriction.Returns(["someroom"]);
+        _context.RoomId.Returns("otherroom");
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+
+        // Assert
+        await command.DidNotReceive().RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
     public void Test_TryCancel_ShouldReturnFalse_WhenCommandNotFound()
     {
         // Act

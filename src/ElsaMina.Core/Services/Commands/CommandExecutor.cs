@@ -223,7 +223,7 @@ public class CommandExecutor : ICommandExecutor
             return false;
         }
 
-        if (command.RoomRestriction.Any() &&
+        if (!context.IsPrivateMessage && command.RoomRestriction.Any() &&
             !command.RoomRestriction.Contains(context.RoomId))
         {
             return false;

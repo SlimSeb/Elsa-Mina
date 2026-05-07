@@ -36,10 +36,10 @@ public class DisplayArcadeLevelsCommand : Command
             rows = await dbContext.ArcadeLevels
                 .GroupJoin(
                     dbContext.Users,
-                    arcadeLevel => arcadeLevel.Id, u => u.UserId,
-                    (arcadeLevel, users) => new { al = arcadeLevel, users })
-                .SelectMany(x => x.users.DefaultIfEmpty(),
-                    (x, user) => new ArcadeLevelRow(x.al.Level, x.al.Id, user.UserName))
+                    arcadeLevel => arcadeLevel.Id, user => user.UserId,
+                    (arcadeLevel, users) => new { ArcadeLevel = arcadeLevel, Users = users })
+                .SelectMany(pair => pair.Users.DefaultIfEmpty(),
+                    (pair, user) => new ArcadeLevelRow(pair.ArcadeLevel.Level, pair.ArcadeLevel.Id, user.UserName))
                 .ToListAsync(cancellationToken);
         }
         catch (Exception e)
