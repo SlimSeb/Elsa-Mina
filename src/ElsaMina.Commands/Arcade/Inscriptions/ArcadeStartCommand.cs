@@ -26,7 +26,7 @@ public class ArcadeStartCommand : Command
         }
 
         var args = string.IsNullOrWhiteSpace(context.Target)
-            ? Array.Empty<string>()
+            ? []
             : context.Target.Split(',');
 
         var title = args.Length > 0 && !string.IsNullOrWhiteSpace(args[0])
