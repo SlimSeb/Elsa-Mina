@@ -2437,6 +2437,18 @@
     <data name="color_blue" xml:space="preserve">
         <value>Azul</value>
     </data>
+    <data name="color_darkblue" xml:space="preserve">
+        <value>Azul escuro</value>
+    </data>
+    <data name="color_purple" xml:space="preserve">
+        <value>Roxo</value>
+    </data>
+    <data name="color_orange" xml:space="preserve">
+        <value>Laranja</value>
+    </data>
+    <data name="color_pink" xml:space="preserve">
+        <value>Rosa</value>
+    </data>
     <data name="color_red" xml:space="preserve">
         <value>Vermelho</value>
     </data>

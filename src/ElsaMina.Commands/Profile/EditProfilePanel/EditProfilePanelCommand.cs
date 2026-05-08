@@ -20,20 +20,28 @@ public class EditProfilePanelCommand : Command
         new Dictionary<string, string>
         {
             ["blue"] = StyleConstants.PRIMARY_BACKGROUND_COLOR,
+            ["darkblue"] = "#2d4f7373",
+            ["purple"] = "#8867aa73",
             ["red"] = "#aa676773",
-            ["green"] = "#67aa6773",
-            ["black"] = "#40404073",
+            ["orange"] = "#aa886773",
             ["yellow"] = "#aaaa6773",
+            ["green"] = "#67aa6773",
+            ["pink"] = "#aa678873",
+            ["black"] = "#40404073",
         };
 
     public static readonly IReadOnlyDictionary<string, string> PROFILE_BORDER_COLORS =
         new Dictionary<string, string>
         {
             ["blue"] = StyleConstants.PRIMARY_BORDER_COLOR,
+            ["darkblue"] = "#247",
+            ["purple"] = "#87a",
             ["red"] = "#a66",
-            ["green"] = "#6a6",
-            ["black"] = "#555",
+            ["orange"] = "#a87",
             ["yellow"] = "#aa6",
+            ["green"] = "#6a6",
+            ["pink"] = "#a68",
+            ["black"] = "#555",
         };
 
     public static string GetBorderColor(string backgroundColorValue) =>
