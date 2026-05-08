@@ -14,6 +14,7 @@ public class RoomUser
     public string Title { get; set; }
     public string JoinPhrase { get; set; }
     public string ProfileEmoji { get; set; }
+    public string ProfileBackgroundColor { get; set; }
     public TimeSpan PlayTime { get; set; }
     public TournamentRecord TournamentRecord { get; set; }
     public ICollection<BadgeHolding> Badges { get; set; } = new HashSet<BadgeHolding>();

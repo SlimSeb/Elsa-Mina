@@ -13,6 +13,8 @@ public class ProfileViewModel : LocalizableViewModel
     public string Status { get; init; }
     public string Title { get; init; }
     public string ProfileEmoji { get; init; }
+    public string ProfileBackgroundColor { get; init; }
+    public string ProfileBorderColor { get; init; }
     public IEnumerable<Badge> Badges { get; init; }
     public DateTimeOffset RegisterDate { get; init; }
     public RankingDataDto BestRanking { get; init; }

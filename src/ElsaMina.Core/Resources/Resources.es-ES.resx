@@ -2394,4 +2394,64 @@
     <data name="betting_announcement_bet_button" xml:space="preserve">
         <value>Apostar</value>
     </data>
+    <data name="edit_profile_panel_title" xml:space="preserve">
+        <value>Editar perfil</value>
+    </data>
+    <data name="edit_profile_panel_emoji_section" xml:space="preserve">
+        <value>Emoji de perfil</value>
+    </data>
+    <data name="edit_profile_panel_current_emoji" xml:space="preserve">
+        <value>Actual:</value>
+    </data>
+    <data name="edit_profile_panel_no_emoji" xml:space="preserve">
+        <value>Ninguno</value>
+    </data>
+    <data name="edit_profile_panel_clear" xml:space="preserve">
+        <value>Eliminar</value>
+    </data>
+    <data name="set_emoji_success" xml:space="preserve">
+        <value>Emoji de perfil actualizado.</value>
+    </data>
+    <data name="set_emoji_failure" xml:space="preserve">
+        <value>Error al actualizar el emoji: {0}</value>
+    </data>
+    <data name="set_emoji_invalid" xml:space="preserve">
+        <value>Emoji inválido.</value>
+    </data>
+    <data name="set_emoji_help_message" xml:space="preserve">
+        <value>Establece tu emoji de perfil. Sintaxis: -setemoji &lt;emoji&gt;</value>
+    </data>
+    <data name="edit_profile_panel_bg_color_section" xml:space="preserve">
+        <value>Color de fondo del perfil</value>
+    </data>
+    <data name="edit_profile_panel_no_color" xml:space="preserve">
+        <value>Ninguno</value>
+    </data>
+    <data name="set_profile_color_success" xml:space="preserve">
+        <value>Color de fondo del perfil actualizado.</value>
+    </data>
+    <data name="set_profile_color_failure" xml:space="preserve">
+        <value>Error al actualizar el color de fondo: {0}</value>
+    </data>
+    <data name="set_profile_color_invalid" xml:space="preserve">
+        <value>Color inválido. Colores válidos: {0}</value>
+    </data>
+    <data name="set_profile_color_help_message" xml:space="preserve">
+        <value>Establece el color de fondo de tu perfil. Sintaxis: -setprofilecolor &lt;color&gt;</value>
+    </data>
+    <data name="color_blue" xml:space="preserve">
+        <value>Azul</value>
+    </data>
+    <data name="color_red" xml:space="preserve">
+        <value>Rojo</value>
+    </data>
+    <data name="color_green" xml:space="preserve">
+        <value>Verde</value>
+    </data>
+    <data name="color_black" xml:space="preserve">
+        <value>Negro</value>
+    </data>
+    <data name="color_yellow" xml:space="preserve">
+        <value>Amarillo</value>
+    </data>
 </root>

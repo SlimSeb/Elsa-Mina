@@ -160,6 +160,22 @@ public class RoomUserDataService : IRoomUserDataService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task SetUserBackgroundColorAsync(
+        string roomId,
+        string userId,
+        string color,
+        CancellationToken cancellationToken = default)
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var user = await GetOrCreateRoomSpecificUserDataAsync(roomId, userId, cancellationToken);
+
+        user.ProfileBackgroundColor = color;
+        dbContext.RoomUsers.Update(user);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task SetUserAvatarAsync(
         string roomId,
         string userId,

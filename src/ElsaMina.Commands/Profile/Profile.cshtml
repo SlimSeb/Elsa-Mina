@@ -3,14 +3,19 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Profile.ProfileViewModel>
 
 @{
-    const string border = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    var borderColor = Model.ProfileBorderColor ?? StyleConstants.PRIMARY_BORDER_COLOR;
+    var border = $"border: 1px solid {borderColor};";
 
-    const string headerStyle = $"{border} padding: 4x; text-align: center; font-style: italic; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
-    const string avatarCellStyle = $"{border} padding: 0px; width: 80px; text-align: center;";
-    const string contentCellStyle = $"{border} padding: 4px 12px; text-align: left; vertical-align: top;";
-    const string gameRecordsCellStyle = $"{border} padding: 4px 8px; text-align: left; vertical-align: top; white-space: nowrap;";
-    const string badgesCellStyle = $"{border} padding: 4px; width: 56px; text-align: center;";
-    const string bioCellStyle = $"{border} padding: 4px; text-align: start; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    var bgColor = !string.IsNullOrEmpty(Model.ProfileBackgroundColor)
+        ? Model.ProfileBackgroundColor
+        : StyleConstants.PRIMARY_BACKGROUND_COLOR;
+
+    var headerStyle = $"{border} padding: 4x; text-align: center; font-style: italic; background-color: {bgColor};";
+    var avatarCellStyle = $"{border} padding: 0px; width: 80px; text-align: center;";
+    var contentCellStyle = $"{border} padding: 4px 12px; text-align: left; vertical-align: top;";
+    var gameRecordsCellStyle = $"{border} padding: 4px 8px; text-align: left; vertical-align: top; white-space: nowrap;";
+    var badgesCellStyle = $"{border} padding: 4px; width: 56px; text-align: center;";
+    var bioCellStyle = $"{border} padding: 4px; text-align: start; background-color: {bgColor};";
 }
 
 <table style="border-collapse: collapse; width: 100%;">
@@ -37,7 +42,7 @@
                 width="80"
                 height="80"
                 src="@Model.Avatar"
-                alt="@Model.UserName Avatar" />
+                alt="@Model.UserName Avatar"/>
         </td>
         <td style="@contentCellStyle">
             &bullet;
@@ -52,7 +57,8 @@
                 <span style="font-size: 1.1em; margin-left: 2px;">@Raw(Model.ProfileEmoji)</span>
             }
             @{
-                var rankNameKey = Model.UserRoomRank switch {
+                var rankNameKey = Model.UserRoomRank switch
+                {
                     '#' => "rank_owner",
                     '*' => "rank_bot",
                     '@' => "rank_mod",
@@ -68,30 +74,30 @@
             {
                 <span>(@GetString(rankNameKey))</span>
             }
-            <br />
+            <br/>
             @if (!string.IsNullOrEmpty(Model.Status))
             {
                 <span style="text-decoration: underline">@GetString("profile_status")</span>
                 <span>: @Model.Status</span>
-                <br />
+                <br/>
             }
             @if (Model.RegisterDate > DateTimeOffset.MinValue)
             {
                 <span style="text-decoration: underline">@GetString("profile_register_date")</span>
                 <span>: @Model.RegisterDate.ToString("d", Model.Culture)</span>
-                <br />
+                <br/>
             }
             @if (Model.PlayTime > TimeSpan.Zero)
             {
                 <span style="text-decoration: underline">@GetString("profile_play_time")</span>
                 <span>: @Model.PlayTime.ToString(GetString("play_time_format"))</span>
-                <br />
+                <br/>
             }
             @if (Model.BestRanking != null)
             {
                 <span style="text-decoration: underline">@GetString("profile_best_rank")</span>
                 <span>: @Model.BestRanking.FormatId (@Model.BestRanking.Elo.ToString("F0", Model.Culture))</span>
-                <br />
+                <br/>
             }
             @if (Model.TournamentRecord != null && Model.TournamentRecord.TournamentsEnteredCount > 0)
             {
@@ -124,8 +130,9 @@
                         ·
                         <span title="@GetString("profile_game_total_stars")">⭐ @gr.FloodIt.TotalStars</span>
                     </span>
-                    <br />
+                    <br/>
                 }
+
                 @if (gr.LightsOut != null)
                 {
                     <span>@GetString("profile_lights_out"):
@@ -133,8 +140,9 @@
                         ·
                         <span title="@GetString("profile_game_total_stars")">⭐ @gr.LightsOut.TotalStars</span>
                     </span>
-                    <br />
+                    <br/>
                 }
+
                 @if (gr.VoltorbFlip != null)
                 {
                     <span>@GetString("profile_voltorb_flip"):
@@ -142,8 +150,9 @@
                         ·
                         <span title="@GetString("profile_game_coins")">💰 @gr.VoltorbFlip.Coins</span>
                     </span>
-                    <br />
+                    <br/>
                 }
+
                 @if (gr.TwentyFortyEight != null)
                 {
                     <span>@GetString("profile_2048"):
@@ -151,8 +160,9 @@
                         ·
                         <span title="@GetString("profile_game_wins")">🏆 @gr.TwentyFortyEight.Wins</span>
                     </span>
-                    <br />
+                    <br/>
                 }
+
                 @if (gr.ConnectFour != null)
                 {
                     <span>@GetString("c4_game_name"):
@@ -167,7 +177,7 @@
                             <span title="@GetString("c4_leaderboard_draws")">🤝 @gr.ConnectFour.Draws</span>
                         }
                     </span>
-                    <br />
+                    <br/>
                 }
             }
             else

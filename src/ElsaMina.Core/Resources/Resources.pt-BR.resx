@@ -2389,4 +2389,64 @@
     <data name="betting_announcement_bet_button" xml:space="preserve">
         <value>Apostar</value>
     </data>
+    <data name="edit_profile_panel_title" xml:space="preserve">
+        <value>Editar perfil</value>
+    </data>
+    <data name="edit_profile_panel_emoji_section" xml:space="preserve">
+        <value>Emoji do perfil</value>
+    </data>
+    <data name="edit_profile_panel_current_emoji" xml:space="preserve">
+        <value>Atual:</value>
+    </data>
+    <data name="edit_profile_panel_no_emoji" xml:space="preserve">
+        <value>Nenhum</value>
+    </data>
+    <data name="edit_profile_panel_clear" xml:space="preserve">
+        <value>Remover</value>
+    </data>
+    <data name="set_emoji_success" xml:space="preserve">
+        <value>Emoji do perfil atualizado.</value>
+    </data>
+    <data name="set_emoji_failure" xml:space="preserve">
+        <value>Erro ao atualizar o emoji: {0}</value>
+    </data>
+    <data name="set_emoji_invalid" xml:space="preserve">
+        <value>Emoji inválido.</value>
+    </data>
+    <data name="set_emoji_help_message" xml:space="preserve">
+        <value>Define seu emoji de perfil. Sintaxe: -setemoji &lt;emoji&gt;</value>
+    </data>
+    <data name="edit_profile_panel_bg_color_section" xml:space="preserve">
+        <value>Cor de fundo do perfil</value>
+    </data>
+    <data name="edit_profile_panel_no_color" xml:space="preserve">
+        <value>Nenhuma</value>
+    </data>
+    <data name="set_profile_color_success" xml:space="preserve">
+        <value>Cor de fundo do perfil atualizada.</value>
+    </data>
+    <data name="set_profile_color_failure" xml:space="preserve">
+        <value>Erro ao atualizar a cor de fundo: {0}</value>
+    </data>
+    <data name="set_profile_color_invalid" xml:space="preserve">
+        <value>Cor inválida. Cores válidas: {0}</value>
+    </data>
+    <data name="set_profile_color_help_message" xml:space="preserve">
+        <value>Define a cor de fundo do seu perfil. Sintaxe: -setprofilecolor &lt;cor&gt;</value>
+    </data>
+    <data name="color_blue" xml:space="preserve">
+        <value>Azul</value>
+    </data>
+    <data name="color_red" xml:space="preserve">
+        <value>Vermelho</value>
+    </data>
+    <data name="color_green" xml:space="preserve">
+        <value>Verde</value>
+    </data>
+    <data name="color_black" xml:space="preserve">
+        <value>Preto</value>
+    </data>
+    <data name="color_yellow" xml:space="preserve">
+        <value>Amarelo</value>
+    </data>
 </root>

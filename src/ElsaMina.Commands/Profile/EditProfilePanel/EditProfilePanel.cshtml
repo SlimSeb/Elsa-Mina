@@ -1,0 +1,88 @@
+@using ElsaMina.Commands.Profile.EditProfilePanel
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Profile.EditProfilePanel.EditProfilePanelViewModel>
+
+@{
+    const string containerStyle = "padding: 1.5rem; max-width: 700px;";
+    const string sectionStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};" +
+                                "padding: .75rem 1rem;" +
+                                "margin-bottom: 1rem;" +
+                                $"background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string sectionTitleStyle = "font-weight: bold; margin-bottom: .5rem;";
+    const string currentEmojiStyle = "font-size: 1.6em; margin-left: .5rem; vertical-align: middle;";
+    const string colorSwatchStyle = "display: inline-block; width: 20px; height: 20px; border-radius: 3px;" +
+                                    $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; vertical-align: middle; margin-right: 4px;";
+
+    var flags = EditProfilePanelCommand.GetAllCountryFlags().ToList();
+}
+
+<div style="@containerStyle">
+    <h2>@GetString("edit_profile_panel_title")</h2>
+
+    <div style="@sectionStyle">
+        <div style="@sectionTitleStyle">@GetString("edit_profile_panel_emoji_section")</div>
+        <div>
+            <span>@GetString("edit_profile_panel_current_emoji")</span>
+            @if (!string.IsNullOrEmpty(Model.CurrentEmoji))
+            {
+                <span style="@currentEmojiStyle">@Model.CurrentEmoji</span>
+                <button
+                    class="button"
+                    name="send"
+                    value="/w @Model.BotName,@(Model.Trigger)clearemoji @Model.RoomId"
+                    style="margin-left: .5rem; vertical-align: middle;">
+                    @GetString("edit_profile_panel_clear")
+                </button>
+            }
+            else
+            {
+                <em style="margin-left: .5rem;">@GetString("edit_profile_panel_no_emoji")</em>
+            }
+        </div>
+        <form data-submitsend="/w @Model.BotName,@(Model.Trigger)setemoji @Model.RoomId, {flag}" style="margin-top: .5rem;">
+            <select name="flag" class="textbox">
+                @foreach (var (_, flag, name) in flags)
+                {
+                    <option value="@Raw(flag)">@flag @name</option>
+                }
+            </select>
+            <button class="button" type="submit" style="margin-left: .35rem;">@GetString("submit")</button>
+        </form>
+    </div>
+
+    <div style="@sectionStyle">
+        <div style="@sectionTitleStyle">@GetString("edit_profile_panel_bg_color_section")</div>
+        <div style="margin-bottom: .4rem;">
+            <span>@GetString("edit_profile_panel_current_emoji")</span>
+            @if (!string.IsNullOrEmpty(Model.CurrentBackgroundColor))
+            {
+                <span style="@colorSwatchStyle background-color: @Model.CurrentBackgroundColor;"></span>
+            }
+            else
+            {
+                <em style="margin-left: .5rem;">@GetString("edit_profile_panel_no_color")</em>
+            }
+        </div>
+        <div style="display: flex; gap: .4rem; flex-wrap: wrap;">
+            @foreach (var (colorKey, colorValue) in EditProfilePanelCommand.PROFILE_COLORS)
+            {
+                <button
+                    class="button"
+                    name="send"
+                    value="/w @Model.BotName,@(Model.Trigger)setprofilecolor @Model.RoomId, @colorKey"
+                    style="display: flex; align-items: center; gap: 4px;">
+                    <span style="@colorSwatchStyle background-color: @colorValue; margin-right: 0;"></span>
+                    @GetString($"color_{colorKey}")
+                </button>
+            }
+            <button
+                class="button"
+                name="send"
+                value="/w @Model.BotName,@(Model.Trigger)clearprofilecolor @Model.RoomId"
+                style="display: flex; align-items: center; gap: 4px;">
+                <span style="@colorSwatchStyle background-color: transparent; margin-right: 0;"></span>
+                @GetString("edit_profile_panel_clear")
+            </button>
+        </div>
+    </div>
+</div>

@@ -2453,4 +2453,64 @@
     <data name="betting_announcement_bet_button" xml:space="preserve">
         <value>Bet</value>
     </data>
+    <data name="edit_profile_panel_title" xml:space="preserve">
+        <value>Edit Profile</value>
+    </data>
+    <data name="edit_profile_panel_emoji_section" xml:space="preserve">
+        <value>Profile Emoji</value>
+    </data>
+    <data name="edit_profile_panel_current_emoji" xml:space="preserve">
+        <value>Current:</value>
+    </data>
+    <data name="edit_profile_panel_no_emoji" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="edit_profile_panel_clear" xml:space="preserve">
+        <value>Clear</value>
+    </data>
+    <data name="set_emoji_success" xml:space="preserve">
+        <value>Profile emoji updated.</value>
+    </data>
+    <data name="set_emoji_failure" xml:space="preserve">
+        <value>An error occurred while updating the emoji: {0}</value>
+    </data>
+    <data name="set_emoji_invalid" xml:space="preserve">
+        <value>Invalid emoji.</value>
+    </data>
+    <data name="set_emoji_help_message" xml:space="preserve">
+        <value>Sets your profile emoji. Syntax: -setemoji &lt;emoji&gt;</value>
+    </data>
+    <data name="edit_profile_panel_bg_color_section" xml:space="preserve">
+        <value>Profile Background Color</value>
+    </data>
+    <data name="edit_profile_panel_no_color" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="set_profile_color_success" xml:space="preserve">
+        <value>Profile background color updated.</value>
+    </data>
+    <data name="set_profile_color_failure" xml:space="preserve">
+        <value>An error occurred while updating the background color: {0}</value>
+    </data>
+    <data name="set_profile_color_invalid" xml:space="preserve">
+        <value>Invalid color. Valid colors: {0}</value>
+    </data>
+    <data name="set_profile_color_help_message" xml:space="preserve">
+        <value>Sets your profile background color. Syntax: -setprofilecolor &lt;color&gt;</value>
+    </data>
+    <data name="color_blue" xml:space="preserve">
+        <value>Blue</value>
+    </data>
+    <data name="color_red" xml:space="preserve">
+        <value>Red</value>
+    </data>
+    <data name="color_green" xml:space="preserve">
+        <value>Green</value>
+    </data>
+    <data name="color_black" xml:space="preserve">
+        <value>Black</value>
+    </data>
+    <data name="color_yellow" xml:space="preserve">
+        <value>Yellow</value>
+    </data>
 </root>

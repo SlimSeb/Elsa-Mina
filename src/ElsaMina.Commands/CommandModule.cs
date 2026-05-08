@@ -54,6 +54,7 @@ using ElsaMina.Commands.Misc.Youtube;
 using ElsaMina.Commands.Polls;
 using ElsaMina.Commands.Polls.Suggestions;
 using ElsaMina.Commands.Profile;
+using ElsaMina.Commands.Profile.EditProfilePanel;
 using ElsaMina.Commands.Repeats;
 using ElsaMina.Commands.Repeats.Form;
 using ElsaMina.Commands.Repeats.List;
@@ -115,6 +116,9 @@ public class CommandModule : Module
         builder.RegisterCommand<TemplatesDebugCommand>();
         builder.RegisterCommand<GiveBadgeCommand>();
         builder.RegisterCommand<ProfileCommand>();
+        builder.RegisterCommand<SetEmojiCommand>();
+        builder.RegisterCommand<SetProfileColorCommand>();
+        builder.RegisterCommand<EditProfilePanelCommand>();
         builder.RegisterCommand<DeleteBadgeCommand>();
         builder.RegisterCommand<TakeBadgeCommand>();
         builder.RegisterCommand<SetAvatarCommand>();

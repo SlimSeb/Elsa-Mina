@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Profile.EditProfilePanel;
 using ElsaMina.Commands.Showdown.Ranking;
 using ElsaMina.Core.Services.Formats;
 using ElsaMina.Core.Services.Rooms;
@@ -100,6 +101,8 @@ public class ProfileService : IProfileService
             Badges = storedUserData?.Badges.Select(holding => holding.Badge),
             Title = storedUserData?.Title,
             ProfileEmoji = storedUserData?.ProfileEmoji,
+            ProfileBackgroundColor = storedUserData?.ProfileBackgroundColor,
+            ProfileBorderColor = EditProfilePanelCommand.GetBorderColor(storedUserData?.ProfileBackgroundColor),
             RegisterDate = TimeZoneInfo.ConvertTime(registerDate, room?.TimeZone ?? TimeZoneInfo.Local),
             BestRanking = bestRanking,
             TournamentRecord = storedUserData?.TournamentRecord,

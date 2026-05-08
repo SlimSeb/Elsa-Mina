@@ -2449,4 +2449,64 @@
     <data name="betting_announcement_bet_button" xml:space="preserve">
         <value>Parier</value>
     </data>
+    <data name="edit_profile_panel_title" xml:space="preserve">
+        <value>Modifier le profil</value>
+    </data>
+    <data name="edit_profile_panel_emoji_section" xml:space="preserve">
+        <value>Emoji de profil</value>
+    </data>
+    <data name="edit_profile_panel_current_emoji" xml:space="preserve">
+        <value>Actuel :</value>
+    </data>
+    <data name="edit_profile_panel_no_emoji" xml:space="preserve">
+        <value>Aucun</value>
+    </data>
+    <data name="edit_profile_panel_clear" xml:space="preserve">
+        <value>Effacer</value>
+    </data>
+    <data name="set_emoji_success" xml:space="preserve">
+        <value>Emoji de profil mis à jour.</value>
+    </data>
+    <data name="set_emoji_failure" xml:space="preserve">
+        <value>Une erreur est survenue lors de la mise à jour de l'emoji : {0}</value>
+    </data>
+    <data name="set_emoji_invalid" xml:space="preserve">
+        <value>Emoji invalide.</value>
+    </data>
+    <data name="set_emoji_help_message" xml:space="preserve">
+        <value>Définit votre emoji de profil. Syntaxe : -setemoji &lt;emoji&gt;</value>
+    </data>
+    <data name="edit_profile_panel_bg_color_section" xml:space="preserve">
+        <value>Couleur de fond du profil</value>
+    </data>
+    <data name="edit_profile_panel_no_color" xml:space="preserve">
+        <value>Aucune</value>
+    </data>
+    <data name="set_profile_color_success" xml:space="preserve">
+        <value>Couleur de fond du profil mise à jour.</value>
+    </data>
+    <data name="set_profile_color_failure" xml:space="preserve">
+        <value>Une erreur est survenue lors de la mise à jour de la couleur de fond : {0}</value>
+    </data>
+    <data name="set_profile_color_invalid" xml:space="preserve">
+        <value>Couleur invalide. Couleurs valides : {0}</value>
+    </data>
+    <data name="set_profile_color_help_message" xml:space="preserve">
+        <value>Définit la couleur de fond de votre profil. Syntaxe : -setprofilecolor &lt;couleur&gt;</value>
+    </data>
+    <data name="color_blue" xml:space="preserve">
+        <value>Bleu</value>
+    </data>
+    <data name="color_red" xml:space="preserve">
+        <value>Rouge</value>
+    </data>
+    <data name="color_green" xml:space="preserve">
+        <value>Vert</value>
+    </data>
+    <data name="color_black" xml:space="preserve">
+        <value>Noir</value>
+    </data>
+    <data name="color_yellow" xml:space="preserve">
+        <value>Jaune</value>
+    </data>
 </root>

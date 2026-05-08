@@ -19,6 +19,8 @@ public interface IRoomUserDataService
 
     Task SetUserEmojiAsync(string roomId, string userId, string emoji, CancellationToken cancellationToken = default);
 
+    Task SetUserBackgroundColorAsync(string roomId, string userId, string color, CancellationToken cancellationToken = default);
+
     Task SetUserJoinPhraseAsync(string roomId, string userId, string joinPhrase,
         CancellationToken cancellationToken = default);
 }

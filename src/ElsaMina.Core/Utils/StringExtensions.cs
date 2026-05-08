@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -164,4 +165,129 @@ public static class StringExtensions
         var extension = Path.GetExtension(fileName);
         return fileName[..^extension.Length];
     }
+    
+    public static bool IsSingleEmoji(this string input)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return false;
+        }
+
+        var enumerator = StringInfo.GetTextElementEnumerator(input);
+        
+        // Must be exactly one text element (grapheme cluster)
+        if (!enumerator.MoveNext())
+        {
+            return false;
+        }
+
+        var element = enumerator.GetTextElement();
+        if (enumerator.MoveNext())
+        {
+            return false; // more than one grapheme
+        }
+
+        return IsEmojiTextElement(element);
+    }
+
+    public static bool IsAllEmoji(this string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return false;
+
+        var enumerator = StringInfo.GetTextElementEnumerator(input);
+        while (enumerator.MoveNext())
+        {
+            if (!IsEmojiTextElement(enumerator.GetTextElement()))
+                return false;
+        }
+        return true;
+    }
+
+    public static bool ContainsEmoji(this string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return false;
+
+        var enumerator = StringInfo.GetTextElementEnumerator(input);
+        while (enumerator.MoveNext())
+        {
+            if (IsEmojiTextElement(enumerator.GetTextElement()))
+                return true;
+        }
+        return false;
+    }
+
+    private static bool IsEmojiTextElement(string element)
+    {
+        if (string.IsNullOrEmpty(element)) return false;
+
+        var codePoint = char.ConvertToUtf32(element, 0);
+
+        // Regional indicator letters -> flag emoji (🇦–🇿)
+        if (IsRegionalIndicator(codePoint) && element.Length >= 4)
+        {
+            return true;
+        }
+
+        // Keycap sequences: digit/# + U+FE0F + U+20E3
+        if (IsKeycapBase(codePoint) && element.Contains('\u20E3'))
+        {
+            return true;
+        }
+
+        return IsEmojiCodePoint(codePoint);
+    }
+
+    private static bool IsEmojiCodePoint(int cp) => cp switch
+    {
+        // Miscellaneous Symbols and Dingbats
+        >= 0x2600 and <= 0x26FF => true,
+        >= 0x2700 and <= 0x27BF => true,
+
+        // Emoticons block
+        >= 0x1F600 and <= 0x1F64F => true,
+
+        // Misc symbols and pictographs
+        >= 0x1F300 and <= 0x1F5FF => true,
+
+        // Transport and map
+        >= 0x1F680 and <= 0x1F6FF => true,
+
+        // Supplemental symbols and pictographs
+        >= 0x1F900 and <= 0x1F9FF => true,
+
+        // Symbols and pictographs extended-A
+        >= 0x1FA00 and <= 0x1FA6F => true,
+        >= 0x1FA70 and <= 0x1FAFF => true,
+
+        // Enclosed alphanumeric supplement (circled numbers, etc.)
+        >= 0x1F100 and <= 0x1F1FF => true,
+
+        // Enclosed ideographic supplement
+        >= 0x1F200 and <= 0x1F2FF => true,
+
+        // Mahjong / domino tiles
+        >= 0x1F000 and <= 0x1F02F => true,
+        >= 0x1F0A0 and <= 0x1F0FF => true,
+
+        // Miscellaneous technical
+        >= 0x2300 and <= 0x23FF => true,
+
+        // Arrows and other common emoji
+        >= 0x2B00 and <= 0x2BFF => true,
+        >= 0x25A0 and <= 0x25FF => true,
+        >= 0x2100 and <= 0x214F => true,
+
+        // Tags block (used in flag sequences)
+        >= 0xE0000 and <= 0xE007F => true,
+
+        _ => false
+    };
+
+    private static bool IsRegionalIndicator(int cp)
+        => cp is >= 0x1F1E6 and <= 0x1F1FF;
+
+    private static bool IsKeycapBase(int cp)
+        => cp is (>= '0' and <= '9') or '#' or '*';
 }
