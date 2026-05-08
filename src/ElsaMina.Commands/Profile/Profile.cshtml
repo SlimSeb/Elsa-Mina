@@ -47,6 +47,10 @@
                 style="font-weight: bold; font-style: italic; padding: 2px; color: @Model.UserId.ToColorHexCodeWithCustoms()">
                 @Model.UserName
             </span>
+            @if (!string.IsNullOrEmpty(Model.ProfileEmoji))
+            {
+                <span style="font-size: 1.1em; margin-left: 2px;">@Raw(Model.ProfileEmoji)</span>
+            }
             @{
                 var rankNameKey = Model.UserRoomRank switch {
                     '#' => "rank_owner",

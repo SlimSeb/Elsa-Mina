@@ -12,6 +12,7 @@ public class ProfileViewModel : LocalizableViewModel
     public char UserRoomRank { get; init; }
     public string Status { get; init; }
     public string Title { get; init; }
+    public string ProfileEmoji { get; init; }
     public IEnumerable<Badge> Badges { get; init; }
     public DateTimeOffset RegisterDate { get; init; }
     public RankingDataDto BestRanking { get; init; }
