@@ -63,26 +63,41 @@
                 <em style="margin-left: .5rem;">@GetString("edit_profile_panel_no_color")</em>
             }
         </div>
-        <div style="display: flex; gap: .4rem; flex-wrap: wrap;">
-            @foreach (var (colorKey, colorValue) in EditProfilePanelCommand.PROFILE_COLORS)
-            {
-                <button
-                    class="button"
-                    name="send"
-                    value="/w @Model.BotName,@(Model.Trigger)setprofilecolor @Model.RoomId, @colorKey"
-                    style="display: flex; align-items: center; gap: 4px;">
-                    <span style="@colorSwatchStyle background-color: @colorValue; margin-right: 0;"></span>
-                    @GetString($"color_{colorKey}")
-                </button>
-            }
-            <button
-                class="button"
-                name="send"
-                value="/w @Model.BotName,@(Model.Trigger)clearprofilecolor @Model.RoomId"
-                style="display: flex; align-items: center; gap: 4px;">
-                <span style="@colorSwatchStyle background-color: transparent; margin-right: 0;"></span>
-                @GetString("edit_profile_panel_clear")
-            </button>
-        </div>
+        <table style="border-collapse: separate; border-spacing: .3rem; margin-top: .35rem; table-layout: fixed; width: 100%;">
+            <tbody>
+                @{
+                    const int colorColumns = 3;
+                    var colorEntries = EditProfilePanelCommand.PROFILE_COLORS
+                        .Select(kvp => (kvp.Key, kvp.Value))
+                        .Append((Key: string.Empty, Value: string.Empty))
+                        .ToList();
+                }
+                @for (var i = 0; i < colorEntries.Count; i += colorColumns)
+                {
+                    <tr>
+                        @for (var j = i; j < Math.Min(i + colorColumns, colorEntries.Count); j++)
+                        {
+                            var (colorKey, colorValue) = colorEntries[j];
+                            var isClear = string.IsNullOrEmpty(colorKey);
+                            var sendValue = isClear
+                                ? $"/w {Model.BotName},{Model.Trigger}clearprofilecolor {Model.RoomId}"
+                                : $"/w {Model.BotName},{Model.Trigger}setprofilecolor {Model.RoomId}, {colorKey}";
+                            var swatchBg = isClear ? "transparent" : colorValue;
+                            var label = isClear ? GetString("edit_profile_panel_clear") : GetString($"color_{colorKey}");
+                            <td>
+                                <button
+                                    class="button"
+                                    name="send"
+                                    value="@sendValue"
+                                    style="display: flex; align-items: center; gap: 5px; width: 100%;">
+                                    <span style="@colorSwatchStyle background-color: @swatchBg; margin-right: 0; flex-shrink: 0;"></span>
+                                    @label
+                                </button>
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
