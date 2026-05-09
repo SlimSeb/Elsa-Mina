@@ -2484,4 +2484,7 @@
     <data name="color_brown" xml:space="preserve">
         <value>Marrone</value>
     </data>
+    <data name="color_rainbow" xml:space="preserve">
+        <value>Arcobaleno</value>
+    </data>
 </root>

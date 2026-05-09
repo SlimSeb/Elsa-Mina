@@ -2539,4 +2539,7 @@
     <data name="color_brown" xml:space="preserve">
         <value>Marron</value>
     </data>
+    <data name="color_rainbow" xml:space="preserve">
+        <value>Arc-en-ciel</value>
+    </data>
 </root>

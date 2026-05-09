@@ -56,7 +56,7 @@
             <span>@GetString("edit_profile_panel_current_emoji")</span>
             @if (!string.IsNullOrEmpty(Model.CurrentBackgroundColor))
             {
-                <span style="@colorSwatchStyle background-color: @Model.CurrentBackgroundColor;"></span>
+                <span style="@colorSwatchStyle background: @Model.CurrentBackgroundColor;"></span>
             }
             else
             {
@@ -90,7 +90,7 @@
                                     name="send"
                                     value="@sendValue"
                                     style="display: flex; align-items: center; gap: 5px; width: 100%;">
-                                    <span style="@colorSwatchStyle background-color: @swatchBg; margin-right: 0; flex-shrink: 0;"></span>
+                                    <span style="@colorSwatchStyle background: @swatchBg; margin-right: 0; flex-shrink: 0;"></span>
                                     @label
                                 </button>
                             </td>

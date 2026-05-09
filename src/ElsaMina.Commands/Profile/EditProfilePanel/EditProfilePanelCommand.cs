@@ -34,6 +34,7 @@ public class EditProfilePanelCommand : Command
             ["gray"] = "#7a7a7a73",
             ["white"] = "#d5d5d573",
             ["brown"] = "#7a573073",
+            ["rainbow"] = "linear-gradient(135deg, #ff666673, #ffaa4473, #ffff6673, #66cc6673, #6699ff73, #bb66ff73, #ff66cc73)",
         };
 
     public static readonly IReadOnlyDictionary<string, string> PROFILE_BORDER_COLORS =
@@ -54,6 +55,7 @@ public class EditProfilePanelCommand : Command
             ["gray"] = "#888",
             ["white"] = "#bbb",
             ["brown"] = "#763",
+            ["rainbow"] = "#a6f",
         };
 
     public static string GetBorderColor(string backgroundColorValue) =>
