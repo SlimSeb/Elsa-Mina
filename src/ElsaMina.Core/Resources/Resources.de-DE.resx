@@ -2452,4 +2452,7 @@
     <data name="color_candy" xml:space="preserve">
         <value>Süßigkeit</value>
     </data>
+    <data name="color_pastel" xml:space="preserve">
+        <value>Pastell</value>
+    </data>
 </root>

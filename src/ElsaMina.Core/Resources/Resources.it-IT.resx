@@ -2502,4 +2502,7 @@
     <data name="color_candy" xml:space="preserve">
         <value>Caramella</value>
     </data>
+    <data name="color_pastel" xml:space="preserve">
+        <value>Pastello</value>
+    </data>
 </root>
