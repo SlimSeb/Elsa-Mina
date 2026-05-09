@@ -28,6 +28,12 @@ public class EditProfilePanelCommand : Command
             ["green"] = "#67aa6773",
             ["pink"] = "#aa678873",
             ["black"] = "#40404073",
+            ["teal"] = "#67aaaa73",
+            ["darkgreen"] = "#2d732d73",
+            ["indigo"] = "#6757aa73",
+            ["gray"] = "#7a7a7a73",
+            ["white"] = "#d5d5d573",
+            ["brown"] = "#7a573073",
         };
 
     public static readonly IReadOnlyDictionary<string, string> PROFILE_BORDER_COLORS =
@@ -42,6 +48,12 @@ public class EditProfilePanelCommand : Command
             ["green"] = "#6a6",
             ["pink"] = "#a68",
             ["black"] = "#555",
+            ["teal"] = "#6aa",
+            ["darkgreen"] = "#363",
+            ["indigo"] = "#67a",
+            ["gray"] = "#888",
+            ["white"] = "#bbb",
+            ["brown"] = "#763",
         };
 
     public static string GetBorderColor(string backgroundColorValue) =>

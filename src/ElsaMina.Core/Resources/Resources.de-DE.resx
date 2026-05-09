@@ -2389,4 +2389,49 @@
     <data name="betting_announcement_bet_button" xml:space="preserve">
         <value>Wetten</value>
     </data>
+    <data name="color_blue" xml:space="preserve">
+        <value>Blau</value>
+    </data>
+    <data name="color_darkblue" xml:space="preserve">
+        <value>Dunkelblau</value>
+    </data>
+    <data name="color_purple" xml:space="preserve">
+        <value>Lila</value>
+    </data>
+    <data name="color_orange" xml:space="preserve">
+        <value>Orange</value>
+    </data>
+    <data name="color_pink" xml:space="preserve">
+        <value>Rosa</value>
+    </data>
+    <data name="color_red" xml:space="preserve">
+        <value>Rot</value>
+    </data>
+    <data name="color_green" xml:space="preserve">
+        <value>Grün</value>
+    </data>
+    <data name="color_black" xml:space="preserve">
+        <value>Schwarz</value>
+    </data>
+    <data name="color_yellow" xml:space="preserve">
+        <value>Gelb</value>
+    </data>
+    <data name="color_teal" xml:space="preserve">
+        <value>Blaugrün</value>
+    </data>
+    <data name="color_darkgreen" xml:space="preserve">
+        <value>Dunkelgrün</value>
+    </data>
+    <data name="color_indigo" xml:space="preserve">
+        <value>Indigo</value>
+    </data>
+    <data name="color_gray" xml:space="preserve">
+        <value>Grau</value>
+    </data>
+    <data name="color_white" xml:space="preserve">
+        <value>Weiß</value>
+    </data>
+    <data name="color_brown" xml:space="preserve">
+        <value>Braun</value>
+    </data>
 </root>

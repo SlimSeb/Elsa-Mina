@@ -2521,4 +2521,22 @@
     <data name="color_yellow" xml:space="preserve">
         <value>Jaune</value>
     </data>
+    <data name="color_teal" xml:space="preserve">
+        <value>Sarcelle</value>
+    </data>
+    <data name="color_darkgreen" xml:space="preserve">
+        <value>Vert foncé</value>
+    </data>
+    <data name="color_indigo" xml:space="preserve">
+        <value>Indigo</value>
+    </data>
+    <data name="color_gray" xml:space="preserve">
+        <value>Gris</value>
+    </data>
+    <data name="color_white" xml:space="preserve">
+        <value>Blanc</value>
+    </data>
+    <data name="color_brown" xml:space="preserve">
+        <value>Marron</value>
+    </data>
 </root>

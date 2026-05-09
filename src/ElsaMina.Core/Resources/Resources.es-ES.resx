@@ -2466,4 +2466,22 @@
     <data name="color_yellow" xml:space="preserve">
         <value>Amarillo</value>
     </data>
+    <data name="color_teal" xml:space="preserve">
+        <value>Verde azulado</value>
+    </data>
+    <data name="color_darkgreen" xml:space="preserve">
+        <value>Verde oscuro</value>
+    </data>
+    <data name="color_indigo" xml:space="preserve">
+        <value>Índigo</value>
+    </data>
+    <data name="color_gray" xml:space="preserve">
+        <value>Gris</value>
+    </data>
+    <data name="color_white" xml:space="preserve">
+        <value>Blanco</value>
+    </data>
+    <data name="color_brown" xml:space="preserve">
+        <value>Marrón</value>
+    </data>
 </root>
