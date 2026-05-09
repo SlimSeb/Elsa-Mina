@@ -2482,4 +2482,19 @@
     <data name="color_rainbow" xml:space="preserve">
         <value>Arco-íris</value>
     </data>
+    <data name="color_sunset" xml:space="preserve">
+        <value>Pôr do sol</value>
+    </data>
+    <data name="color_ocean" xml:space="preserve">
+        <value>Oceano</value>
+    </data>
+    <data name="color_fire" xml:space="preserve">
+        <value>Fogo</value>
+    </data>
+    <data name="color_aurora" xml:space="preserve">
+        <value>Aurora</value>
+    </data>
+    <data name="color_candy" xml:space="preserve">
+        <value>Doce</value>
+    </data>
 </root>

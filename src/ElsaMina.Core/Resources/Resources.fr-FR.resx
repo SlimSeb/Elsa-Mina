@@ -2542,4 +2542,19 @@
     <data name="color_rainbow" xml:space="preserve">
         <value>Arc-en-ciel</value>
     </data>
+    <data name="color_sunset" xml:space="preserve">
+        <value>Coucher de soleil</value>
+    </data>
+    <data name="color_ocean" xml:space="preserve">
+        <value>Océan</value>
+    </data>
+    <data name="color_fire" xml:space="preserve">
+        <value>Feu</value>
+    </data>
+    <data name="color_aurora" xml:space="preserve">
+        <value>Aurore</value>
+    </data>
+    <data name="color_candy" xml:space="preserve">
+        <value>Bonbon</value>
+    </data>
 </root>
