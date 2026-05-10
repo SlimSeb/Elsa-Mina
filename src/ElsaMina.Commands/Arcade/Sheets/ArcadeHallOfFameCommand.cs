@@ -26,7 +26,7 @@ public class ArcadeHallOfFameCommand : Command
     public override Rank RequiredRank => Rank.Voiced;
     public override bool IsAllowedInPrivateMessage => true;
 
-    private const int PAGE_SIZE = 10;
+    private const int PAGE_SIZE = 50;
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
