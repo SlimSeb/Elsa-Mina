@@ -19,34 +19,21 @@
         </tr>
         </thead>
         <tbody>
-        @for (var i = 0; i < Model.Entries.Length; i++)
+        @foreach (var entry in Model.Entries)
         {
-            var entry = Model.Entries[i];
-            if (string.IsNullOrEmpty(entry.UserName)) continue;
-
-            var bgColor = i % 2 == 0 ? "background-color: #6688AA36;" : string.Empty;
-            var rankColor = entry.Rank switch
+            if (string.IsNullOrEmpty(entry.UserName))
             {
-                1 => "#D4AF37",
-                2 => "#C4CACE",
-                3 => "#CD7F32",
-                _ => string.Empty
-            };
-            <tr style="@($"{tdthStyle}{bgColor}")">
+                continue;
+            }
+
+            <tr style="@($"{tdthStyle}")">
                 <td style="@tdthStyle">
-                    @if (!string.IsNullOrEmpty(rankColor))
-                    {
-                        <b style="color:@rankColor">#@entry.Rank</b>
-                    }
-                    else
-                    {
-                        <b>#@entry.Rank</b>
-                    }
+                    @entry.Rank
                 </td>
                 <td style="@tdthStyle">
-                    <span style="color:@entry.UserName.ToColorHexCodeWithCustoms()">
+                    <b style="color:@entry.UserName.ToColorHexCodeWithCustoms()">
                         @entry.UserName
-                    </span>
+                    </b>
                 </td>
                 <td style="@tdthStyle">
                     @entry.Points
