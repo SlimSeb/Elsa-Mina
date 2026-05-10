@@ -37,7 +37,7 @@ public class NameColorInfoCommandTests
         _context.Target.Returns("customUser");
         _customColorsManager.CustomColorsMapping.Returns(new Dictionary<string, string>
         {
-            { "customUser", "otherUser" }
+            { "customuser", "otherUser" }
         });
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<NameColorInfoViewModel>())
             .Returns(Task.FromResult("formatted_html"));
