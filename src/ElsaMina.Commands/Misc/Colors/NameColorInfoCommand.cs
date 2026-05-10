@@ -32,9 +32,10 @@ public class NameColorInfoCommand : Command
             return;
         }
 
+        var userId = context.Target.ToLowerAlphaNum();
         Color color;
         Color? originalColor = null;
-        if (_customColorsManager.CustomColorsMapping.TryGetValue(context.Target, out var customColorName))
+        if (_customColorsManager.CustomColorsMapping.TryGetValue(userId, out var customColorName))
         {
             color = customColorName.ToColor();
             originalColor = context.Target.ToColor();
@@ -43,6 +44,7 @@ public class NameColorInfoCommand : Command
         {
             color = context.Target.ToColor();
         }
+
         var template = await _templatesManager.GetTemplateAsync("Misc/Colors/NameColorInfo", new NameColorInfoViewModel
         {
             Culture = context.Culture,
