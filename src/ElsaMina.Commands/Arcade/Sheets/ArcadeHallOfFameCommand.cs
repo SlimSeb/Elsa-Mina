@@ -56,7 +56,8 @@ public class ArcadeHallOfFameCommand : Command
 
         var template = await _templatesManager.GetTemplateAsync("Arcade/Sheets/ArcadeHallOfFame", viewModel);
 
-        context.ReplyHtmlPage("arcade-hof", template.RemoveNewlines().CollapseAttributeWhitespace());
+        context.ReplyHtmlPage("arcade-hof",
+            template.RemoveNewlines().CollapseAttributeWhitespace().RemoveWhitespacesBetweenTags());
     }
 
     private static async Task<ArcadeHallOfFameEntry[]> GetHallOfFameEntriesAsync(ISheet sheet,
