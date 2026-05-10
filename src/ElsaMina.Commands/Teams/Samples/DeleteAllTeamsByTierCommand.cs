@@ -18,7 +18,7 @@ public class DeleteAllTeamsByTierCommand : Command
         _dbContextFactory = dbContextFactory;
     }
 
-    public override Rank RequiredRank => Rank.Voiced;
+    public override Rank RequiredRank => Rank.Mod;
     public override string HelpMessageKey => "deleteallteams_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
