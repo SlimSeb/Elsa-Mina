@@ -2505,4 +2505,25 @@
     <data name="color_pastel" xml:space="preserve">
         <value>Pastello</value>
     </data>
+    <data name="spoonacular_no_results" xml:space="preserve">
+        <value>Nessuna ricetta trovata.</value>
+    </data>
+    <data name="spoonacular_error" xml:space="preserve">
+        <value>Si è verificato un errore durante il recupero della ricetta.</value>
+    </data>
+    <data name="recipe_missing_query" xml:space="preserve">
+        <value>Specifica un piatto o un ingrediente da cercare.</value>
+    </data>
+    <data name="pizza_invalid_number" xml:space="preserve">
+        <value>Inserisci un numero positivo valido di ingredienti.</value>
+    </data>
+    <data name="pizza_too_many_toppings" xml:space="preserve">
+        <value>Troppi ingredienti richiesti.</value>
+    </data>
+    <data name="salad_invalid_number" xml:space="preserve">
+        <value>Inserisci un numero positivo valido di ingredienti.</value>
+    </data>
+    <data name="salad_too_many_ingredients" xml:space="preserve">
+        <value>Troppi ingredienti richiesti.</value>
+    </data>
 </root>

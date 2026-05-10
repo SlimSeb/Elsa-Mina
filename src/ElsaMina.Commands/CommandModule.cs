@@ -42,6 +42,7 @@ using ElsaMina.Commands.Misc.Colors;
 using ElsaMina.Commands.Misc.Dailymotion;
 using ElsaMina.Commands.Misc.Dictionary;
 using ElsaMina.Commands.Misc.Facts;
+using ElsaMina.Commands.Misc.Food;
 using ElsaMina.Commands.Misc.Genius;
 using ElsaMina.Commands.Misc.Help;
 using ElsaMina.Commands.Misc.Legacy;
@@ -138,6 +139,14 @@ public class CommandModule : Module
         builder.RegisterCommand<RemoveColorCommand>();
         builder.RegisterCommand<FactsCommand>();
         builder.RegisterCommand<BitcoinCommand>();
+        builder.RegisterCommand<RandRecipeCommand>();
+        builder.RegisterCommand<RecipeSearchCommand>();
+        builder.RegisterCommand<RandPastaCommand>();
+        builder.RegisterCommand<RandSoupCommand>();
+        builder.RegisterCommand<RandCheeseCommand>();
+        builder.RegisterCommand<RandSaladCommand>();
+        builder.RegisterCommand<PizzaCommand>();
+        builder.RegisterCommand<SaladCommand>();
         builder.RegisterCommand<SetJoinPhraseCommand>();
         builder.RegisterCommand<CreateConnectFourCommand>();
         builder.RegisterCommand<JoinConnectFourCommand>();
@@ -351,6 +360,7 @@ public class CommandModule : Module
         builder.RegisterType<ArcadeEventsService>().As<IArcadeEventsService>().SingleInstance();
         builder.RegisterType<UnsplashService>().As<IUnsplashService>().SingleInstance();
         builder.RegisterType<TenorService>().As<ITenorService>().SingleInstance();
+        builder.RegisterType<SpoonacularService>().As<ISpoonacularService>().SingleInstance();
     }
 
     private static void RegisterTournamentCommands(ContainerBuilder builder)

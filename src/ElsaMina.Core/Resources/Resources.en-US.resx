@@ -2564,4 +2564,25 @@
     <data name="color_pastel" xml:space="preserve">
         <value>Pastel</value>
     </data>
+    <data name="spoonacular_no_results" xml:space="preserve">
+        <value>No recipes found.</value>
+    </data>
+    <data name="spoonacular_error" xml:space="preserve">
+        <value>An error occurred while fetching the recipe.</value>
+    </data>
+    <data name="recipe_missing_query" xml:space="preserve">
+        <value>Please provide a meal or ingredient to search for.</value>
+    </data>
+    <data name="pizza_invalid_number" xml:space="preserve">
+        <value>Please provide a valid positive number of toppings.</value>
+    </data>
+    <data name="pizza_too_many_toppings" xml:space="preserve">
+        <value>Too many toppings requested.</value>
+    </data>
+    <data name="salad_invalid_number" xml:space="preserve">
+        <value>Please provide a valid positive number of ingredients.</value>
+    </data>
+    <data name="salad_too_many_ingredients" xml:space="preserve">
+        <value>Too many ingredients requested.</value>
+    </data>
 </root>

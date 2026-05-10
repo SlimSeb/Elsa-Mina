@@ -1,4 +1,5 @@
-﻿{
+﻿
+{
   "Host": "sim3.psim.us",
   "Port": 443,
   "Name": "name",
@@ -24,6 +25,7 @@
   "ElevenLabsApiKey": "",
   "TenorApiKey": "",
   "UnsplashApiKey": "",
+  "SpoonacularApiKey": "",
   "PlayTimeUpdatesInterval": "01:00:00",
   "LoginRetryDelay": "00:00:30",
   "S3BucketName": "",

@@ -31,6 +31,7 @@ public interface IConfiguration : IS3CredentialsProvider, ILoggingConfiguration
     string ElevenLabsApiKey { get; }
     string TenorApiKey { get; }
     string UnsplashApiKey { get; }
+    string SpoonacularApiKey { get; }
     TimeSpan PlayTimeUpdatesInterval { get; }
     TimeSpan LoginRetryDelay { get; }
     string ArcadeSpreadsheetName { get; }
