@@ -3,7 +3,6 @@
 public interface ISheet : IDisposable
 {
     string Name { get; }
-    string SpreadsheetId { get; }
     Task<string?> GetCellAsync(int column, int row, CancellationToken cancellationToken = default);
     Task SetCellAsync(int column, int row, string? content, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<string>> GetRowAsync(int row, CancellationToken cancellationToken = default);

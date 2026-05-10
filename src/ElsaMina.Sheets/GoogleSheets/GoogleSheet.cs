@@ -29,7 +29,6 @@ public class GoogleSheet : ISheet
     }
 
     public string Name { get; }
-    public string SpreadsheetId => _spreadsheetId;
 
     public Task<string?> GetCellAsync(int column, int row, CancellationToken cancellationToken = default)
     {

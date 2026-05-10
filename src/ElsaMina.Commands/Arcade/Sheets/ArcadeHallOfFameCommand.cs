@@ -35,13 +35,12 @@ public class ArcadeHallOfFameCommand : Command
         var viewModel = new ArcadeHallOfFameViewModel
         {
             Culture = context.Culture,
-            Entries = entries,
-            SpreadsheetUrl = $"https://docs.google.com/spreadsheets/d/{sheet.SpreadsheetId}"
+            Entries = entries
         };
 
         var template = await _templatesManager.GetTemplateAsync("Arcade/Sheets/ArcadeHallOfFame", viewModel);
 
-        context.ReplyHtml(template.RemoveNewlines().RemoveWhitespacesBetweenTags());
+        context.ReplyHtml(template.RemoveNewlines().CollapseAttributeWhitespace());
     }
 
     private static async Task<ArcadeHallOfFameEntry[]> GetHallOfFameEntriesAsync(ISheet sheet,
@@ -54,6 +53,7 @@ public class ArcadeHallOfFameCommand : Command
         return Enumerable.Zip(ranks.Skip(1), usernames.Skip(1), points.Skip(1))
             .Where(tuple => IsValidEntry(tuple.First, tuple.Second, tuple.Third))
             .Select(tuple => CreateEntry(tuple.First, tuple.Second, tuple.Third))
+            .Where(tuple => tuple.Points > 0)
             .ToArray();
     }
 

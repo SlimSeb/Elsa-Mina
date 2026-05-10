@@ -2,6 +2,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Utils;
 using ElsaMina.Sheets;
 
 namespace ElsaMina.Commands.Arcade.Sheets;
@@ -34,7 +35,7 @@ public class ArcadePointsCommand : Command
             return;
         }
 
-        var normalizedTarget = target.Replace(" ", "").ToLower();
+        var normalizedTarget = target.ToLowerAlphaNum();
 
         using var sheet = await _sheetProvider.GetSheetAsync(_configuration.ArcadeSpreadsheetName,
             _configuration.ArcadeHallOfFameSheetName, cancellationToken);
@@ -45,7 +46,7 @@ public class ArcadePointsCommand : Command
         var userPoints = 0;
         foreach (var (name, pointStr) in usernames.Skip(1).Zip(points.Skip(1)))
         {
-            if (name.Replace(" ", "").ToLower() == normalizedTarget
+            if (name.ToLowerAlphaNum() == normalizedTarget
                 && int.TryParse(pointStr, out var parsed))
             {
                 userPoints = parsed;

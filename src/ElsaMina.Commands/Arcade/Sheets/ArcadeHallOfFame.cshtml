@@ -24,13 +24,13 @@
             var entry = Model.Entries[i];
             if (string.IsNullOrEmpty(entry.UserName)) continue;
 
-            var bgColor = i % 2 == 0 ? "background-color: rgba(102,136,170,0.21);" : "";
+            var bgColor = i % 2 == 0 ? "background-color: #6688AA36;" : string.Empty;
             var rankColor = entry.Rank switch
             {
                 1 => "#D4AF37",
                 2 => "#C4CACE",
                 3 => "#CD7F32",
-                _ => ""
+                _ => string.Empty
             };
             <tr style="@($"{tdthStyle}{bgColor}")">
                 <td style="@tdthStyle">
@@ -44,19 +44,12 @@
                     }
                 </td>
                 <td style="@tdthStyle">
-                    <span class="username" data-name="@entry.UserName" style="color:@entry.UserName.ToColorHexCodeWithCustoms()">
+                    <span style="color:@entry.UserName.ToColorHexCodeWithCustoms()">
                         @entry.UserName
                     </span>
                 </td>
                 <td style="@tdthStyle">
-                    @if (entry.Points >= 50)
-                    {
-                        <b>@entry.Points points</b>
-                    }
-                    else
-                    {
-                        @entry.Points
-                    }
+                    @entry.Points
                 </td>
             </tr>
         }
