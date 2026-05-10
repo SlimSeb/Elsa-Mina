@@ -8,8 +8,24 @@
     const string headerStyle = "border: 1px solid #68A; text-align: center;";
 }
 
-<div style="max-height:196px; overflow-y:auto">
+<div>
     <span style="font-size: 1.2em; font-weight: bold;">Arcade's Hall of Fame</span>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div style="margin: .5rem 0;">
+            @if (Model.Page > 1)
+            {
+                <button class="button" name="send" value="/w @Model.BotName,@(Model.Trigger)arcadehof @(Model.Page - 1)">←</button>
+            }
+            <span style="margin: 0 .5rem;">@Model.Page / @Model.TotalPages</span>
+            @if (Model.Page < Model.TotalPages)
+            {
+                <button class="button" name="send" value="/w @Model.BotName,@(Model.Trigger)arcadehof @(Model.Page + 1)">→</button>
+            }
+        </div>
+    }
+
     <table style="@tableStyle">
         <thead>
         <tr style="@headerRowStyle">

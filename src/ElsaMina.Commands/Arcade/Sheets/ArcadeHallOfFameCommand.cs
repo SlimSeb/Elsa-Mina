@@ -26,21 +26,37 @@ public class ArcadeHallOfFameCommand : Command
     public override Rank RequiredRank => Rank.Voiced;
     public override bool IsAllowedInPrivateMessage => true;
 
+    private const int PAGE_SIZE = 10;
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
+        var page = int.TryParse(context.Target.Trim(), out var parsedPage)
+            ? Math.Max(1, parsedPage)
+            : 1;
+
         var sheet = await _sheetProvider.GetSheetAsync(_configuration.ArcadeSpreadsheetName,
             _configuration.ArcadeHallOfFameSheetName, cancellationToken);
-        var entries = await GetHallOfFameEntriesAsync(sheet, cancellationToken);
+        var allEntries = await GetHallOfFameEntriesAsync(sheet, cancellationToken);
+
+        var totalPages = (int)Math.Ceiling(allEntries.Length / (double)PAGE_SIZE);
+        totalPages = Math.Max(1, totalPages);
+        page = Math.Clamp(page, 1, totalPages);
+
+        var entries = allEntries.Skip((page - 1) * PAGE_SIZE).Take(PAGE_SIZE).ToArray();
 
         var viewModel = new ArcadeHallOfFameViewModel
         {
             Culture = context.Culture,
-            Entries = entries
+            Entries = entries,
+            Page = page,
+            TotalPages = totalPages,
+            BotName = _configuration.Name,
+            Trigger = _configuration.Trigger
         };
 
         var template = await _templatesManager.GetTemplateAsync("Arcade/Sheets/ArcadeHallOfFame", viewModel);
 
-        context.ReplyHtml(template.RemoveNewlines().CollapseAttributeWhitespace());
+        context.ReplyHtmlPage("arcade-hof", template.RemoveNewlines().CollapseAttributeWhitespace());
     }
 
     private static async Task<ArcadeHallOfFameEntry[]> GetHallOfFameEntriesAsync(ISheet sheet,

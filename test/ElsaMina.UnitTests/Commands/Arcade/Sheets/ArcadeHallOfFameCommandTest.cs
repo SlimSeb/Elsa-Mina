@@ -63,11 +63,11 @@ public class ArcadeHallOfFameCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReplyHtml_WithRenderedTemplate()
+    public async Task Test_RunAsync_ShouldReplyHtmlPage_WithRenderedTemplate()
     {
         await _command.RunAsync(_context);
 
-        _context.Received(1).ReplyHtml(Arg.Any<string>());
+        _context.Received(1).ReplyHtmlPage("arcade-hof", Arg.Any<string>());
     }
 
     [Test]

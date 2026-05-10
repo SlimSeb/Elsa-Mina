@@ -1,5 +1,6 @@
 using ElsaMina.Commands.Profile;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Rooms;
 using NSubstitute;
 
 // GetAvatar tests are in ProfileServiceTest
@@ -25,12 +26,13 @@ public class ProfileCommandTest
         context.Target.Returns("");
         context.Sender.UserId.Returns("alice");
         context.RoomId.Returns("room1");
+        context.HasRankOrHigher(Rank.Voiced).Returns(true);
         _profileService.GetProfileHtmlAsync("alice", "room1", Arg.Any<CancellationToken>())
             .Returns("rendered");
 
         await _sut.RunAsync(context);
 
-        context.Received().ReplyHtml("rendered", rankAware: true);
+        context.Received().SendUpdatableHtml("profile-alice", Arg.Any<string>(), isChanging: false);
     }
 
     [Test]
@@ -39,12 +41,13 @@ public class ProfileCommandTest
         var context = Substitute.For<IContext>();
         context.Target.Returns("Bob99");
         context.RoomId.Returns("room1");
+        context.HasRankOrHigher(Rank.Voiced).Returns(true);
         _profileService.GetProfileHtmlAsync("bob99", "room1", Arg.Any<CancellationToken>())
             .Returns("rendered");
 
         await _sut.RunAsync(context);
 
-        context.Received().ReplyHtml("rendered", rankAware: true);
+        context.Received().SendUpdatableHtml("profile-bob99", Arg.Any<string>(), isChanging: false);
     }
 
     [Test]

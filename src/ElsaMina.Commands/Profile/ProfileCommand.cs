@@ -1,9 +1,7 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.UserDetails;
 using ElsaMina.Core.Utils;
-using ElsaMina.DataAccess.Models;
 
 namespace ElsaMina.Commands.Profile;
 
@@ -34,6 +32,14 @@ public class ProfileCommand : Command
 
         var roomId = parts.Length == 2 ? parts[1].ToLowerAlphaNum() : context.RoomId;
         var template = await _profileService.GetProfileHtmlAsync(userId, roomId, cancellationToken);
-        context.ReplyHtml(template.RemoveNewlines(), rankAware: true);
+        if (context.HasRankOrHigher(Rank.Voiced))
+        {
+            context.SendUpdatableHtml($"profile-{userId}", template.RemoveNewlines(), isChanging: false);
+        }
+        else
+        {
+            context.SendPrivateUpdatableHtml(userId, roomId, $"profile-{userId}", template.RemoveNewlines(),
+                isChanging: false);
+        }
     }
 }
