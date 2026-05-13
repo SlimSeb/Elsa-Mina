@@ -906,6 +906,12 @@
     <data name="uptime" xml:space="preserve">
         <value>Temps de fonctionnement : {0}</value>
     </data>
+    <data name="changelog_error" xml:space="preserve">
+        <value>Une erreur est survenue lors de la récupération du changelog.</value>
+    </data>
+    <data name="changelog_no_commits" xml:space="preserve">
+        <value>Aucun commit trouvé.</value>
+    </data>
     <data name="tour_announce_message" xml:space="preserve">
         <value>Un tournoi {0} a été créé dans la salle &lt;&lt;{1}&gt;&gt;</value>
     </data>

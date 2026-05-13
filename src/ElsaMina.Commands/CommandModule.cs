@@ -193,6 +193,7 @@ public class CommandModule : Module
         builder.RegisterCommand<WeebifyCommand>();
         builder.RegisterCommand<ElectionCommand>();
         builder.RegisterCommand<DailymotionCommand>();
+        builder.RegisterCommand<ChangelogCommand>();
         builder.RegisterCommand<MemoryUsageCommand>();
         builder.RegisterCommand<UptimeCommand>();
         builder.RegisterCommand<BadgeDisplayCommand>();
