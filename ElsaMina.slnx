@@ -1,6 +1,7 @@
 ﻿<Solution>
   <Folder Name="/Build/">
     <File Path=".dockerignore" />
+    <File Path="Directory.Packages.props" />
     <File Path="Dockerfile" />
     <File Path="GitVersion.yml" />
   </Folder>
