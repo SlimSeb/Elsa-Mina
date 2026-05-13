@@ -513,6 +513,12 @@
     <data name="parameter_description_is_showing_youtube_link_preview" xml:space="preserve">
         <value>Zeigt den Titel und Informationen eines YouTube-Videos an, wenn ein Link gepostet wird</value>
     </data>
+    <data name="parameter_name_is_showing_url_preview" xml:space="preserve">
+        <value>URL-Vorschau</value>
+    </data>
+    <data name="parameter_description_is_showing_url_preview" xml:space="preserve">
+        <value>Zeigt eine Vorschaukarte mit Titel und Beschreibung an, wenn eine URL gepostet wird</value>
+    </data>
     <data name="guessing_game_specify" xml:space="preserve">
         <value>Bitte gib die Anzahl der Runden an.</value>
     </data>

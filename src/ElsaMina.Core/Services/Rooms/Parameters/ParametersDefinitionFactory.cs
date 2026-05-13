@@ -96,6 +96,14 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
                 DescriptionKey = "parameter_description_is_showing_youtube_link_preview",
                 Type = RoomBotConfigurationType.Boolean,
                 DefaultValue = true.ToString()
+            },
+            [Parameter.ShowUrlPreview] = new ParameterDefinition
+            {
+                Identifier = "urlp",
+                NameKey = "parameter_name_is_showing_url_preview",
+                DescriptionKey = "parameter_description_is_showing_url_preview",
+                Type = RoomBotConfigurationType.Boolean,
+                DefaultValue = false.ToString()
             }
         };
 }

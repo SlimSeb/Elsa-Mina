@@ -50,6 +50,7 @@ using ElsaMina.Commands.Misc.Pairings;
 using ElsaMina.Commands.Misc.Pokemon;
 using ElsaMina.Commands.Misc.RandomImages;
 using ElsaMina.Commands.Misc.Translation;
+using ElsaMina.Commands.Misc.UrlPreview;
 using ElsaMina.Commands.Misc.Wiki;
 using ElsaMina.Commands.Misc.Youtube;
 using ElsaMina.Commands.Polls;
@@ -255,6 +256,7 @@ public class CommandModule : Module
         builder.RegisterHandler<JoinPhraseHandler>();
         builder.RegisterHandler<ReplaysHandler>();
         builder.RegisterHandler<YoutubeVideoOnLinkHandler>();
+        builder.RegisterHandler<UrlPreviewHandler>();
         builder.RegisterHandler<DisplayTeamsOnTourHandler>();
         builder.RegisterHandler<TourFinaleAnnounceHandler>();
         builder.RegisterHandler<ArcadeEventsHandler>();

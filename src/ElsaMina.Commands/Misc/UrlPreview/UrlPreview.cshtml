@@ -1,0 +1,43 @@
+@using System.Web
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Misc.UrlPreview.UrlPreviewViewModel>
+
+<table style="padding: 0.25em; border-left: 3px solid #ccc;">
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <thead>
+        <th>
+            <img src="@Model.ImageUrl" width="@Model.ImageWidth" height="@Model.ImageHeight" alt="Preview"
+                 style="object-fit: cover;"/>
+        </th>
+        <th style="padding: 0.5em; text-align: left; vertical-align: top;">
+            <b><a href="@Model.Url">@HttpUtility.HtmlDecode(Model.Title)</a></b>
+            @if (!string.IsNullOrEmpty(Model.SiteName))
+            {
+                <span style="color: #888; font-weight: normal;"> — @HttpUtility.HtmlDecode(Model.SiteName)</span>
+            }
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <br/>
+                <small>@HttpUtility.HtmlDecode(Model.Description)</small>
+            }
+        </th>
+        </thead>
+    }
+    else
+    {
+        <thead>
+        <th style="padding: 0.25em 0.5em; text-align: left;">
+            <b><a href="@Model.Url">@HttpUtility.HtmlDecode(Model.Title)</a></b>
+            @if (!string.IsNullOrEmpty(Model.SiteName))
+            {
+                <span style="color: #888; font-weight: normal;"> — @HttpUtility.HtmlDecode(Model.SiteName)</span>
+            }
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <br/>
+                <small>@HttpUtility.HtmlDecode(Model.Description)</small>
+            }
+        </th>
+        </thead>
+    }
+</table>
