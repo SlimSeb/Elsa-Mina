@@ -84,6 +84,7 @@ using ElsaMina.Commands.Tournaments.Leaderboard;
 using ElsaMina.Commands.Tournaments.Trade;
 using ElsaMina.Commands.Users;
 using ElsaMina.Commands.Users.PlayTimes;
+using ElsaMina.Commands.Users.Streaks;
 using ElsaMina.Commands.Watchlist;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.CustomColors;
@@ -223,6 +224,7 @@ public class CommandModule : Module
         builder.RegisterCommand<AltsCommand>();
         builder.RegisterCommand<TopPlayTimesCommand>();
         builder.RegisterCommand<PlayTimeCommand>();
+        builder.RegisterCommand<StreakCommand>();
         builder.RegisterCommand<CurrentLadderTrackersCommand>();
         builder.RegisterCommand<GuessingGameAnswerCommand>();
         builder.RegisterCommand<TopTournamentPlayersCommand>();
@@ -257,6 +259,7 @@ public class CommandModule : Module
         builder.RegisterHandler<ReplaysHandler>();
         builder.RegisterHandler<YoutubeVideoOnLinkHandler>();
         builder.RegisterHandler<UrlPreviewHandler>();
+        builder.RegisterHandler<StreakUpdateHandler>();
         builder.RegisterHandler<DisplayTeamsOnTourHandler>();
         builder.RegisterHandler<TourFinaleAnnounceHandler>();
         builder.RegisterHandler<ArcadeEventsHandler>();
@@ -346,6 +349,7 @@ public class CommandModule : Module
         builder.RegisterType<ConversationHistoryService>().As<IConversationHistoryService>().SingleInstance();
         builder.RegisterType<LanguageModelResolver>().As<ILanguageModelProvider>().SingleInstance();
         builder.RegisterType<ProfileService>().As<IProfileService>().SingleInstance();
+        builder.RegisterType<StreakService>().As<IStreakService>().SingleInstance();
         builder.RegisterType<ShowdownRanksProvider>().As<IShowdownRanksProvider>().SingleInstance();
         builder.RegisterType<SmogonUsageDataProvider>().As<ISmogonUsageDataProvider>().SingleInstance();
         builder.RegisterType<LadderHistoryManager>().As<ILadderHistoryManager>().SingleInstance();

@@ -1166,6 +1166,18 @@
     <data name="play_time_error" xml:space="preserve">
         <value>Could not retrieve play time.</value>
     </data>
+    <data name="streak_result" xml:space="preserve">
+        <value>**{0}**: current streak **{1}** day(s), longest streak **{2}** day(s).</value>
+    </data>
+    <data name="streak_no_data" xml:space="preserve">
+        <value>No streak data found for {0} in this room.</value>
+    </data>
+    <data name="streak_error" xml:space="preserve">
+        <value>Could not retrieve streak data.</value>
+    </data>
+    <data name="streak_help" xml:space="preserve">
+        <value>Usage: streak [username] — shows the daily activity streak for a user.</value>
+    </data>
     <data name="slots_description_bulbasaur" xml:space="preserve">
         <value>a plant</value>
     </data>

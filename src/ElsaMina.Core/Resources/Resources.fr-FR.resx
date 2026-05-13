@@ -1161,6 +1161,18 @@
     <data name="play_time_error" xml:space="preserve">
         <value>Impossible de récupérer le temps de jeu.</value>
     </data>
+    <data name="streak_result" xml:space="preserve">
+        <value>**{0}** : série actuelle **{1}** jour(s), plus longue série **{2}** jour(s).</value>
+    </data>
+    <data name="streak_no_data" xml:space="preserve">
+        <value>Aucune donnée de série trouvée pour {0} dans ce salon.</value>
+    </data>
+    <data name="streak_error" xml:space="preserve">
+        <value>Impossible de récupérer les données de série.</value>
+    </data>
+    <data name="streak_help" xml:space="preserve">
+        <value>Utilisation : streak [pseudo] — affiche la série d'activité quotidienne d'un utilisateur.</value>
+    </data>
     <data name="slots_description_bulbasaur" xml:space="preserve">
         <value>une plante</value>
     </data>

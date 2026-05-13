@@ -16,6 +16,9 @@ public class RoomUser
     public string ProfileEmoji { get; set; }
     public string ProfileBackgroundColor { get; set; }
     public TimeSpan PlayTime { get; set; }
+    public int CurrentStreak { get; set; }
+    public int LongestStreak { get; set; }
+    public DateOnly? LastActivityDate { get; set; }
     public TournamentRecord TournamentRecord { get; set; }
     public ICollection<BadgeHolding> Badges { get; set; } = new HashSet<BadgeHolding>();
     public SavedUser User { get; set; }

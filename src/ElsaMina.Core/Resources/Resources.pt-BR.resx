@@ -1161,6 +1161,18 @@
     <data name="play_time_error" xml:space="preserve">
         <value>Não foi possível recuperar o tempo de jogo.</value>
     </data>
+    <data name="streak_result" xml:space="preserve">
+        <value>**{0}**: sequência atual **{1}** dia(s), maior sequência **{2}** dia(s).</value>
+    </data>
+    <data name="streak_no_data" xml:space="preserve">
+        <value>Nenhum dado de sequência encontrado para {0} nesta sala.</value>
+    </data>
+    <data name="streak_error" xml:space="preserve">
+        <value>Não foi possível recuperar os dados de sequência.</value>
+    </data>
+    <data name="streak_help" xml:space="preserve">
+        <value>Uso: streak [usuário] — exibe a sequência de atividade diária de um usuário.</value>
+    </data>
     <data name="slots_description_bulbasaur" xml:space="preserve">
         <value>uma planta</value>
     </data>
