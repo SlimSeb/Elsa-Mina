@@ -50,6 +50,11 @@ public class YoutubeVideoOnLinkHandler : ChatMessageHandler
             return;
         }
 
+        if (context.Message.StartsWith("!show"))
+        {
+            return;
+        }
+
         var match = YOUTUBE_URL_REGEX.Match(context.Message);
         if (!match.Success)
         {

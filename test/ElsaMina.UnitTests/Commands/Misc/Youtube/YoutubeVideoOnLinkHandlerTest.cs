@@ -50,6 +50,24 @@ public class YoutubeVideoOnLinkHandlerTest
     }
 
     [Test]
+    [TestCase("!show https://www.youtube.com/watch?v=dQw4w9WgXcQ")]
+    [TestCase("!show https://youtu.be/dQw4w9WgXcQ")]
+    public async Task Test_HandleMessageAsync_ShouldNotProcess_WhenMessageStartsWithShowCommand(string message)
+    {
+        // Arrange
+        _room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
+            .Returns("true");
+        _context.Message.Returns(message);
+
+        // Act
+        await _handler.HandleMessageAsync(_context);
+
+        // Assert
+        await _httpService.DidNotReceiveWithAnyArgs()
+            .GetAsync<YouTubeVideoListResponse>(default, default);
+    }
+
+    [Test]
     [TestCase("This is a message without any link.")]
     [TestCase("https://www.google.com/search?q=hello")]
     [TestCase("https://vimeo.com/123456789")]
