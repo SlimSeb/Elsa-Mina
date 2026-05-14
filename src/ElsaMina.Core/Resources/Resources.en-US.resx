@@ -2630,4 +2630,34 @@
     <data name="salad_too_many_ingredients" xml:space="preserve">
         <value>Too many ingredients requested.</value>
     </data>
+    <data name="bj_dealer" xml:space="preserve">
+        <value>Dealer</value>
+    </data>
+    <data name="bj_player" xml:space="preserve">
+        <value>{0}</value>
+    </data>
+    <data name="bj_hit" xml:space="preserve">
+        <value>Hit</value>
+    </data>
+    <data name="bj_stand" xml:space="preserve">
+        <value>Stand</value>
+    </data>
+    <data name="bj_outcome_blackjack" xml:space="preserve">
+        <value>Blackjack! You win!</value>
+    </data>
+    <data name="bj_outcome_player_won" xml:space="preserve">
+        <value>You win!</value>
+    </data>
+    <data name="bj_outcome_bust" xml:space="preserve">
+        <value>Bust! You lose.</value>
+    </data>
+    <data name="bj_outcome_dealer_won" xml:space="preserve">
+        <value>Dealer wins.</value>
+    </data>
+    <data name="bj_outcome_tie" xml:space="preserve">
+        <value>Push! It's a tie.</value>
+    </data>
+    <data name="bj_game_already_active" xml:space="preserve">
+        <value>You already have an active blackjack game.</value>
+    </data>
 </root>

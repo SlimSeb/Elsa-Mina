@@ -23,6 +23,7 @@ using ElsaMina.Commands.CustomCommands;
 using ElsaMina.Commands.Development;
 using ElsaMina.Commands.Development.Commands;
 using ElsaMina.Commands.Development.LagTest;
+using ElsaMina.Commands.Games.Blackjack;
 using ElsaMina.Commands.Games.ConnectFour;
 using ElsaMina.Commands.Games.FloodIt;
 using ElsaMina.Commands.Games.GuessingGame;
@@ -150,6 +151,10 @@ public class CommandModule : Module
         builder.RegisterCommand<PizzaCommand>();
         builder.RegisterCommand<SaladCommand>();
         builder.RegisterCommand<SetJoinPhraseCommand>();
+        builder.RegisterCommand<BlackjackCommand>();
+        builder.RegisterCommand<BlackjackHitCommand>();
+        builder.RegisterCommand<BlackjackStandCommand>();
+        builder.RegisterType<BlackjackGame>().AsSelf();
         builder.RegisterCommand<CreateConnectFourCommand>();
         builder.RegisterCommand<JoinConnectFourCommand>();
         builder.RegisterCommand<PlayConnectFourCommand>();
