@@ -1,0 +1,69 @@
+@using ElsaMina.Commands.Games.Blackjack
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Blackjack.BlackjackViewModel>
+
+@{
+    const string cardBase = "display:inline-block;width:42px;height:60px;border:2px solid #333;border-radius:6px;background:#fff;font-weight:bold;font-size:14px;line-height:60px;text-align:center;margin:2px;vertical-align:middle;";
+    const string hiddenCard = "display:inline-block;width:42px;height:60px;border:2px solid #333;border-radius:6px;background:#1a3d6e;margin:2px;vertical-align:middle;";
+    var isOver = Model.Game.IsOver;
+    var playerHand = Model.Game.PlayerHand;
+    var dealerHand = Model.Game.DealerHand;
+    var state = Model.Game.State;
+}
+
+<div style="background:#076324;padding:12px 16px;border-radius:8px;font-family:monospace;min-width:320px;display:inline-block;">
+    <div style="margin-bottom:8px;">
+        <span style="color:#fff;font-weight:bold;">@GetString("bj_dealer") (@(isOver ? dealerHand.Value.ToString() : "?"))</span><br/>
+        @for (var i = 0; i < dealerHand.Cards.Count; i++)
+        {
+            var card = dealerHand.Cards[i];
+            if (i == 1 && !isOver)
+            {
+                <span style="@hiddenCard"></span>
+            }
+            else
+            {
+                var color = card.IsRed ? "#cc0000" : "#111";
+                <span style="@cardBase color:@color;">@(card.DisplayRank)@(card.Suit)</span>
+            }
+        }
+    </div>
+
+    <div style="margin-bottom:8px;">
+        <span style="color:#fff;font-weight:bold;">@GetString("bj_player", Model.Game.Player.Name) (@playerHand.Value)</span><br/>
+        @foreach (var card in playerHand.Cards)
+        {
+            var color = card.IsRed ? "#cc0000" : "#111";
+            <span style="@cardBase color:@color;">@(card.DisplayRank)@(card.Suit)</span>
+        }
+    </div>
+
+    @if (!isOver)
+    {
+        <div>
+            <button class="button" name="send"
+                value="/botmsg @Model.BotName,@(Model.Trigger)bjhit @Model.RoomId">
+                @GetString("bj_hit")
+            </button>
+            &nbsp;
+            <button class="button" name="send"
+                value="/botmsg @Model.BotName,@(Model.Trigger)bjstand @Model.RoomId">
+                @GetString("bj_stand")
+            </button>
+        </div>
+    }
+    else
+    {
+        var outcomeKey = state switch
+        {
+            BlackjackGameState.PlayerWon when playerHand.IsBlackjack => "bj_outcome_blackjack",
+            BlackjackGameState.PlayerWon => "bj_outcome_player_won",
+            BlackjackGameState.PlayerBust => "bj_outcome_bust",
+            BlackjackGameState.DealerWon => "bj_outcome_dealer_won",
+            _ => "bj_outcome_tie"
+        };
+        <div>
+            <span style="color:#ffe066;font-weight:bold;font-size:15px;">@GetString(outcomeKey)</span>
+        </div>
+    }
+</div>
