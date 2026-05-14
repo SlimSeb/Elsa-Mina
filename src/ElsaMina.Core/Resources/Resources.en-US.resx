@@ -1178,6 +1178,27 @@
     <data name="streak_help" xml:space="preserve">
         <value>Usage: streak [username] — shows the daily activity streak for a user.</value>
     </data>
+    <data name="streak_leaderboard_title" xml:space="preserve">
+        <value>Streak leaderboard — {0}</value>
+    </data>
+    <data name="streak_leaderboard_user" xml:space="preserve">
+        <value>User</value>
+    </data>
+    <data name="streak_leaderboard_current" xml:space="preserve">
+        <value>Current streak</value>
+    </data>
+    <data name="streak_leaderboard_longest" xml:space="preserve">
+        <value>Longest streak</value>
+    </data>
+    <data name="streak_leaderboard_no_data" xml:space="preserve">
+        <value>No streak data found for this room.</value>
+    </data>
+    <data name="streak_leaderboard_error" xml:space="preserve">
+        <value>Could not retrieve streak leaderboard.</value>
+    </data>
+    <data name="streak_leaderboard_help" xml:space="preserve">
+        <value>Usage: streakboard — shows the top daily activity streaks in this room.</value>
+    </data>
     <data name="slots_description_bulbasaur" xml:space="preserve">
         <value>a plant</value>
     </data>

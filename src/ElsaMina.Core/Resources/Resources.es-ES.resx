@@ -1178,6 +1178,27 @@
     <data name="streak_help" xml:space="preserve">
         <value>Uso: streak [usuario] — muestra la racha de actividad diaria de un usuario.</value>
     </data>
+    <data name="streak_leaderboard_title" xml:space="preserve">
+        <value>Clasificación de rachas — {0}</value>
+    </data>
+    <data name="streak_leaderboard_user" xml:space="preserve">
+        <value>Usuario</value>
+    </data>
+    <data name="streak_leaderboard_current" xml:space="preserve">
+        <value>Racha actual</value>
+    </data>
+    <data name="streak_leaderboard_longest" xml:space="preserve">
+        <value>Racha más larga</value>
+    </data>
+    <data name="streak_leaderboard_no_data" xml:space="preserve">
+        <value>No se encontraron datos de racha para esta sala.</value>
+    </data>
+    <data name="streak_leaderboard_error" xml:space="preserve">
+        <value>No se pudo obtener la clasificación de rachas.</value>
+    </data>
+    <data name="streak_leaderboard_help" xml:space="preserve">
+        <value>Uso: streakboard — muestra las mejores rachas de actividad diaria en esta sala.</value>
+    </data>
     <data name="slots_description_bulbasaur" xml:space="preserve">
         <value>una planta</value>
     </data>

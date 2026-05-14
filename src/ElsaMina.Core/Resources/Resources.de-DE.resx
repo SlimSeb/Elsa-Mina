@@ -1173,6 +1173,27 @@
     <data name="streak_help" xml:space="preserve">
         <value>Verwendung: streak [Nutzername] — zeigt die tägliche Aktivitätsserie eines Nutzers.</value>
     </data>
+    <data name="streak_leaderboard_title" xml:space="preserve">
+        <value>Serien-Rangliste — {0}</value>
+    </data>
+    <data name="streak_leaderboard_user" xml:space="preserve">
+        <value>Nutzer</value>
+    </data>
+    <data name="streak_leaderboard_current" xml:space="preserve">
+        <value>Aktuelle Serie</value>
+    </data>
+    <data name="streak_leaderboard_longest" xml:space="preserve">
+        <value>Längste Serie</value>
+    </data>
+    <data name="streak_leaderboard_no_data" xml:space="preserve">
+        <value>Keine Seriendaten für diesen Raum gefunden.</value>
+    </data>
+    <data name="streak_leaderboard_error" xml:space="preserve">
+        <value>Serien-Rangliste konnte nicht abgerufen werden.</value>
+    </data>
+    <data name="streak_leaderboard_help" xml:space="preserve">
+        <value>Verwendung: streakboard — zeigt die besten täglichen Aktivitätsserien in diesem Raum.</value>
+    </data>
     <data name="slots_description_bulbasaur" xml:space="preserve">
         <value>eine Pflanze</value>
     </data>

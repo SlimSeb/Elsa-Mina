@@ -225,6 +225,7 @@ public class CommandModule : Module
         builder.RegisterCommand<TopPlayTimesCommand>();
         builder.RegisterCommand<PlayTimeCommand>();
         builder.RegisterCommand<StreakCommand>();
+        builder.RegisterCommand<StreakLeaderboardCommand>();
         builder.RegisterCommand<CurrentLadderTrackersCommand>();
         builder.RegisterCommand<GuessingGameAnswerCommand>();
         builder.RegisterCommand<TopTournamentPlayersCommand>();
