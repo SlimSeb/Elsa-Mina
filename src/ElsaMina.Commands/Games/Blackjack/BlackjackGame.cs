@@ -9,9 +9,11 @@ namespace ElsaMina.Commands.Games.Blackjack;
 
 public class BlackjackGame
 {
+    private static int _nextGameId;
     private readonly List<BlackjackCard> _deck;
     private readonly ITemplatesManager _templatesManager;
     private readonly IConfiguration _configuration;
+    private readonly int _gameId;
 
     public BlackjackHand PlayerHand { get; } = new();
     public BlackjackHand DealerHand { get; } = new();
@@ -25,6 +27,7 @@ public class BlackjackGame
         _templatesManager = templatesManager;
         _configuration = configuration;
         _deck = CreateShuffledDeck(randomService);
+        _gameId = _nextGameId++;
 
         PlayerHand.Add(DrawCard());
         DealerHand.Add(DrawCard());
@@ -99,7 +102,7 @@ public class BlackjackGame
                 RoomId = Context.RoomId
             });
 
-        var htmlId = $"bj-{Context.RoomId}-{Player.UserId}";
+        var htmlId = $"bj-{Context.RoomId}-{Player.UserId}-{_gameId}";
         Context.SendUpdatableHtml(htmlId, template.RemoveNewlines(), true);
     }
 
