@@ -103,7 +103,7 @@ public class BlackjackGame
             });
 
         var htmlId = $"bj-{Context.RoomId}-{Player.UserId}-{_gameId}";
-        Context.SendUpdatableHtml(htmlId, template.RemoveNewlines(), true);
+        Context.SendPrivateUpdatableHtml(Player.UserId, Context.RoomId, htmlId, template.RemoveNewlines(), true);
     }
 
     private BlackjackCard DrawCard()

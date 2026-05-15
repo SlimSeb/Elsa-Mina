@@ -1,19 +1,11 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Blackjack;
 
 [NamedCommand("bjhit")]
 public class BlackjackHitCommand : Command
 {
-    private readonly IRoomsManager _roomsManager;
-
-    public BlackjackHitCommand(IRoomsManager roomsManager)
-    {
-        _roomsManager = roomsManager;
-    }
-
     public override bool IsPrivateMessageOnly => true;
     public override bool IsAllowedInPrivateMessage => true;
 

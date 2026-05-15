@@ -47,7 +47,7 @@ public class PmContext : Context
 
     public override void SendUpdatableHtml(string htmlId, string html, bool isChanging)
     {
-        var command = isChanging ? "pmchangeuhtml" : "pmuhtml";
+        var command = isChanging ? "pmuhtmlchange" : "pmuhtml";
         Bot.Say(RoomId, $"/{command} {Sender.UserId}, {htmlId}, {html}");
     }
 
