@@ -13,6 +13,7 @@
   </Folder>
   <Folder Name="/Scripts/">
     <File Path="scripts\build.sh" />
+    <File Path="scripts\clear-bucket.sh" />
     <File Path="scripts\full_publish.sh" />
     <File Path="scripts\publish.sh" />
     <File Path="scripts\shared.sh" />

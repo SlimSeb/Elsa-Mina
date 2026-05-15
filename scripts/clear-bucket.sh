@@ -9,7 +9,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
 fi
 
 read_config() {
-    python3 -c "import json,sys; print(json.load(open('$CONFIG_FILE')).get('$1',''))"
+    tail -c +4 "$CONFIG_FILE" | grep -v '^\s*//' | jq -r ".$1 // empty"
 }
 
 BUCKET=$(read_config S3BucketName)
