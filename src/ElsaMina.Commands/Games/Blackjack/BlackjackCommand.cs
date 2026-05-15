@@ -19,7 +19,8 @@ public class BlackjackCommand : Command
         _dependencyContainerService = dependencyContainerService;
     }
 
-    public override Rank RequiredRank => Rank.Regular;
+    public override Rank RequiredRank => Rank.Voiced;
+    public override bool IsAllowedInPrivateMessage => true;
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
