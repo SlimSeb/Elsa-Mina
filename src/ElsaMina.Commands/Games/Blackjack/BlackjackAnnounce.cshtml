@@ -1,0 +1,12 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Blackjack.BlackjackViewModel>
+
+<div>
+    <h3>@GetString("bj_panel_title")</h3>
+    <span>@GetString("bj_panel_waiting_for_player")</span><br/><br/>
+    <button
+        class="button"
+        name="send"
+        value="/botmsg @Model.BotName,@(Model.Trigger)bjjoin @Model.RoomId">
+        @GetString("bj_panel_deal")
+    </button>
+</div>

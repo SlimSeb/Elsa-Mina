@@ -1,5 +1,6 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
@@ -7,32 +8,66 @@ using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Games.Blackjack;
 
-public class BlackjackGame
+public class BlackjackGame : Game, IBlackjackGame
 {
-    private static int _nextGameId;
-    private readonly List<BlackjackCard> _deck;
+    private static int NextGameId { get; set; } = 1;
+
+    private readonly IRandomService _randomService;
     private readonly ITemplatesManager _templatesManager;
     private readonly IConfiguration _configuration;
-    private readonly int _gameId;
 
-    public BlackjackHand PlayerHand { get; } = new();
-    public BlackjackHand DealerHand { get; } = new();
-    public BlackjackGameState State { get; private set; } = BlackjackGameState.PlayerTurn;
-    public IContext Context { get; set; }
-    public IUser Player { get; set; }
+    private readonly int _gameId;
+    private List<BlackjackCard> _deck;
 
     public BlackjackGame(IRandomService randomService, ITemplatesManager templatesManager,
         IConfiguration configuration)
     {
+        _randomService = randomService;
         _templatesManager = templatesManager;
         _configuration = configuration;
-        _deck = CreateShuffledDeck(randomService);
-        _gameId = _nextGameId++;
+        _gameId = NextGameId++;
+    }
+
+    public override string Identifier => nameof(BlackjackGame);
+
+    public BlackjackHand PlayerHand { get; private set; }
+    public BlackjackHand DealerHand { get; private set; }
+    public BlackjackGameState State { get; private set; }
+    public bool IsPrivateMode { get; set; }
+    public string TargetRoomId { get; set; }
+    public string TargetUserId { get; set; }
+    public IContext Context { get; set; }
+    public IUser Owner { get; set; }
+
+    private string EffectiveRoomId => IsPrivateMode ? TargetRoomId : Context.RoomId;
+    private string GameIdentifier => $"bj-{EffectiveRoomId}-{_gameId}";
+
+    public async Task DisplayAnnounce()
+    {
+        var template = await _templatesManager.GetTemplateAsync("Games/Blackjack/BlackjackAnnounce",
+            new BlackjackViewModel
+            {
+                Culture = Context.Culture,
+                BotName = _configuration.Name,
+                Trigger = _configuration.Trigger,
+                RoomId = EffectiveRoomId
+            });
+
+        Context.SendUpdatableHtml(GameIdentifier, template.RemoveNewlines(), false);
+    }
+
+    public async Task StartGame()
+    {
+        PlayerHand = new BlackjackHand();
+        DealerHand = new BlackjackHand();
+        _deck = CreateShuffledDeck();
 
         PlayerHand.Add(DrawCard());
         DealerHand.Add(DrawCard());
         PlayerHand.Add(DrawCard());
         DealerHand.Add(DrawCard());
+
+        OnStart();
 
         if (PlayerHand.IsBlackjack && DealerHand.IsBlackjack)
         {
@@ -42,27 +77,44 @@ public class BlackjackGame
         {
             State = BlackjackGameState.PlayerWon;
         }
+        else
+        {
+            State = BlackjackGameState.PlayerTurn;
+        }
+
+        await DisplayBoard();
+
+        if (State != BlackjackGameState.PlayerTurn)
+        {
+            OnEnd();
+        }
     }
 
-    public async Task Hit()
+    public async Task Hit(IUser user)
     {
-        if (State != BlackjackGameState.PlayerTurn)
+        if (!IsStarted || State != BlackjackGameState.PlayerTurn || user.UserId != Owner.UserId)
         {
             return;
         }
 
         PlayerHand.Add(DrawCard());
+
         if (PlayerHand.IsBust)
         {
             State = BlackjackGameState.PlayerBust;
         }
 
-        await DisplayTableAsync();
+        await DisplayBoard();
+
+        if (State != BlackjackGameState.PlayerTurn)
+        {
+            OnEnd();
+        }
     }
 
-    public async Task Stand()
+    public async Task Stand(IUser user)
     {
-        if (State != BlackjackGameState.PlayerTurn)
+        if (!IsStarted || State != BlackjackGameState.PlayerTurn || user.UserId != Owner.UserId)
         {
             return;
         }
@@ -85,12 +137,17 @@ public class BlackjackGame
             State = BlackjackGameState.Tie;
         }
 
-        await DisplayTableAsync();
+        await DisplayBoard();
+        OnEnd();
     }
 
-    public bool IsOver => State != BlackjackGameState.PlayerTurn;
+    public async Task CancelAsync()
+    {
+        OnEnd();
+        await DisplayBoard();
+    }
 
-    public async Task DisplayTableAsync()
+    private async Task DisplayBoard()
     {
         var template = await _templatesManager.GetTemplateAsync("Games/Blackjack/BlackjackTable",
             new BlackjackViewModel
@@ -99,21 +156,21 @@ public class BlackjackGame
                 Game = this,
                 BotName = _configuration.Name,
                 Trigger = _configuration.Trigger,
-                RoomId = Context.RoomId
+                RoomId = EffectiveRoomId
             });
 
-        var htmlId = $"bj-{Context.RoomId}-{Player.UserId}-{_gameId}";
-        Context.SendPrivateUpdatableHtml(Player.UserId, Context.RoomId, htmlId, template.RemoveNewlines(), true);
+        if (IsPrivateMode)
+        {
+            Context.SendPrivateUpdatableHtml(TargetUserId, TargetRoomId, GameIdentifier,
+                template.RemoveNewlines(), true);
+        }
+        else
+        {
+            Context.SendUpdatableHtml(GameIdentifier, template.RemoveNewlines(), true);
+        }
     }
 
-    private BlackjackCard DrawCard()
-    {
-        var card = _deck[^1];
-        _deck.RemoveAt(_deck.Count - 1);
-        return card;
-    }
-
-    private static List<BlackjackCard> CreateShuffledDeck(IRandomService randomService)
+    private List<BlackjackCard> CreateShuffledDeck()
     {
         var deck = new List<BlackjackCard>(52);
         foreach (var suit in BlackjackConstants.SUITS)
@@ -123,7 +180,14 @@ public class BlackjackGame
                 deck.Add(new BlackjackCard(rank, suit));
             }
         }
-        randomService.ShuffleInPlace(deck);
+        _randomService.ShuffleInPlace(deck);
         return deck;
+    }
+
+    private BlackjackCard DrawCard()
+    {
+        var card = _deck[^1];
+        _deck.RemoveAt(_deck.Count - 1);
+        return card;
     }
 }

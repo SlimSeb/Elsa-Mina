@@ -1,11 +1,21 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Blackjack;
 
 [NamedCommand("bjhit")]
 public class BlackjackHitCommand : Command
 {
+    private readonly IRoomsManager _roomsManager;
+    private readonly IBlackjackGameManager _gameManager;
+
+    public BlackjackHitCommand(IRoomsManager roomsManager, IBlackjackGameManager gameManager)
+    {
+        _roomsManager = roomsManager;
+        _gameManager = gameManager;
+    }
+
     public override bool IsPrivateMessageOnly => true;
     public override bool IsAllowedInPrivateMessage => true;
 
@@ -17,17 +27,21 @@ public class BlackjackHitCommand : Command
             return;
         }
 
-        var key = BlackjackCommand.GameKey(roomId, context.Sender.UserId);
-        if (!BlackjackCommand.ACTIVE_GAMES.TryGetValue(key, out var game))
+        var game = _gameManager.GetGame(roomId, context.Sender.UserId)
+            ?? _roomsManager.GetRoom(roomId)?.Game as IBlackjackGame;
+
+        if (game == null)
         {
             return;
         }
 
-        await game.Hit();
-
-        if (game.IsOver)
+        if (game.IsPrivateMode)
         {
-            BlackjackCommand.ACTIVE_GAMES.TryRemove(key, out _);
+            var room = _roomsManager.GetRoom(roomId);
+            if (room != null) context.Culture = room.Culture;
+            game.Context = context;
         }
+
+        await game.Hit(context.Sender);
     }
 }

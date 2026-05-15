@@ -2656,4 +2656,31 @@
     <data name="bj_game_already_active" xml:space="preserve">
         <value>Tu as déjà une partie de blackjack en cours.</value>
     </data>
+    <data name="bj_panel_title" xml:space="preserve">
+        <value>Blackjack</value>
+    </data>
+    <data name="bj_panel_waiting_for_player" xml:space="preserve">
+        <value>Une partie attend un joueur !</value>
+    </data>
+    <data name="bj_panel_deal" xml:space="preserve">
+        <value>Distribuer</value>
+    </data>
+    <data name="bj_pm_missing_room" xml:space="preserve">
+        <value>Veuillez préciser un salon. Utilisation : -blackjack nomsalon</value>
+    </data>
+    <data name="bj_pm_invalid_room" xml:space="preserve">
+        <value>Le salon spécifié est introuvable ou le bot n'y est pas.</value>
+    </data>
+    <data name="bj_game_already_running" xml:space="preserve">
+        <value>Une autre partie est déjà en cours dans ce salon.</value>
+    </data>
+    <data name="bj_game_no_game" xml:space="preserve">
+        <value>Aucune partie de blackjack n'est en cours.</value>
+    </data>
+    <data name="bj_game_not_owner" xml:space="preserve">
+        <value>Seul le joueur qui a lancé la partie peut faire cela.</value>
+    </data>
+    <data name="bj_game_cancelled" xml:space="preserve">
+        <value>La partie de blackjack a été annulée.</value>
+    </data>
 </root>

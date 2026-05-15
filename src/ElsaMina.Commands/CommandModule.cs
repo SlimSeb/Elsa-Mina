@@ -152,9 +152,12 @@ public class CommandModule : Module
         builder.RegisterCommand<SaladCommand>();
         builder.RegisterCommand<SetJoinPhraseCommand>();
         builder.RegisterCommand<BlackjackCommand>();
+        builder.RegisterCommand<BlackjackJoinCommand>();
         builder.RegisterCommand<BlackjackHitCommand>();
         builder.RegisterCommand<BlackjackStandCommand>();
+        builder.RegisterCommand<BlackjackEndCommand>();
         builder.RegisterType<BlackjackGame>().AsSelf();
+        builder.RegisterType<BlackjackGameManager>().As<IBlackjackGameManager>().SingleInstance();
         builder.RegisterCommand<CreateConnectFourCommand>();
         builder.RegisterCommand<JoinConnectFourCommand>();
         builder.RegisterCommand<PlayConnectFourCommand>();
