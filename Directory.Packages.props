@@ -3,22 +3,15 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <!-- AWS -->
     <PackageVersion Include="AWSSDK.S3" Version="4.0.23" />
-    <!-- Autofac -->
     <PackageVersion Include="Autofac" Version="9.1.0" />
-    <!-- Coverage -->
     <PackageVersion Include="coverlet.collector" Version="10.0.0" />
     <PackageVersion Include="coverlet.msbuild" Version="10.0.0" />
-    <!-- Google APIs -->
     <PackageVersion Include="Google.Apis.Drive.v3" Version="1.74.0.4135" />
     <PackageVersion Include="Google.Apis.Sheets.v4" Version="1.74.0.4061" />
-    <!-- Grafana / OpenTelemetry -->
     <PackageVersion Include="GitVersion.MsBuild" Version="6.7.0" />
     <PackageVersion Include="Grafana.OpenTelemetry" Version="1.7.0" />
-    <!-- JetBrains -->
     <PackageVersion Include="JetBrains.Annotations" Version="2025.2.4" />
-    <!-- Microsoft / EF Core -->
     <PackageVersion Include="Lusamine.GTranslate" Version="1.1.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.3.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
@@ -28,27 +21,20 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.8" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
-    <!-- Misc -->
     <PackageVersion Include="NCalcSync" Version="5.12.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
-    <!-- NSubstitute / NUnit -->
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="NUnit" Version="4.6.0" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.13.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
-    <!-- RazorLight -->
     <PackageVersion Include="RazorLight" Version="2.3.1" />
-    <!-- Serilog -->
     <PackageVersion Include="Serilog.Enrichers.OpenTelemetry" Version="1.0.1" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="Serilog.Sinks.Grafana.Loki" Version="8.3.2" />
-    <!-- SixLabors -->
     <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
-    <!-- WebSocket -->
     <PackageVersion Include="Websocket.Client" Version="5.4.0" />
-    <!-- Damage calc -->
     <PackageVersion Include="Lusamine.DamageCalc" Version="1.1.1" />
   </ItemGroup>
 </Project>

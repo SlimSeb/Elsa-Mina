@@ -39,6 +39,8 @@ public class BlackjackGame : Game, IBlackjackGame
     public IContext Context { get; set; }
     public IUser Owner { get; set; }
 
+    public bool IsOver => IsEnded || State != BlackjackGameState.PlayerTurn;
+
     private string EffectiveRoomId => IsPrivateMode ? TargetRoomId : Context.RoomId;
     private string GameIdentifier => $"bj-{EffectiveRoomId}-{_gameId}";
 

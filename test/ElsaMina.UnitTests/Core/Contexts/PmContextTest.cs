@@ -100,7 +100,7 @@ public class PmContextTests
         context.SendUpdatableHtml(htmlId, htmlContent, true);
 
         // Assert
-        _bot.Received().Say("TestRoom", $"/pmchangeuhtml {_sender.UserId}, {htmlId}, {htmlContent}");
+        _bot.Received().Say("TestRoom", $"/pmuhtmlchange {_sender.UserId}, {htmlId}, {htmlContent}");
     }
 
     [Test]
