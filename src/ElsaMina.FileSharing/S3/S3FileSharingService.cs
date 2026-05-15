@@ -53,9 +53,11 @@ public class S3FileSharingService : IFileSharingService
             InputStream = fileContent,
             ContentType = mimeType,
             ChecksumSHA256 = sha256,
-            CannedACL = S3CannedACL.PublicRead
+            CannedACL = S3CannedACL.PublicRead,
+            TagSet = [new Tag { Key = "expiry", Value = "7d" }]
         };
         request.Metadata.Add("description", description);
+        request.Headers.Expires = DateTime.UtcNow.AddDays(7);
 
         var response = await _client.PutObjectAsync(request, cancellationToken);
 
