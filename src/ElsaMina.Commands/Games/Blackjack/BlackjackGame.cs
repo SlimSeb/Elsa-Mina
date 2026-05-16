@@ -10,6 +10,8 @@ namespace ElsaMina.Commands.Games.Blackjack;
 
 public class BlackjackGame : Game, IBlackjackGame
 {
+    private static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(20);
+
     private static int NextGameId { get; set; } = 1;
 
     private readonly IRandomService _randomService;
@@ -18,6 +20,7 @@ public class BlackjackGame : Game, IBlackjackGame
 
     private readonly int _gameId;
     private List<BlackjackCard> _deck;
+    private PeriodicTimerRunner _timeoutTimer;
 
     public BlackjackGame(IRandomService randomService, ITemplatesManager templatesManager,
         IConfiguration configuration)
@@ -90,6 +93,10 @@ public class BlackjackGame : Game, IBlackjackGame
         {
             OnEnd();
         }
+        else
+        {
+            StartTimeoutTimer();
+        }
     }
 
     public async Task Hit(IUser user)
@@ -110,7 +117,12 @@ public class BlackjackGame : Game, IBlackjackGame
 
         if (State != BlackjackGameState.PlayerTurn)
         {
+            CancelTimeoutTimer();
             OnEnd();
+        }
+        else
+        {
+            RestartTimeoutTimer();
         }
     }
 
@@ -120,6 +132,8 @@ public class BlackjackGame : Game, IBlackjackGame
         {
             return;
         }
+
+        CancelTimeoutTimer();
 
         while (DealerHand.Value < BlackjackConstants.DEALER_STAND_THRESHOLD)
         {
@@ -145,8 +159,35 @@ public class BlackjackGame : Game, IBlackjackGame
 
     public async Task CancelAsync()
     {
+        CancelTimeoutTimer();
         OnEnd();
         await DisplayBoard();
+    }
+
+    private void StartTimeoutTimer()
+    {
+        _timeoutTimer = new PeriodicTimerRunner(TIMEOUT, HandleTimeoutAsync, runOnce: true);
+        _timeoutTimer.Start();
+    }
+
+    private void RestartTimeoutTimer()
+    {
+        _timeoutTimer?.Restart();
+    }
+
+    private void CancelTimeoutTimer()
+    {
+        _timeoutTimer?.Dispose();
+        _timeoutTimer = null;
+    }
+
+    private async Task HandleTimeoutAsync()
+    {
+        if (!IsStarted || State != BlackjackGameState.PlayerTurn)
+        {
+            return;
+        }
+        await CancelAsync();
     }
 
     private async Task DisplayBoard()
