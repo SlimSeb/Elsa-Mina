@@ -2566,4 +2566,10 @@
     <data name="salad_too_many_ingredients" xml:space="preserve">
         <value>Muitos ingredientes solicitados.</value>
     </data>
+    <data name="ship_help" xml:space="preserve">
+        <value>Calcula a compatibilidade entre dois usuários. Uso: -ship &lt;user1&gt;, &lt;user2&gt;</value>
+    </data>
+    <data name="ship_result" xml:space="preserve">
+        <value>💘 {0} &amp; {1} — compatibilidade: {2}% {3}</value>
+    </data>
 </root>

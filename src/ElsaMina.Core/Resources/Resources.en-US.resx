@@ -2687,4 +2687,10 @@
     <data name="bj_game_cancelled" xml:space="preserve">
         <value>The blackjack game has been cancelled.</value>
     </data>
+    <data name="ship_help" xml:space="preserve">
+        <value>Calculates the compatibility between two users. Usage: -ship &lt;user1&gt;, &lt;user2&gt;</value>
+    </data>
+    <data name="ship_result" xml:space="preserve">
+        <value>💘 {0} &amp; {1} — compatibility: {2}% {3}</value>
+    </data>
 </root>

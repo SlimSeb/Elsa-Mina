@@ -225,6 +225,7 @@ public class CommandModule : Module
         builder.RegisterCommand<ArcadeAddCommand>();
         builder.RegisterCommand<SlotsFunCommand>();
         builder.RegisterCommand<TimerCommand>();
+        builder.RegisterCommand<ShipCommand>();
         builder.RegisterCommand<RunningCommands>();
         builder.RegisterCommand<CancelRunningCommand>();
         builder.RegisterCommand<SearchCommand>();
