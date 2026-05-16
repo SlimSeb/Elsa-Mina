@@ -21,6 +21,15 @@
     <File Path="scripts\restore.sh" />
     <File Path="scripts\test.sh" />
   </Folder>
+  <Folder Name="/Scripts/Build/">
+    <File Path="scripts\build.sh" />
+    <File Path="scripts\full_publish.sh" />
+    <File Path="scripts\publish.sh" />
+    <File Path="scripts\restart_remote.sh" />
+    <File Path="scripts\restore.sh" />
+    <File Path="scripts\shared.sh" />
+    <File Path="scripts\test.sh" />
+  </Folder>
   <Folder Name="/Scripts/DataMigrationScripts/">
     <File Path="scripts\import-wintours.py" />
     <File Path="scripts\import_teams.py" />
@@ -29,6 +38,10 @@
     <File Path="scripts\normalize_arcade_level_ids.py" />
     <File Path="scripts\sync_room_teams.py" />
     <File Path="scripts\update_team_badges.py" />
+  </Folder>
+  <Folder Name="/Scripts/S3/">
+    <File Path="scripts\clear-bucket.sh" />
+    <File Path="scripts\set-bucket-lifecycle.sh" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src\ElsaMina.Commands\ElsaMina.Commands.csproj" />
