@@ -1,6 +1,7 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Misc;
 
@@ -31,11 +32,10 @@ public class ShipCommand : Command
 
     private static int ComputeScore(string nameA, string nameB)
     {
-        var combined = string.Concat(
-            nameA.ToLowerInvariant().Where(char.IsLetterOrDigit),
-            nameB.ToLowerInvariant().Where(char.IsLetterOrDigit));
-
-        var hash = combined.Aggregate(5381, (current, character) => current * 33 ^ character);
+        var charArray = (nameA + nameB).ToLowerAlphaNum().ToCharArray();
+        charArray.Sort();
+        var combined = new string(charArray).ToMd5Digest();
+        var hash = combined.Aggregate(0, (current, character) => current + character);
         return Math.Abs(hash) % 101;
     }
 
