@@ -11,11 +11,11 @@ public class ChangelogCommand : Command
     private const int DEFAULT_COMMIT_COUNT = 5;
     private const int MAX_COMMIT_COUNT = 20;
 
-    private static readonly string CHANGELOG_FILE_PATH =
-        Path.Combine(AppContext.BaseDirectory, "changelog.txt");
-
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Voiced;
+
+    protected virtual string ChangelogFilePath =>
+        Path.Combine(AppContext.BaseDirectory, "changelog.txt");
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
@@ -44,14 +44,14 @@ public class ChangelogCommand : Command
         }
     }
 
-    private static async Task<string> GetChangelogAsync(int count, CancellationToken cancellationToken)
+    private async Task<string> GetChangelogAsync(int count, CancellationToken cancellationToken)
     {
-        if (!File.Exists(CHANGELOG_FILE_PATH))
+        if (!File.Exists(ChangelogFilePath))
         {
             throw new InvalidOperationException("changelog.txt not found in output directory");
         }
 
-        var lines = await File.ReadAllLinesAsync(CHANGELOG_FILE_PATH, cancellationToken);
+        var lines = await File.ReadAllLinesAsync(ChangelogFilePath, cancellationToken);
         return string.Join('\n', lines.Take(count));
     }
 }
