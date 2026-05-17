@@ -53,6 +53,14 @@ public class LadderTrackerManager : ILadderTrackerManager
             .ToImmutableHashSet();
     }
 
+    public IReadOnlyCollection<LadderTracking> GetAllTrackings()
+    {
+        lock (_lock)
+        {
+            return _trackedBattles.Keys.ToImmutableHashSet();
+        }
+    }
+
     public void StartTracking(string roomId, string format, string prefix)
     {
         if (string.IsNullOrWhiteSpace(roomId) || string.IsNullOrWhiteSpace(format))

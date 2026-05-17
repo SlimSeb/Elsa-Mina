@@ -2689,4 +2689,13 @@
     <data name="ship_result" xml:space="preserve">
         <value>💘 {0} &amp; {1} — compatibilité : {2}% {3}</value>
     </data>
+    <data name="ladder_graph_help" xml:space="preserve">
+        <value>Génère un graphique d'historique ELO pour un joueur. Utilisation : -ladderhistory &lt;format&gt;, &lt;pseudo&gt;</value>
+    </data>
+    <data name="ladder_graph_not_enough_data" xml:space="preserve">
+        <value>Pas assez d'historique ELO pour {0}. Les données sont enregistrées toutes les heures tant que le tracker est actif.</value>
+    </data>
+    <data name="ladder_graph_upload_failed" xml:space="preserve">
+        <value>Échec de l'envoi du graphique. Veuillez réessayer plus tard.</value>
+    </data>
 </root>

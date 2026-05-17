@@ -66,6 +66,7 @@ using ElsaMina.Commands.RoomDashboard;
 using ElsaMina.Commands.Shop;
 using ElsaMina.Commands.Showdown.BattleTracker;
 using ElsaMina.Commands.Showdown.Ladder;
+using ElsaMina.Commands.Showdown.Ladder.EloHistory;
 using ElsaMina.Commands.Showdown.Ranking;
 using ElsaMina.Commands.Showdown.Searching;
 using ElsaMina.Commands.Showdown.SmogonStats;
@@ -372,6 +373,11 @@ public class CommandModule : Module
         {
             e.Instance.Initialize().Wait(); // Risque d'ANR mais obligé pour garantir la bonne initialisation...
         });
+        builder.RegisterType<EloHistoryService>().As<IEloHistoryService>().SingleInstance().OnActivating(e =>
+        {
+            e.Instance.Start();
+        });
+        builder.RegisterCommand<LadderGraphCommand>();
         builder.RegisterType<LagTestManager>().As<ILagTestManager>().SingleInstance();
         builder.RegisterType<ArcadeInscriptionsManager>().As<IArcadeInscriptionsManager>().SingleInstance();
         builder.RegisterType<ArcadeEventsService>().As<IArcadeEventsService>().SingleInstance();

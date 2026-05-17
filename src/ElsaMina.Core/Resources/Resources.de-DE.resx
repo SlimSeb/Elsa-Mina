@@ -2527,4 +2527,13 @@
     <data name="ship_result" xml:space="preserve">
         <value>💘 {0} &amp; {1} — Kompatibilität: {2}% {3}</value>
     </data>
+    <data name="ladder_graph_help" xml:space="preserve">
+        <value>Erstellt ein ELO-Verlaufsdiagramm für einen Spieler. Nutzung: -ladderhistory &lt;Format&gt;, &lt;Benutzername&gt;</value>
+    </data>
+    <data name="ladder_graph_not_enough_data" xml:space="preserve">
+        <value>Nicht genug ELO-Verlauf für {0}. Daten werden stündlich aufgezeichnet, solange der Tracker aktiv ist.</value>
+    </data>
+    <data name="ladder_graph_upload_failed" xml:space="preserve">
+        <value>Hochladen des Diagramms fehlgeschlagen. Bitte später erneut versuchen.</value>
+    </data>
 </root>

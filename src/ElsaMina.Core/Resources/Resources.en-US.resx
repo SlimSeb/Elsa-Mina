@@ -2693,4 +2693,13 @@
     <data name="ship_result" xml:space="preserve">
         <value>💘 {0} &amp; {1} — compatibility: {2}% {3}</value>
     </data>
+    <data name="ladder_graph_help" xml:space="preserve">
+        <value>Generates an ELO history graph for a player. Usage: -ladderhistory &lt;format&gt;, &lt;username&gt;</value>
+    </data>
+    <data name="ladder_graph_not_enough_data" xml:space="preserve">
+        <value>Not enough ELO history for {0}. Data is recorded hourly while the ladder tracker is active.</value>
+    </data>
+    <data name="ladder_graph_upload_failed" xml:space="preserve">
+        <value>Failed to upload the graph. Please try again later.</value>
+    </data>
 </root>
