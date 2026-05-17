@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Text;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
@@ -12,6 +10,9 @@ public class ChangelogCommand : Command
 {
     private const int DEFAULT_COMMIT_COUNT = 5;
     private const int MAX_COMMIT_COUNT = 20;
+
+    private static readonly string CHANGELOG_FILE_PATH =
+        Path.Combine(AppContext.BaseDirectory, "changelog.txt");
 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Voiced;
@@ -27,7 +28,7 @@ public class ChangelogCommand : Command
 
         try
         {
-            var log = await GetGitLogAsync(count, cancellationToken);
+            var log = await GetChangelogAsync(count, cancellationToken);
             if (string.IsNullOrWhiteSpace(log))
             {
                 context.ReplyLocalizedMessage("changelog_no_commits");
@@ -43,30 +44,14 @@ public class ChangelogCommand : Command
         }
     }
 
-    private static async Task<string> GetGitLogAsync(int count, CancellationToken cancellationToken)
+    private static async Task<string> GetChangelogAsync(int count, CancellationToken cancellationToken)
     {
-        var startInfo = new ProcessStartInfo("git",
-            $"log --pretty=format:\"%h %ad %an: %s\" --date=short -n {count}")
+        if (!File.Exists(CHANGELOG_FILE_PATH))
         {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using var process = new Process();
-        process.StartInfo = startInfo;
-        process.Start();
-
-        var output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
-        await process.WaitForExitAsync(cancellationToken);
-
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException(
-                $"git log exited with code {process.ExitCode}");
+            throw new InvalidOperationException("changelog.txt not found in output directory");
         }
 
-        return output.TrimEnd();
+        var lines = await File.ReadAllLinesAsync(CHANGELOG_FILE_PATH, cancellationToken);
+        return string.Join('\n', lines.Take(count));
     }
 }

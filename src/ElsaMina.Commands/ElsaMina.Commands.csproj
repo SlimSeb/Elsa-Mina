@@ -8,13 +8,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ElsaMina.Core\ElsaMina.Core.csproj"/>
+        <ProjectReference Include="..\ElsaMina.Core\ElsaMina.Core.csproj" />
         <ProjectReference Include="..\ElsaMina.Logging\ElsaMina.Logging.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Lusamine.GTranslate" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" />
+        <PackageReference Include="ScottPlot" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,7 +23,7 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
             <Link>Templates\%(RecursiveDir)%(Filename)%(Extension)</Link>
         </Content>
-        <Content Remove="bin\**"/>
+        <Content Remove="bin\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -30,5 +31,18 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
+
+    <Target Name="GenerateChangelog" BeforeTargets="BeforeBuild;GetCopyToOutputDirectoryItems">
+        <Exec Command="git log --pretty=format:&quot;%h %ad %an: %s&quot; --date=short -n 20 &gt; &quot;$(IntermediateOutputPath)changelog.txt&quot;"
+              WorkingDirectory="$(MSBuildThisFileDirectory)"
+              IgnoreExitCode="true" />
+        <ItemGroup>
+            <None Include="$(IntermediateOutputPath)changelog.txt"
+                  Condition="Exists('$(IntermediateOutputPath)changelog.txt')">
+                <Link>changelog.txt</Link>
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            </None>
+        </ItemGroup>
+    </Target>
 
 </Project>
