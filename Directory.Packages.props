@@ -29,6 +29,7 @@
     <PackageVersion Include="NUnit.Analyzers" Version="4.13.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
     <PackageVersion Include="RazorLight" Version="2.3.1" />
+    <PackageVersion Include="ScottPlot" Version="5.1.58" />
     <PackageVersion Include="Serilog.Enrichers.OpenTelemetry" Version="1.0.1" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
