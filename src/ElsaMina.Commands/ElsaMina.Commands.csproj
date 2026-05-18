@@ -32,19 +32,21 @@
         </Content>
     </ItemGroup>
 
-    <Target Name="GenerateChangelog" BeforeTargets="BeforeBuild;GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+        <Content Include="$(IntermediateOutputPath)changelog.txt"
+                 Condition="'$(IntermediateOutputPath)' != ''">
+            <Link>changelog.txt</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
+    </ItemGroup>
+
+    <Target Name="GenerateChangelog"
+            BeforeTargets="BeforeBuild;PrepareForPublish;GetCopyToOutputDirectoryItems">
         <MakeDir Directories="$(IntermediateOutputPath)" />
         <Exec Command="git log --pretty=format:&quot;%h %ad %an: %s&quot; --date=short -n 20 &gt; &quot;$(IntermediateOutputPath)changelog.txt&quot;"
               WorkingDirectory="$(MSBuildThisFileDirectory)"
               IgnoreExitCode="true" />
-        <ItemGroup>
-            <None Include="$(IntermediateOutputPath)changelog.txt"
-                  Condition="Exists('$(IntermediateOutputPath)changelog.txt')">
-                <Link>changelog.txt</Link>
-                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-            </None>
-        </ItemGroup>
     </Target>
 
 </Project>
