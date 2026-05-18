@@ -1,12 +1,11 @@
-using System.Net;
-using ElsaMina.Commands.Misc.Pairings;
+using ElsaMina.Commands.Misc;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using NSubstitute;
 
-namespace ElsaMina.UnitTests.Commands.Misc.Pairings;
+namespace ElsaMina.UnitTests.Commands.Misc;
 
 public class PairingsCommandTest
 {

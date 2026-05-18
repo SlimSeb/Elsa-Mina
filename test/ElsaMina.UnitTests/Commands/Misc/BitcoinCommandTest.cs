@@ -1,10 +1,10 @@
-using ElsaMina.Commands.Misc.Bitcoin;
+using ElsaMina.Commands.Misc;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Http;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
-namespace ElsaMina.UnitTests.Commands.Misc.Bitcoin;
+namespace ElsaMina.UnitTests.Commands.Misc;
 
 public class BitcoinCommandTests
 {

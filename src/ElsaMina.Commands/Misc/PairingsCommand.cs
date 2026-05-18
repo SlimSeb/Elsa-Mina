@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 
-namespace ElsaMina.Commands.Misc.Pairings;
+namespace ElsaMina.Commands.Misc;
 
 [NamedCommand("pairings", "makepairings")]
 public class PairingsCommand : Command

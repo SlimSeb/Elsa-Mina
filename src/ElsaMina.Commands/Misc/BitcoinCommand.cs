@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Logging;
 
-namespace ElsaMina.Commands.Misc.Bitcoin;
+namespace ElsaMina.Commands.Misc;
 
 [NamedCommand("bitcoin", Aliases = ["btc"])]
 public class BitcoinCommand : Command
