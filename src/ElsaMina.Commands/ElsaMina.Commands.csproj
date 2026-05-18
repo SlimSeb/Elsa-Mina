@@ -33,6 +33,7 @@
     </ItemGroup>
 
     <Target Name="GenerateChangelog" BeforeTargets="BeforeBuild;GetCopyToOutputDirectoryItems">
+        <MakeDir Directories="$(IntermediateOutputPath)" />
         <Exec Command="git log --pretty=format:&quot;%h %ad %an: %s&quot; --date=short -n 20 &gt; &quot;$(IntermediateOutputPath)changelog.txt&quot;"
               WorkingDirectory="$(MSBuildThisFileDirectory)"
               IgnoreExitCode="true" />
