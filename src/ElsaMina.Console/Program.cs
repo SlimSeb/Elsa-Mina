@@ -1,4 +1,5 @@
-﻿using System.Reactive;
+﻿using System.Net.WebSockets;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using Autofac;
@@ -97,9 +98,9 @@ client.DisconnectionHappened.Subscribe(info =>
     Log.Warning(
         "Disconnected. Type: {type}, Status: {status}, Desc: {desc}, Exception: {ex}",
         info.Type,
-        info.CloseStatus,
-        info.CloseStatusDescription,
-        info.Exception?.Message
+        info.CloseStatus ?? WebSocketCloseStatus.Empty,
+        info.CloseStatusDescription ?? string.Empty,
+        info.Exception?.Message ?? string.Empty
     );
     bot.OnDisconnect();
 });
