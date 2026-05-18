@@ -28,6 +28,9 @@ public class BlackjackJoinCommand : Command
 
         game.Owner = context.Sender;
         game.Context = context;
+        game.IsPrivateMode = true;
+        game.TargetRoomId = roomId;
+        game.TargetUserId = context.Sender.UserId;
         await game.StartGame();
     }
 }
