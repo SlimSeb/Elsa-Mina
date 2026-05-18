@@ -10,7 +10,7 @@ namespace ElsaMina.Commands.Misc.Translation;
 [NamedCommand("fullpot")]
 public class FullPotCommand : Command
 {
-    private const int LANGUAGES_COUNT = 10;
+    private const int LANGUAGES_COUNT = 16;
 
     private readonly IRandomService _randomService;
 
