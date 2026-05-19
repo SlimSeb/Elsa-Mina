@@ -1,50 +1,116 @@
+@using ElsaMina.Core.Services.Rooms
+@using ElsaMina.Core.Services.Templates
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Development.Commands.CommandListViewModel>
 
-<div style="padding: 1rem;">
-    @foreach (var group in Model.Commands.GroupBy(c => c.Category).OrderBy(g => g.Key))
+@{
+    const string border = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string headerStyle = $"{border} padding: 4px 10px; text-align: left; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string cellStyle = $"{border} padding: 6px 10px; vertical-align: top;";
+
+    string RankColor(Rank rank) => rank switch
     {
-        <details style="margin-bottom: 0.75rem;">
-            <summary style="font-size: 1.1rem; font-weight: bold; cursor: pointer; padding: 0.25rem 0;">
-                @(string.IsNullOrEmpty(group.Key) ? "Other" : group.Key)
-                <span style="font-weight: normal; font-size: 0.9rem; color: #666;">(@group.Count())</span>
-            </summary>
-            <div style="padding: 0.5rem 0 0 1rem;">
-                @foreach (var command in group.OrderBy(c => c.Name))
-                {
-                    <div style="margin-bottom: 0.5rem;">
-                        <span style="font-weight: bold;">@command.Name</span>
+        Rank.Admin or Rank.Leader => "#c62828",
+        Rank.RoomOwner             => "#e65100",
+        Rank.Mod                   => "#1565c0",
+        Rank.Driver                => "#6a1b9a",
+        Rank.Voiced                => "#9836d4",
+        _                          => "#999",
+    };
+
+    string FlagBadge(string text, string bg, string fg = "#fff") =>
+        $"<span style=\"display:inline-block;padding:1px 6px;border-radius:3px;font-size:0.78rem;background:{bg};color:{fg};margin-left:4px;\">{text}</span>";
+
+    string NavCommand(int index) => $"/w {Model.BotName},{Model.Trigger}allcommands {index}";
+    string MenuCommand() => $"/w {Model.BotName},{Model.Trigger}allcommands";
+}
+
+<div style="padding: 1rem;">
+    @if (Model.CurrentCategoryIndex < 0)
+    {
+        <div style="font-size: 1.05rem; font-weight: bold; margin-bottom: 0.75rem;">
+            @GetString("allcommands_pick_category")
+        </div>
+        <div>
+            @for (var i = 0; i < Model.Categories.Count; i++)
+            {
+                var index = i;
+                var count = Model.Commands.Count(c => (string.IsNullOrEmpty(c.Category) ? "Other" : c.Category) == Model.Categories[index]);
+                <div style="margin-bottom: 0.4rem;">
+                    <button class="button" name="send" value="@NavCommand(index)">
+                        @Model.Categories[index] <span style="font-size:0.8rem;">(@count)</span>
+                    </button>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        var currentCategory = Model.Categories[Model.CurrentCategoryIndex];
+        var currentCommands = Model.Commands
+            .Where(c => (string.IsNullOrEmpty(c.Category) ? "Other" : c.Category) == currentCategory)
+            .OrderBy(c => c.Name)
+            .ToList();
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <button class="button" name="send" value="@MenuCommand()">&#8592; @GetString("allcommands_back")</button>
+            <span style="font-size: 1.05rem; font-weight: bold;">@currentCategory</span>
+            <span style="font-size: 0.85rem; color: #666;">(@currentCommands.Count)</span>
+        </div>
+
+        <table style="border-collapse: collapse; width: 100%;">
+            <thead>
+            <tr>
+                <th style="@headerStyle">@GetString("allcommands_name")</th>
+                <th style="@headerStyle">@GetString("allcommands_required_rank")</th>
+                <th style="@headerStyle">@GetString("allcommands_flags")</th>
+                <th style="@headerStyle">@GetString("allcommands_description")</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var command in currentCommands)
+            {
+                <tr>
+                    <td style="@cellStyle">
+                        <b>@command.Name</b>
                         @if (command.Aliases.Any())
                         {
-                            <span> &mdash; @GetString("allcommands_alias") : @string.Join(", ", command.Aliases)</span>
+                            <div style="font-size: 0.8rem; margin-top: 2px;">
+                                @string.Join(", ", command.Aliases)
+                            </div>
                         }
+                    </td>
+                    <td style="@cellStyle white-space:nowrap;">
+                        <span style="color: @RankColor(command.RequiredRank); font-weight: bold;">
+                            @command.RequiredRank
+                        </span>
+                    </td>
+                    <td style="@cellStyle white-space:nowrap;">
                         @if (command.IsAllowedInPrivateMessage)
                         {
-                            <span> (@GetString("allcommands_allowed_in_pm"))</span>
-                        }
-                        @if (command.IsWhitelistOnly)
-                        {
-                            <span> (@GetString("allcommands_wl_only"))</span>
+                            @Raw(FlagBadge("PM", "#0277bd"))
                         }
                         @if (command.IsPrivateMessageOnly)
                         {
-                            <span> (@GetString("allcommands_pm_only"))</span>
+                            @Raw(FlagBadge("PM only", "#01579b"))
                         }
-                        <div style="font-size: 0.85rem; color: #444;">
-                            @GetString("allcommands_required_rank") : @command.RequiredRank
-                            @if (command.RoomRestriction.Any())
-                            {
-                                <span> &mdash; @GetString("allcommands_room_restriction", string.Join(", ", command.RoomRestriction))</span>
-                            }
-                        </div>
+                        @if (command.IsWhitelistOnly)
+                        {
+                            @Raw(FlagBadge("WL", "#558b2f"))
+                        }
+                        @if (command.RoomRestriction.Any())
+                        {
+                            @Raw(FlagBadge(string.Join(", ", command.RoomRestriction), "#4e342e"))
+                        }
+                    </td>
+                    <td style="@cellStyle font-size: 0.85rem; font-style: italic;">
                         @if (!string.IsNullOrEmpty(command.HelpMessageKey))
                         {
-                            <div style="font-size: 0.85rem; font-style: italic;">
-                                @GetString(command.HelpMessageKey)
-                            </div>
+                            @GetString(command.HelpMessageKey)
                         }
-                    </div>
-                }
-            </div>
-        </details>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
     }
 </div>

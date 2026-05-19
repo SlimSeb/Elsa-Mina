@@ -2,6 +2,7 @@ using System.Globalization;
 using ElsaMina.Commands.Development.Commands;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using NSubstitute;
@@ -13,6 +14,7 @@ public class GetAllCommandTest
 {
     private ICommandExecutor _commandExecutor;
     private ITemplatesManager _templatesManager;
+    private IConfiguration _configuration;
     private IContext _context;
     private GetAllCommand _command;
 
@@ -21,8 +23,9 @@ public class GetAllCommandTest
     {
         _commandExecutor = Substitute.For<ICommandExecutor>();
         _templatesManager = Substitute.For<ITemplatesManager>();
+        _configuration = Substitute.For<IConfiguration>();
         _context = Substitute.For<IContext>();
-        _command = new GetAllCommand(_commandExecutor, _templatesManager);
+        _command = new GetAllCommand(_commandExecutor, _templatesManager, _configuration);
     }
 
     [Test]

@@ -291,6 +291,21 @@
     <data name="allcommands_required_rank" xml:space="preserve">
         <value>Rang requis</value>
     </data>
+    <data name="allcommands_name" xml:space="preserve">
+        <value>Commande</value>
+    </data>
+    <data name="allcommands_flags" xml:space="preserve">
+        <value>Indicateurs</value>
+    </data>
+    <data name="allcommands_description" xml:space="preserve">
+        <value>Description</value>
+    </data>
+    <data name="allcommands_pick_category" xml:space="preserve">
+        <value>Choisissez une catégorie</value>
+    </data>
+    <data name="allcommands_back" xml:space="preserve">
+        <value>Retour</value>
+    </data>
     <data name="profile_register_date" xml:space="preserve">
         <value>Inscrit le</value>
     </data>

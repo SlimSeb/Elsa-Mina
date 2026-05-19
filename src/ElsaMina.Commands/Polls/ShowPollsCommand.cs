@@ -20,6 +20,7 @@ public class ShowPollsCommand : Command
     }
 
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRank => Rank.Regular;
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
@@ -29,7 +30,7 @@ public class ShowPollsCommand : Command
             roomId = context.Target.ToLower();
             if (!_roomsManager.HasRoom(roomId))
             {
-                context.ReplyLocalizedMessage("show_polls_room_not_exist", roomId);
+                context.ReplyRankAwareLocalizedMessage("show_polls_room_not_exist", roomId);
                 return;
             }
         }
@@ -45,7 +46,7 @@ public class ShowPollsCommand : Command
 
         if (pollHistory.Count == 0)
         {
-            context.ReplyLocalizedMessage("show_polls_no_polls", roomId);
+            context.ReplyRankAwareLocalizedMessage("show_polls_no_polls", roomId);
             return;
         }
 
@@ -59,7 +60,7 @@ public class ShowPollsCommand : Command
                 poll.Content));
         }
 
-        context.ReplyLocalizedMessage("show_polls_history_sent");
+        context.ReplyRankAwareLocalizedMessage("show_polls_history_sent");
         context.ReplyHtmlPage("polls-history", stringBuilder.ToString());
     }
 }
