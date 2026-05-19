@@ -11,6 +11,7 @@ public class AfdSpriteCommand : Command
     private const string BACK_SPRITE_URL = "https://play.pokemonshowdown.com/sprites/afd-back/{0}.png";
 
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "afd_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

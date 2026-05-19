@@ -75,11 +75,11 @@ To run the tests, run the following command in the root directory:
 ## Scripts
 The following scripts are available:
 ```bash
-./scripts/restore.sh      # Restore NuGet packages
-./scripts/build.sh        # Build the solution
-./scripts/test.sh         # Run all tests
-./scripts/publish.sh      # Publish for deployment
-./scripts/full_publish.sh # Do a full restore, test, build and publish
+./scripts/Build/restore.sh      # Restore NuGet packages
+./scripts/Build/build.sh        # Build the solution
+./scripts/Build/test.sh         # Run all tests
+./scripts/Build/publish.sh      # Publish for deployment
+./scripts/Build/full_publish.sh # Do a full restore, test, build and publish
 ```
 
 ## Features

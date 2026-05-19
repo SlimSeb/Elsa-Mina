@@ -18,6 +18,7 @@ public class RandHelpCommand : Command
     ];
 
     public override Rank RequiredRank => Rank.Voiced;
+    public override string HelpMessageKey => "randhelp_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

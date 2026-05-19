@@ -47,6 +47,7 @@ public class DebilifyCommand : Command
 
     public override Rank RequiredRank => Rank.Regular;
     public override bool IsAllowedInPrivateMessage => true;
+    public override string HelpMessageKey => "debilify_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

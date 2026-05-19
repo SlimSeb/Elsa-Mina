@@ -27,6 +27,7 @@ public class AddCustomCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Driver;
+    public override string HelpMessageKey => "addcommand_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

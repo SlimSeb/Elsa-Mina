@@ -27,6 +27,7 @@ public class RandFurretCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Voiced;
+    public override string HelpMessageKey => "randfurret_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

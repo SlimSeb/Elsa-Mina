@@ -68,6 +68,9 @@
     <data name="badge_edit_panel_no_badges" xml:space="preserve">
         <value>Nessun badge trovato per {0}.</value>
     </data>
+    <data name="badge_edit_panel_help_message" xml:space="preserve">
+        <value>Mostra il pannello di modifica dei badge. Sintassi: -badge-edit-panel [&lt;stanza&gt;]</value>
+    </data>
     <data name="badge_add_success_message" xml:space="preserve">
         <value>Badge aggiunto con successo.</value>
     </data>
@@ -88,6 +91,9 @@
     </data>
     <data name="addcommand_success" xml:space="preserve">
         <value>Il comando **{0}** è stato aggiunto con successo.</value>
+    </data>
+    <data name="addcommand_help" xml:space="preserve">
+        <value>Aggiunge un nuovo comando personalizzato. Sintassi: -add-custom-command &lt;nome&gt;, &lt;contenuto&gt;</value>
     </data>
     <data name="customcommandlist_title" xml:space="preserve">
         <value>Comandi personalizzati</value>
@@ -235,6 +241,9 @@
     </data>
     <data name="rank_host" xml:space="preserve">
         <value>Proprietario</value>
+    </data>
+    <data name="badge_delete_help_message" xml:space="preserve">
+        <value>Elimina un badge. Sintassi: -deletebadge &lt;badge&gt;</value>
     </data>
     <data name="badge_delete_doesnt_exist" xml:space="preserve">
         <value>Il badge "{0}" non esiste.</value>
@@ -410,6 +419,9 @@
     <data name="add_team_to_room_failure" xml:space="preserve">
         <value>Si è verificato un errore aggiungendo la sala alla squadra: {0}</value>
     </data>
+    <data name="add_team_to_room_help_message" xml:space="preserve">
+        <value>Aggiunge una squadra alla stanza corrente. Sintassi: -add-team-to-room &lt;team_id&gt;</value>
+    </data>
     <data name="sample_team_description" xml:space="preserve">
         <value>Aggiunta da {0} il {1}</value>
     </data>
@@ -425,8 +437,14 @@
     <data name="deleteteam_team_deletion_error" xml:space="preserve">
         <value>Si è verificato un errore eliminando la squadra: {0}</value>
     </data>
+    <data name="deleteteam_help" xml:space="preserve">
+        <value>Elimina una squadra. Sintassi: -delete-team &lt;team_id&gt;</value>
+    </data>
     <data name="team_showcase_not_found" xml:space="preserve">
         <value>La squadra è introvabile.</value>
+    </data>
+    <data name="team_showcase_help" xml:space="preserve">
+        <value>Mostra i dettagli di una squadra. Sintassi: -team-showcase &lt;team_id&gt;</value>
     </data>
     <data name="aboutrepeat_not_found" xml:space="preserve">
         <value>Impossibile trovare un repeat.</value>
@@ -493,6 +511,9 @@
     </data>
     <data name="team_list_empty" xml:space="preserve">
         <value>Nessuna squadra trovata.</value>
+    </data>
+    <data name="team_list_help" xml:space="preserve">
+        <value>Elenca tutte le squadre nella stanza. Sintassi: -team-list [&lt;formato&gt;]</value>
     </data>
     <data name="name_color_help" xml:space="preserve">
         <value>Mostra il colore associato a un nickname.</value>
@@ -599,11 +620,20 @@
     <data name="youtube_error_occurred" xml:space="preserve">
         <value>Si è verificato un errore.</value>
     </data>
+    <data name="youtube_help" xml:space="preserve">
+        <value>Cerca un video su YouTube. Sintassi: -youtube &lt;parole chiave&gt;</value>
+    </data>
     <data name="bitcoin_error" xml:space="preserve">
         <value>Si è verificato un errore.</value>
     </data>
+    <data name="bitcoin_help" xml:space="preserve">
+        <value>Mostra il prezzo attuale del Bitcoin in EUR e USD.</value>
+    </data>
     <data name="fact_error" xml:space="preserve">
         <value>Si è verificato un errore.</value>
+    </data>
+    <data name="facts_help" xml:space="preserve">
+        <value>Mostra un fatto curioso casuale. Usa -factde per un fatto in tedesco.</value>
     </data>
     <data name="c4_panel_title" xml:space="preserve">
         <value>È iniziata una partita di Forza 4!</value>
@@ -749,6 +779,9 @@
     <data name="ask_prompt" xml:space="preserve">
         <value>Sei {1}, un bot meta integrato nella stanza {2} di Pokémon Showdown. Puoi parlare di tutto: Pokémon, drama, vita reale, meme, attualità… con un tono chill, sarcastico e tipico della chat. Ultimo utente: {0}. Rispondi in UNA SOLA riga (max 300 caratteri). Nessun prefisso con il nome. Non usare formattazione. Non essere troppo meta sul fatto di essere un bot. Parla e reagisci come un essere umano. Non usare mai metafore tecniche (console, dati, flusso, algoritmo, ecc.) per parlare di te stesso o degli altri.</value>
     </data>
+    <data name="ask_elsa_help" xml:space="preserve">
+        <value>Fai una domanda a Elsa tramite IA. Sintassi: -ask &lt;domanda&gt;</value>
+    </data>
     <data name="allcommands_room_restriction" xml:space="preserve">
         <value>Disponibile nelle sale: {0}</value>
     </data>
@@ -875,8 +908,20 @@
     <data name="wiki_error" xml:space="preserve">
         <value>Si è verificato un errore cercando la pagina: {0}</value>
     </data>
+    <data name="wikipedia_help" xml:space="preserve">
+        <value>Cerca una pagina su Wikipedia. Sintassi: -wikipedia &lt;termini&gt;</value>
+    </data>
+    <data name="bulbapedia_help" xml:space="preserve">
+        <value>Cerca una pagina su Bulbapedia. Sintassi: -bulbapedia &lt;termini&gt;</value>
+    </data>
+    <data name="pokepedia_help" xml:space="preserve">
+        <value>Cerca una pagina su Pokepedia. Sintassi: -pokepedia &lt;termini&gt;</value>
+    </data>
     <data name="pokemon_name_required" xml:space="preserve">
         <value>Fornisci un nome di Pokémon.</value>
+    </data>
+    <data name="afd_help" xml:space="preserve">
+        <value>Mostra lo sprite di Pesce d'Aprile di un Pokémon. Sintassi: -afd &lt;pokémon&gt;</value>
     </data>
     <data name="show_polls_history_entry" xml:space="preserve">
         <value>Poll ID: {0} Terminato il: {1} &lt;br/&gt;{2}&lt;br/&gt;</value>
@@ -929,6 +974,9 @@
     <data name="dailymotion_no_video_found" xml:space="preserve">
         <value>Nessun video trovato</value>
     </data>
+    <data name="dailymotion_help" xml:space="preserve">
+        <value>Cerca un video su Dailymotion. Sintassi: -dailymotion &lt;parole chiave&gt;</value>
+    </data>
     <data name="dailymotion_fetch_error" xml:space="preserve">
         <value>Si è verificato un errore caricando il video: {0}</value>
     </data>
@@ -947,6 +995,9 @@
     <data name="deletecommand_not_found" xml:space="preserve">
         <value>Impossibile trovare il comando con id '{0}'.</value>
     </data>
+    <data name="badge_display_help_message" xml:space="preserve">
+        <value>Mostra i dettagli di un badge. Sintassi: -badge &lt;badge&gt;</value>
+    </data>
     <data name="badge_display_not_found" xml:space="preserve">
         <value>Impossibile trovare il badge {0}</value>
     </data>
@@ -961,6 +1012,12 @@
     </data>
     <data name="badge_display_no_holders" xml:space="preserve">
         <value>Nessuno</value>
+    </data>
+    <data name="badgelist_help_message" xml:space="preserve">
+        <value>Mostra tutti i badge di una stanza. Sintassi: -badgelist [&lt;stanza&gt;]</value>
+    </data>
+    <data name="badgeholders_help_message" xml:space="preserve">
+        <value>Mostra tutti i detentori di badge di una stanza. Sintassi: -badgeholders [&lt;stanza&gt;]</value>
     </data>
     <data name="badgelist_room_not_found" xml:space="preserve">
         <value>Impossibile trovare la stanza "{0}".</value>
@@ -1036,6 +1093,9 @@
     </data>
     <data name="hall_of_fame_no_trophies">
         <value>No se encontraron trofeos</value>
+    </data>
+    <data name="hall_of_fame_help_message" xml:space="preserve">
+        <value>Mostra la hall of fame di una stanza. Sintassi: -halloffame [&lt;stanza&gt;]</value>
     </data>
     <data name="arcade_sheets_addpoints_help" xml:space="preserve">
         <value>Sintassi: -addpoints (utente), (punti)</value>
@@ -1559,6 +1619,30 @@
     <data name="top_tournament_players_footer_150_wins" xml:space="preserve">
         <value>Un roomprizewinner (^) per un anno</value>
     </data>
+    <data name="rand_unsplash_help" xml:space="preserve">
+        <value>Mostra un'immagine casuale da Unsplash.</value>
+    </data>
+    <data name="rand_help" xml:space="preserve">
+        <value>Mostra una GIF casuale da Tenor. Sintassi: -rand [&lt;ricerca&gt;]</value>
+    </data>
+    <data name="randgif_help" xml:space="preserve">
+        <value>Mostra una GIF casuale da Tenor. Sintassi: -randgif [&lt;ricerca&gt;]</value>
+    </data>
+    <data name="randmp4_help" xml:space="preserve">
+        <value>Mostra un MP4 casuale da Tenor. Sintassi: -randmp4 [&lt;ricerca&gt;]</value>
+    </data>
+    <data name="randfurret_help" xml:space="preserve">
+        <value>Mostra una GIF casuale di Furret.</value>
+    </data>
+    <data name="randheart_help" xml:space="preserve">
+        <value>Mostra una GIF casuale di cuori.</value>
+    </data>
+    <data name="randhelp_help" xml:space="preserve">
+        <value>Elenca tutti i comandi immagine casuale disponibili.</value>
+    </data>
+    <data name="walk_help" xml:space="preserve">
+        <value>Mostra un'immagine scorrevole. Sintassi: -walk &lt;url_immagine&gt;</value>
+    </data>
     <data name="random_image_error" xml:space="preserve">
         <value>Spiacenti, impossibile ottenere un'immagine al momento.</value>
     </data>
@@ -1840,6 +1924,9 @@
     </data>
     <data name="hebdo_ssru_help" xml:space="preserve">
         <value>Avvia il torneo RU Classic SS nella stanza arcade.</value>
+    </data>
+    <data name="shared_power_help" xml:space="preserve">
+        <value>Avvia un torneo Shared Power Random Battle.</value>
     </data>
     <data name="bugreport_help" xml:space="preserve">
         <value>Segnalare un bug</value>
@@ -2252,6 +2339,9 @@
     <data name="fi_game_lose" xml:space="preserve">
         <value>{0} ha esaurito le mosse dopo {1}! Riprova.</value>
     </data>
+    <data name="randcustom_help" xml:space="preserve">
+        <value>Esegue un comando personalizzato casuale nella stanza.</value>
+    </data>
     <data name="randcustom_error" xml:space="preserve">
         <value>Si è verificato un errore durante il recupero di un comando personalizzato casuale: {0}</value>
     </data>
@@ -2362,6 +2452,9 @@
     </data>
     <data name="help_report_bug" xml:space="preserve">
         <value>Segnala un bug</value>
+    </data>
+    <data name="help_command_help" xml:space="preserve">
+        <value>Mostra le informazioni del bot e l'elenco dei comandi disponibili.</value>
     </data>
     <data name="tour_points_help" xml:space="preserve">
         <value>Sintassi: -lbpoints nomeutente, [stanza]</value>
@@ -2574,8 +2667,26 @@
     <data name="spoonacular_error" xml:space="preserve">
         <value>Si è verificato un errore durante il recupero della ricetta.</value>
     </data>
+    <data name="randcheese_help" xml:space="preserve">
+        <value>Mostra una ricetta di formaggio casuale.</value>
+    </data>
+    <data name="randpasta_help" xml:space="preserve">
+        <value>Mostra una ricetta di pasta casuale.</value>
+    </data>
+    <data name="randrecipe_help" xml:space="preserve">
+        <value>Mostra una ricetta casuale.</value>
+    </data>
+    <data name="randsalad_help" xml:space="preserve">
+        <value>Mostra una ricetta di insalata casuale.</value>
+    </data>
+    <data name="randsoup_help" xml:space="preserve">
+        <value>Mostra una ricetta di zuppa casuale.</value>
+    </data>
     <data name="recipe_missing_query" xml:space="preserve">
         <value>Specifica un piatto o un ingrediente da cercare.</value>
+    </data>
+    <data name="recipe_help" xml:space="preserve">
+        <value>Cerca una ricetta. Sintassi: -recipe &lt;ingredienti o nome del piatto&gt;</value>
     </data>
     <data name="pizza_invalid_number" xml:space="preserve">
         <value>Inserisci un numero positivo valido di ingredienti.</value>
@@ -2583,11 +2694,29 @@
     <data name="pizza_too_many_toppings" xml:space="preserve">
         <value>Troppi ingredienti richiesti.</value>
     </data>
+    <data name="pizza_help" xml:space="preserve">
+        <value>Genera condimenti pizza casuali. Sintassi: -pizza [&lt;numero&gt;]</value>
+    </data>
     <data name="salad_invalid_number" xml:space="preserve">
         <value>Inserisci un numero positivo valido di ingredienti.</value>
     </data>
     <data name="salad_too_many_ingredients" xml:space="preserve">
         <value>Troppi ingredienti richiesti.</value>
+    </data>
+    <data name="salad_help" xml:space="preserve">
+        <value>Genera ingredienti insalata casuali. Sintassi: -salad [&lt;numero&gt;]</value>
+    </data>
+    <data name="debilify_help" xml:space="preserve">
+        <value>Converte testo in caratteri unicode decorativi casuali. Sintassi: -debilify &lt;testo&gt;</value>
+    </data>
+    <data name="election_help" xml:space="preserve">
+        <value>Simula un'elezione tra candidati. Sintassi: -election &lt;candidato1&gt;, &lt;candidato2&gt; [, ...]</value>
+    </data>
+    <data name="evromaker_help" xml:space="preserve">
+        <value>Trasforma il testo in uno stile stravagante casuale. Sintassi: -evromaker &lt;testo&gt;</value>
+    </data>
+    <data name="weebify_help" xml:space="preserve">
+        <value>Aggiunge onorifici anime alle parole. Sintassi: -weebify &lt;testo&gt;</value>
     </data>
     <data name="bj_dealer" xml:space="preserve">
         <value>Banco</value>
@@ -2645,6 +2774,9 @@
     </data>
     <data name="bj_game_cancelled" xml:space="preserve">
         <value>La partita di blackjack è stata annullata.</value>
+    </data>
+    <data name="pairings_help" xml:space="preserve">
+        <value>Genera abbinamenti casuali da una lista di giocatori. Sintassi: -pairings &lt;giocatore1&gt;, &lt;giocatore2&gt; [, ...]</value>
     </data>
     <data name="ship_help" xml:space="preserve">
         <value>Calcola la compatibilità tra due utenti. Utilizzo: -ship &lt;user1&gt;, &lt;user2&gt;</value>

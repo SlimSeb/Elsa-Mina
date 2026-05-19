@@ -20,6 +20,7 @@ public class AddTeamToRoomCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Voiced;
+    public override string HelpMessageKey => "add_team_to_room_help_message";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

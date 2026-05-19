@@ -18,6 +18,7 @@ public class DeleteTeamCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Voiced;
+    public override string HelpMessageKey => "deleteteam_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

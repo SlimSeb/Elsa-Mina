@@ -18,6 +18,7 @@ public class DeleteBadgeCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Driver;
+    public override string HelpMessageKey => "badge_delete_help_message";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

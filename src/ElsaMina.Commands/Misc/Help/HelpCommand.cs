@@ -24,6 +24,7 @@ public class HelpCommand : Command
 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "help_command_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

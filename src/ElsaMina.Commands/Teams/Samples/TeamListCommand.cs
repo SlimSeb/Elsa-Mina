@@ -23,6 +23,7 @@ public class TeamListCommand : Command
 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "team_list_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

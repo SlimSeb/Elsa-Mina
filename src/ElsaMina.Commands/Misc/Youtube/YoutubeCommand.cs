@@ -33,6 +33,7 @@ public class YoutubeCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "youtube_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

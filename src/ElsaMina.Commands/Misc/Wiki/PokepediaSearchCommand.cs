@@ -14,6 +14,7 @@ public class PokepediaSearchCommand : WikiMediaSearchCommand
 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "pokepedia_help";
 
     public PokepediaSearchCommand(IHttpService httpService)
         : base(httpService) { }

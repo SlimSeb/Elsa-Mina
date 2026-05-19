@@ -19,6 +19,7 @@ public class RandCommand : Command
 
     public override Rank RequiredRank => Rank.Driver;
     public override bool IsAllowedInPrivateMessage => true;
+    public override string HelpMessageKey => "rand_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

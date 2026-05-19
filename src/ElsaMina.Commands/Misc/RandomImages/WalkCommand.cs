@@ -8,6 +8,7 @@ namespace ElsaMina.Commands.Misc.RandomImages;
 public class WalkCommand : Command
 {
     public override Rank RequiredRank => Rank.Voiced;
+    public override string HelpMessageKey => "walk_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

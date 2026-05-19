@@ -17,6 +17,7 @@ public class RecipeSearchCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "recipe_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

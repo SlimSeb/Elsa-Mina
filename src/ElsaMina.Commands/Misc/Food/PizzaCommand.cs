@@ -33,6 +33,7 @@ public class PizzaCommand : Command
 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "pizza_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

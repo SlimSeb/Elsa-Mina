@@ -21,6 +21,7 @@ public class DailymotionCommand : Command
     private readonly ITemplatesManager _templatesManager;
 
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "dailymotion_help";
 
     public DailymotionCommand(IHttpService httpService, ITemplatesManager templatesManager)
     {

@@ -22,6 +22,7 @@ public class BitcoinCommand : Command
 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "bitcoin_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

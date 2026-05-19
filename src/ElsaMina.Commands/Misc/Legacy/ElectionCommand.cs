@@ -17,6 +17,7 @@ public class ElectionCommand : Command
 
     public override Rank RequiredRank => Rank.Regular;
     public override bool IsAllowedInPrivateMessage => true;
+    public override string HelpMessageKey => "election_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

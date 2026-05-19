@@ -20,6 +20,7 @@ public class TeamShowcaseCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "team_showcase_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

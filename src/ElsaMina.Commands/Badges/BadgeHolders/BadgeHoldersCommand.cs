@@ -22,6 +22,7 @@ public class BadgeHoldersCommand : Command
 
     public override Rank RequiredRank => Rank.Regular;
     public override bool IsAllowedInPrivateMessage => true;
+    public override string HelpMessageKey => "badgeholders_help_message";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

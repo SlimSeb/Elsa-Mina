@@ -21,6 +21,7 @@ public class WikipediaSearchCommand : Command
 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "wikipedia_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

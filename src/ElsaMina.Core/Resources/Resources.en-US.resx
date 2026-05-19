@@ -68,6 +68,9 @@
     <data name="badge_edit_panel_no_badges" xml:space="preserve">
         <value>No badges found for {0}.</value>
     </data>
+    <data name="badge_edit_panel_help_message" xml:space="preserve">
+        <value>Shows the badge edit panel. Syntax: -badge-edit-panel [&lt;room&gt;]</value>
+    </data>
     <data name="badge_add_success_message" xml:space="preserve">
         <value>New badge added successfully.</value>
     </data>
@@ -88,6 +91,9 @@
     </data>
     <data name="addcommand_success" xml:space="preserve">
         <value>Successfully added new command : **{0}**.</value>
+    </data>
+    <data name="addcommand_help" xml:space="preserve">
+        <value>Adds a new custom command. Syntax: -add-custom-command &lt;name&gt;, &lt;content&gt;</value>
     </data>
     <data name="customcommandlist_title" xml:space="preserve">
         <value>Custom commands</value>
@@ -235,6 +241,9 @@
     </data>
     <data name="rank_host" xml:space="preserve">
         <value>Host</value>
+    </data>
+    <data name="badge_delete_help_message" xml:space="preserve">
+        <value>Deletes a badge. Syntax: -deletebadge &lt;badge&gt;</value>
     </data>
     <data name="badge_delete_doesnt_exist" xml:space="preserve">
         <value>The "{0}" badge doesn't exist.</value>
@@ -410,6 +419,9 @@
     <data name="add_team_to_room_failure" xml:space="preserve">
         <value>An error occurred while adding a room to a team : {0}</value>
     </data>
+    <data name="add_team_to_room_help_message" xml:space="preserve">
+        <value>Adds a team to the current room. Syntax: -add-team-to-room &lt;team_id&gt;</value>
+    </data>
     <data name="sample_team_description" xml:space="preserve">
         <value>Added by {0} on {1}</value>
     </data>
@@ -425,8 +437,14 @@
     <data name="deleteteam_team_deletion_error" xml:space="preserve">
         <value>An error occurred while deleting team  : {0}</value>
     </data>
+    <data name="deleteteam_help" xml:space="preserve">
+        <value>Deletes a team. Syntax: -delete-team &lt;team_id&gt;</value>
+    </data>
     <data name="team_showcase_not_found" xml:space="preserve">
         <value>Could not find this team.</value>
+    </data>
+    <data name="team_showcase_help" xml:space="preserve">
+        <value>Displays a team's details. Syntax: -team-showcase &lt;team_id&gt;</value>
     </data>
     <data name="aboutrepeat_not_found" xml:space="preserve">
         <value>Could not find any repeat.</value>
@@ -493,6 +511,9 @@
     </data>
     <data name="team_list_empty" xml:space="preserve">
         <value>Could not find any teams.</value>
+    </data>
+    <data name="team_list_help" xml:space="preserve">
+        <value>Lists all teams in the room. Syntax: -team-list [&lt;format&gt;]</value>
     </data>
     <data name="name_color_help" xml:space="preserve">
         <value>Gives the color info for a given username.</value>
@@ -599,11 +620,20 @@
     <data name="youtube_error_occurred" xml:space="preserve">
         <value>An error occurred.</value>
     </data>
+    <data name="youtube_help" xml:space="preserve">
+        <value>Searches YouTube for a video. Syntax: -youtube &lt;keywords&gt;</value>
+    </data>
     <data name="bitcoin_error" xml:space="preserve">
         <value>An error occurred.</value>
     </data>
+    <data name="bitcoin_help" xml:space="preserve">
+        <value>Shows the current Bitcoin price in EUR and USD.</value>
+    </data>
     <data name="fact_error" xml:space="preserve">
         <value>An error occurred.</value>
+    </data>
+    <data name="facts_help" xml:space="preserve">
+        <value>Shows a random fun fact. Use -factde for a German fact.</value>
     </data>
     <data name="c4_panel_title" xml:space="preserve">
         <value>A connect four game has been created!</value>
@@ -749,6 +779,9 @@
     <data name="ask_prompt" xml:space="preserve">
         <value>You are {1}, a meta bot embedded in the {2} room on Pokémon Showdown. You can talk about anything: Pokémon, drama, real life, memes, news… with a chill, sarcastic tone typical of chat. Last user: {0}. Reply in ONE SINGLE line (max 300 characters). No name prefix. Do not use formatting. Don't be too meta about being a bot. Speak and react like a human. Never use technical metaphors (console, data, stream, algorithm, etc.) when referring to yourself or others.</value>
     </data>
+    <data name="ask_elsa_help" xml:space="preserve">
+        <value>Ask Elsa a question using AI. Syntax: -ask &lt;question&gt;</value>
+    </data>
     <data name="allcommands_room_restriction" xml:space="preserve">
         <value>Available in rooms : {0}</value>
     </data>
@@ -875,8 +908,20 @@
     <data name="wiki_error" xml:space="preserve">
         <value>An error occurred while fetching page : {0}</value>
     </data>
+    <data name="wikipedia_help" xml:space="preserve">
+        <value>Searches Wikipedia for a page. Syntax: -wikipedia &lt;terms&gt;</value>
+    </data>
+    <data name="bulbapedia_help" xml:space="preserve">
+        <value>Searches Bulbapedia for a page. Syntax: -bulbapedia &lt;terms&gt;</value>
+    </data>
+    <data name="pokepedia_help" xml:space="preserve">
+        <value>Searches Pokepedia for a page. Syntax: -pokepedia &lt;terms&gt;</value>
+    </data>
     <data name="pokemon_name_required" xml:space="preserve">
         <value>Please provide a Pokemon name.</value>
+    </data>
+    <data name="afd_help" xml:space="preserve">
+        <value>Shows the April Fools' Day sprite for a Pokémon. Syntax: -afd &lt;pokemon&gt;</value>
     </data>
     <data name="show_polls_history_entry" xml:space="preserve">
         <value>Poll ID: {0}, Ended At: {1} &lt;br/&gt;{2}&lt;br/&gt;</value>
@@ -929,6 +974,9 @@
     <data name="dailymotion_no_video_found" xml:space="preserve">
         <value>No videos were found</value>
     </data>
+    <data name="dailymotion_help" xml:space="preserve">
+        <value>Searches Dailymotion for a video. Syntax: -dailymotion &lt;keywords&gt;</value>
+    </data>
     <data name="dailymotion_fetch_error" xml:space="preserve">
         <value>An error occurred while fetching video : {0}</value>
     </data>
@@ -947,6 +995,9 @@
     <data name="deletecommand_not_found" xml:space="preserve">
         <value>Could not find command with id '{0}'</value>
     </data>
+    <data name="badge_display_help_message" xml:space="preserve">
+        <value>Shows details about a badge. Syntax: -badge &lt;badge&gt;</value>
+    </data>
     <data name="badge_display_not_found" xml:space="preserve">
         <value>Could not find badge {0}.</value>
     </data>
@@ -961,6 +1012,12 @@
     </data>
     <data name="badge_display_no_holders" xml:space="preserve">
         <value>None</value>
+    </data>
+    <data name="badgelist_help_message" xml:space="preserve">
+        <value>Shows all badges for a room. Syntax: -badgelist [&lt;room&gt;]</value>
+    </data>
+    <data name="badgeholders_help_message" xml:space="preserve">
+        <value>Shows all badge holders for a room. Syntax: -badgeholders [&lt;room&gt;]</value>
     </data>
     <data name="badgelist_room_not_found" xml:space="preserve">
         <value>Could not find the "{0}" room.</value>
@@ -1027,6 +1084,9 @@
     </data>
     <data name="hall_of_fame_no_trophies" xml:space="preserve">
         <value>No trophies found</value>
+    </data>
+    <data name="hall_of_fame_help_message" xml:space="preserve">
+        <value>Shows the hall of fame for a room. Syntax: -halloffame [&lt;room&gt;]</value>
     </data>
     <data name="arcade_sheets_addpoints_help" xml:space="preserve">
         <value>Syntax: -addpoints (user), (points)</value>
@@ -1559,6 +1619,30 @@
     <data name="top_tournament_players_footer_150_wins" xml:space="preserve">
         <value>A roomprizewinner (^) for one year</value>
     </data>
+    <data name="rand_unsplash_help" xml:space="preserve">
+        <value>Displays a random Unsplash image.</value>
+    </data>
+    <data name="rand_help" xml:space="preserve">
+        <value>Displays a random GIF from Tenor. Syntax: -rand [&lt;search&gt;]</value>
+    </data>
+    <data name="randgif_help" xml:space="preserve">
+        <value>Displays a random GIF from Tenor. Syntax: -randgif [&lt;search&gt;]</value>
+    </data>
+    <data name="randmp4_help" xml:space="preserve">
+        <value>Shows a random MP4 from Tenor. Syntax: -randmp4 [&lt;search&gt;]</value>
+    </data>
+    <data name="randfurret_help" xml:space="preserve">
+        <value>Displays a random Furret GIF.</value>
+    </data>
+    <data name="randheart_help" xml:space="preserve">
+        <value>Displays a random heart GIF.</value>
+    </data>
+    <data name="randhelp_help" xml:space="preserve">
+        <value>Lists all available random image commands.</value>
+    </data>
+    <data name="walk_help" xml:space="preserve">
+        <value>Displays an image in a marquee. Syntax: -walk &lt;image_url&gt;</value>
+    </data>
     <data name="random_image_error" xml:space="preserve">
         <value>Sorry, could not retrieve an image at the moment.</value>
     </data>
@@ -1840,6 +1924,9 @@
     </data>
     <data name="hebdo_ssru_help" xml:space="preserve">
         <value>Starts the RU Classic SS tournament in the arcade room.</value>
+    </data>
+    <data name="shared_power_help" xml:space="preserve">
+        <value>Starts a Shared Power Random Battle tournament.</value>
     </data>
     <data name="bugreport_help" xml:space="preserve">
         <value>Report a bug</value>
@@ -2258,6 +2345,9 @@
     <data name="fi_game_lose" xml:space="preserve">
         <value>{0} ran out of moves after {1}! Try again.</value>
     </data>
+    <data name="randcustom_help" xml:space="preserve">
+        <value>Executes a random custom command in the room.</value>
+    </data>
     <data name="randcustom_error" xml:space="preserve">
         <value>An error occurred while fetching a random custom command: {0}</value>
     </data>
@@ -2407,6 +2497,9 @@
     </data>
     <data name="help_report_bug" xml:space="preserve">
         <value>Report a bug</value>
+    </data>
+    <data name="help_command_help" xml:space="preserve">
+        <value>Shows bot information and a list of available commands.</value>
     </data>
     <data name="pollsuggest_help" xml:space="preserve">
         <value>Syntax: -pollsuggest [suggestion]</value>
@@ -2633,8 +2726,26 @@
     <data name="spoonacular_error" xml:space="preserve">
         <value>An error occurred while fetching the recipe.</value>
     </data>
+    <data name="randcheese_help" xml:space="preserve">
+        <value>Displays a random cheese recipe.</value>
+    </data>
+    <data name="randpasta_help" xml:space="preserve">
+        <value>Displays a random pasta recipe.</value>
+    </data>
+    <data name="randrecipe_help" xml:space="preserve">
+        <value>Displays a random recipe.</value>
+    </data>
+    <data name="randsalad_help" xml:space="preserve">
+        <value>Displays a random salad recipe.</value>
+    </data>
+    <data name="randsoup_help" xml:space="preserve">
+        <value>Displays a random soup recipe.</value>
+    </data>
     <data name="recipe_missing_query" xml:space="preserve">
         <value>Please provide a meal or ingredient to search for.</value>
+    </data>
+    <data name="recipe_help" xml:space="preserve">
+        <value>Searches for a recipe. Syntax: -recipe &lt;ingredients or meal name&gt;</value>
     </data>
     <data name="pizza_invalid_number" xml:space="preserve">
         <value>Please provide a valid positive number of toppings.</value>
@@ -2642,11 +2753,29 @@
     <data name="pizza_too_many_toppings" xml:space="preserve">
         <value>Too many toppings requested.</value>
     </data>
+    <data name="pizza_help" xml:space="preserve">
+        <value>Generates random pizza toppings. Syntax: -pizza [&lt;count&gt;]</value>
+    </data>
     <data name="salad_invalid_number" xml:space="preserve">
         <value>Please provide a valid positive number of ingredients.</value>
     </data>
     <data name="salad_too_many_ingredients" xml:space="preserve">
         <value>Too many ingredients requested.</value>
+    </data>
+    <data name="salad_help" xml:space="preserve">
+        <value>Generates random salad ingredients. Syntax: -salad [&lt;count&gt;]</value>
+    </data>
+    <data name="debilify_help" xml:space="preserve">
+        <value>Converts text to random fancy unicode characters. Syntax: -debilify &lt;text&gt;</value>
+    </data>
+    <data name="election_help" xml:space="preserve">
+        <value>Simulates an election between candidates. Syntax: -election &lt;candidate1&gt;, &lt;candidate2&gt; [, ...]</value>
+    </data>
+    <data name="evromaker_help" xml:space="preserve">
+        <value>Transforms text in a random quirky style. Syntax: -evromaker &lt;text&gt;</value>
+    </data>
+    <data name="weebify_help" xml:space="preserve">
+        <value>Adds anime honorifics to words. Syntax: -weebify &lt;text&gt;</value>
     </data>
     <data name="bj_dealer" xml:space="preserve">
         <value>Dealer</value>
@@ -2704,6 +2833,9 @@
     </data>
     <data name="bj_game_cancelled" xml:space="preserve">
         <value>The blackjack game has been cancelled.</value>
+    </data>
+    <data name="pairings_help" xml:space="preserve">
+        <value>Generates random pairings from a list of players. Syntax: -pairings &lt;player1&gt;, &lt;player2&gt; [, ...]</value>
     </data>
     <data name="ship_help" xml:space="preserve">
         <value>Calculates the compatibility between two users. Usage: -ship &lt;user1&gt;, &lt;user2&gt;</value>

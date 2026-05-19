@@ -87,7 +87,7 @@ public class ShowPollsCommandTest
         await _sut.RunAsync(_context);
 
         // Assert
-        _context.Received(1).ReplyLocalizedMessage("show_polls_history_sent");
+        _context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_history_sent");
         _context.Received(1).ReplyHtmlPage(
             "polls-history",
             Arg.Is<string>(content =>
@@ -113,7 +113,7 @@ public class ShowPollsCommandTest
         await _sut.RunAsync(_context);
 
         // Assert
-        _context.Received(1).ReplyLocalizedMessage("show_polls_history_sent");
+        _context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_history_sent");
         _context.Received(1).ReplyHtmlPage(
             "polls-history",
             Arg.Is<string>(content =>
@@ -131,7 +131,7 @@ public class ShowPollsCommandTest
         await _sut.RunAsync(_context);
 
         // Assert
-        _context.Received(1).ReplyLocalizedMessage("show_polls_no_polls", TestRoomId);
+        _context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_no_polls", TestRoomId);
         _context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
     }
 
@@ -146,7 +146,7 @@ public class ShowPollsCommandTest
         await _sut.RunAsync(_context);
 
         // Assert
-        _context.Received(1).ReplyLocalizedMessage("show_polls_room_not_exist", TargetRoomId);
+        _context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_room_not_exist", TargetRoomId);
         _context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
     }
 
@@ -166,7 +166,7 @@ public class ShowPollsCommandTest
         await _sut.RunAsync(_context);
 
         // Assert
-        _context.Received(1).ReplyLocalizedMessage("show_polls_no_polls", TargetRoomId);
+        _context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_no_polls", TargetRoomId);
         _context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
     }
 

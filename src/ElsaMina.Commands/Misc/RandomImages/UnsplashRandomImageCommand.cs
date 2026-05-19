@@ -24,6 +24,7 @@ public abstract class UnsplashRandomImageCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Voiced;
+    public override string HelpMessageKey => "rand_unsplash_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

@@ -20,6 +20,7 @@ public class RandMp4Command : Command
 
     public override Rank RequiredRank => Rank.Driver;
     public override bool IsAllowedInPrivateMessage => true;
+    public override string HelpMessageKey => "randmp4_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

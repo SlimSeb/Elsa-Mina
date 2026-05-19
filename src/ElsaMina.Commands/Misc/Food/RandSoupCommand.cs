@@ -17,6 +17,7 @@ public class RandSoupCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "randsoup_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

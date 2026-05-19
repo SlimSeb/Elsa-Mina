@@ -39,6 +39,7 @@ public class EvroMakerCommand : Command
     public override bool IsAllowedInPrivateMessage => true;
     public override bool IsHidden => true;
     public override bool IsWhitelistOnly => true;
+    public override string HelpMessageKey => "evromaker_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

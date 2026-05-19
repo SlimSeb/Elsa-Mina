@@ -30,6 +30,7 @@ public class BadgeEditPanelCommand : Command
 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Driver;
+    public override string HelpMessageKey => "badge_edit_panel_help_message";
 
     private const int PAGE_SIZE = 10;
 

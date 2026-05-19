@@ -17,6 +17,7 @@ public class RandRecipeCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "randrecipe_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

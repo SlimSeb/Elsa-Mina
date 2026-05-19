@@ -25,6 +25,7 @@ public class SaladCommand : Command
 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Regular;
+    public override string HelpMessageKey => "salad_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

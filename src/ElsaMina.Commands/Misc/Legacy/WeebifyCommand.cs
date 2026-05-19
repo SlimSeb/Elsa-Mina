@@ -20,6 +20,7 @@ public class WeebifyCommand : Command
 
     public override Rank RequiredRank => Rank.Regular;
     public override bool IsAllowedInPrivateMessage => true;
+    public override string HelpMessageKey => "weebify_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

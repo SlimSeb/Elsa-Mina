@@ -18,6 +18,7 @@ public class RandHeartGifCommand : Command
 
     public override Rank RequiredRank => Rank.Voiced;
     public override bool IsAllowedInPrivateMessage => true;
+    public override string HelpMessageKey => "randheart_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

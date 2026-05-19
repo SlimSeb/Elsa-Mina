@@ -33,6 +33,7 @@ public class AskElsaCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Driver;
+    public override string HelpMessageKey => "ask_elsa_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
