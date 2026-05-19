@@ -66,7 +66,6 @@ using ElsaMina.Commands.Showdown.BattleTracker;
 using ElsaMina.Commands.Showdown.Ladder;
 using ElsaMina.Commands.Showdown.Ladder.EloHistory;
 using ElsaMina.Commands.Showdown.Ranking;
-using ElsaMina.Commands.Showdown.Searching;
 using ElsaMina.Commands.Showdown.SmogonStats;
 using ElsaMina.Commands.Teams.Samples;
 using ElsaMina.Commands.Teams.TeamPreviewOnLink;
@@ -180,7 +179,6 @@ public class CommandModule : Module
         builder.RegisterCommand<RankingCommand>();
         builder.RegisterCommand<SmogonStatsCommand>();
         builder.RegisterCommand<LadderCommand>();
-        builder.RegisterCommand<SearchCommand>();
         builder.RegisterCommand<ToggleLadderTrackerCommand>();
         builder.RegisterCommand<FailCommand>();
         builder.RegisterCommand<RepeatFormCommand>();
@@ -227,7 +225,6 @@ public class CommandModule : Module
         builder.RegisterCommand<ShipCommand>();
         builder.RegisterCommand<RunningCommands>();
         builder.RegisterCommand<CancelRunningCommand>();
-        builder.RegisterCommand<SearchCommand>();
         builder.RegisterCommand<SeenCommand>();
         builder.RegisterCommand<AltsCommand>();
         builder.RegisterCommand<TopPlayTimesCommand>();
@@ -374,7 +371,7 @@ public class CommandModule : Module
         builder.RegisterType<EloHistoryService>().As<IEloHistoryService>().SingleInstance().OnActivating(e =>
         {
             e.Instance.Start();
-        });
+        }).AutoActivate();
         builder.RegisterCommand<LadderGraphCommand>();
         builder.RegisterType<LagTestManager>().As<ILagTestManager>().SingleInstance();
         builder.RegisterType<ArcadeInscriptionsManager>().As<IArcadeInscriptionsManager>().SingleInstance();

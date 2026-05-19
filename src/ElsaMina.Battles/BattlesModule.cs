@@ -1,4 +1,5 @@
 using Autofac;
+using ElsaMina.Battles.Commands;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Core.Utils;
 
@@ -15,5 +16,7 @@ public class BattlesModule : Module
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
 
         builder.RegisterHandler<BattleHandler>();
+
+        builder.RegisterCommand<SearchCommand>();
     }
 }

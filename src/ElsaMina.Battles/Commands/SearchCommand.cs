@@ -1,8 +1,7 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.Rooms;
 
-namespace ElsaMina.Commands.Showdown.Searching;
+namespace ElsaMina.Battles.Commands;
 
 [NamedCommand("search")]
 public class SearchCommand : Command
