@@ -22,9 +22,9 @@ jobs:
         with:
           dotnet-version: ${{ inputs.dotnet-version }}
       - name: restore
-        run: ./scripts/restore.sh
+        run: ./scripts/Build/restore.sh
       - name: test
-        run: ./scripts/test.sh
+        run: ./scripts/Build/test.sh
       - name: publish results
         if: always()
         uses: dorny/test-reporter@v1

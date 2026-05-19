@@ -30,13 +30,13 @@ jobs:
         with:
           dotnet-version: "10.0.x"
       - name: restore
-        run: ./scripts/restore.sh
+        run: ./scripts/Build/restore.sh
       - name: build
-        run: ./scripts/build.sh
+        run: ./scripts/Build/build.sh
       - name: publish
-        run: ./scripts/publish.sh
+        run: ./scripts/Build/publish.sh
       - name: stage restart script
-        run: cp scripts/restart_remote.sh ./output/restart_remote.sh
+        run: cp scripts/Build/restart_remote.sh ./output/restart_remote.sh
       - name: upload artifacts
         uses: actions/upload-artifact@v4
         with:
