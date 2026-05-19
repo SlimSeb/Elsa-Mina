@@ -843,6 +843,9 @@
     <data name="speak_error" xml:space="preserve">
         <value>Une erreur est survenue !</value>
     </data>
+    <data name="speak_help_message" xml:space="preserve">
+        <value>Génère un audio text-to-speech. Utilisation : -speak &lt;texte&gt; ;; &lt;voix&gt; (voix : Male ou Female, par défaut : Female)</value>
+    </data>
     <data name="replay_preview_title" xml:space="preserve">
         <value>Replay de {0}</value>
     </data>

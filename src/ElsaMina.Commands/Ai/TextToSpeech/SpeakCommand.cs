@@ -1,8 +1,6 @@
-using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Ai.TextToSpeech;
@@ -19,6 +17,7 @@ public class SpeakCommand : Command
 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Voiced;
+    public override string HelpMessageKey => "speak_help_message";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
@@ -34,6 +33,12 @@ public class SpeakCommand : Command
         {
             text = context.Target;
             voiceType = VoiceType.Female;
+        }
+
+        if (string.IsNullOrEmpty(text))
+        {
+            ReplyLocalizedHelpMessage(context);
+            return;
         }
 
         var url = await _textToSpeechProvider.GetTextToSpeechAudioUrlAsync(text, voiceType, cancellationToken);

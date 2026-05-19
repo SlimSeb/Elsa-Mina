@@ -26,9 +26,26 @@ public class SpeakCommandTest
     [Test]
     [TestCase(null)]
     [TestCase("")]
-    public async Task Test_RunAsync_ShouldReturnError_WhenTextToSpeechFailed(string key)
+    public async Task Test_RunAsync_ShouldReplyWithHelpMessage_WhenTargetIsNullOrEmpty(string target)
     {
         // Given
+        _context.Target.Returns(target);
+
+        // When
+        await _command.RunAsync(_context);
+
+        // Then
+        _context.Received(1).Reply(_context.GetString("speak_help_message"));
+        await _textToSpeechProvider
+            .DidNotReceive()
+            .GetTextToSpeechAudioUrlAsync(Arg.Any<string>(), Arg.Any<VoiceType>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReturnError_WhenTextToSpeechFailed()
+    {
+        // Given
+        _context.Target.Returns("some text");
         _textToSpeechProvider
             .GetTextToSpeechAudioUrlAsync(Arg.Any<string>(), Arg.Any<VoiceType>(), Arg.Any<CancellationToken>())
             .ReturnsNull();
@@ -44,6 +61,7 @@ public class SpeakCommandTest
     public async Task Test_RunAsync_ShouldFetchStreamAndUploadIt_WhenTtsAndFileUploadSucceeds()
     {
         // Given
+        _context.Target.Returns("hello");
         _textToSpeechProvider
             .GetTextToSpeechAudioUrlAsync(Arg.Any<string>(), Arg.Any<VoiceType>(), Arg.Any<CancellationToken>())
             .Returns("https://ovh.net/s3/myaudio.mp3");
@@ -52,7 +70,7 @@ public class SpeakCommandTest
         await _command.RunAsync(_context);
 
         // Then
-        _context.Received(1).ReplyHtml("""<audio src="https://ovh.net/s3/myaudio.mp3" controls aria-label=""></audio>""");
+        _context.Received(1).ReplyHtml("""<audio src="https://ovh.net/s3/myaudio.mp3" controls aria-label="hello"></audio>""");
     }
 
     [Test]
