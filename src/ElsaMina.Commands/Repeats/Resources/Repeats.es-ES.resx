@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="aboutrepeat_not_found" xml:space="preserve">
+        <value>No se pudo encontrar un repeat.</value>
+    </data>
+    <data name="aboutrepeat_helpmessage" xml:space="preserve">
+        <value>Sintaxis: -repeat &lt;id&gt;, &lt;mensaje&gt;, &lt;duración en minutos&gt;</value>
+    </data>
+    <data name="repeat_start_error" xml:space="preserve">
+        <value>No se pudo iniciar el repeat</value>
+    </data>
+    <data name="repeat_start_rank" xml:space="preserve">
+        <value>No tienes permiso para hacer eso aquí</value>
+    </data>
+    <data name="repeat_start_success" xml:space="preserve">
+        <value>Repeat iniciado.</value>
+    </data>
+    <data name="repeat_stop" xml:space="preserve">
+        <value>Detener</value>
+    </data>
+    <data name="repeat_message" xml:space="preserve">
+        <value>Mensaje</value>
+    </data>
+    <data name="repeat_delay" xml:space="preserve">
+        <value>Intervalo (minutos)</value>
+    </data>
+    <data name="repeat_actions" xml:space="preserve">
+        <value>Acciones</value>
+    </data>
+    <data name="repeat_add" xml:space="preserve">
+        <value>Añadir un repeat</value>
+    </data>
+    <data name="repeat_stop_invalid_id" xml:space="preserve">
+        <value>Identificador inválido.</value>
+    </data>
+    <data name="repeat_stop_doesntexist" xml:space="preserve">
+        <value>El repeat no existe.</value>
+    </data>
+    <data name="repeat_stop_rights" xml:space="preserve">
+        <value>No tienes permiso para hacer eso aquí.</value>
+    </data>
+    <data name="repeat_stop_error" xml:space="preserve">
+        <value>No se pudo detener el repeat</value>
+    </data>
+    <data name="repeat_stop_success" xml:space="preserve">
+        <value>Repeat detenido.</value>
+    </data>
+</root>

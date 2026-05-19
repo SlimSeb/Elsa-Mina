@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="team_preview_author" xml:space="preserve">
+        <value>(Créée par {0})</value>
+    </data>
+    <data name="team_preview_title" xml:space="preserve">
+        <value>L'équipe de {0}</value>
+    </data>
+    <data name="team_preview_click_icons" xml:space="preserve">
+        <value>Cliquez sur les icônes pour l'import de l'équipe</value>
+    </data>
+    <data name="team_preview_copy" xml:space="preserve">
+        <value>Copier l'équipe</value>
+    </data>
+    <data name="add_team_help_message" xml:space="preserve">
+        <value>Ajoute une team aux samples. Syntaxe: -add-team &lt;lien&gt;, &lt;nom&gt;, &lt;tier&gt;</value>
+    </data>
+    <data name="add_team_name_too_long" xml:space="preserve">
+        <value>Le nom de l'équipe est trop long.</value>
+    </data>
+    <data name="add_team_no_provider" xml:space="preserve">
+        <value>Impossible de trouver l'équipe depuis le lien. Veuillez fournir un lien Pokepaste ou CoupCritique.</value>
+    </data>
+    <data name="add_team_no_export_error" xml:space="preserve">
+        <value>Pas d'export trouvé.</value>
+    </data>
+    <data name="add_team_success" xml:space="preserve">
+        <value>L'équipe a été ajoutée avec l'identifiant "{0}"</value>
+    </data>
+    <data name="add_team_failure" xml:space="preserve">
+        <value>Une erreur est survenue lors de l'ajout de l'équipe : {0}</value>
+    </data>
+    <data name="add_team_to_room_no_arg" xml:space="preserve">
+        <value>Veuillez spécifier l'identifiant de l'équipe</value>
+    </data>
+    <data name="add_team_to_room_no_team" xml:space="preserve">
+        <value>Impossible de trouver cette équipe</value>
+    </data>
+    <data name="add_team_to_room_team_already_in_room" xml:space="preserve">
+        <value>Cette équipe est déjà dans cette salle</value>
+    </data>
+    <data name="add_team_to_room_success" xml:space="preserve">
+        <value>La salle a été ajoutée à l'équipe.</value>
+    </data>
+    <data name="add_team_to_room_failure" xml:space="preserve">
+        <value>Une erreur est survenue en ajoutant cette salle à l'équipe : {0}</value>
+    </data>
+    <data name="add_team_to_room_help_message" xml:space="preserve">
+        <value>Ajoute une équipe au salon actuel. Syntaxe : -add-team-to-room &lt;team_id&gt;</value>
+    </data>
+    <data name="sample_team_description" xml:space="preserve">
+        <value>Ajoutée par {0} le {1}</value>
+    </data>
+    <data name="sample_team_info" xml:space="preserve">
+        <value>Salles: {0}, Format: {1}</value>
+    </data>
+    <data name="deleteteam_team_not_found" xml:space="preserve">
+        <value>L'équipe n'a pas été trouvée.</value>
+    </data>
+    <data name="deleteteam_team_deleted_successfully" xml:space="preserve">
+        <value>L'équipe a été supprimée.</value>
+    </data>
+    <data name="deleteteam_team_deletion_error" xml:space="preserve">
+        <value>Une erreur est survenue lors de la suppression de l'équipe : {0}</value>
+    </data>
+    <data name="deleteteam_help" xml:space="preserve">
+        <value>Supprime une équipe. Syntaxe : -delete-team &lt;team_id&gt;</value>
+    </data>
+    <data name="team_showcase_not_found" xml:space="preserve">
+        <value>L'équipe est introuvable.</value>
+    </data>
+    <data name="team_showcase_help" xml:space="preserve">
+        <value>Affiche les détails d'une équipe. Syntaxe : -team-showcase &lt;team_id&gt;</value>
+    </data>
+    <data name="team_list_empty" xml:space="preserve">
+        <value>Aucune équipe trouvée.</value>
+    </data>
+    <data name="team_list_help" xml:space="preserve">
+        <value>Liste toutes les équipes du salon. Syntaxe : -team-list [&lt;format&gt;]</value>
+    </data>
+    <data name="deleteallteams_help" xml:space="preserve">
+        <value>Supprime toutes les équipes d'un tier spécifique de cette room. Utilisation : -deleteallteams &lt;tier&gt;</value>
+    </data>
+    <data name="deleteallteams_no_teams_found" xml:space="preserve">
+        <value>Aucune équipe trouvée pour le tier « {0} » dans cette room.</value>
+    </data>
+    <data name="deleteallteams_success" xml:space="preserve">
+        <value>{0} équipe(s) du tier « {1} » ont été supprimées de cette room.</value>
+    </data>
+    <data name="deleteallteams_error" xml:space="preserve">
+        <value>Une erreur s'est produite lors de la suppression des équipes : {0}</value>
+    </data>
+</root>

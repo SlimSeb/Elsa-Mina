@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="help" xml:space="preserve">
+        <value>Elsa-Mina v{0}</value>
+    </data>
+    <data name="name_color_help" xml:space="preserve">
+        <value>Mostra il colore associato a un nickname.</value>
+    </data>
+    <data name="dicoenglish_help" xml:space="preserve">
+        <value>Cerca la definizione di una parola inglese. Sintassi: -dict &lt;parola&gt;</value>
+    </data>
+    <data name="dicoenglish_definition" xml:space="preserve">
+        <value>Definizione di "{0}": {1}</value>
+    </data>
+    <data name="dicoenglish_not_found" xml:space="preserve">
+        <value>Nessuna definizione trovata per "{0}".</value>
+    </data>
+    <data name="dicoenglish_suggestions" xml:space="preserve">
+        <value>Parola "{0}" non trovata. Forse intendevi: {1}?</value>
+    </data>
+    <data name="dicoenglish_error" xml:space="preserve">
+        <value>Si è verificato un errore durante la ricerca della definizione.</value>
+    </data>
+    <data name="youtube_no_results" xml:space="preserve">
+        <value>Nessun video trovato.</value>
+    </data>
+    <data name="youtube_watch" xml:space="preserve">
+        <value>Guarda su YouTube</value>
+    </data>
+    <data name="youtube_video_info" xml:space="preserve">
+        <value>Caricato da {0} il {1}</value>
+    </data>
+    <data name="youtube_error_occurred" xml:space="preserve">
+        <value>Si è verificato un errore.</value>
+    </data>
+    <data name="youtube_help" xml:space="preserve">
+        <value>Cerca un video su YouTube. Sintassi: -youtube &lt;parole chiave&gt;</value>
+    </data>
+    <data name="bitcoin_error" xml:space="preserve">
+        <value>Si è verificato un errore.</value>
+    </data>
+    <data name="bitcoin_help" xml:space="preserve">
+        <value>Mostra il prezzo attuale del Bitcoin in EUR e USD.</value>
+    </data>
+    <data name="fact_error" xml:space="preserve">
+        <value>Si è verificato un errore.</value>
+    </data>
+    <data name="facts_help" xml:space="preserve">
+        <value>Mostra un fatto curioso casuale. Usa -factde per un fatto in tedesco.</value>
+    </data>
+    <data name="wiki_page_not_found" xml:space="preserve">
+        <value>Nessuna pagina trovata.</value>
+    </data>
+    <data name="wiki_error" xml:space="preserve">
+        <value>Si è verificato un errore cercando la pagina: {0}</value>
+    </data>
+    <data name="wikipedia_help" xml:space="preserve">
+        <value>Cerca una pagina su Wikipedia. Sintassi: -wikipedia &lt;termini&gt;</value>
+    </data>
+    <data name="bulbapedia_help" xml:space="preserve">
+        <value>Cerca una pagina su Bulbapedia. Sintassi: -bulbapedia &lt;termini&gt;</value>
+    </data>
+    <data name="pokepedia_help" xml:space="preserve">
+        <value>Cerca una pagina su Pokepedia. Sintassi: -pokepedia &lt;termini&gt;</value>
+    </data>
+    <data name="pokemon_name_required" xml:space="preserve">
+        <value>Fornisci un nome di Pokémon.</value>
+    </data>
+    <data name="afd_help" xml:space="preserve">
+        <value>Mostra lo sprite di Pesce d'Aprile di un Pokémon. Sintassi: -afd &lt;pokémon&gt;</value>
+    </data>
+    <data name="dailymotion_watch_video" xml:space="preserve">
+        <value>Guarda su Dailymotion</value>
+    </data>
+    <data name="dailymotion_no_video_found" xml:space="preserve">
+        <value>Nessun video trovato</value>
+    </data>
+    <data name="dailymotion_help" xml:space="preserve">
+        <value>Cerca un video su Dailymotion. Sintassi: -dailymotion &lt;parole chiave&gt;</value>
+    </data>
+    <data name="dailymotion_fetch_error" xml:space="preserve">
+        <value>Si è verificato un errore caricando il video: {0}</value>
+    </data>
+    <data name="uptime" xml:space="preserve">
+        <value>Tempo di attività: {0}</value>
+    </data>
+    <data name="changelog_error" xml:space="preserve">
+        <value>Si è verificato un errore durante il recupero del changelog.</value>
+    </data>
+    <data name="changelog_no_commits" xml:space="preserve">
+        <value>Nessun commit trovato.</value>
+    </data>
+    <data name="genius_help_message" xml:space="preserve">
+        <value>Recupera una canzone dai suoi testi usando Genius. Uso: -genius &lt;testo&gt;</value>
+    </data>
+    <data name="genius_release_date" xml:space="preserve">
+        <value>Rilasciato il: {0}</value>
+    </data>
+    <data name="genius_artist" xml:space="preserve">
+        <value>Di: {0}</value>
+    </data>
+    <data name="genius_page_views" xml:space="preserve">
+        <value>Visualizzazioni pagina: {0}</value>
+    </data>
+    <data name="genius_link" xml:space="preserve">
+        <value>Leggi i testi su Genius</value>
+    </data>
+    <data name="genius_not_found" xml:space="preserve">
+        <value>Impossibile trovare una canzone a partire da quei testi o da quelle parole chiave.</value>
+    </data>
+    <data name="rand_unsplash_help" xml:space="preserve">
+        <value>Mostra un'immagine casuale da Unsplash.</value>
+    </data>
+    <data name="rand_help" xml:space="preserve">
+        <value>Mostra una GIF casuale da Tenor. Sintassi: -rand [&lt;ricerca&gt;]</value>
+    </data>
+    <data name="randgif_help" xml:space="preserve">
+        <value>Mostra una GIF casuale da Tenor. Sintassi: -randgif [&lt;ricerca&gt;]</value>
+    </data>
+    <data name="randmp4_help" xml:space="preserve">
+        <value>Mostra un MP4 casuale da Tenor. Sintassi: -randmp4 [&lt;ricerca&gt;]</value>
+    </data>
+    <data name="randfurret_help" xml:space="preserve">
+        <value>Mostra una GIF casuale di Furret.</value>
+    </data>
+    <data name="randheart_help" xml:space="preserve">
+        <value>Mostra una GIF casuale di cuori.</value>
+    </data>
+    <data name="randhelp_help" xml:space="preserve">
+        <value>Elenca tutti i comandi immagine casuale disponibili.</value>
+    </data>
+    <data name="walk_help" xml:space="preserve">
+        <value>Mostra un'immagine scorrevole. Sintassi: -walk &lt;url_immagine&gt;</value>
+    </data>
+    <data name="random_image_error" xml:space="preserve">
+        <value>Spiacenti, impossibile ottenere un'immagine al momento.</value>
+    </data>
+    <data name="walk_missing_url" xml:space="preserve">
+        <value>Fornisci un link immagine valido. Sintassi: -walk &lt;image_url&gt;</value>
+    </data>
+    <data name="rand_warning_snake" xml:space="preserve">
+        <value>Attenzione! Questa immagine potrebbe contenere serpenti che potrebbero non essere adatti a tutti i pubblici.</value>
+    </data>
+    <data name="rand_warning_spider" xml:space="preserve">
+        <value>Attenzione! Questa immagine potrebbe contenere ragni che potrebbero non essere adatti a tutti i pubblici.</value>
+    </data>
+    <data name="rand_warning_shark" xml:space="preserve">
+        <value>Attenzione! Questa immagine potrebbe contenere squali che potrebbero non essere adatti a tutti i pubblici.</value>
+    </data>
+    <data name="rand_warning_mouse" xml:space="preserve">
+        <value>Attenzione! Questa immagine potrebbe contenere topi che potrebbero non essere adatti a tutti i pubblici.</value>
+    </data>
+    <data name="googletranslate_help" xml:space="preserve">
+        <value>Traduce un testo. Sintassi: -googletranslate &lt;testo&gt;, &lt;lingua di destinazione&gt;[, &lt;lingua di origine&gt;]</value>
+    </data>
+    <data name="googletranslate_error" xml:space="preserve">
+        <value>Si è verificato un errore durante la traduzione.</value>
+    </data>
+    <data name="badtranslate_help" xml:space="preserve">
+        <value>Traduce un testo attraverso 10 lingue casuali. Sintassi: -badtranslate &lt;testo&gt;</value>
+    </data>
+    <data name="fullpot_help" xml:space="preserve">
+        <value>Traduce un testo attraverso 10 lingue casuali mostrando ogni passaggio. Sintassi: -fullpot &lt;testo&gt;</value>
+    </data>
+    <data name="pokemon_translate_help" xml:space="preserve">
+        <value>Traduce il nome di un Pokémon in tutte le lingue disponibili. Uso: -ptranslate &lt;nome&gt;</value>
+    </data>
+    <data name="pokemon_translate_not_found" xml:space="preserve">
+        <value>Nessun Pokémon trovato con il nome "{0}".</value>
+    </data>
+    <data name="randcustom_help" xml:space="preserve">
+        <value>Esegue un comando personalizzato casuale nella stanza.</value>
+    </data>
+    <data name="randcustom_error" xml:space="preserve">
+        <value>Si è verificato un errore durante il recupero di un comando personalizzato casuale: {0}</value>
+    </data>
+    <data name="help_bot_description" xml:space="preserve">
+        <value>(v{0}) è un bot di Pokémon Showdown.</value>
+    </data>
+    <data name="help_commands_list" xml:space="preserve">
+        <value>Lista dei comandi disponibili</value>
+    </data>
+    <data name="help_source_code" xml:space="preserve">
+        <value>Codice sorgente</value>
+    </data>
+    <data name="help_report_bug" xml:space="preserve">
+        <value>Segnala un bug</value>
+    </data>
+    <data name="help_command_help" xml:space="preserve">
+        <value>Mostra le informazioni del bot e l'elenco dei comandi disponibili.</value>
+    </data>
+    <data name="spoonacular_no_results" xml:space="preserve">
+        <value>Nessuna ricetta trovata.</value>
+    </data>
+    <data name="spoonacular_error" xml:space="preserve">
+        <value>Si è verificato un errore durante il recupero della ricetta.</value>
+    </data>
+    <data name="randcheese_help" xml:space="preserve">
+        <value>Mostra una ricetta di formaggio casuale.</value>
+    </data>
+    <data name="randpasta_help" xml:space="preserve">
+        <value>Mostra una ricetta di pasta casuale.</value>
+    </data>
+    <data name="randrecipe_help" xml:space="preserve">
+        <value>Mostra una ricetta casuale.</value>
+    </data>
+    <data name="randsalad_help" xml:space="preserve">
+        <value>Mostra una ricetta di insalata casuale.</value>
+    </data>
+    <data name="randsoup_help" xml:space="preserve">
+        <value>Mostra una ricetta di zuppa casuale.</value>
+    </data>
+    <data name="recipe_missing_query" xml:space="preserve">
+        <value>Specifica un piatto o un ingrediente da cercare.</value>
+    </data>
+    <data name="recipe_help" xml:space="preserve">
+        <value>Cerca una ricetta. Sintassi: -recipe &lt;ingredienti o nome del piatto&gt;</value>
+    </data>
+    <data name="pizza_invalid_number" xml:space="preserve">
+        <value>Inserisci un numero positivo valido di ingredienti.</value>
+    </data>
+    <data name="pizza_too_many_toppings" xml:space="preserve">
+        <value>Troppi ingredienti richiesti.</value>
+    </data>
+    <data name="pizza_help" xml:space="preserve">
+        <value>Genera condimenti pizza casuali. Sintassi: -pizza [&lt;numero&gt;]</value>
+    </data>
+    <data name="salad_invalid_number" xml:space="preserve">
+        <value>Inserisci un numero positivo valido di ingredienti.</value>
+    </data>
+    <data name="salad_too_many_ingredients" xml:space="preserve">
+        <value>Troppi ingredienti richiesti.</value>
+    </data>
+    <data name="salad_help" xml:space="preserve">
+        <value>Genera ingredienti insalata casuali. Sintassi: -salad [&lt;numero&gt;]</value>
+    </data>
+    <data name="debilify_help" xml:space="preserve">
+        <value>Converte testo in caratteri unicode decorativi casuali. Sintassi: -debilify &lt;testo&gt;</value>
+    </data>
+    <data name="election_help" xml:space="preserve">
+        <value>Simula un'elezione tra candidati. Sintassi: -election &lt;candidato1&gt;, &lt;candidato2&gt; [, ...]</value>
+    </data>
+    <data name="evromaker_help" xml:space="preserve">
+        <value>Trasforma il testo in uno stile stravagante casuale. Sintassi: -evromaker &lt;testo&gt;</value>
+    </data>
+    <data name="weebify_help" xml:space="preserve">
+        <value>Aggiunge onorifici anime alle parole. Sintassi: -weebify &lt;testo&gt;</value>
+    </data>
+    <data name="pairings_help" xml:space="preserve">
+        <value>Genera abbinamenti casuali da una lista di giocatori. Sintassi: -pairings &lt;giocatore1&gt;, &lt;giocatore2&gt; [, ...]</value>
+    </data>
+    <data name="ship_help" xml:space="preserve">
+        <value>Calcola la compatibilità tra due utenti. Utilizzo: -ship &lt;user1&gt;, &lt;user2&gt;</value>
+    </data>
+    <data name="ship_result" xml:space="preserve">
+        <value>💘 {0} &amp; {1} — compatibilità: {2}% {3}</value>
+    </data>
+
+    <data name="setcolor_help" xml:space="preserve">
+        <value>Imposta un colore personalizzato per il nickname di un utente. Sintassi: -setcolor &lt;utente&gt;, &lt;#coloreesadecimale&gt; (es. -setcolor Distrib, #9d6b15)</value>
+    </data>
+    <data name="setcolor_invalid_hex" xml:space="preserve">
+        <value>Colore esadecimale non valido. Usa il formato #RGB o #RRGGBB (es. #9d6b15).</value>
+    </data>
+    <data name="setcolor_success" xml:space="preserve">
+        <value>Colore del nickname {0} salvato per {1}.</value>
+    </data>
+    <data name="removecolor_help" xml:space="preserve">
+        <value>Rimuove il colore personalizzato del nickname di un utente. Sintassi: -removecolor &lt;utente&gt;</value>
+    </data>
+    <data name="removecolor_success" xml:space="preserve">
+        <value>Colore del nickname rimosso per {0}.</value>
+    </data>
+    <data name="removecolor_not_found" xml:space="preserve">
+        <value>Nessun colore personalizzato trovato per {0}.</value>
+    </data>
+</root>

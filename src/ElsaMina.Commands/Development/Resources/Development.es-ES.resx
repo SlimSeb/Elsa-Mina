@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="speak_error" xml:space="preserve">
+        <value>¡Se produjo un error!</value>
+    </data>
+    <data name="speak_help_message" xml:space="preserve">
+        <value>Genera audio de texto a voz. Uso: -speak &lt;texto&gt; ;; &lt;voz&gt; (voz: Male o Female, por defecto: Female)</value>
+    </data>
+    <data name="timer_command_help" xml:space="preserve">
+        <value>Configura un temporizador para enviar un mensaje después de una duración especificada. Uso: -timer &lt;duración&gt; (ej. 3min 50secs, 0.5h, 2 days)</value>
+    </data>
+    <data name="timer_command_success" xml:space="preserve">
+        <value>¡Se acabó el tiempo! El temporizador de {0} ha terminado.</value>
+    </data>
+    <data name="timer_command_started" xml:space="preserve">
+        <value>Temporizador iniciado.</value>
+    </data>
+    <data name="bugreport_help" xml:space="preserve">
+        <value>Reportar un error</value>
+    </data>
+    <data name="bugreport_reply" xml:space="preserve">
+        <value>Para reportar un error, utiliza el siguiente enlace: {0}</value>
+    </data>
+    <data name="bugreport_not_configured" xml:space="preserve">
+        <value>El enlace para reportar errores no está configurado.</value>
+    </data>
+    <data name="lagtest_result" xml:space="preserve">
+        <value>Latencia: {0} ms</value>
+    </data>
+    <data name="lagtest_timeout" xml:space="preserve">
+        <value>El test de latencia ha caducado.</value>
+    </data>
+</root>

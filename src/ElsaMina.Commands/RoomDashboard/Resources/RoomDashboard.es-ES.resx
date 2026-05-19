@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="room_dashboard" xml:space="preserve">
+        <value>Panel de administración de {0}</value>
+    </data>
+    <data name="submit" xml:space="preserve">
+        <value>Validar</value>
+    </data>
+    <data name="dashboard_room_doesnt_exist" xml:space="preserve">
+        <value>Sala {0} no encontrada.</value>
+    </data>
+    <data name="dashboard_locale_name" xml:space="preserve">
+        <value>Idioma</value>
+    </data>
+    <data name="dashboard_locale_description" xml:space="preserve">
+        <value>El idioma del bot en la sala.</value>
+    </data>
+    <data name="dashboard_errors_name" xml:space="preserve">
+        <value>Mostrar errores de comandos</value>
+    </data>
+    <data name="dashboard_errors_description" xml:space="preserve">
+        <value>Muestra la traza de una excepción cuando un comando ha fallado.</value>
+    </data>
+    <data name="dashboard_autocorrect_name" xml:space="preserve">
+        <value>Mostrar comandos sugeridos</value>
+    </data>
+    <data name="dashboard_autocorrect_description" xml:space="preserve">
+        <value>Muestra comandos sugeridos cuando alguien intenta usar un comando que no existe.</value>
+    </data>
+    <data name="room_config_success" xml:space="preserve">
+        <value>La configuración de la sala {0} ha sido actualizada.</value>
+    </data>
+    <data name="room_config_failure" xml:space="preserve">
+        <value>Se produjo un error al actualizar la configuración: {0}</value>
+    </data>
+    <data name="room_config_room_not_found" xml:space="preserve">
+        <value>No se pudo encontrar la sala '{0}'</value>
+    </data>
+    <data name="room_config_locale_not_found" xml:space="preserve">
+        <value>No se pudo encontrar el idioma '{0}'</value>
+    </data>
+    <data name="dashboard_team_previews_name" xml:space="preserve">
+        <value>Vista previa de equipo</value>
+    </data>
+    <data name="dashboard_team_previews_description" xml:space="preserve">
+        <value>Muestra un equipo desde un enlace Pokepaste o CoupCritique</value>
+    </data>
+    <data name="setlocale_invalid_locale" xml:space="preserve">
+        <value>El idioma "{0}" no se ha encontrado.</value>
+    </data>
+    <data name="setlocale_room_not_found" xml:space="preserve">
+        <value>La sala "{0}" no se ha encontrado.</value>
+    </data>
+    <data name="setlocale_success" xml:space="preserve">
+        <value>Actualización del idioma de la sala {0}: {1}</value>
+    </data>
+    <data name="setlocale_failure" xml:space="preserve">
+        <value>No se pudo actualizar el idioma.</value>
+    </data>
+</root>

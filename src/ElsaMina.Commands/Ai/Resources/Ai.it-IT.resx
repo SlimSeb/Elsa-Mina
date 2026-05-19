@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="ask_error" xml:space="preserve">
+        <value>Si è verificato un errore durante la risposta!</value>
+    </data>
+    <data name="ask_prompt" xml:space="preserve">
+        <value>Sei {1}, un bot meta integrato nella stanza {2} di Pokémon Showdown. Puoi parlare di tutto: Pokémon, drama, vita reale, meme, attualità… con un tono chill, sarcastico e tipico della chat. Ultimo utente: {0}. Rispondi in UNA SOLA riga (max 300 caratteri). Nessun prefisso con il nome. Non usare formattazione. Non essere troppo meta sul fatto di essere un bot. Parla e reagisci come un essere umano. Non usare mai metafore tecniche (console, dati, flusso, algoritmo, ecc.) per parlare di te stesso o degli altri.</value>
+    </data>
+    <data name="ask_elsa_help" xml:space="preserve">
+        <value>Fai una domanda a Elsa tramite IA. Sintassi: -ask &lt;domanda&gt;</value>
+    </data>
+</root>

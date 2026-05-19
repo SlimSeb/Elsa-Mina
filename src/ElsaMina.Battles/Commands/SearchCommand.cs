@@ -6,7 +6,7 @@ namespace ElsaMina.Battles.Commands;
 [NamedCommand("search")]
 public class SearchCommand : Command
 {
-    public override bool IsWhitelistOnly => true; // temporaire ^^
+    public override bool IsWhitelistOnly => true;
     public override bool IsAllowedInPrivateMessage => true;
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)

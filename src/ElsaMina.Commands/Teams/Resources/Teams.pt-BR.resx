@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="team_preview_title" xml:space="preserve">
+        <value>Time de {0}</value>
+    </data>
+    <data name="team_preview_author" xml:space="preserve">
+        <value>(Criado por {0})</value>
+    </data>
+    <data name="team_preview_click_icons" xml:space="preserve">
+        <value>Clique nos ícones para exibir a versão importável</value>
+    </data>
+    <data name="team_preview_copy" xml:space="preserve">
+        <value>Copiar equipe</value>
+    </data>
+    <data name="add_team_help_message" xml:space="preserve">
+        <value>Adiciona um time aos exemplos. Sintaxe: -add-team &lt;link&gt;, &lt;nome&gt;, &lt;tier&gt;</value>
+    </data>
+    <data name="add_team_name_too_long" xml:space="preserve">
+        <value>O nome do time é muito longo.</value>
+    </data>
+    <data name="add_team_no_provider" xml:space="preserve">
+        <value>Não foi possível encontrar o time pelo link. Por favor, forneça um link Pokepaste ou CoupCritique.</value>
+    </data>
+    <data name="add_team_no_export_error" xml:space="preserve">
+        <value>Nenhum exportador de time encontrado.</value>
+    </data>
+    <data name="add_team_success" xml:space="preserve">
+        <value>Time adicionado com o ID "{0}"</value>
+    </data>
+    <data name="add_team_failure" xml:space="preserve">
+        <value>Ocorreu um erro ao adicionar o time : {0}</value>
+    </data>
+    <data name="add_team_to_room_no_arg" xml:space="preserve">
+        <value>Por favor, especifique o ID do time.</value>
+    </data>
+    <data name="add_team_to_room_no_team" xml:space="preserve">
+        <value>Não foi possível encontrar este time.</value>
+    </data>
+    <data name="add_team_to_room_team_already_in_room" xml:space="preserve">
+        <value>Este time já está nesta sala.</value>
+    </data>
+    <data name="add_team_to_room_success" xml:space="preserve">
+        <value>Time adicionado à sala.</value>
+    </data>
+    <data name="add_team_to_room_failure" xml:space="preserve">
+        <value>Ocorreu um erro ao adicionar uma sala ao time : {0}</value>
+    </data>
+    <data name="add_team_to_room_help_message" xml:space="preserve">
+        <value>Adiciona um time à sala atual. Sintaxe : -add-team-to-room &lt;team_id&gt;</value>
+    </data>
+    <data name="sample_team_description" xml:space="preserve">
+        <value>Adicionado por {0} em {1}</value>
+    </data>
+    <data name="sample_team_info" xml:space="preserve">
+        <value>Salas: {0}, Formato: {1}</value>
+    </data>
+    <data name="deleteteam_team_not_found" xml:space="preserve">
+        <value>Time não encontrado.</value>
+    </data>
+    <data name="deleteteam_team_deleted_successfully" xml:space="preserve">
+        <value>O time foi excluído.</value>
+    </data>
+    <data name="deleteteam_team_deletion_error" xml:space="preserve">
+        <value>Ocorreu um erro ao excluir o time : {0}</value>
+    </data>
+    <data name="deleteteam_help" xml:space="preserve">
+        <value>Remove um time. Sintaxe : -delete-team &lt;team_id&gt;</value>
+    </data>
+    <data name="team_showcase_not_found" xml:space="preserve">
+        <value>Este time não foi encontrado.</value>
+    </data>
+    <data name="team_showcase_help" xml:space="preserve">
+        <value>Exibe os detalhes de um time. Sintaxe : -team-showcase &lt;team_id&gt;</value>
+    </data>
+    <data name="team_list_empty" xml:space="preserve">
+        <value>Nenhum time encontrado.</value>
+    </data>
+    <data name="team_list_help" xml:space="preserve">
+        <value>Lista todos os times na sala. Sintaxe : -team-list [&lt;formato&gt;]</value>
+    </data>
+    <data name="deleteallteams_help" xml:space="preserve">
+        <value>Exclui todos os times de um tier específico nesta sala. Uso: -deleteallteams &lt;tier&gt;</value>
+    </data>
+    <data name="deleteallteams_no_teams_found" xml:space="preserve">
+        <value>Nenhum time encontrado para o tier "{0}" nesta sala.</value>
+    </data>
+    <data name="deleteallteams_success" xml:space="preserve">
+        <value>{0} time(s) do tier "{1}" foram excluídos desta sala.</value>
+    </data>
+    <data name="deleteallteams_error" xml:space="preserve">
+        <value>Ocorreu um erro ao excluir os times: {0}</value>
+    </data>
+    <data name="team_preview_copy" xml:space="preserve">
+        <value>Copiar equipe</value>
+    </data>
+</root>

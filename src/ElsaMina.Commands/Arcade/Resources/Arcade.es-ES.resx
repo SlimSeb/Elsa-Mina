@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="arcade_level_invalid_value" xml:space="preserve">
+        <value>Palier inválido. Usa 2, 3 o 4.</value>
+    </data>
+    <data name="arcade_level_add" xml:space="preserve">
+        <value>Añadido nivel de {0} = {1}</value>
+    </data>
+    <data name="arcade_level_update" xml:space="preserve">
+        <value>Actualizado nivel de {0} = {1}</value>
+    </data>
+    <data name="arcade_level_help" xml:space="preserve">
+        <value>Sintaxis: addpalier (usuario), (palier)</value>
+    </data>
+    <data name="arcade_levels_level" xml:space="preserve">
+        <value>Nivel</value>
+    </data>
+    <data name="arcade_levels_players" xml:space="preserve">
+        <value>Jugadores</value>
+    </data>
+    <data name="arcade_level_delete_help" xml:space="preserve">
+        <value>Elimina un usuario de los palieres del arcade.</value>
+    </data>
+    <data name="arcade_level_delete_not_found" xml:space="preserve">
+        <value>No se encontró el jugador.</value>
+    </data>
+    <data name="arcade_level_delete_success" xml:space="preserve">
+        <value>El jugador ha sido eliminado.</value>
+    </data>
+    <data name="arcade_level_update_error" xml:space="preserve">
+        <value>Se produjo un error al actualizar el palier: {0}</value>
+    </data>
+    <data name="arcade_level_no_users" xml:space="preserve">
+        <value>No se encontró ningún palier.</value>
+    </data>
+    <data name="arcade_level_delete_failure" xml:space="preserve">
+        <value>Se produjo un error al eliminar el palier: {0}</value>
+    </data>
+    <data name="arcade_level_get_help" xml:space="preserve">
+        <value>Sintaxis: -palier (usuario)</value>
+    </data>
+    <data name="arcade_level_get_not_found" xml:space="preserve">
+        <value>{0} no pertenece a ningún nivel.</value>
+    </data>
+    <data name="arcade_level_get_success" xml:space="preserve">
+        <value>**{0}** pertenece al Nivel **{1}**.</value>
+    </data>
+    <data name="arcade_sheets_addpoints_help" xml:space="preserve">
+        <value>Sintaxis: -addpoints (usuario), (puntos)</value>
+    </data>
+    <data name="arcade_sheets_addpoints_success" xml:space="preserve">
+        <value>Actualización realizada.</value>
+    </data>
+    <data name="arcade_sheets_addpoints_new_player" xml:space="preserve">
+        <value>Actualización realizada (nuevo jugador).</value>
+    </data>
+    <data name="arcade_sheets_points_help" xml:space="preserve">
+        <value>Sintaxis: -arcadepoints (usuario)</value>
+    </data>
+    <data name="arcade_sheets_points_has_points" xml:space="preserve">
+        <value>{0} tiene {1} puntos en el Arcade Hall of Fame.</value>
+    </data>
+    <data name="arcade_sheets_points_no_points" xml:space="preserve">
+        <value>{0} no tiene puntos en el Arcade Hall of Fame.</value>
+    </data>
+    <data name="slots_description_bulbasaur" xml:space="preserve">
+        <value>una planta</value>
+    </data>
+    <data name="slots_description_squirtle" xml:space="preserve">
+        <value>un caparazón</value>
+    </data>
+    <data name="slots_description_charmander" xml:space="preserve">
+        <value>una llama</value>
+    </data>
+    <data name="slots_description_pikachu" xml:space="preserve">
+        <value>un rayo</value>
+    </data>
+    <data name="slots_description_eevee" xml:space="preserve">
+        <value>un abrazo</value>
+    </data>
+    <data name="slots_description_snorlax" xml:space="preserve">
+        <value>un ronquido</value>
+    </data>
+    <data name="slots_description_dragonite" xml:space="preserve">
+        <value>un vuelo</value>
+    </data>
+    <data name="slots_description_mew" xml:space="preserve">
+        <value>un poder místico</value>
+    </data>
+    <data name="slots_description_mewtwo" xml:space="preserve">
+        <value>un ataque psíquico</value>
+    </data>
+    <data name="slots_description_dialga" xml:space="preserve">
+        <value>un viaje en el tiempo</value>
+    </data>
+    <data name="slots_description_palkia" xml:space="preserve">
+        <value>un viaje espacial</value>
+    </data>
+    <data name="slots_description_giratina" xml:space="preserve">
+        <value>un pasaje al Mundo Distorsión</value>
+    </data>
+    <data name="slots_blacklisted_room" xml:space="preserve">
+        <value>Este comando no está disponible en esta sala.</value>
+    </data>
+    <data name="slots_cooldown" xml:space="preserve">
+        <value>Debes esperar {0}h {1}min más antes de volver a usar este comando.</value>
+    </data>
+    <data name="slots_win_prize" xml:space="preserve">
+        <value>¡Has ganado {0}!</value>
+    </data>
+    <data name="slots_win_0" xml:space="preserve">
+        <value>¡ha hecho un combo perfecto!</value>
+    </data>
+    <data name="slots_win_1" xml:space="preserve">
+        <value>¡tiene una suerte increíble hoy!</value>
+    </data>
+    <data name="slots_win_2" xml:space="preserve">
+        <value>¡debería jugar a la lotería!</value>
+    </data>
+    <data name="slots_win_3" xml:space="preserve">
+        <value>¡está bendecido por Arceus!</value>
+    </data>
+    <data name="slots_win_4" xml:space="preserve">
+        <value>¡tiene suerte de principiante!</value>
+    </data>
+    <data name="slots_win_5" xml:space="preserve">
+        <value>¡ha obtenido un resultado legendario!</value>
+    </data>
+    <data name="slots_lose_0" xml:space="preserve">
+        <value>¡no tiene mucha suerte hoy!</value>
+    </data>
+    <data name="slots_lose_1" xml:space="preserve">
+        <value>¡debería intentarlo de nuevo!</value>
+    </data>
+    <data name="slots_lose_2" xml:space="preserve">
+        <value>¡estuvo tan cerca!</value>
+    </data>
+    <data name="slots_lose_3" xml:space="preserve">
+        <value>¡necesita un poco más de suerte!</value>
+    </data>
+    <data name="slots_lose_4" xml:space="preserve">
+        <value>¡debería pedirle un deseo a Jirachi!</value>
+    </data>
+    <data name="slots_lose_5" xml:space="preserve">
+        <value>¡casi lo logra!</value>
+    </data>
+    <data name="arcade_in_help" xml:space="preserve">
+        <value>Join the ongoing arcade tournament registrations. Syntax: -in</value>
+    </data>
+    <data name="arcade_in_pm_specify_room" xml:space="preserve">
+        <value>Please specify a room when using this command in PM. Syntax: -in [room]</value>
+    </data>
+    <data name="arcade_pm_room_not_found" xml:space="preserve">
+        <value>Room not found.</value>
+    </data>
+    <data name="arcade_no_active_inscriptions" xml:space="preserve">
+        <value>No arcade tournament registration is currently active.</value>
+    </data>
+    <data name="arcade_inscriptions_timer_expired" xml:space="preserve">
+        <value>Registrations are closed (timer expired).</value>
+    </data>
+    <data name="arcade_in_banned" xml:space="preserve">
+        <value>You have been removed from this tournament and cannot re-register.</value>
+    </data>
+    <data name="arcade_in_already_registered" xml:space="preserve">
+        <value>You are already registered for this tournament.</value>
+    </data>
+    <data name="arcade_in_success" xml:space="preserve">
+        <value>You have been registered for the arcade tournament! ({0} participants)</value>
+    </data>
+    <data name="arcade_leave_help" xml:space="preserve">
+        <value>Leave the ongoing arcade tournament registrations. Syntax: -leave</value>
+    </data>
+    <data name="arcade_leave_pm_specify_room" xml:space="preserve">
+        <value>Please specify a room when using this command in PM. Syntax: -leave [room]</value>
+    </data>
+    <data name="arcade_leave_not_registered" xml:space="preserve">
+        <value>You are not registered for this tournament.</value>
+    </data>
+    <data name="arcade_leave_success" xml:space="preserve">
+        <value>You have been removed from the arcade tournament. ({0} participants)</value>
+    </data>
+    <data name="arcade_start_help" xml:space="preserve">
+        <value>Start arcade tournament registrations. Syntax: -arcadestart [title], [timer in minutes]</value>
+    </data>
+    <data name="arcade_start_already_active" xml:space="preserve">
+        <value>Arcade tournament registrations are already active.</value>
+    </data>
+    <data name="arcade_timer_positive_integer" xml:space="preserve">
+        <value>The timer must be a positive integer number of minutes.</value>
+    </data>
+    <data name="arcade_timer_parse_error" xml:space="preserve">
+        <value>Invalid timer value. Please provide a number of minutes.</value>
+    </data>
+    <data name="arcade_start_with_timer" xml:space="preserve">
+        <value>Registrations "{0}" started with a {1}-minute timer! Use -in to join, -leave to leave.</value>
+    </data>
+    <data name="arcade_start_no_timer" xml:space="preserve">
+        <value>Registrations "{0}" started! Use -in to join, -leave to leave.</value>
+    </data>
+    <data name="arcade_stop_help" xml:space="preserve">
+        <value>Stop arcade tournament registrations. Syntax: -arcadestop</value>
+    </data>
+    <data name="arcade_stop_no_participants" xml:space="preserve">
+        <value>Arcade tournament registrations stopped. No participants.</value>
+    </data>
+    <data name="arcade_list_help" xml:space="preserve">
+        <value>View current arcade tournament participants. Syntax: -arcadelist</value>
+    </data>
+    <data name="arcade_list_no_data" xml:space="preserve">
+        <value>No arcade tournament data found for this room.</value>
+    </data>
+    <data name="arcade_list_no_participants" xml:space="preserve">
+        <value>No participants registered. Registrations are currently {0}.</value>
+    </data>
+    <data name="arcade_list_status_active" xml:space="preserve">
+        <value>active</value>
+    </data>
+    <data name="arcade_list_status_inactive" xml:space="preserve">
+        <value>inactive</value>
+    </data>
+    <data name="arcade_list_result" xml:space="preserve">
+        <value>Arcade tournament participants ({0}) - Status: {1}{2}: {3}</value>
+    </data>
+    <data name="arcade_list_timer_remaining" xml:space="preserve">
+        <value> (Timer: {0} minutes remaining)</value>
+    </data>
+    <data name="arcade_remove_help" xml:space="preserve">
+        <value>Remove a participant from the arcade tournament. Syntax: -arcaderemove [username]</value>
+    </data>
+    <data name="arcade_remove_not_registered" xml:space="preserve">
+        <value>User "{0}" is not registered for the tournament.</value>
+    </data>
+    <data name="arcade_remove_success" xml:space="preserve">
+        <value>User "{0}" has been removed from the arcade tournament and cannot re-register.</value>
+    </data>
+    <data name="arcade_timer_help" xml:space="preserve">
+        <value>Add or change the timer for active registrations. Syntax: -arcadetimer [minutes]</value>
+    </data>
+    <data name="arcade_timer_success" xml:space="preserve">
+        <value>Timer set for {0} minutes.</value>
+    </data>
+    <data name="arcade_add_help" xml:space="preserve">
+        <value>Add a participant to the arcade tournament. Syntax: -arcadeadd [username]</value>
+    </data>
+    <data name="arcade_add_already_registered" xml:space="preserve">
+        <value>User "{0}" is already registered for the tournament.</value>
+    </data>
+    <data name="arcade_add_banned" xml:space="preserve">
+        <value>User "{0}" has been removed from this tournament and cannot be re-added.</value>
+    </data>
+    <data name="arcade_add_success" xml:space="preserve">
+        <value>User "{0}" has been added to the arcade tournament.</value>
+    </data>
+    <data name="caa_addpoints_help" xml:space="preserve">
+        <value>Añade puntos a un jugador en la hoja CAA. Sintaxis: -addcaapoints (jugador), (puntos)</value>
+    </data>
+    <data name="caa_addpoints_success" xml:space="preserve">
+        <value>Actualizado: {0} ahora tiene {1} puntos.</value>
+    </data>
+    <data name="caa_addpoints_new_player" xml:space="preserve">
+        <value>Actualizado (nuevo jugador): {0} con {1} puntos.</value>
+    </data>
+    <data name="caa_title" xml:space="preserve">
+        <value>Calendrier de l'Avent d'Arcade 2025</value>
+    </data>
+    <data name="caa_column_rank" xml:space="preserve">
+        <value>Rango</value>
+    </data>
+    <data name="caa_column_username" xml:space="preserve">
+        <value>Usuario</value>
+    </data>
+    <data name="caa_column_points" xml:space="preserve">
+        <value>Puntos</value>
+    </data>
+
+    <data name="display_paliers_help" xml:space="preserve">
+        <value>Muestra los palieres del arcade.</value>
+    </data>
+    <data name="add_points_help" xml:space="preserve">
+        <value>Sintaxis: -addp usuario, puntos</value>
+    </data>
+    <data name="remove_points_help" xml:space="preserve">
+        <value>Sintaxis: -removepoints usuario, nb_punto</value>
+    </data>
+    <data name="remove_points_user_not_found" xml:space="preserve">
+        <value>El usuario '{0}' no tiene puntos.</value>
+    </data>
+    <data name="leaderboard_help" xml:space="preserve">
+        <value>Mostrar la clasificación</value>
+    </data>
+    <data name="leaderboard_empty" xml:space="preserve">
+        <value>No se encontraron puntos.</value>
+    </data>
+    <data name="clear_points_help" xml:space="preserve">
+        <value>Reiniciar todos los puntos después de un evento</value>
+    </data>
+    <data name="clear_points_success" xml:space="preserve">
+        <value>Se han reiniciado a cero los puntos de todos los usuarios.</value>
+    </data>
+    <data name="points_added_to" xml:space="preserve">
+        <value>punto(s) agregado(s) a</value>
+    </data>
+    <data name="points_removed_from" xml:space="preserve">
+        <value>punto(s) eliminado(s) de</value>
+    </data>
+    <data name="points_new_total" xml:space="preserve">
+        <value>Nuevo total de puntos para</value>
+    </data>
+    <data name="leaderboard_title" xml:space="preserve">
+        <value>Clasificación</value>
+    </data>
+    <data name="leaderboard_user" xml:space="preserve">
+        <value>Usuario</value>
+    </data>
+    <data name="leaderboard_points" xml:space="preserve">
+        <value>Puntos</value>
+    </data>
+</root>

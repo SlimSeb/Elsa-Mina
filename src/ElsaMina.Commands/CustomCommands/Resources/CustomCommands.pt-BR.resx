@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="addcommand_name_too_long" xml:space="preserve">
+        <value>O nome do comando é muito longo.</value>
+    </data>
+    <data name="addcommand_content_too_long" xml:space="preserve">
+        <value>O conteúdo do comando é muito longo.</value>
+    </data>
+    <data name="addcommand_bad_first_char" xml:space="preserve">
+        <value>O conteúdo do comando não pode começar com este caractere.</value>
+    </data>
+    <data name="addcommand_already_exist" xml:space="preserve">
+        <value>O comando já existe.</value>
+    </data>
+    <data name="addcommand_success" xml:space="preserve">
+        <value>Comando **{0}** adicionado com sucesso.</value>
+    </data>
+    <data name="addcommand_help" xml:space="preserve">
+        <value>Adiciona um novo comando personalizado. Sintaxe : -add-custom-command &lt;nome&gt;, &lt;conteúdo&gt;</value>
+    </data>
+    <data name="customcommandlist_title" xml:space="preserve">
+        <value>Comandos personalizados</value>
+    </data>
+    <data name="customcommandlist_name" xml:space="preserve">
+        <value>Comando</value>
+    </data>
+    <data name="customcommandlist_content" xml:space="preserve">
+        <value>Conteúdo</value>
+    </data>
+    <data name="customcommandlist_author" xml:space="preserve">
+        <value>Autor</value>
+    </data>
+    <data name="customcommandlist_no_commands" xml:space="preserve">
+        <value>Nenhum comando personalizado foi adicionado a esta sala.</value>
+    </data>
+    <data name="editcommand_help" xml:space="preserve">
+        <value>Edita um comando adicionado. Sintaxe : -editcommand &lt;nome&gt;, &lt;conteúdo&gt;</value>
+    </data>
+    <data name="editcommand_failure" xml:space="preserve">
+        <value>Não foi possível atualizar o comando : {0}</value>
+    </data>
+    <data name="editcommand_success" xml:space="preserve">
+        <value>O comando {0} foi atualizado</value>
+    </data>
+    <data name="deletecommand_help" xml:space="preserve">
+        <value>Exclui um comando adicionado. Sintaxe : -deletecommand &lt;comando&gt;</value>
+    </data>
+    <data name="deletecommand_failure" xml:space="preserve">
+        <value>Não foi possível excluir o comando : {0}</value>
+    </data>
+    <data name="deletecommand_success" xml:space="preserve">
+        <value>O comando {0} foi excluído</value>
+    </data>
+    <data name="cancel_command_usage" xml:space="preserve">
+        <value>Uso: cancel-command &lt;execution-id&gt;</value>
+    </data>
+    <data name="cancel_command_success" xml:space="preserve">
+        <value>Comando {0} cancelado</value>
+    </data>
+    <data name="cancel_command_not_found" xml:space="preserve">
+        <value>Nenhum comando em execução encontrado para {0}</value>
+    </data>
+    <data name="deletecommand_not_found" xml:space="preserve">
+        <value>Não foi possível encontrar o comando com ID '{0}'</value>
+    </data>
+</root>

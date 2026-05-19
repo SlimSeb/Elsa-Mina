@@ -1,4 +1,6 @@
-﻿using Autofac;
+﻿using System.Resources;
+using Autofac;
+using Assembly = System.Reflection.Assembly;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Handlers.DefaultHandlers;
@@ -42,6 +44,10 @@ public class CoreModule : Module
 
         builder.RegisterModule<DataAccessModule>();
         builder.RegisterModule<SheetsModule>();
+
+        builder.RegisterInstance(
+                new ResourceManager("ElsaMina.Core.Resources.Resources", Assembly.GetExecutingAssembly()))
+            .As<ResourceManager>().SingleInstance();
 
         builder.RegisterType<TelemetryService>().As<ITelemetryService>().SingleInstance();
         builder.RegisterType<DependencyContainerService>().As<IDependencyContainerService>().SingleInstance();

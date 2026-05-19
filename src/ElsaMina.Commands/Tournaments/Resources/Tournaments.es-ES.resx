@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="tour_finale_announce_message" xml:space="preserve">
+        <value>¡Mirad la final del torneo! &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="tour_history_title" xml:space="preserve">
+        <value>Historial de torneos de {0}</value>
+    </data>
+    <data name="tour_history_date" xml:space="preserve">
+        <value>Fecha</value>
+    </data>
+    <data name="tour_history_format" xml:space="preserve">
+        <value>Formato</value>
+    </data>
+    <data name="tour_history_winner" xml:space="preserve">
+        <value>Ganador</value>
+    </data>
+    <data name="tour_history_runner_up" xml:space="preserve">
+        <value>Finalista</value>
+    </data>
+    <data name="tour_history_semi_finalists" xml:space="preserve">
+        <value>Semifinalistas</value>
+    </data>
+    <data name="tour_history_player_count" xml:space="preserve">
+        <value>Jugadores</value>
+    </data>
+    <data name="tour_history_no_history" xml:space="preserve">
+        <value>No se ha registrado ningún torneo para la sala {0}.</value>
+    </data>
+    <data name="tour_history_room_not_found" xml:space="preserve">
+        <value>La sala {0} no existe.</value>
+    </data>
+    <data name="tour_announce_message" xml:space="preserve">
+        <value>Se ha creado un torneo {0} en la sala &lt;&lt;{1}&gt;&gt;</value>
+    </data>
+    <data name="top_tournament_players_help" xml:space="preserve">
+        <value>Displays the top 20 tournament players in this room.</value>
+    </data>
+    <data name="top_tournament_players_title" xml:space="preserve">
+        <value>Top tournament players in {0}</value>
+    </data>
+    <data name="top_tournament_players_user" xml:space="preserve">
+        <value>User</value>
+    </data>
+    <data name="top_tournament_players_wins" xml:space="preserve">
+        <value>Wins</value>
+    </data>
+    <data name="top_tournament_players_runner_up" xml:space="preserve">
+        <value>Runner-up</value>
+    </data>
+    <data name="top_tournament_players_third_place" xml:space="preserve">
+        <value>3rd place</value>
+    </data>
+    <data name="top_tournament_players_win_rate" xml:space="preserve">
+        <value>Win rate</value>
+    </data>
+    <data name="top_tournament_players_entered" xml:space="preserve">
+        <value>Entered</value>
+    </data>
+    <data name="top_tournament_players_no_data" xml:space="preserve">
+        <value>No tournament data found for this room.</value>
+    </data>
+    <data name="top_tournament_players_error" xml:space="preserve">
+        <value>Could not retrieve tournament data.</value>
+    </data>
+    <data name="hebdo_wrong_room" xml:space="preserve">
+        <value>Este comando solo se puede usar en la room arcade.</value>
+    </data>
+    <data name="tour_help_title" xml:space="preserve">
+        <value>Comandos de torneo disponibles:</value>
+    </data>
+    <data name="top_tournament_players_footer_new_label" xml:space="preserve">
+        <value>Novedad:</value>
+    </data>
+    <data name="top_tournament_players_footer_new_text" xml:space="preserve">
+        <value>¡Bio ahora a 20 victorias &amp; Custom Color añadido a 30 victorias!</value>
+    </data>
+    <data name="top_tournament_players_footer_rewards_title" xml:space="preserve">
+        <value>Recompensas</value>
+    </data>
+    <data name="top_tournament_players_footer_description_prefix" xml:space="preserve">
+        <value>¿Quieres obtener más recompensas? ¡Tenemos una clasificación que registra el número total de victorias (puedes consultarla con</value>
+    </data>
+    <data name="top_tournament_players_footer_description_infix" xml:space="preserve">
+        <value>en mensaje privado a</value>
+    </data>
+    <data name="top_tournament_players_footer_description_suffix" xml:space="preserve">
+        <value>)! Con un número determinado de victorias, puedes obtener estas recompensas:</value>
+    </data>
+    <data name="top_tournament_players_footer_20_wins" xml:space="preserve">
+        <value>Una bio en</value>
+    </data>
+    <data name="top_tournament_players_footer_30_wins" xml:space="preserve">
+        <value>Un custom color en</value>
+    </data>
+    <data name="top_tournament_players_footer_40_wins" xml:space="preserve">
+        <value>Un avatar en</value>
+    </data>
+    <data name="top_tournament_players_footer_50_wins" xml:space="preserve">
+        <value>Un roomprizewinner (^) durante tres meses</value>
+    </data>
+    <data name="top_tournament_players_footer_100_wins" xml:space="preserve">
+        <value>Un roomprizewinner (^) durante seis meses</value>
+    </data>
+    <data name="top_tournament_players_footer_150_wins" xml:space="preserve">
+        <value>Un roomprizewinner (^) durante un año</value>
+    </data>
+    <data name="random_tournament_wall" xml:space="preserve">
+        <value>Torneo: {0}</value>
+    </data>
+    <data name="hebdo_sv_help" xml:space="preserve">
+        <value>Inicia el torneo semanal SV OU en la sala arcade.</value>
+    </data>
+    <data name="hebdo_ss_help" xml:space="preserve">
+        <value>Inicia el torneo semanal SS OU en la sala arcade.</value>
+    </data>
+    <data name="hebdo_sm_help" xml:space="preserve">
+        <value>Inicia el torneo semanal SM OU en la sala arcade.</value>
+    </data>
+    <data name="hebdo_1v1_help" xml:space="preserve">
+        <value>Inicia el torneo semanal 1v1 en la sala arcade.</value>
+    </data>
+    <data name="hebdo_nfe_help" xml:space="preserve">
+        <value>Inicia el torneo semanal NFE en la sala arcade.</value>
+    </data>
+    <data name="hebdo_lcuu_help" xml:space="preserve">
+        <value>Inicia el torneo semanal LC UU en la sala arcade.</value>
+    </data>
+    <data name="hebdo_ubersuu_help" xml:space="preserve">
+        <value>Inicia el torneo semanal Ubers UU en la sala arcade.</value>
+    </data>
+    <data name="hebdo_zu_help" xml:space="preserve">
+        <value>Inicia el torneo semanal ZU en la sala arcade.</value>
+    </data>
+    <data name="hebdo_ag_help" xml:space="preserve">
+        <value>Inicia el torneo semanal Anything Goes en la sala arcade.</value>
+    </data>
+    <data name="hebdo_aaa_help" xml:space="preserve">
+        <value>Inicia el torneo semanal Almost Any Ability en la sala arcade.</value>
+    </data>
+    <data name="hebdo_bh_help" xml:space="preserve">
+        <value>Inicia el torneo semanal Balanced Hackmons en la sala arcade.</value>
+    </data>
+    <data name="hebdo_camo_help" xml:space="preserve">
+        <value>Inicia el torneo semanal Camomons en la sala arcade.</value>
+    </data>
+    <data name="hebdo_inhe_help" xml:space="preserve">
+        <value>Inicia el torneo semanal Inheritance en la sala arcade.</value>
+    </data>
+    <data name="hebdo_gg_help" xml:space="preserve">
+        <value>Inicia el torneo semanal Godly Gift en la sala arcade.</value>
+    </data>
+    <data name="hebdo_mnm_help" xml:space="preserve">
+        <value>Inicia el torneo semanal Mix and Mega en la sala arcade.</value>
+    </data>
+    <data name="hebdo_pic_help" xml:space="preserve">
+        <value>Inicia el torneo semanal Partners in Crime en la sala arcade.</value>
+    </data>
+    <data name="hebdo_stab_help" xml:space="preserve">
+        <value>Inicia el torneo semanal STABmons en la sala arcade.</value>
+    </data>
+    <data name="hebdo_advru_help" xml:space="preserve">
+        <value>Inicia el torneo RU Classic ADV en la sala arcade.</value>
+    </data>
+    <data name="hebdo_bwru_help" xml:space="preserve">
+        <value>Inicia el torneo RU Classic BW en la sala arcade.</value>
+    </data>
+    <data name="hebdo_orasru_help" xml:space="preserve">
+        <value>Inicia el torneo RU Classic ORAS en la sala arcade.</value>
+    </data>
+    <data name="hebdo_smru_help" xml:space="preserve">
+        <value>Inicia el torneo RU Classic SM en la sala arcade.</value>
+    </data>
+    <data name="hebdo_ssru_help" xml:space="preserve">
+        <value>Inicia el torneo RU Classic SS en la sala arcade.</value>
+    </data>
+    <data name="shared_power_help" xml:space="preserve">
+        <value>Inicia un torneo de Shared Power Random Battle.</value>
+    </data>
+    <data name="tour_points_help" xml:space="preserve">
+        <value>Sintaxis: -lbpoints usuario, [sala]</value>
+    </data>
+    <data name="tour_points_not_found" xml:space="preserve">
+        <value>No se encontraron victorias para {0} en la sala {1}.</value>
+    </data>
+    <data name="tour_points_result" xml:space="preserve">
+        <value>{0} tiene {1} victoria(s) en la sala {2}.</value>
+    </data>
+    <data name="tradepoints_help" xml:space="preserve">
+        <value>Sintaxis: -tradepoints origen, destino, puntos, [sala]</value>
+    </data>
+    <data name="tradepoints_invalid_points" xml:space="preserve">
+        <value>Los puntos deben ser un número entero positivo.</value>
+    </data>
+    <data name="tradepoints_not_enough" xml:space="preserve">
+        <value>{0} no tiene suficientes victorias para esta transferencia.</value>
+    </data>
+    <data name="tradepoints_success" xml:space="preserve">
+        <value>Se transfirieron {0} victoria(s) de {1} a {2} con éxito.</value>
+    </data>
+    <data name="tradepoints_staff_processed" xml:space="preserve">
+        <value>Transferencia procesada: {0} victoria(s) de {1} a {2} en {3}.</value>
+    </data>
+    <data name="requesttrade_help" xml:space="preserve">
+        <value>Sintaxis: -requesttrade origen, destino, puntos, [sala]</value>
+    </data>
+    <data name="requesttrade_created" xml:space="preserve">
+        <value>Solicitud de transferencia de {0} victoria(s) de {1} a {2} en la sala {3} creada.</value>
+    </data>
+    <data name="requesttrade_staff_message" xml:space="preserve">
+        <value>Solicitud de transferencia: {0} victoria(s) de &lt;b&gt;{1}&lt;/b&gt; a &lt;b&gt;{2}&lt;/b&gt; en la sala {3} por {4}.</value>
+    </data>
+    <data name="notrade_help" xml:space="preserve">
+        <value>Sintaxis: -notrade usuario, puntos</value>
+    </data>
+    <data name="notrade_staff_refused" xml:space="preserve">
+        <value>Solicitud de transferencia rechazada para {0}.</value>
+    </data>
+    <data name="bet_help" xml:space="preserve">
+        <value>Uso: -bet roomId jugador</value>
+    </data>
+    <data name="bet_success" xml:space="preserve">
+        <value>Has apostado por {0} en {1}. ¡Buena suerte!</value>
+    </data>
+    <data name="bet_no_session" xml:space="preserve">
+        <value>No hay ninguna sesión de apuestas activa en {0}.</value>
+    </data>
+    <data name="bet_invalid_player" xml:space="preserve">
+        <value>{0} no participa en el torneo actual.</value>
+    </data>
+    <data name="bet_already_placed" xml:space="preserve">
+        <value>Ya tienes una apuesta en este torneo. Usa -cancelbet para cambiarla.</value>
+    </data>
+    <data name="cancelbet_help" xml:space="preserve">
+        <value>Usage: -cancelbet roomId</value>
+    </data>
+    <data name="cancelbet_success" xml:space="preserve">
+        <value>Your bet on {0} has been cancelled and refunded.</value>
+    </data>
+    <data name="cancelbet_not_found" xml:space="preserve">
+        <value>You have no active bet in {0}.</value>
+    </data>
+    <data name="cancelbet_all_success" xml:space="preserve">
+        <value>All your bets in {0} have been cancelled and refunded.</value>
+    </data>
+    <data name="bet_resolution_correct_guesses" xml:space="preserve">
+        <value>🏆 ¡{0} ganó! Apuestas correctas: {1}</value>
+    </data>
+    <data name="bet_resolution_nobody_correct" xml:space="preserve">
+        <value>🏆 ¡{0} ganó! Nadie acertó.</value>
+    </data>
+    <data name="bet_closed" xml:space="preserve">
+        <value>Las apuestas están cerradas para este torneo.</value>
+    </data>
+    <data name="betting_announcement_title" xml:space="preserve">
+        <value>¡Haz tus apuestas!</value>
+    </data>
+    <data name="betting_announcement_closes_in" xml:space="preserve">
+        <value>Las apuestas cierran en {0} segundos</value>
+    </data>
+    <data name="betting_announcement_closed" xml:space="preserve">
+        <value>Las apuestas están cerradas.</value>
+    </data>
+    <data name="betting_announcement_bet_button" xml:space="preserve">
+        <value>Apostar</value>
+    </data>
+</root>

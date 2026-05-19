@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="badge_help_message" xml:space="preserve">
+        <value>Adiciona um novo emblema. Sintaxe : -add-badge &lt;nome&gt;, &lt;imagem&gt;. Use -add-trophy para adicionar um troféu.</value>
+    </data>
+    <data name="badge_edit_help_message" xml:space="preserve">
+        <value>Edita um emblema. Sintaxe : -editbadge &lt;emblema&gt;, &lt;nome&gt;, &lt;imagem&gt; [, &lt;sala&gt;]</value>
+    </data>
+    <data name="badge_edit_not_found" xml:space="preserve">
+        <value>Não foi possível encontrar o emblema {0}.</value>
+    </data>
+    <data name="badge_edit_success" xml:space="preserve">
+        <value>O emblema "{0}" foi atualizado.</value>
+    </data>
+    <data name="badge_edit_failure" xml:space="preserve">
+        <value>Ocorreu um erro ao atualizar o emblema : {0}</value>
+    </data>
+    <data name="badge_edit_panel_title" xml:space="preserve">
+        <value>Editor de emblemas de {0}</value>
+    </data>
+    <data name="badge_edit_panel_id" xml:space="preserve">
+        <value>ID do emblema</value>
+    </data>
+    <data name="badge_edit_panel_name" xml:space="preserve">
+        <value>Nome</value>
+    </data>
+    <data name="badge_edit_panel_image" xml:space="preserve">
+        <value>URL da imagem</value>
+    </data>
+    <data name="badge_edit_panel_is_trophy" xml:space="preserve">
+        <value>Troféu</value>
+    </data>
+    <data name="badge_edit_panel_prev" xml:space="preserve">
+        <value>Anterior</value>
+    </data>
+    <data name="badge_edit_panel_next" xml:space="preserve">
+        <value>Próximo</value>
+    </data>
+    <data name="badge_edit_panel_page" xml:space="preserve">
+        <value>Página {0} / {1}</value>
+    </data>
+    <data name="badge_edit_panel_no_badges" xml:space="preserve">
+        <value>Nenhum emblema encontrado para {0}.</value>
+    </data>
+    <data name="badge_edit_panel_help_message" xml:space="preserve">
+        <value>Mostra o painel de edição de emblemas. Sintaxe : -badge-edit-panel [&lt;sala&gt;]</value>
+    </data>
+    <data name="badge_add_success_message" xml:space="preserve">
+        <value>Novo emblema adicionado com sucesso.</value>
+    </data>
+    <data name="badge_add_failure_message" xml:space="preserve">
+        <value>Ocorreu um erro ao adicionar o emblema : {0}</value>
+    </data>
+    <data name="badge_add_already_exist" xml:space="preserve">
+        <value>O emblema {0} já existe.</value>
+    </data>
+    <data name="badge_give_help_message" xml:space="preserve">
+        <value>Dá um emblema a alguém. Sintaxe : -givebadge &lt;usuário&gt;, &lt;emblema&gt;</value>
+    </data>
+    <data name="badge_give_could_not_find_badge" xml:space="preserve">
+        <value>Não foi possível encontrar o emblema {0}.</value>
+    </data>
+    <data name="badge_give_error" xml:space="preserve">
+        <value>Ocorreu um erro ao conceder o emblema : {0}</value>
+    </data>
+    <data name="badge_give_success" xml:space="preserve">
+        <value>O usuário "{0}" recebeu o emblema "{1}".</value>
+    </data>
+    <data name="badge_pm_missing_room" xml:space="preserve">
+        <value>No PM, especifique a sala. Sintaxe: -givebadge usuário, emblema, sala</value>
+    </data>
+    <data name="badge_pm_insufficient_rank" xml:space="preserve">
+        <value>Você não tem permissões suficientes nesta sala.</value>
+    </data>
+    <data name="user_badge_panel_help" xml:space="preserve">
+        <value>Sintaxe: -userbadges usuário, [sala]</value>
+    </data>
+    <data name="user_badge_panel_title" xml:space="preserve">
+        <value>Emblemas de {0} — {1}</value>
+    </data>
+    <data name="user_badge_panel_no_badges" xml:space="preserve">
+        <value>Nenhum emblema existe nesta sala.</value>
+    </data>
+    <data name="user_badge_panel_owned" xml:space="preserve">
+        <value>Obtido</value>
+    </data>
+    <data name="user_badge_panel_give" xml:space="preserve">
+        <value>Dar</value>
+    </data>
+    <data name="user_badge_panel_take" xml:space="preserve">
+        <value>Remover</value>
+    </data>
+    <data name="user_badge_panel_refresh" xml:space="preserve">
+        <value>Atualizar</value>
+    </data>
+    <data name="badge_delete_help_message" xml:space="preserve">
+        <value>Remove um emblema. Sintaxe : -deletebadge &lt;emblema&gt;</value>
+    </data>
+    <data name="badge_delete_doesnt_exist" xml:space="preserve">
+        <value>O emblema "{0}" não existe.</value>
+    </data>
+    <data name="badge_delete_failure" xml:space="preserve">
+        <value>Ocorreu um erro ao excluir o emblema : {0}</value>
+    </data>
+    <data name="badge_delete_success" xml:space="preserve">
+        <value>O emblema "{0}" foi removido.</value>
+    </data>
+    <data name="takebadge_badge_doesnt_exist" xml:space="preserve">
+        <value>O usuário "{0}" não possui o emblema "{1}"</value>
+    </data>
+    <data name="takebadge_failure" xml:space="preserve">
+        <value>Ocorreu um erro ao remover o emblema : {0}</value>
+    </data>
+    <data name="takebadge_help_message" xml:space="preserve">
+        <value>Remove o emblema de um usuário. Sintaxe : -takebadge &lt;usuário&gt;, &lt;emblema&gt;</value>
+    </data>
+    <data name="takebadge_success" xml:space="preserve">
+        <value>O usuário "{0}" não possui mais o emblema "{1}".</value>
+    </data>
+    <data name="badge_display_help_message" xml:space="preserve">
+        <value>Mostra os detalhes de um emblema. Sintaxe : -badge &lt;emblema&gt;</value>
+    </data>
+    <data name="badge_display_not_found" xml:space="preserve">
+        <value>Não foi possível encontrar o emblema {0}.</value>
+    </data>
+    <data name="badge_display_is_trophy" xml:space="preserve">
+        <value>Troféu</value>
+    </data>
+    <data name="badge_display_is_team_tournament" xml:space="preserve">
+        <value>Torneio em equipe</value>
+    </data>
+    <data name="badge_display_holders" xml:space="preserve">
+        <value>Detentores</value>
+    </data>
+    <data name="badge_display_no_holders" xml:space="preserve">
+        <value>Nenhum</value>
+    </data>
+    <data name="badgelist_help_message" xml:space="preserve">
+        <value>Mostra todos os emblemas de uma sala. Sintaxe : -badgelist [&lt;sala&gt;]</value>
+    </data>
+    <data name="badgeholders_help_message" xml:space="preserve">
+        <value>Mostra todos os detentores de emblemas de uma sala. Sintaxe : -badgeholders [&lt;sala&gt;]</value>
+    </data>
+    <data name="badgelist_room_not_found" xml:space="preserve">
+        <value>Não foi possível encontrar a sala "{0}".</value>
+    </data>
+    <data name="hall_of_fame_rank" xml:space="preserve">
+        <value>Rank</value>
+    </data>
+    <data name="hall_of_fame_user" xml:space="preserve">
+        <value>Jogador</value>
+    </data>
+    <data name="hall_of_fame_trophy" xml:space="preserve">
+        <value>troféu</value>
+    </data>
+    <data name="hall_of_fame_trophies" xml:space="preserve">
+        <value>troféus</value>
+    </data>
+    <data name="hall_of_fame_total" xml:space="preserve">
+        <value>Total</value>
+    </data>
+    <data name="hall_of_fame_trophies_header" xml:space="preserve">
+        <value>Troféus</value>
+    </data>
+    <data name="hall_of_fame_solo" xml:space="preserve">
+        <value>solo</value>
+    </data>
+    <data name="hall_of_fame_team" xml:space="preserve">
+        <value>em equipe</value>
+    </data>
+    <data name="hall_of_fame_title" xml:space="preserve">
+        <value>Hall da Fama</value>
+    </data>
+    <data name="hall_of_fame_no_trophies" xml:space="preserve">
+        <value>Nenhum troféu encontrado</value>
+    </data>
+    <data name="hall_of_fame_help_message" xml:space="preserve">
+        <value>Mostra o hall da fama de uma sala. Sintaxe : -halloffame [&lt;sala&gt;]</value>
+    </data>
+</root>

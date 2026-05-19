@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="rankcommand_help" xml:space="preserve">
+        <value>Shows the 5 highest ratings (ranked by GXE) of a user. Syntax: -rank &lt;user&gt;. Use -lowestrank for the lowest ranks.</value>
+    </data>
+    <data name="rankcommand_no_ratings" xml:space="preserve">
+        <value>This user has yet to play on the ladder.</value>
+    </data>
+    <data name="rankcommand_error" xml:space="preserve">
+        <value>An error occurred.</value>
+    </data>
+    <data name="rankcommand_title" xml:space="preserve">
+        <value>{0}'s rankings</value>
+    </data>
+    <data name="rankcommand_elo" xml:space="preserve">
+        <value>Elo</value>
+    </data>
+    <data name="rankcommand_gxe" xml:space="preserve">
+        <value>GXE</value>
+    </data>
+    <data name="rankcommand_wins" xml:space="preserve">
+        <value>W</value>
+    </data>
+    <data name="rankcommand_losses" xml:space="preserve">
+        <value>L</value>
+    </data>
+    <data name="rankcommand_wr" xml:space="preserve">
+        <value>WR</value>
+    </data>
+    <data name="rankcommand_format" xml:space="preserve">
+        <value>Format</value>
+    </data>
+    <data name="ladder_title" xml:space="preserve">
+        <value>Ladder {0}</value>
+    </data>
+    <data name="ladder_username" xml:space="preserve">
+        <value>User</value>
+    </data>
+    <data name="ladder_elo" xml:space="preserve">
+        <value>Elo</value>
+    </data>
+    <data name="ladder_gxe" xml:space="preserve">
+        <value>GXE</value>
+    </data>
+    <data name="ladder_wins" xml:space="preserve">
+        <value>W</value>
+    </data>
+    <data name="ladder_losses" xml:space="preserve">
+        <value>L</value>
+    </data>
+    <data name="ladder_wr" xml:space="preserve">
+        <value>WR</value>
+    </data>
+    <data name="ladder_help" xml:space="preserve">
+        <value>Displays the ladder of a given tier. Syntax: -ladder &lt;tier&gt;, &lt;prefix (opt)&gt;</value>
+    </data>
+    <data name="ladder_no_players" xml:space="preserve">
+        <value>No players found.</value>
+    </data>
+    <data name="ladder_error" xml:space="preserve">
+        <value>Could not retrieve ladder.</value>
+    </data>
+    <data name="seen_command_help" xml:space="preserve">
+        <value>Shows the latest action seen for a user. Syntax: -seen &lt;user&gt;</value>
+    </data>
+    <data name="seen_command_not_found" xml:space="preserve">
+        <value>No recent action found for user {0}.</value>
+    </data>
+    <data name="seen_command_error" xml:space="preserve">
+        <value>An error occurred while fetching seen data for user {0}: {1}</value>
+    </data>
+    <data name="seen_command_last_seen" xml:space="preserve">
+        <value>User {0} was last seen on {1} {2} room {3}</value>
+    </data>
+    <data name="seen_command_action_chatting" xml:space="preserve">
+        <value>chatting in</value>
+    </data>
+    <data name="seen_command_action_joining" xml:space="preserve">
+        <value>joining</value>
+    </data>
+    <data name="seen_command_action_leaving" xml:space="preserve">
+        <value>leaving</value>
+    </data>
+    <data name="current_ladder_trackers_none" xml:space="preserve">
+        <value>No room trackings found for {0}.</value>
+    </data>
+    <data name="current_ladder_trackers_entry" xml:space="preserve">
+        <value>{0} - prefix: {1}</value>
+    </data>
+    <data name="toggletracking_help_message" xml:space="preserve">
+        <value>Will send an announce when a new battle starts in a specific format if a player's username match the given prefix. Syntax: -track &lt;format&gt;, &lt;prefix&gt;</value>
+    </data>
+    <data name="toggletracking_success" xml:space="preserve">
+        <value>Started tracking {0} battles for prefix {1}.</value>
+    </data>
+    <data name="toggletracking_failure" xml:space="preserve">
+        <value>Failed to start battle tracking.</value>
+    </data>
+    <data name="toggletracking_stop_success" xml:space="preserve">
+        <value>Stopped tracking {0} battles for prefix {1}.</value>
+    </data>
+    <data name="battletracker_battle_started" xml:space="preserve">
+        <value>A {0} battle started between {1} and {2} (min. Elo: {3})</value>
+    </data>
+    <data name="smogonstats_moves" xml:space="preserve">
+        <value>Moves</value>
+    </data>
+    <data name="smogonstats_items" xml:space="preserve">
+        <value>Items</value>
+    </data>
+    <data name="smogonstats_abilities" xml:space="preserve">
+        <value>Abilities</value>
+    </data>
+    <data name="smogonstats_teammates" xml:space="preserve">
+        <value>Teammates</value>
+    </data>
+    <data name="smogonstats_see_more" xml:space="preserve">
+        <value>more...</value>
+    </data>
+    <data name="smogonstats_help" xml:space="preserve">
+        <value>Shows the usage stats of a Pokémon. Syntax: -smogonstats &lt;pokemon&gt;, &lt;format&gt;[, &lt;month&gt;[, &lt;level&gt;]]</value>
+    </data>
+    <data name="smogonstats_not_found" xml:space="preserve">
+        <value>{0} was not found in {1}.</value>
+    </data>
+    <data name="smogonstats_error" xml:space="preserve">
+        <value>An error occurred while fetching usage data.</value>
+    </data>
+    <data name="ladder_graph_help" xml:space="preserve">
+        <value>Generates an ELO history graph for a player. Usage: -ladderhistory &lt;format&gt;, &lt;username&gt;</value>
+    </data>
+    <data name="ladder_graph_not_enough_data" xml:space="preserve">
+        <value>Not enough ELO history for {0}. Data is recorded hourly while the ladder tracker is active.</value>
+    </data>
+    <data name="ladder_graph_upload_failed" xml:space="preserve">
+        <value>Failed to upload the graph. Please try again later.</value>
+    </data>
+</root>

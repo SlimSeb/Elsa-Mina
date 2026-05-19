@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="tourconfig_dashboard_title" xml:space="preserve">
+        <value>Configuratore di Tornei</value>
+    </data>
+    <data name="tourconfig_configured_tours" xml:space="preserve">
+        <value>Tornei configurati</value>
+    </data>
+    <data name="tourconfig_no_tours" xml:space="preserve">
+        <value>Nessun torneo configurato per questa stanza.</value>
+    </data>
+    <data name="tourconfig_create_new" xml:space="preserve">
+        <value>Crea un nuovo torneo</value>
+    </data>
+    <data name="tourconfig_edit_title" xml:space="preserve">
+        <value>Modifica: {0}</value>
+    </data>
+    <data name="tourconfig_col_name" xml:space="preserve">
+        <value>Nome</value>
+    </data>
+    <data name="tourconfig_col_tier" xml:space="preserve">
+        <value>Tier</value>
+    </data>
+    <data name="tourconfig_col_autostart" xml:space="preserve">
+        <value>Autostart</value>
+    </data>
+    <data name="tourconfig_btn_launch" xml:space="preserve">
+        <value>Avvia</value>
+    </data>
+    <data name="tourconfig_btn_edit" xml:space="preserve">
+        <value>Modifica</value>
+    </data>
+    <data name="tourconfig_btn_delete" xml:space="preserve">
+        <value>Elimina</value>
+    </data>
+    <data name="tourconfig_btn_save" xml:space="preserve">
+        <value>Salva</value>
+    </data>
+    <data name="tourconfig_btn_create" xml:space="preserve">
+        <value>Crea torneo</value>
+    </data>
+    <data name="tourconfig_btn_back" xml:space="preserve">
+        <value>Indietro</value>
+    </data>
+    <data name="tourconfig_field_id" xml:space="preserve">
+        <value>ID (nome del comando):</value>
+    </data>
+    <data name="tourconfig_field_tier" xml:space="preserve">
+        <value>Tier:</value>
+    </data>
+    <data name="tourconfig_field_format" xml:space="preserve">
+        <value>Formato:</value>
+    </data>
+    <data name="tourconfig_field_autostart" xml:space="preserve">
+        <value>Autostart (min):</value>
+    </data>
+    <data name="tourconfig_field_autodq" xml:space="preserve">
+        <value>Autodq (min, vuoto se nessuno):</value>
+    </data>
+    <data name="tourconfig_field_tourname" xml:space="preserve">
+        <value>Nome del torneo:</value>
+    </data>
+    <data name="tourconfig_field_rules" xml:space="preserve">
+        <value>Regole:</value>
+    </data>
+    <data name="tourconfig_room_not_found" xml:space="preserve">
+        <value>Stanza non trovata o il bot non vi è presente.</value>
+    </data>
+    <data name="tourconfig_missing_data" xml:space="preserve">
+        <value>Dati mancanti.</value>
+    </data>
+    <data name="tourconfig_invalid_format" xml:space="preserve">
+        <value>Formato non valido.</value>
+    </data>
+    <data name="tourconfig_id_required" xml:space="preserve">
+        <value>L'ID del torneo è obbligatorio.</value>
+    </data>
+    <data name="tourconfig_tier_required" xml:space="preserve">
+        <value>Il tier è obbligatorio.</value>
+    </data>
+    <data name="tourconfig_saved" xml:space="preserve">
+        <value>Torneo "{0}" salvato con successo.</value>
+    </data>
+    <data name="tourconfig_deleted" xml:space="preserve">
+        <value>Torneo "{0}" eliminato.</value>
+    </data>
+    <data name="tourconfig_not_found" xml:space="preserve">
+        <value>Torneo "{0}" non trovato.</value>
+    </data>
+    <data name="tourconfig_launchtour_usage" xml:space="preserve">
+        <value>Utilizzo: -launchtour id[,stanza]</value>
+    </data>
+    <data name="eventroles_dashboard_title" xml:space="preserve">
+        <value>Configurazione dei ping Discord per evento</value>
+    </data>
+    <data name="eventroles_configured" xml:space="preserve">
+        <value>Eventi configurati</value>
+    </data>
+    <data name="eventroles_none" xml:space="preserve">
+        <value>Nessuna associazione evento/ruolo configurata per questa stanza.</value>
+    </data>
+    <data name="eventroles_add_new" xml:space="preserve">
+        <value>Aggiungi una nuova associazione</value>
+    </data>
+    <data name="eventroles_col_event" xml:space="preserve">
+        <value>Nome dell'evento</value>
+    </data>
+    <data name="eventroles_col_roleid" xml:space="preserve">
+        <value>ID del ruolo Discord</value>
+    </data>
+    <data name="eventroles_field_event" xml:space="preserve">
+        <value>Nome dell'evento:</value>
+    </data>
+    <data name="eventroles_field_roleid" xml:space="preserve">
+        <value>ID del ruolo Discord:</value>
+    </data>
+    <data name="eventroles_btn_add" xml:space="preserve">
+        <value>Aggiungi</value>
+    </data>
+    <data name="eventroles_btn_delete" xml:space="preserve">
+        <value>Elimina</value>
+    </data>
+    <data name="eventroles_room_not_found" xml:space="preserve">
+        <value>Stanza non trovata o il bot non vi è presente.</value>
+    </data>
+    <data name="eventroles_missing_data" xml:space="preserve">
+        <value>Dati mancanti.</value>
+    </data>
+    <data name="eventroles_invalid_format" xml:space="preserve">
+        <value>Formato non valido.</value>
+    </data>
+    <data name="eventroles_name_required" xml:space="preserve">
+        <value>Il nome dell'evento è obbligatorio.</value>
+    </data>
+    <data name="eventroles_roleid_required" xml:space="preserve">
+        <value>L'ID del ruolo Discord è obbligatorio.</value>
+    </data>
+    <data name="eventroles_saved" xml:space="preserve">
+        <value>Associazione per "{0}" salvata con successo.</value>
+    </data>
+    <data name="eventroles_deleted" xml:space="preserve">
+        <value>Associazione per "{0}" eliminata.</value>
+    </data>
+</root>

@@ -85,6 +85,9 @@ using ElsaMina.Commands.Users;
 using ElsaMina.Commands.Users.PlayTimes;
 using ElsaMina.Commands.Users.Streaks;
 using ElsaMina.Commands.Watchlist;
+using System.Resources;
+using System.Text.RegularExpressions;
+using Assembly = System.Reflection.Assembly;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Utils;
@@ -93,9 +96,50 @@ namespace ElsaMina.Commands;
 
 public class CommandModule : Module
 {
+    private static readonly Regex FEATURE_RESOURCE_PATTERN =
+        new(@"^(.+\.Resources\.\w+?)\.[\w-]+\.resources$",
+            RegexOptions.Compiled);
+
+    private static IEnumerable<ResourceManager> DiscoverFeatureResources()
+    {
+        var probeCulture = new System.Globalization.CultureInfo("en-US");
+        var seen = new HashSet<(string BaseName, Assembly Assembly)>();
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (assembly.FullName?.StartsWith("ElsaMina.") != true)
+            {
+                continue;
+            }
+            Assembly satelliteAssembly;
+            try
+            {
+                satelliteAssembly = assembly.GetSatelliteAssembly(probeCulture);
+            }
+            catch
+            {
+                continue;
+            }
+            foreach (var resourceName in satelliteAssembly.GetManifestResourceNames())
+            {
+                var match = FEATURE_RESOURCE_PATTERN.Match(resourceName);
+                if (match.Success)
+                {
+                    seen.Add((match.Groups[1].Value, assembly));
+                }
+            }
+        }
+        return seen.Select(item => new ResourceManager(item.BaseName, item.Assembly));
+    }
+
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
+
+        foreach (var resourceManager in DiscoverFeatureResources())
+        {
+            builder.RegisterInstance(resourceManager).As<ResourceManager>().SingleInstance();
+        }
+
 #if DEBUG
         builder.RegisterCommand<ScriptCommand>();
 #endif

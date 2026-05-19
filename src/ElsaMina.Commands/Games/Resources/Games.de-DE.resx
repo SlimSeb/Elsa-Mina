@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="guessing_game_final_scores" xml:space="preserve">
+        <value>Endergebnis</value>
+    </data>
+    <data name="guessing_game_game_ended" xml:space="preserve">
+        <value>Zeit abgelaufen! Die Antwort war : {0}</value>
+    </data>
+    <data name="guessing_game_point" xml:space="preserve">
+        <value>Punkt</value>
+    </data>
+    <data name="guessing_game_turn_count" xml:space="preserve">
+        <value>**Runde #{0}**</value>
+    </data>
+    <data name="guessing_game_answer_not_found" xml:space="preserve">
+        <value>Niemand hat die Antwort rechtzeitig gefunden! Die Antwort war: {0}</value>
+    </data>
+    <data name="guessing_game_answer_rate_limit" xml:space="preserve">
+        <value>Du antwortest zu schnell! Bitte warte einen Moment, bevor du es erneut versuchst.</value>
+    </data>
+    <data name="guessing_game_round_won" xml:space="preserve">
+        <value>{0} gewinnt diese Runde! Sie haben jetzt {1} Punkt{2}</value>
+    </data>
+    <data name="guessing_game_result_ended" xml:space="preserve">
+        <value>Das Spiel ist vorbei!</value>
+    </data>
+    <data name="countries_game_start" xml:space="preserve">
+        <value>Ein Länderspiel hat begonnen! Schreibe den Namen des Landes direkt in den Chat.</value>
+    </data>
+    <data name="capitals_game_start" xml:space="preserve">
+        <value>Ein Hauptstädtespiel hat begonnen! Schreibe die Hauptstadt des angegebenen Landes direkt in den Chat.</value>
+    </data>
+    <data name="capitals_game_question_country" xml:space="preserve">
+        <value>Was ist die Hauptstadt von {0}?</value>
+    </data>
+    <data name="capitals_game_question_capital" xml:space="preserve">
+        <value>Welches Land hat {0} als Hauptstadt?</value>
+    </data>
+    <data name="end_guessing_game_no_game" xml:space="preserve">
+        <value>In diesem Raum läuft derzeit kein Spiel.</value>
+    </data>
+    <data name="end_guessing_game_success" xml:space="preserve">
+        <value>Spiel beendet.</value>
+    </data>
+    <data name="c4_game_name" xml:space="preserve">
+        <value>Vier gewinnt</value>
+    </data>
+    <data name="c4_game_rules" xml:space="preserve">
+        <value>Verbinde {0} in einer Reihe, um das Spiel zu gewinnen!</value>
+    </data>
+    <data name="c4_game_current_turn" xml:space="preserve">
+        <value>{0} ist dran ({1}) !</value>
+    </data>
+    <data name="c4_game_how_to_play" xml:space="preserve">
+        <value>Klicke auf die Felder, um zu spielen</value>
+    </data>
+    <data name="c4_game_timeout" xml:space="preserve">
+        <value>(Du hast {0} Sekunden zum Spielen)</value>
+    </data>
+    <data name="c4_game_players" xml:space="preserve">
+        <value>Spieler: {0}</value>
+    </data>
+    <data name="vs" xml:space="preserve">
+        <value>GEG.</value>
+    </data>
+    <data name="c4_game_turn" xml:space="preserve">
+        <value>Zug: {0}</value>
+    </data>
+    <data name="c4_game_party_id" xml:space="preserve">
+        <value>Spiel: {0}</value>
+    </data>
+    <data name="c4_game_tie_end" xml:space="preserve">
+        <value>Das Spiel endete unentschieden.</value>
+    </data>
+    <data name="c4_game_win_message" xml:space="preserve">
+        <value>{0} hat das Spiel gewonnen!</value>
+    </data>
+    <data name="guessing_game_specify" xml:space="preserve">
+        <value>Bitte gib die Anzahl der Runden an.</value>
+    </data>
+    <data name="c4_game_on_timeout" xml:space="preserve">
+        <value>{0} wurde disqualifiziert, weil sie nicht rechtzeitig spielen konnten.</value>
+    </data>
+    <data name="c4_game_start_already_exist" xml:space="preserve">
+        <value>Es läuft bereits ein Spiel.</value>
+    </data>
+    <data name="c4_game_start_announce" xml:space="preserve">
+        <value>Ein Vier-gewinnt-Spiel wurde erstellt. Benutze {0}c4j zum Beitreten.</value>
+    </data>
+    <data name="c4_game_cancelled" xml:space="preserve">
+        <value>Das Spiel wurde abgebrochen.</value>
+    </data>
+    <data name="c4_game_ongoing_game" xml:space="preserve">
+        <value>Es läuft derzeit kein Spiel.</value>
+    </data>
+    <data name="guessing_game_invalid_number_turns" xml:space="preserve">
+        <value>Ungültige Rundenzahl (muss zwischen 1 und {0} liegen)</value>
+    </data>
+    <data name="guessing_game_currently_ongoing" xml:space="preserve">
+        <value>Es läuft bereits ein Spiel.</value>
+    </data>
+    <data name="guessing_game_invalid_command" xml:space="preserve">
+        <value>Ungültiger Befehl.</value>
+    </data>
+    <data name="pokedesc_start" xml:space="preserve">
+        <value>Ein PokeDesc-Spiel wurde gestartet! Gib den Namen des entsprechenden Pokémon direkt in den Chat ein.</value>
+    </data>
+    <data name="pokecries_started" xml:space="preserve">
+        <value>Ein PokeCries-Spiel wurde erstellt! Schreibe den Namen des entsprechenden Pokémon direkt in den Chat.</value>
+    </data>
+    <data name="c4_panel_title" xml:space="preserve">
+        <value>Ein Vier-gewinnt-Spiel wurde erstellt!</value>
+    </data>
+    <data name="c4_panel_players" xml:space="preserve">
+        <value>Angemeldete Spieler: {0}</value>
+    </data>
+    <data name="c4_panel_join" xml:space="preserve">
+        <value>Spiel beitreten</value>
+    </data>
+    <data name="c4_panel_ongoing_game" xml:space="preserve">
+        <value>Ein Vier-gewinnt-Spiel läuft... Spieler: {0}</value>
+    </data>
+    <data name="c4_game_player_forfeited" xml:space="preserve">
+        <value>{0} hat aufgegeben.</value>
+    </data>
+    <data name="c4_game_forfeit" xml:space="preserve">
+        <value>Aufgeben</value>
+    </data>
+    <data name="c4_game_options" xml:space="preserve">
+        <value>Optionen</value>
+    </data>
+    <data name="c4_leaderboard_title" xml:space="preserve">
+        <value>Vier Gewinnt - ELO-Rangliste</value>
+    </data>
+    <data name="c4_leaderboard_rating" xml:space="preserve">
+        <value>Wertung</value>
+    </data>
+    <data name="c4_leaderboard_wins" xml:space="preserve">
+        <value>Siege</value>
+    </data>
+    <data name="c4_leaderboard_losses" xml:space="preserve">
+        <value>Niederlagen</value>
+    </data>
+    <data name="c4_leaderboard_draws" xml:space="preserve">
+        <value>Unentschieden</value>
+    </data>
+    <data name="c4_leaderboard_empty" xml:space="preserve">
+        <value>Keine Wertungen gefunden. Spiel erst ein paar Spiele!</value>
+    </data>
+    <data name="c4_elo_info" xml:space="preserve">
+        <value>Vier Gewinnt ELO von {0}: {1} ({2}S / {3}N / {4}U)</value>
+    </data>
+    <data name="c4_elo_not_found" xml:space="preserve">
+        <value>Keine Wertung gefunden für {0}.</value>
+    </data>
+    <data name="c4_rating_update" xml:space="preserve">
+        <value>{0}: {1} → {2} ({3:+0;-0;+0}) | {4}: {5} → {6} ({7:+0;-0;+0})</value>
+    </data>
+    <data name="countries_game_turn_ending_soon" xml:space="preserve">
+        <value>Die Zeit läuft ab! Noch {0} Sekunden.</value>
+    </data>
+    <data name="pokerace_already_running" xml:space="preserve">
+        <value>Ein Pokémon-Rennen läuft bereits! Benutze -racejoin [Pokémon], um teilzunehmen.</value>
+    </data>
+    <data name="pokerace_other_game_running" xml:space="preserve">
+        <value>In diesem Raum läuft bereits ein anderes Spiel.</value>
+    </data>
+    <data name="pokerace_not_running" xml:space="preserve">
+        <value>Es läuft kein Pokémon-Rennen. Benutze -pokerace, um eines zu starten.</value>
+    </data>
+    <data name="pokerace_race_already_started" xml:space="preserve">
+        <value>Das Rennen hat bereits begonnen!</value>
+    </data>
+    <data name="pokerace_min_players_required" xml:space="preserve">
+        <value>Es werden mindestens {0} Teilnehmer benötigt, um das Rennen zu starten!</value>
+    </data>
+    <data name="pokerace_cancelled" xml:space="preserve">
+        <value>Das Pokémon-Rennen wurde abgebrochen.</value>
+    </data>
+    <data name="pokerace_join_already_chosen" xml:space="preserve">
+        <value>Du hast bereits {0} gewählt!</value>
+    </data>
+    <data name="pokerace_join_pokemon_taken" xml:space="preserve">
+        <value>{0} wurde bereits von einem anderen Trainer gewählt!</value>
+    </data>
+    <data name="pokerace_join_invalid_pokemon" xml:space="preserve">
+        <value>{0} ist nicht verfügbar. Wähle aus: {1}</value>
+    </data>
+    <data name="pokerace_join_success" xml:space="preserve">
+        <value>{0} hat {1} für das Rennen gewählt!</value>
+    </data>
+    <data name="pokerace_auto_start_not_enough_players" xml:space="preserve">
+        <value>Das Rennen konnte nicht automatisch starten: nicht genug Teilnehmer (mindestens {0}).</value>
+    </data>
+    <data name="gatekeepers_rules_title" xml:space="preserve">
+        <value>Regeln</value>
+    </data>
+    <data name="gatekeepers_rules" xml:space="preserve">
+        <value>Ein Pokémon versteckt sich hinter seinem Fußabdruck. Klicke auf sein Symbol, um einen Punkt zu erzielen! Portraits werden nach 10 Sekunden, Silhouetten nach 5 enthüllt.</value>
+    </data>
+    <data name="games_muted_event" xml:space="preserve">
+        <value>Öffentliche Spiele sind vorübergehend nicht verfügbar, während ein Arcade-Event läuft.</value>
+    </data>
+    <data name="games_muted" xml:space="preserve">
+        <value>Mini-Spiele wurden für {0} Minuten deaktiviert.</value>
+    </data>
+    <data name="games_unmuted" xml:space="preserve">
+        <value>Mini-Spiele wurden wieder aktiviert.</value>
+    </data>
+    <data name="vf_game_waiting" xml:space="preserve">
+        <value>Ein Voltorb-Flip-Spiel wartet bereits auf einen Spieler.</value>
+    </data>
+    <data name="vf_panel_waiting_for_player" xml:space="preserve">
+        <value>Ein Spiel wartet auf einen Spieler!</value>
+    </data>
+    <data name="vf_panel_join" xml:space="preserve">
+        <value>Spielen!</value>
+    </data>
+    <data name="vf_game_started" xml:space="preserve">
+        <value>Voltorb Flip auf Level {0} gestartet!</value>
+    </data>
+    <data name="vf_game_already_running" xml:space="preserve">
+        <value>In diesem Raum läuft bereits ein anderes Spiel.</value>
+    </data>
+    <data name="vf_game_no_game" xml:space="preserve">
+        <value>Es läuft kein Voltorb-Flip-Spiel.</value>
+    </data>
+    <data name="vf_game_round_active" xml:space="preserve">
+        <value>Eine Runde ist bereits aktiv. Beende sie zuerst!</value>
+    </data>
+    <data name="vf_game_voltorb_hit" xml:space="preserve">
+        <value>{0} hat ein Voltorb umgedreht! Level auf {1} gesetzt.</value>
+    </data>
+    <data name="vf_game_win" xml:space="preserve">
+        <value>{0} hat alle Multiplikatoren gefunden und {1} Münzen gewonnen! Aufstieg zu Level {2}!</value>
+    </data>
+    <data name="vf_game_quit" xml:space="preserve">
+        <value>{0} hat die Runde verlassen und {1} Münzen behalten. Jetzt auf Level {2}.</value>
+    </data>
+    <data name="vf_game_cancelled" xml:space="preserve">
+        <value>Das Voltorb-Flip-Spiel wurde abgebrochen.</value>
+    </data>
+    <data name="vf_game_not_owner" xml:space="preserve">
+        <value>Nur der Spieler, der dieses Voltorb-Flip-Spiel gestartet hat, kann das tun.</value>
+    </data>
+    <data name="vf_game_timeout" xml:space="preserve">
+        <value>Das Voltorb-Flip-Spiel endete aufgrund von Inaktivität.</value>
+    </data>
+    <data name="vf_game_pm_missing_room" xml:space="preserve">
+        <value>Bitte gib einen Raum an. Verwendung: -voltorbflip raumname</value>
+    </data>
+    <data name="vf_game_pm_invalid_room" xml:space="preserve">
+        <value>Der angegebene Raum wurde nicht gefunden oder der Bot ist nicht darin.</value>
+    </data>
+    <data name="vf_panel_title" xml:space="preserve">
+        <value>Voltorb Flip</value>
+    </data>
+    <data name="vf_panel_player" xml:space="preserve">
+        <value>Spieler: {0}</value>
+    </data>
+    <data name="vf_panel_total_coins" xml:space="preserve">
+        <value>Münzen gesamt: {0}</value>
+    </data>
+    <data name="vf_panel_level" xml:space="preserve">
+        <value>Level {0}</value>
+    </data>
+    <data name="vf_panel_coins" xml:space="preserve">
+        <value>Münzen: {0}</value>
+    </data>
+    <data name="vf_panel_how_to_flip" xml:space="preserve">
+        <value>Klicke auf ein Feld, um es umzudrehen!</value>
+    </data>
+    <data name="vf_panel_quit" xml:space="preserve">
+        <value>Runde verlassen</value>
+    </data>
+    <data name="vf_panel_new_round" xml:space="preserve">
+        <value>Neue Runde starten</value>
+    </data>
+    <data name="vf_panel_objective" xml:space="preserve">
+        <value>Drehe alle ×2- und ×3-Felder um, um die Runde zu gewinnen.</value>
+    </data>
+    <data name="vf_panel_legend_one" xml:space="preserve">
+        <value>×1 — Sicheres Feld, kein Münzbonus</value>
+    </data>
+    <data name="vf_panel_legend_two" xml:space="preserve">
+        <value>×2 — Verdoppelt deine Münzen</value>
+    </data>
+    <data name="vf_panel_legend_three" xml:space="preserve">
+        <value>×3 — Verdreifacht deine Münzen</value>
+    </data>
+    <data name="vf_panel_legend_voltorb" xml:space="preserve">
+        <value>V — Voltorb! Alle Münzen verloren</value>
+    </data>
+    <data name="vf_panel_hint" xml:space="preserve">
+        <value>Zeilen-/Spaltensummen werden als Strategiehinweise angezeigt.</value>
+    </data>
+    <data name="vf_panel_timeout_hint" xml:space="preserve">
+        <value>Das Spiel endet automatisch nach 60 Sekunden Inaktivität.</value>
+    </data>
+    <data name="vf_panel_mark_mode" xml:space="preserve">
+        <value>Markierungsmodus</value>
+    </data>
+    <data name="vf_panel_options" xml:space="preserve">
+        <value>Optionen</value>
+    </data>
+    <data name="vf_panel_stop" xml:space="preserve">
+        <value>Spiel stoppen</value>
+    </data>
+    <data name="vf_panel_play_again" xml:space="preserve">
+        <value>Nochmal spielen</value>
+    </data>
+    <data name="voltorbflip_leaderboard_help" xml:space="preserve">
+        <value>Zeigt die Voltorb Flip Rangliste an</value>
+    </data>
+    <data name="voltorbflip_leaderboard_empty" xml:space="preserve">
+        <value>Keine Voltorb Flip Daten gefunden.</value>
+    </data>
+    <data name="voltorbflip_leaderboard_title" xml:space="preserve">
+        <value>Voltorb Flip Rangliste</value>
+    </data>
+    <data name="voltorbflip_leaderboard_level" xml:space="preserve">
+        <value>Level</value>
+    </data>
+    <data name="voltorbflip_leaderboard_coins" xml:space="preserve">
+        <value>Münzen</value>
+    </data>
+    <data name="voltorbflip_leaderboard_max_level" xml:space="preserve">
+        <value>Bestes Level</value>
+    </data>
+    <data name="lo_panel_title" xml:space="preserve">
+        <value>Lights Out</value>
+    </data>
+    <data name="lo_panel_waiting_for_player" xml:space="preserve">
+        <value>Ein Spiel wartet auf einen Spieler!</value>
+    </data>
+    <data name="lo_panel_join" xml:space="preserve">
+        <value>Beitreten</value>
+    </data>
+    <data name="lo_game_waiting" xml:space="preserve">
+        <value>Ein Lights-Out-Spiel wartet bereits auf einen Spieler.</value>
+    </data>
+    <data name="lo_panel_level" xml:space="preserve">
+        <value>Stufe {0}</value>
+    </data>
+    <data name="lo_panel_moves" xml:space="preserve">
+        <value>{0} Züge</value>
+    </data>
+    <data name="lo_panel_player" xml:space="preserve">
+        <value>Spieler: {0}</value>
+    </data>
+    <data name="lo_panel_objective" xml:space="preserve">
+        <value>Ziel: schalte alle Lichter aus!</value>
+    </data>
+    <data name="lo_panel_hint" xml:space="preserve">
+        <value>Ein Klick auf ein Feld wechselt seinen Zustand und den der Nachbarfelder.</value>
+    </data>
+    <data name="lo_panel_timeout_hint" xml:space="preserve">
+        <value>Das Spiel läuft nach 2 Min. Inaktivität ab.</value>
+    </data>
+    <data name="lo_panel_legend_lit" xml:space="preserve">
+        <value>An</value>
+    </data>
+    <data name="lo_panel_legend_unlit" xml:space="preserve">
+        <value>Aus</value>
+    </data>
+    <data name="lo_panel_options" xml:space="preserve">
+        <value>Optionen</value>
+    </data>
+    <data name="lo_panel_new_round" xml:space="preserve">
+        <value>Nächste Stufe</value>
+    </data>
+    <data name="lo_panel_stop" xml:space="preserve">
+        <value>Spiel beenden</value>
+    </data>
+    <data name="lo_panel_play_again" xml:space="preserve">
+        <value>Nochmal spielen</value>
+    </data>
+    <data name="lo_game_started" xml:space="preserve">
+        <value>Lights Out — Stufe {0}. Schalte alle Lichter aus!</value>
+    </data>
+    <data name="lo_game_win" xml:space="preserve">
+        <value>{0} hat das Rätsel in {1} Zügen gelöst! Nächste Stufe: {2}</value>
+    </data>
+    <data name="lo_game_timeout" xml:space="preserve">
+        <value>Das Lights-Out-Spiel wurde wegen Inaktivität beendet.</value>
+    </data>
+    <data name="lo_game_cancelled" xml:space="preserve">
+        <value>Das Lights-Out-Spiel wurde abgebrochen.</value>
+    </data>
+    <data name="lo_game_no_game" xml:space="preserve">
+        <value>Kein Lights-Out-Spiel läuft gerade.</value>
+    </data>
+    <data name="lo_game_not_owner" xml:space="preserve">
+        <value>Nur der Spieler, der dieses Spiel gestartet hat, kann das tun.</value>
+    </data>
+    <data name="lo_game_round_active" xml:space="preserve">
+        <value>Ein Lights-Out-Spiel läuft bereits.</value>
+    </data>
+    <data name="lo_game_already_running" xml:space="preserve">
+        <value>In diesem Raum läuft bereits ein anderes Spiel.</value>
+    </data>
+    <data name="lo_pm_missing_room" xml:space="preserve">
+        <value>Bitte gib einen Raum an. Verwendung: -lightsout raumname</value>
+    </data>
+    <data name="lo_pm_invalid_room" xml:space="preserve">
+        <value>Der angegebene Raum wurde nicht gefunden oder der Bot ist nicht darin.</value>
+    </data>
+    <data name="lo_leaderboard_title" xml:space="preserve">
+        <value>Lights-Out-Bestenliste</value>
+    </data>
+    <data name="lo_leaderboard_level" xml:space="preserve">
+        <value>Stufe</value>
+    </data>
+    <data name="lo_leaderboard_best_moves" xml:space="preserve">
+        <value>Beste Wertung</value>
+    </data>
+    <data name="lo_leaderboard_empty" xml:space="preserve">
+        <value>Die Lights-Out-Bestenliste ist leer.</value>
+    </data>
+    <data name="fi_panel_title" xml:space="preserve">
+        <value>Flood It</value>
+    </data>
+    <data name="fi_panel_waiting_for_player" xml:space="preserve">
+        <value>Ein Spiel wartet auf einen Spieler!</value>
+    </data>
+    <data name="fi_panel_join" xml:space="preserve">
+        <value>Beitreten</value>
+    </data>
+    <data name="fi_game_waiting" xml:space="preserve">
+        <value>Ein Flood It-Spiel wartet bereits auf einen Spieler.</value>
+    </data>
+    <data name="fi_panel_level" xml:space="preserve">
+        <value>Level {0}</value>
+    </data>
+    <data name="fi_panel_moves" xml:space="preserve">
+        <value>{0} / {1} Züge</value>
+    </data>
+    <data name="fi_panel_player" xml:space="preserve">
+        <value>Spieler: {0}</value>
+    </data>
+    <data name="fi_panel_objective" xml:space="preserve">
+        <value>Ziel: Das gesamte Spielfeld mit einer Farbe füllen!</value>
+    </data>
+    <data name="fi_panel_hint" xml:space="preserve">
+        <value>Klicke auf eine Zelle, um das Spielfeld mit ihrer Farbe zu fluten.</value>
+    </data>
+    <data name="fi_panel_timeout_hint" xml:space="preserve">
+        <value>Das Spiel endet nach 3 Min. Inaktivität.</value>
+    </data>
+    <data name="fi_panel_options" xml:space="preserve">
+        <value>Optionen</value>
+    </data>
+    <data name="fi_panel_new_round" xml:space="preserve">
+        <value>Nächstes Level</value>
+    </data>
+    <data name="fi_panel_stop" xml:space="preserve">
+        <value>Spiel beenden</value>
+    </data>
+    <data name="fi_panel_play_again" xml:space="preserve">
+        <value>Nochmal spielen</value>
+    </data>
+    <data name="fi_panel_total_stars" xml:space="preserve">
+        <value>Sterne: {0} ★</value>
+    </data>
+    <data name="fi_game_started" xml:space="preserve">
+        <value>Flood It — Level {0} ({1}x{2}). Fülle das gesamte Spielfeld!</value>
+    </data>
+    <data name="fi_game_win" xml:space="preserve">
+        <value>{0} hat das Spielfeld in {1} Zügen geflutet ({2} ★)! Nächstes Level: {3}</value>
+    </data>
+    <data name="fi_game_timeout" xml:space="preserve">
+        <value>Das Flood It-Spiel wurde wegen Inaktivität beendet.</value>
+    </data>
+    <data name="fi_game_cancelled" xml:space="preserve">
+        <value>Das Flood It-Spiel wurde abgebrochen.</value>
+    </data>
+    <data name="fi_game_no_game" xml:space="preserve">
+        <value>Kein Flood It-Spiel läuft gerade.</value>
+    </data>
+    <data name="fi_game_not_owner" xml:space="preserve">
+        <value>Nur der Spieler, der das Spiel gestartet hat, kann das tun.</value>
+    </data>
+    <data name="fi_game_round_active" xml:space="preserve">
+        <value>Ein Flood It-Spiel läuft bereits.</value>
+    </data>
+    <data name="fi_game_already_running" xml:space="preserve">
+        <value>Ein anderes Spiel läuft bereits in diesem Raum.</value>
+    </data>
+    <data name="fi_pm_missing_room" xml:space="preserve">
+        <value>Bitte einen Raum angeben. Verwendung: -floodit raumname</value>
+    </data>
+    <data name="fi_pm_invalid_room" xml:space="preserve">
+        <value>Der angegebene Raum wurde nicht gefunden oder der Bot ist nicht darin.</value>
+    </data>
+    <data name="fi_leaderboard_title" xml:space="preserve">
+        <value>Flood It-Bestenliste</value>
+    </data>
+    <data name="fi_leaderboard_level" xml:space="preserve">
+        <value>Level</value>
+    </data>
+    <data name="fi_leaderboard_best_moves" xml:space="preserve">
+        <value>Bestes Ergebnis</value>
+    </data>
+    <data name="fi_leaderboard_stars" xml:space="preserve">
+        <value>Sterne</value>
+    </data>
+    <data name="fi_leaderboard_empty" xml:space="preserve">
+        <value>Die Flood It-Bestenliste ist leer.</value>
+    </data>
+    <data name="fi_game_lose" xml:space="preserve">
+        <value>{0} hat nach {1} Zügen keine Züge mehr! Versuch es nochmal.</value>
+    </data>
+    <data name="tfe_panel_title" xml:space="preserve">
+        <value>2048</value>
+    </data>
+    <data name="tfe_panel_waiting_for_player" xml:space="preserve">
+        <value>Ein Spiel wartet auf einen Spieler!</value>
+    </data>
+    <data name="tfe_panel_join" xml:space="preserve">
+        <value>Beitreten</value>
+    </data>
+    <data name="tfe_game_waiting" xml:space="preserve">
+        <value>Ein 2048-Spiel wartet bereits auf einen Spieler.</value>
+    </data>
+    <data name="tfe_panel_level" xml:space="preserve">
+        <value>Level {0}</value>
+    </data>
+    <data name="tfe_panel_score" xml:space="preserve">
+        <value>Punkte: {0}</value>
+    </data>
+    <data name="tfe_panel_target" xml:space="preserve">
+        <value>Ziel: {0}</value>
+    </data>
+    <data name="tfe_panel_player" xml:space="preserve">
+        <value>Spieler: {0}</value>
+    </data>
+    <data name="tfe_panel_best_score" xml:space="preserve">
+        <value>Beste: {0}</value>
+    </data>
+    <data name="tfe_panel_wins" xml:space="preserve">
+        <value>Siege: {0}</value>
+    </data>
+    <data name="tfe_panel_objective" xml:space="preserve">
+        <value>Ziel: die 2048-Kachel erreichen!</value>
+    </data>
+    <data name="tfe_panel_hint" xml:space="preserve">
+        <value>Benutze die Pfeiltasten zum Verschieben.</value>
+    </data>
+    <data name="tfe_panel_timeout_hint" xml:space="preserve">
+        <value>Spiel endet nach 5 Min. Inaktivität.</value>
+    </data>
+    <data name="tfe_panel_options" xml:space="preserve">
+        <value>Optionen</value>
+    </data>
+    <data name="tfe_panel_new_round" xml:space="preserve">
+        <value>Nächstes Level</value>
+    </data>
+    <data name="tfe_panel_stop" xml:space="preserve">
+        <value>Spiel beenden</value>
+    </data>
+    <data name="tfe_panel_play_again" xml:space="preserve">
+        <value>Nochmal spielen</value>
+    </data>
+    <data name="tfe_game_started" xml:space="preserve">
+        <value>2048 — erreiche die 2048-Kachel! Verschiebe die Kacheln.</value>
+    </data>
+    <data name="tfe_game_win" xml:space="preserve">
+        <value>{0} hat 2048 erreicht! Punkte: {1}.</value>
+    </data>
+    <data name="tfe_game_lose" xml:space="preserve">
+        <value>{0} hat keine Züge mehr! Punkte: {1}.</value>
+    </data>
+    <data name="tfe_game_timeout" xml:space="preserve">
+        <value>Das 2048-Spiel wurde wegen Inaktivität beendet.</value>
+    </data>
+    <data name="tfe_game_cancelled" xml:space="preserve">
+        <value>Das 2048-Spiel wurde abgebrochen.</value>
+    </data>
+    <data name="tfe_game_no_game" xml:space="preserve">
+        <value>Kein 2048-Spiel läuft gerade.</value>
+    </data>
+    <data name="tfe_game_not_owner" xml:space="preserve">
+        <value>Nur der Spieler, der das Spiel gestartet hat, kann das tun.</value>
+    </data>
+    <data name="tfe_game_round_active" xml:space="preserve">
+        <value>Ein 2048-Spiel läuft bereits.</value>
+    </data>
+    <data name="tfe_game_already_running" xml:space="preserve">
+        <value>Ein anderes Spiel läuft bereits in diesem Raum.</value>
+    </data>
+    <data name="tfe_pm_missing_room" xml:space="preserve">
+        <value>Bitte gib einen Raum an. Verwendung: -2048 raumname</value>
+    </data>
+    <data name="tfe_pm_invalid_room" xml:space="preserve">
+        <value>Der angegebene Raum wurde nicht gefunden oder der Bot ist nicht darin.</value>
+    </data>
+    <data name="tfe_leaderboard_title" xml:space="preserve">
+        <value>2048 Bestenliste</value>
+    </data>
+    <data name="tfe_leaderboard_best_score" xml:space="preserve">
+        <value>Bestes Ergebnis</value>
+    </data>
+    <data name="tfe_leaderboard_wins" xml:space="preserve">
+        <value>Siege</value>
+    </data>
+    <data name="tfe_leaderboard_empty" xml:space="preserve">
+        <value>Die 2048-Bestenliste ist leer.</value>
+    </data>
+</root>

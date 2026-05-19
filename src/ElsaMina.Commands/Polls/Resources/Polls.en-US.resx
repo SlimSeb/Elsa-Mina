@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="show_polls_history_entry" xml:space="preserve">
+        <value>Poll ID: {0}, Ended At: {1} &lt;br/&gt;{2}&lt;br/&gt;</value>
+    </data>
+    <data name="show_polls_history_header" xml:space="preserve">
+        <value>Poll history for {0}:&lt;br&gt;</value>
+    </data>
+    <data name="show_polls_history_sent" xml:space="preserve">
+        <value>Poll history sent.</value>
+    </data>
+    <data name="show_polls_no_polls" xml:space="preserve">
+        <value>No poll has been recorded for room {0}.</value>
+    </data>
+    <data name="show_polls_room_not_exist" xml:space="preserve">
+        <value>The room {0} does not exist.</value>
+    </data>
+    <data name="pollsuggest_help" xml:space="preserve">
+        <value>Syntax: -pollsuggest [suggestion]</value>
+    </data>
+    <data name="pollsuggest_banned" xml:space="preserve">
+        <value>You have been banned from using this command.</value>
+    </data>
+    <data name="pollsuggest_success" xml:space="preserve">
+        <value>Your poll suggestion has been recorded.</value>
+    </data>
+    <data name="pollsuggest_staff_title" xml:space="preserve">
+        <value>New poll suggestion:</value>
+    </data>
+    <data name="pollsuggest_staff_new" xml:space="preserve">
+        <value>Suggested by {0}: {1}</value>
+    </data>
+    <data name="pollsuggest_staff_list" xml:space="preserve">
+        <value>Suggestions list</value>
+    </data>
+    <data name="deletesuggpoll_help" xml:space="preserve">
+        <value>Syntax: -deletesuggpoll [id]</value>
+    </data>
+    <data name="deletesuggpoll_not_found" xml:space="preserve">
+        <value>No suggestion found with ID {0}.</value>
+    </data>
+    <data name="deletesuggpoll_success" xml:space="preserve">
+        <value>Suggestion {0} has been deleted.</value>
+    </data>
+    <data name="pollsuggestlist_empty" xml:space="preserve">
+        <value>No poll suggestions at the moment.</value>
+    </data>
+    <data name="banpoll_help" xml:space="preserve">
+        <value>Syntax: -banpoll [username]</value>
+    </data>
+    <data name="banpoll_already_banned" xml:space="preserve">
+        <value>{0} is already banned from -pollsuggest.</value>
+    </data>
+    <data name="banpoll_success" xml:space="preserve">
+        <value>{0} has been banned from -pollsuggest.</value>
+    </data>
+    <data name="banpoll_staff_message" xml:space="preserve">
+        <value>{0} was banned from poll suggestions by {1}.</value>
+    </data>
+    <data name="unbanpoll_help" xml:space="preserve">
+        <value>Syntax: -unbanpoll [username]</value>
+    </data>
+    <data name="unbanpoll_not_banned" xml:space="preserve">
+        <value>{0} is not banned from -pollsuggest.</value>
+    </data>
+    <data name="unbanpoll_success" xml:space="preserve">
+        <value>{0} has been unbanned from poll suggestions.</value>
+    </data>
+    <data name="unbanpoll_staff_message" xml:space="preserve">
+        <value>{0} was unbanned from poll suggestions by {1}.</value>
+    </data>
+</root>

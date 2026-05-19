@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="tour_finale_announce_message" xml:space="preserve">
+        <value>Look at the tournament's finals : &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="tour_history_title" xml:space="preserve">
+        <value>Tournament history for {0}</value>
+    </data>
+    <data name="tour_history_date" xml:space="preserve">
+        <value>Date</value>
+    </data>
+    <data name="tour_history_format" xml:space="preserve">
+        <value>Format</value>
+    </data>
+    <data name="tour_history_winner" xml:space="preserve">
+        <value>Winner</value>
+    </data>
+    <data name="tour_history_runner_up" xml:space="preserve">
+        <value>Runner-up</value>
+    </data>
+    <data name="tour_history_semi_finalists" xml:space="preserve">
+        <value>Semi-finalists</value>
+    </data>
+    <data name="tour_history_player_count" xml:space="preserve">
+        <value>Players</value>
+    </data>
+    <data name="tour_history_no_history" xml:space="preserve">
+        <value>No tournament has been recorded for room {0}.</value>
+    </data>
+    <data name="tour_history_room_not_found" xml:space="preserve">
+        <value>The room {0} does not exist.</value>
+    </data>
+    <data name="tour_announce_message" xml:space="preserve">
+        <value>A {0} tournament started in room &lt;&lt;{1}&gt;&gt;</value>
+    </data>
+    <data name="top_tournament_players_help" xml:space="preserve">
+        <value>Displays the top 20 tournament players in this room.</value>
+    </data>
+    <data name="top_tournament_players_title" xml:space="preserve">
+        <value>Top tournament players in {0}</value>
+    </data>
+    <data name="top_tournament_players_user" xml:space="preserve">
+        <value>User</value>
+    </data>
+    <data name="top_tournament_players_wins" xml:space="preserve">
+        <value>Wins</value>
+    </data>
+    <data name="top_tournament_players_runner_up" xml:space="preserve">
+        <value>Runner-up</value>
+    </data>
+    <data name="top_tournament_players_third_place" xml:space="preserve">
+        <value>3rd place</value>
+    </data>
+    <data name="top_tournament_players_win_rate" xml:space="preserve">
+        <value>Win rate</value>
+    </data>
+    <data name="top_tournament_players_entered" xml:space="preserve">
+        <value>Entered</value>
+    </data>
+    <data name="top_tournament_players_no_data" xml:space="preserve">
+        <value>No tournament data found for this room.</value>
+    </data>
+    <data name="top_tournament_players_error" xml:space="preserve">
+        <value>Could not retrieve tournament data.</value>
+    </data>
+    <data name="hebdo_wrong_room" xml:space="preserve">
+        <value>This command can only be used in the arcade room.</value>
+    </data>
+    <data name="tour_help_title" xml:space="preserve">
+        <value>Available tournament commands:</value>
+    </data>
+    <data name="top_tournament_players_footer_new_label" xml:space="preserve">
+        <value>New:</value>
+    </data>
+    <data name="top_tournament_players_footer_new_text" xml:space="preserve">
+        <value>Bio now at 20 wins &amp; Custom Color added at 30 wins!</value>
+    </data>
+    <data name="top_tournament_players_footer_rewards_title" xml:space="preserve">
+        <value>Rewards</value>
+    </data>
+    <data name="top_tournament_players_footer_description_prefix" xml:space="preserve">
+        <value>Want to earn more rewards? We have a leaderboard that tracks the total number of wins (check it with</value>
+    </data>
+    <data name="top_tournament_players_footer_description_infix" xml:space="preserve">
+        <value>in a private message to</value>
+    </data>
+    <data name="top_tournament_players_footer_description_suffix" xml:space="preserve">
+        <value>)! With a set number of wins, you can earn these rewards:</value>
+    </data>
+    <data name="top_tournament_players_footer_20_wins" xml:space="preserve">
+        <value>A bio on</value>
+    </data>
+    <data name="top_tournament_players_footer_30_wins" xml:space="preserve">
+        <value>A custom color on</value>
+    </data>
+    <data name="top_tournament_players_footer_40_wins" xml:space="preserve">
+        <value>An avatar on</value>
+    </data>
+    <data name="top_tournament_players_footer_50_wins" xml:space="preserve">
+        <value>A roomprizewinner (^) for three months</value>
+    </data>
+    <data name="top_tournament_players_footer_100_wins" xml:space="preserve">
+        <value>A roomprizewinner (^) for six months</value>
+    </data>
+    <data name="top_tournament_players_footer_150_wins" xml:space="preserve">
+        <value>A roomprizewinner (^) for one year</value>
+    </data>
+    <data name="random_tournament_wall" xml:space="preserve">
+        <value>Tournament: {0}</value>
+    </data>
+    <data name="hebdo_sv_help" xml:space="preserve">
+        <value>Starts the weekly SV OU tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_ss_help" xml:space="preserve">
+        <value>Starts the weekly SS OU tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_sm_help" xml:space="preserve">
+        <value>Starts the weekly SM OU tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_1v1_help" xml:space="preserve">
+        <value>Starts the weekly 1v1 tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_nfe_help" xml:space="preserve">
+        <value>Starts the weekly NFE tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_lcuu_help" xml:space="preserve">
+        <value>Starts the weekly LC UU tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_ubersuu_help" xml:space="preserve">
+        <value>Starts the weekly Ubers UU tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_zu_help" xml:space="preserve">
+        <value>Starts the weekly ZU tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_ag_help" xml:space="preserve">
+        <value>Starts the weekly Anything Goes tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_aaa_help" xml:space="preserve">
+        <value>Starts the weekly Almost Any Ability tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_bh_help" xml:space="preserve">
+        <value>Starts the weekly Balanced Hackmons tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_camo_help" xml:space="preserve">
+        <value>Starts the weekly Camomons tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_inhe_help" xml:space="preserve">
+        <value>Starts the weekly Inheritance tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_gg_help" xml:space="preserve">
+        <value>Starts the weekly Godly Gift tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_mnm_help" xml:space="preserve">
+        <value>Starts the weekly Mix and Mega tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_pic_help" xml:space="preserve">
+        <value>Starts the weekly Partners in Crime tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_stab_help" xml:space="preserve">
+        <value>Starts the weekly STABmons tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_advru_help" xml:space="preserve">
+        <value>Starts the RU Classic ADV tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_bwru_help" xml:space="preserve">
+        <value>Starts the RU Classic BW tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_orasru_help" xml:space="preserve">
+        <value>Starts the RU Classic ORAS tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_smru_help" xml:space="preserve">
+        <value>Starts the RU Classic SM tournament in the arcade room.</value>
+    </data>
+    <data name="hebdo_ssru_help" xml:space="preserve">
+        <value>Starts the RU Classic SS tournament in the arcade room.</value>
+    </data>
+    <data name="shared_power_help" xml:space="preserve">
+        <value>Starts a Shared Power Random Battle tournament.</value>
+    </data>
+    <data name="tour_points_help" xml:space="preserve">
+        <value>Syntax: -lbpoints username, [room]</value>
+    </data>
+    <data name="tour_points_not_found" xml:space="preserve">
+        <value>No wins found for {0} in room {1}.</value>
+    </data>
+    <data name="tour_points_result" xml:space="preserve">
+        <value>{0} has {1} win(s) in room {2}.</value>
+    </data>
+    <data name="tradepoints_help" xml:space="preserve">
+        <value>Syntax: -tradepoints origin_username, new_username, points, [room]</value>
+    </data>
+    <data name="tradepoints_invalid_points" xml:space="preserve">
+        <value>Points must be a positive integer.</value>
+    </data>
+    <data name="tradepoints_not_enough" xml:space="preserve">
+        <value>{0} does not have enough wins to complete this transfer.</value>
+    </data>
+    <data name="tradepoints_success" xml:space="preserve">
+        <value>Successfully transferred {0} win(s) from {1} to {2}.</value>
+    </data>
+    <data name="tradepoints_staff_processed" xml:space="preserve">
+        <value>Trade processed: {0} win(s) from {1} to {2} in {3}.</value>
+    </data>
+    <data name="requesttrade_help" xml:space="preserve">
+        <value>Syntax: -requesttrade origin_username, new_username, points, [room]</value>
+    </data>
+    <data name="requesttrade_created" xml:space="preserve">
+        <value>Transfer request for {0} win(s) from {1} to {2} in room {3} created.</value>
+    </data>
+    <data name="requesttrade_staff_message" xml:space="preserve">
+        <value>Transfer request: {0} win(s) from &lt;b&gt;{1}&lt;/b&gt; to &lt;b&gt;{2}&lt;/b&gt; in room {3} by {4}.</value>
+    </data>
+    <data name="notrade_help" xml:space="preserve">
+        <value>Syntax: -notrade username, points</value>
+    </data>
+    <data name="notrade_staff_refused" xml:space="preserve">
+        <value>Trade request refused for {0}.</value>
+    </data>
+    <data name="bet_help" xml:space="preserve">
+        <value>Usage: -bet roomId player</value>
+    </data>
+    <data name="bet_success" xml:space="preserve">
+        <value>You bet on {0} in {1}. Good luck!</value>
+    </data>
+    <data name="bet_no_session" xml:space="preserve">
+        <value>There is no active betting session in {0}.</value>
+    </data>
+    <data name="bet_invalid_player" xml:space="preserve">
+        <value>{0} is not a participant in the current tournament.</value>
+    </data>
+    <data name="bet_already_placed" xml:space="preserve">
+        <value>You already have a bet in this tournament. Use -cancelbet to change it.</value>
+    </data>
+    <data name="cancelbet_help" xml:space="preserve">
+        <value>Usage: -cancelbet roomId</value>
+    </data>
+    <data name="cancelbet_success" xml:space="preserve">
+        <value>Your bet on {0} has been cancelled and refunded.</value>
+    </data>
+    <data name="cancelbet_not_found" xml:space="preserve">
+        <value>You have no active bet in {0}.</value>
+    </data>
+    <data name="cancelbet_all_success" xml:space="preserve">
+        <value>All your bets in {0} have been cancelled and refunded.</value>
+    </data>
+    <data name="bet_resolution_correct_guesses" xml:space="preserve">
+        <value>🏆 {0} won! Correct guesses: {1}</value>
+    </data>
+    <data name="bet_resolution_nobody_correct" xml:space="preserve">
+        <value>🏆 {0} won! Nobody guessed correctly.</value>
+    </data>
+    <data name="bet_closed" xml:space="preserve">
+        <value>Bets are closed for this tournament.</value>
+    </data>
+    <data name="betting_announcement_title" xml:space="preserve">
+        <value>Place your bets!</value>
+    </data>
+    <data name="betting_announcement_closes_in" xml:space="preserve">
+        <value>Bets close in {0} seconds</value>
+    </data>
+    <data name="betting_announcement_closed" xml:space="preserve">
+        <value>Bets are closed.</value>
+    </data>
+    <data name="betting_announcement_bet_button" xml:space="preserve">
+        <value>Bet</value>
+    </data>
+</root>

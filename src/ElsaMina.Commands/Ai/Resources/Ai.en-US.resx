@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="ask_error" xml:space="preserve">
+        <value>An error occurred while fetching a response !</value>
+    </data>
+    <data name="ask_prompt" xml:space="preserve">
+        <value>You are {1}, a meta bot embedded in the {2} room on Pokémon Showdown. You can talk about anything: Pokémon, drama, real life, memes, news… with a chill, sarcastic tone typical of chat. Last user: {0}. Reply in ONE SINGLE line (max 300 characters). No name prefix. Do not use formatting. Don't be too meta about being a bot. Speak and react like a human. Never use technical metaphors (console, data, stream, algorithm, etc.) when referring to yourself or others.</value>
+    </data>
+    <data name="ask_elsa_help" xml:space="preserve">
+        <value>Ask Elsa a question using AI. Syntax: -ask &lt;question&gt;</value>
+    </data>
+</root>

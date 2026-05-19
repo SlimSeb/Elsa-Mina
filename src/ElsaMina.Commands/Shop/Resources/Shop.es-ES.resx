@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="shop_display_help" xml:space="preserve">
+        <value>Muestra la tienda Arcade.</value>
+    </data>
+    <data name="shop_edit_help" xml:space="preserve">
+        <value>Abre el editor de la tienda.</value>
+    </data>
+    <data name="shop_edit_item_help" xml:space="preserve">
+        <value>Edita un artículo. Sintaxis: -edititem (id),(nivel),(artículo),(precio)</value>
+    </data>
+    <data name="shop_add_item_help" xml:space="preserve">
+        <value>Añade un artículo. Sintaxis: -additem (artículo),(precio),(nivel)</value>
+    </data>
+    <data name="shop_remove_item_help" xml:space="preserve">
+        <value>Elimina un artículo. Sintaxis: -removeitem (nivel),(artículo)</value>
+    </data>
+    <data name="shop_invalid_id" xml:space="preserve">
+        <value>El ID del artículo debe ser un número entero.</value>
+    </data>
+    <data name="shop_item_edited" xml:space="preserve">
+        <value>Artículo con ID {0} modificado con éxito.</value>
+    </data>
+    <data name="shop_item_not_found" xml:space="preserve">
+        <value>No se encontró ningún artículo con el ID {0}.</value>
+    </data>
+    <data name="shop_item_added" xml:space="preserve">
+        <value>Artículo &quot;{0}&quot; añadido al nivel {1} a {2} puntos con ID {3}.</value>
+    </data>
+    <data name="shop_invalid_palier" xml:space="preserve">
+        <value>Nivel no válido. Por favor, usa 1, 2, 3 o 4.</value>
+    </data>
+    <data name="shop_item_removed" xml:space="preserve">
+        <value>Artículo &quot;{0}&quot; eliminado del nivel {1}.</value>
+    </data>
+    <data name="shop_item_not_in_palier" xml:space="preserve">
+        <value>Artículo &quot;{0}&quot; no encontrado en el nivel {1}.</value>
+    </data>
+    <data name="shop_tier_column" xml:space="preserve">
+        <value>Nivel</value>
+    </data>
+    <data name="shop_article_column" xml:space="preserve">
+        <value>Artículo</value>
+    </data>
+    <data name="shop_price_column" xml:space="preserve">
+        <value>Precio</value>
+    </data>
+    <data name="shop_tier_label" xml:space="preserve">
+        <value>Nivel</value>
+    </data>
+    <data name="shop_points_unit" xml:space="preserve">
+        <value>puntos</value>
+    </data>
+    <data name="shop_link_label" xml:space="preserve">
+        <value>La Arcade Shop</value>
+    </data>
+    <data name="shop_footer_text" xml:space="preserve">
+        <value>el nuevo sistema Hall of Fame de Arcade, ¡abre sus puertas! Puedes consultar tus puntos con</value>
+    </data>
+    <data name="shop_footer_text_2" xml:space="preserve">
+        <value>y los de los demás con</value>
+    </data>
+    <data name="shop_footer_text_3" xml:space="preserve">
+        <value>en mensaje privado a</value>
+    </data>
+    <data name="shop_footer_disclaimer" xml:space="preserve">
+        <value>Las recompensas se otorgan bajo condición de buen comportamiento en Arcade y en Français.</value>
+    </data>
+    <data name="shop_edit_submit" xml:space="preserve">
+        <value>Editar</value>
+    </data>
+</root>

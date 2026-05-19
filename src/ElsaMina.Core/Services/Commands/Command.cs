@@ -40,12 +40,24 @@ public abstract class Command : ICommand
 
     private static string DeriveCategoryFromNamespace(string namespaceName)
     {
-        const string prefix = "ElsaMina.Commands.";
-        if (namespaceName == null || !namespaceName.StartsWith(prefix))
+        // Beaucoup de hardcoding => dégueu
+        if (namespaceName == null)
         {
             return string.Empty;
         }
-        var remainder = namespaceName[prefix.Length..];
+
+        if (namespaceName.StartsWith("ElsaMina.Battles"))
+        {
+            return "Battles";
+        }
+
+        const string commandProjectPrefix = "ElsaMina.Commands.";
+        if (!namespaceName.StartsWith(commandProjectPrefix))
+        {
+            return string.Empty;
+        }
+
+        var remainder = namespaceName[commandProjectPrefix.Length..];
         var dotIndex = remainder.IndexOf('.');
         return dotIndex >= 0 ? remainder[..dotIndex] : remainder;
     }

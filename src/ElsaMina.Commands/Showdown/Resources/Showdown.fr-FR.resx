@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="rankcommand_help" xml:space="preserve">
+        <value>Affiche les 5 meilleurs tiers d'un joueur en fonction du GXE. Syntaxe: -rank &lt;utilisateur&gt;. Utilisez -lowestrank pour les 5 pires tiers.</value>
+    </data>
+    <data name="rankcommand_no_ratings" xml:space="preserve">
+        <value>Ce joueur n'a pas encore participé à une partie classée.</value>
+    </data>
+    <data name="rankcommand_error" xml:space="preserve">
+        <value>Une erreur est survenue.</value>
+    </data>
+    <data name="rankcommand_title" xml:space="preserve">
+        <value>Classements de {0}</value>
+    </data>
+    <data name="rankcommand_elo" xml:space="preserve">
+        <value>Elo</value>
+    </data>
+    <data name="rankcommand_gxe" xml:space="preserve">
+        <value>GXE</value>
+    </data>
+    <data name="rankcommand_wins" xml:space="preserve">
+        <value>V</value>
+    </data>
+    <data name="rankcommand_losses" xml:space="preserve">
+        <value>D</value>
+    </data>
+    <data name="rankcommand_wr" xml:space="preserve">
+        <value>WR</value>
+    </data>
+    <data name="rankcommand_format" xml:space="preserve">
+        <value>Format</value>
+    </data>
+    <data name="ladder_title" xml:space="preserve">
+        <value>Classements {0}</value>
+    </data>
+    <data name="ladder_username" xml:space="preserve">
+        <value>Joueur</value>
+    </data>
+    <data name="ladder_elo" xml:space="preserve">
+        <value>Elo</value>
+    </data>
+    <data name="ladder_gxe" xml:space="preserve">
+        <value>GXE</value>
+    </data>
+    <data name="ladder_wins" xml:space="preserve">
+        <value>V</value>
+    </data>
+    <data name="ladder_losses" xml:space="preserve">
+        <value>D</value>
+    </data>
+    <data name="ladder_wr" xml:space="preserve">
+        <value>WR</value>
+    </data>
+    <data name="ladder_help" xml:space="preserve">
+        <value>Affiche le classement d'un tier. Syntaxe: -ladder &lt;tier&gt;, &lt;prefixe (opt)&gt;</value>
+    </data>
+    <data name="ladder_no_players" xml:space="preserve">
+        <value>Aucun joueur trouvé.</value>
+    </data>
+    <data name="ladder_error" xml:space="preserve">
+        <value>Impossible de recuperer le ladder.</value>
+    </data>
+    <data name="seen_command_help" xml:space="preserve">
+        <value>Affiche la dernière action enregistrée d'un utilisateur. Syntaxe : -seen &lt;utilisateur&gt;</value>
+    </data>
+    <data name="seen_command_not_found" xml:space="preserve">
+        <value>Aucune action récente trouvée pour l'utilisateur {0}.</value>
+    </data>
+    <data name="seen_command_error" xml:space="preserve">
+        <value>Une erreur est survenue lors de la récupération des données d'activité pour l'utilisateur {0} : {1}</value>
+    </data>
+    <data name="seen_command_last_seen" xml:space="preserve">
+        <value>L'utilisateur {0} a été vu pour la dernière fois le {1}, {2} la salle {3}</value>
+    </data>
+    <data name="seen_command_action_chatting" xml:space="preserve">
+        <value>en parlant dans</value>
+    </data>
+    <data name="seen_command_action_joining" xml:space="preserve">
+        <value>en rejoignant</value>
+    </data>
+    <data name="seen_command_action_leaving" xml:space="preserve">
+        <value>en quittant</value>
+    </data>
+    <data name="current_ladder_trackers_none" xml:space="preserve">
+        <value>Aucun suivi de salle trouvé pour {0}.</value>
+    </data>
+    <data name="current_ladder_trackers_entry" xml:space="preserve">
+        <value>{0} - préfixe : {1}</value>
+    </data>
+    <data name="toggletracking_help_message" xml:space="preserve">
+        <value>Enverra une annonce lorsqu’un nouveau combat commence dans un format spécifique si le nom d’utilisateur d’un joueur correspond au préfixe donné. Syntaxe : -track &lt;format&gt;, &lt;prefix&gt;</value>
+    </data>
+    <data name="toggletracking_success" xml:space="preserve">
+        <value>Suivi des combats {0} démarré pour le préfixe {1}.</value>
+    </data>
+    <data name="toggletracking_failure" xml:space="preserve">
+        <value>Impossible de démarrer le suivi des combats.</value>
+    </data>
+    <data name="toggletracking_stop_success" xml:space="preserve">
+        <value>Suivi des combats {0} arrêté pour le préfixe {1}.</value>
+    </data>
+    <data name="battletracker_battle_started" xml:space="preserve">
+        <value>Un combat {0} a commencé entre {1} et {2} (Elo min. : {3})</value>
+    </data>
+    <data name="smogonstats_moves" xml:space="preserve">
+        <value>Capacités</value>
+    </data>
+    <data name="smogonstats_items" xml:space="preserve">
+        <value>Objets</value>
+    </data>
+    <data name="smogonstats_abilities" xml:space="preserve">
+        <value>Talents</value>
+    </data>
+    <data name="smogonstats_teammates" xml:space="preserve">
+        <value>Partenaires</value>
+    </data>
+    <data name="smogonstats_see_more" xml:space="preserve">
+        <value>de plus...</value>
+    </data>
+    <data name="smogonstats_help" xml:space="preserve">
+        <value>Affiche les statistiques d'utilisation d'un Pokémon. Syntaxe : -smogonstats &lt;pokémon&gt;, &lt;format&gt;[, &lt;mois&gt;[, &lt;niveau&gt;]]</value>
+    </data>
+    <data name="smogonstats_not_found" xml:space="preserve">
+        <value>{0} n'a pas été trouvé dans {1}.</value>
+    </data>
+    <data name="smogonstats_error" xml:space="preserve">
+        <value>Une erreur est survenue lors de la récupération des données d'utilisation.</value>
+    </data>
+    <data name="ladder_graph_help" xml:space="preserve">
+        <value>Génère un graphique d'historique ELO pour un joueur. Utilisation : -ladderhistory &lt;format&gt;, &lt;pseudo&gt;</value>
+    </data>
+    <data name="ladder_graph_not_enough_data" xml:space="preserve">
+        <value>Pas assez d'historique ELO pour {0}. Les données sont enregistrées toutes les heures tant que le tracker est actif.</value>
+    </data>
+    <data name="ladder_graph_upload_failed" xml:space="preserve">
+        <value>Échec de l'envoi du graphique. Veuillez réessayer plus tard.</value>
+    </data>
+</root>

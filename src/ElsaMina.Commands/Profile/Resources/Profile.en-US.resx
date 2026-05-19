@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="profile_status" xml:space="preserve">
+        <value>Status</value>
+    </data>
+    <data name="avatar_help_message" xml:space="preserve">
+        <value>Updates a user's avatar.  Syntax : -avarar &lt;user&gt;, &lt;avatar URL&gt;</value>
+    </data>
+    <data name="avatar_success" xml:space="preserve">
+        <value>The user's avatar has been updated.</value>
+    </data>
+    <data name="avatar_failure" xml:space="preserve">
+        <value>An error occurred while updating an avatar : {0}</value>
+    </data>
+    <data name="title_failure" xml:space="preserve">
+        <value>An error occurred while updating the title : {0}</value>
+    </data>
+    <data name="title_help_message" xml:space="preserve">
+        <value>Updates a user's title. Syntax : -title &lt;user&gt;, &lt;title&gt;</value>
+    </data>
+    <data name="title_success" xml:space="preserve">
+        <value>The user's title has been updated.</value>
+    </data>
+    <data name="profile_no_title" xml:space="preserve">
+        <value>No title</value>
+    </data>
+    <data name="profile_no_badge" xml:space="preserve">
+        <value>No badge</value>
+    </data>
+    <data name="allcommands_alias" xml:space="preserve">
+        <value>Aliases</value>
+    </data>
+    <data name="allcommands_allowed_in_pm" xml:space="preserve">
+        <value>Allowed in PM</value>
+    </data>
+    <data name="allcommands_wl_only" xml:space="preserve">
+        <value>Whitelist Only</value>
+    </data>
+    <data name="allcommands_pm_only" xml:space="preserve">
+        <value>PM Only</value>
+    </data>
+    <data name="allcommands_required_rank" xml:space="preserve">
+        <value>Required rank</value>
+    </data>
+    <data name="allcommands_name" xml:space="preserve">
+        <value>Command</value>
+    </data>
+    <data name="allcommands_flags" xml:space="preserve">
+        <value>Flags</value>
+    </data>
+    <data name="allcommands_description" xml:space="preserve">
+        <value>Description</value>
+    </data>
+    <data name="allcommands_pick_category" xml:space="preserve">
+        <value>Pick a category</value>
+    </data>
+    <data name="allcommands_back" xml:space="preserve">
+        <value>Back</value>
+    </data>
+    <data name="profile_register_date" xml:space="preserve">
+        <value>Registered</value>
+    </data>
+    <data name="profile_play_time" xml:space="preserve">
+        <value>Play time</value>
+    </data>
+    <data name="profile_title" xml:space="preserve">
+        <value>Title</value>
+    </data>
+    <data name="allcommands_room_restriction" xml:space="preserve">
+        <value>Available in rooms : {0}</value>
+    </data>
+    <data name="profile_best_rank" xml:space="preserve">
+        <value>Best Format</value>
+    </data>
+    <data name="profile_header_avatar" xml:space="preserve">
+        <value>Avatar</value>
+    </data>
+    <data name="profile_header_badges" xml:space="preserve">
+        <value>Badges</value>
+    </data>
+    <data name="profile_header_info" xml:space="preserve">
+        <value>Info</value>
+    </data>
+    <data name="profile_tournament_wl" xml:space="preserve">
+        <value>{0}W/{1}L</value>
+    </data>
+    <data name="profile_tournament_records" xml:space="preserve">
+        <value>Tournament records</value>
+    </data>
+    <data name="profile_game_records" xml:space="preserve">
+        <value>Game records</value>
+    </data>
+    <data name="profile_flood_it" xml:space="preserve">
+        <value>Flood It</value>
+    </data>
+    <data name="profile_lights_out" xml:space="preserve">
+        <value>Lights Out</value>
+    </data>
+    <data name="profile_voltorb_flip" xml:space="preserve">
+        <value>Voltorb Flip</value>
+    </data>
+    <data name="profile_2048" xml:space="preserve">
+        <value>2048</value>
+    </data>
+    <data name="profile_game_max_level" xml:space="preserve">
+        <value>Max level</value>
+    </data>
+    <data name="profile_game_total_stars" xml:space="preserve">
+        <value>Stars</value>
+    </data>
+    <data name="profile_game_coins" xml:space="preserve">
+        <value>Coins</value>
+    </data>
+    <data name="profile_game_best_score" xml:space="preserve">
+        <value>Best score</value>
+    </data>
+    <data name="profile_game_wins" xml:space="preserve">
+        <value>Wins</value>
+    </data>
+    <data name="profile_no_game_record" xml:space="preserve">
+        <value>No game record</value>
+    </data>
+    <data name="edit_profile_panel_title" xml:space="preserve">
+        <value>Edit Profile</value>
+    </data>
+    <data name="edit_profile_panel_emoji_section" xml:space="preserve">
+        <value>Profile Emoji</value>
+    </data>
+    <data name="edit_profile_panel_current_emoji" xml:space="preserve">
+        <value>Current:</value>
+    </data>
+    <data name="edit_profile_panel_no_emoji" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="edit_profile_panel_clear" xml:space="preserve">
+        <value>Clear</value>
+    </data>
+    <data name="set_emoji_success" xml:space="preserve">
+        <value>Profile emoji updated.</value>
+    </data>
+    <data name="set_emoji_failure" xml:space="preserve">
+        <value>An error occurred while updating the emoji: {0}</value>
+    </data>
+    <data name="set_emoji_invalid" xml:space="preserve">
+        <value>Invalid emoji.</value>
+    </data>
+    <data name="set_emoji_help_message" xml:space="preserve">
+        <value>Sets your profile emoji. Syntax: -setemoji &lt;emoji&gt;</value>
+    </data>
+    <data name="edit_profile_panel_bg_color_section" xml:space="preserve">
+        <value>Profile Background Color</value>
+    </data>
+    <data name="edit_profile_panel_no_color" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="set_profile_color_success" xml:space="preserve">
+        <value>Profile background color updated.</value>
+    </data>
+    <data name="set_profile_color_failure" xml:space="preserve">
+        <value>An error occurred while updating the background color: {0}</value>
+    </data>
+    <data name="set_profile_color_invalid" xml:space="preserve">
+        <value>Invalid color. Valid colors: {0}</value>
+    </data>
+    <data name="set_profile_color_help_message" xml:space="preserve">
+        <value>Sets your profile background color. Syntax: -setprofilecolor &lt;color&gt;</value>
+    </data>
+    <data name="color_blue" xml:space="preserve">
+        <value>Blue</value>
+    </data>
+    <data name="color_darkblue" xml:space="preserve">
+        <value>Dark Blue</value>
+    </data>
+    <data name="color_purple" xml:space="preserve">
+        <value>Purple</value>
+    </data>
+    <data name="color_orange" xml:space="preserve">
+        <value>Orange</value>
+    </data>
+    <data name="color_pink" xml:space="preserve">
+        <value>Pink</value>
+    </data>
+    <data name="color_red" xml:space="preserve">
+        <value>Red</value>
+    </data>
+    <data name="color_green" xml:space="preserve">
+        <value>Green</value>
+    </data>
+    <data name="color_black" xml:space="preserve">
+        <value>Black</value>
+    </data>
+    <data name="color_yellow" xml:space="preserve">
+        <value>Yellow</value>
+    </data>
+    <data name="color_teal" xml:space="preserve">
+        <value>Teal</value>
+    </data>
+    <data name="color_darkgreen" xml:space="preserve">
+        <value>Dark Green</value>
+    </data>
+    <data name="color_indigo" xml:space="preserve">
+        <value>Indigo</value>
+    </data>
+    <data name="color_gray" xml:space="preserve">
+        <value>Gray</value>
+    </data>
+    <data name="color_white" xml:space="preserve">
+        <value>White</value>
+    </data>
+    <data name="color_brown" xml:space="preserve">
+        <value>Brown</value>
+    </data>
+    <data name="color_rainbow" xml:space="preserve">
+        <value>Rainbow</value>
+    </data>
+    <data name="color_sunset" xml:space="preserve">
+        <value>Sunset</value>
+    </data>
+    <data name="color_ocean" xml:space="preserve">
+        <value>Ocean</value>
+    </data>
+    <data name="color_fire" xml:space="preserve">
+        <value>Fire</value>
+    </data>
+    <data name="color_aurora" xml:space="preserve">
+        <value>Aurora</value>
+    </data>
+    <data name="color_candy" xml:space="preserve">
+        <value>Candy</value>
+    </data>
+    <data name="color_pastel" xml:space="preserve">
+        <value>Pastel</value>
+    </data>
+</root>

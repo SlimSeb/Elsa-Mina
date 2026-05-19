@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Reflection;
 using System.Resources;
 using ElsaMina.Core.Services.Config;
 
@@ -8,53 +7,61 @@ namespace ElsaMina.Core.Services.Resources;
 public class ResourcesService : IResourcesService
 {
     private readonly CultureInfo _defaultCulture;
-
-    private readonly Lazy<ResourceManager> _resourceManager =
-        new(() => new ResourceManager("ElsaMina.Core.Resources.Resources", Assembly.GetExecutingAssembly()));
-
+    private readonly IReadOnlyList<ResourceManager> _resourceManagers;
     private IEnumerable<CultureInfo> _supportedCultures;
 
-    public ResourcesService(IConfiguration configuration)
+    public ResourcesService(IConfiguration configuration, IEnumerable<ResourceManager> resourceManagers)
     {
         _defaultCulture = new CultureInfo(configuration.DefaultLocaleCode);
+        _resourceManagers = resourceManagers.ToList();
     }
 
     public IEnumerable<CultureInfo> SupportedCultures => _supportedCultures ??= GetSupportedCultures();
 
     public string GetString(string key, CultureInfo cultureInfo = null)
     {
-        try
+        var culture = cultureInfo ?? _defaultCulture;
+        foreach (var manager in _resourceManagers)
         {
-            return _resourceManager.Value.GetString(key, cultureInfo ?? _defaultCulture) ?? key;
+            try
+            {
+                var value = manager.GetString(key, culture);
+                if (value != null)
+                {
+                    return value;
+                }
+            }
+            catch (MissingManifestResourceException)
+            {
+                // Key not in this manager — try the next one
+            }
         }
-        catch (MissingManifestResourceException)
-        {
-            // If the resource is not found, return the key itself
-            return key;
-        }
+
+        return key;
     }
 
     private List<CultureInfo> GetSupportedCultures()
     {
-        var supportedLocales = new List<CultureInfo>();
-        foreach (var cultureInfo in CultureInfo.GetCultures(CultureTypes.AllCultures))
+        var supportedLocales = new HashSet<CultureInfo>();
+        foreach (var manager in _resourceManagers)
         {
-            try
+            foreach (var cultureInfo in CultureInfo.GetCultures(CultureTypes.AllCultures))
             {
-                var resourceSet = _resourceManager.Value.GetResourceSet(cultureInfo, true, false);
-                if (resourceSet == null)
+                try
                 {
-                    continue;
+                    var resourceSet = manager.GetResourceSet(cultureInfo, true, false);
+                    if (resourceSet != null)
+                    {
+                        supportedLocales.Add(cultureInfo);
+                    }
                 }
-
-                supportedLocales.Add(cultureInfo);
-            }
-            catch (CultureNotFoundException)
-            {
-                // Do nothing
+                catch (CultureNotFoundException)
+                {
+                    // Do nothing
+                }
             }
         }
 
-        return supportedLocales;
+        return supportedLocales.ToList();
     }
 }

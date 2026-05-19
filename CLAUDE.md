@@ -90,7 +90,16 @@ Uses Autofac. Two main modules:
 
 ### Localization
 
-String resources live in `src/ElsaMina.Core/Resources/` as `.resx` files for `fr-FR`, `en-US`, `it-IT`, and `es-ES`. `IResourcesService` resolves strings by key and culture. Room locale is a configurable `Parameter`.
+String resources are split by feature. `IResourcesService` aggregates all `ResourceManager` instances registered in DI and searches them in order.
+
+| Location | Pattern | Used for |
+|---|---|---|
+| `src/ElsaMina.Core/Resources/Resources.{locale}.resx` | Core infrastructure strings: errors, room params, core handlers |
+| `src/ElsaMina.Commands/{Feature}/Resources/{Feature}.{locale}.resx` | Feature strings for that feature's commands and handlers |
+
+Supported locales: `en-US`, `fr-FR`, `es-ES`, `it-IT`, `pt-BR`, `de-DE`.
+
+**Rule:** when adding strings for a command, add keys to `src/ElsaMina.Commands/{Feature}/Resources/{Feature}.{locale}.resx` for all 6 locales. Each feature's `ResourceManager` is registered in `CommandModule.cs` via the `FeatureResources` helper. Room locale is a configurable `Parameter`.
 
 ### HTML Templates
 
@@ -110,7 +119,7 @@ Rooms have configurable parameters (defined in the `Parameter` enum: `Locale`, `
 2. Decorate with `[NamedCommand("commandname")]` (add aliases as needed).
 3. Extend `Command`, override `RequiredRank` (default is `Admin`), and implement `RunAsync`.
 4. Register in `CommandModule.cs`: `builder.RegisterCommand<MyCommand>();`
-5. Add localization keys to the `.resx` files for each supported locale.
+5. Add localization keys to `src/ElsaMina.Commands/{Feature}/Resources/{Feature}.{locale}.resx` for all 6 locales (`en-US`, `fr-FR`, `es-ES`, `it-IT`, `pt-BR`, `de-DE`).
 
 ## Adding a New Handler
 

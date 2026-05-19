@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="top_play_times_help" xml:space="preserve">
+        <value>Affiche les 20 meilleurs temps de jeu dans cette salle.</value>
+    </data>
+    <data name="top_play_times_title" xml:space="preserve">
+        <value>Meilleurs temps de jeu dans {0}</value>
+    </data>
+    <data name="top_play_times_user" xml:space="preserve">
+        <value>Utilisateur</value>
+    </data>
+    <data name="top_play_times_play_time" xml:space="preserve">
+        <value>Temps de jeu</value>
+    </data>
+    <data name="top_play_times_no_data" xml:space="preserve">
+        <value>Aucune donnée de temps de jeu trouvée pour cette salle.</value>
+    </data>
+    <data name="top_play_times_error" xml:space="preserve">
+        <value>Impossible de récupérer les temps de jeu.</value>
+    </data>
+    <data name="play_time_format" xml:space="preserve">
+        <value>d'j 'hh'h 'mm'm 'ss's'</value>
+    </data>
+    <data name="play_time_help" xml:space="preserve">
+        <value>Affiche le temps de jeu d'un utilisateur dans cette salle. Syntaxe : -playtime [utilisateur[, salle]]</value>
+    </data>
+    <data name="play_time_result" xml:space="preserve">
+        <value>{0} a passé **{1}** dans **{2}**.</value>
+    </data>
+    <data name="play_time_no_data" xml:space="preserve">
+        <value>Aucun temps de jeu trouvé pour {0} dans cette salle.</value>
+    </data>
+    <data name="play_time_error" xml:space="preserve">
+        <value>Impossible de récupérer le temps de jeu.</value>
+    </data>
+    <data name="streak_result" xml:space="preserve">
+        <value>**{0}** : série actuelle **{1}** jour(s), plus longue série **{2}** jour(s).</value>
+    </data>
+    <data name="streak_no_data" xml:space="preserve">
+        <value>Aucune donnée de série trouvée pour {0} dans ce salon.</value>
+    </data>
+    <data name="streak_error" xml:space="preserve">
+        <value>Impossible de récupérer les données de série.</value>
+    </data>
+    <data name="streak_help" xml:space="preserve">
+        <value>Utilisation : streak [pseudo] — affiche la série d'activité quotidienne d'un utilisateur.</value>
+    </data>
+    <data name="streak_leaderboard_title" xml:space="preserve">
+        <value>Classement des séries — {0}</value>
+    </data>
+    <data name="streak_leaderboard_user" xml:space="preserve">
+        <value>Utilisateur</value>
+    </data>
+    <data name="streak_leaderboard_current" xml:space="preserve">
+        <value>Série actuelle</value>
+    </data>
+    <data name="streak_leaderboard_longest" xml:space="preserve">
+        <value>Plus longue série</value>
+    </data>
+    <data name="streak_leaderboard_no_data" xml:space="preserve">
+        <value>Aucune donnée de série trouvée pour ce salon.</value>
+    </data>
+    <data name="streak_leaderboard_error" xml:space="preserve">
+        <value>Impossible de récupérer le classement des séries.</value>
+    </data>
+    <data name="streak_leaderboard_help" xml:space="preserve">
+        <value>Utilisation : streakboard — affiche les meilleures séries d'activité quotidienne de ce salon.</value>
+    </data>
+</root>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="show_polls_history_entry" xml:space="preserve">
+        <value>Poll ID: {0} Terminé le: {1} &lt;br/&gt;{2}&lt;br/&gt;</value>
+    </data>
+    <data name="show_polls_history_header" xml:space="preserve">
+        <value>L'historique des sondages pour: {0}&lt;br&gt;</value>
+    </data>
+    <data name="show_polls_history_sent" xml:space="preserve">
+        <value>Historique des sondages envoyé.</value>
+    </data>
+    <data name="show_polls_no_polls" xml:space="preserve">
+        <value>Aucun sondage n'a été trouvé.</value>
+    </data>
+    <data name="show_polls_room_not_exist" xml:space="preserve">
+        <value>La salle {0} n'existe pas</value>
+    </data>
+    <data name="pollsuggest_help" xml:space="preserve">
+        <value>Syntaxe : -pollsuggest [suggestion]</value>
+    </data>
+    <data name="pollsuggest_banned" xml:space="preserve">
+        <value>Vous avez été banni de l'utilisation de cette commande.</value>
+    </data>
+    <data name="pollsuggest_success" xml:space="preserve">
+        <value>Votre suggestion de sondage a été enregistrée.</value>
+    </data>
+    <data name="pollsuggest_staff_title" xml:space="preserve">
+        <value>Nouvelle suggestion de sondage :</value>
+    </data>
+    <data name="pollsuggest_staff_new" xml:space="preserve">
+        <value>Proposé par {0} : {1}</value>
+    </data>
+    <data name="pollsuggest_staff_list" xml:space="preserve">
+        <value>Liste des suggestions</value>
+    </data>
+    <data name="deletesuggpoll_help" xml:space="preserve">
+        <value>Syntaxe : -deletesuggpoll [id]</value>
+    </data>
+    <data name="deletesuggpoll_not_found" xml:space="preserve">
+        <value>Aucune suggestion trouvée avec l'ID {0}.</value>
+    </data>
+    <data name="deletesuggpoll_success" xml:space="preserve">
+        <value>La suggestion {0} a été supprimée.</value>
+    </data>
+    <data name="pollsuggestlist_empty" xml:space="preserve">
+        <value>Aucune suggestion de sondage en cours.</value>
+    </data>
+    <data name="banpoll_help" xml:space="preserve">
+        <value>Syntaxe : -banpoll [pseudo]</value>
+    </data>
+    <data name="banpoll_already_banned" xml:space="preserve">
+        <value>{0} est déjà banni de la commande -pollsuggest.</value>
+    </data>
+    <data name="banpoll_success" xml:space="preserve">
+        <value>{0} est maintenant banni de la commande -pollsuggest.</value>
+    </data>
+    <data name="banpoll_staff_message" xml:space="preserve">
+        <value>{0} a été banni de la suggestion de poll par {1}.</value>
+    </data>
+    <data name="unbanpoll_help" xml:space="preserve">
+        <value>Syntaxe : -unbanpoll [pseudo]</value>
+    </data>
+    <data name="unbanpoll_not_banned" xml:space="preserve">
+        <value>{0} n'est pas banni de la commande -pollsuggest.</value>
+    </data>
+    <data name="unbanpoll_success" xml:space="preserve">
+        <value>{0} est débanni de la suggestion de poll.</value>
+    </data>
+    <data name="unbanpoll_staff_message" xml:space="preserve">
+        <value>{0} est débanni de la suggestion de poll par {1}.</value>
+    </data>
+</root>

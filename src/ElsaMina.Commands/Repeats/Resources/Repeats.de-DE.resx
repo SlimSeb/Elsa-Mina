@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="aboutrepeat_not_found" xml:space="preserve">
+        <value>Keine Wiederholung gefunden.</value>
+    </data>
+    <data name="aboutrepeat_helpmessage" xml:space="preserve">
+        <value>Syntax: -repeat &lt;id&gt;, &lt;Nachricht&gt;, &lt;Dauer in Minuten&gt;</value>
+    </data>
+    <data name="repeat_start_error" xml:space="preserve">
+        <value>Wiederholung konnte nicht gestartet werden</value>
+    </data>
+    <data name="repeat_start_rank" xml:space="preserve">
+        <value>Du hast keine Berechtigung dazu hier.</value>
+    </data>
+    <data name="repeat_start_success" xml:space="preserve">
+        <value>Wiederholung gestartet.</value>
+    </data>
+    <data name="repeat_stop" xml:space="preserve">
+        <value>Stoppen</value>
+    </data>
+    <data name="repeat_message" xml:space="preserve">
+        <value>Nachricht</value>
+    </data>
+    <data name="repeat_delay" xml:space="preserve">
+        <value>Verzögerung (Minuten)</value>
+    </data>
+    <data name="repeat_actions" xml:space="preserve">
+        <value>Aktionen</value>
+    </data>
+    <data name="repeat_add" xml:space="preserve">
+        <value>Wiederholung hinzufügen</value>
+    </data>
+    <data name="repeat_stop_invalid_id" xml:space="preserve">
+        <value>Ungültige ID.</value>
+    </data>
+    <data name="repeat_stop_doesntexist" xml:space="preserve">
+        <value>Diese Wiederholung existiert nicht.</value>
+    </data>
+    <data name="repeat_stop_rights" xml:space="preserve">
+        <value>Du hast keine Berechtigung dazu hier.</value>
+    </data>
+    <data name="repeat_stop_error" xml:space="preserve">
+        <value>Diese Wiederholung konnte nicht gestoppt werden.</value>
+    </data>
+    <data name="repeat_stop_success" xml:space="preserve">
+        <value>Wiederholung beendet.</value>
+    </data>
+</root>

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="badge_help_message" xml:space="preserve">
+        <value>Fügt ein neues Abzeichen hinzu. Syntax : -add-badge &lt;Name&gt;, &lt;Bild&gt;. Benutze -add-trophy, um eine Trophäe hinzuzufügen.</value>
+    </data>
+    <data name="badge_edit_help_message" xml:space="preserve">
+        <value>Bearbeitet ein Abzeichen. Syntax : -editbadge &lt;Abzeichen&gt;, &lt;Name&gt;, &lt;Bild&gt; [, &lt;Raum&gt;]</value>
+    </data>
+    <data name="badge_edit_not_found" xml:space="preserve">
+        <value>Abzeichen {0} wurde nicht gefunden.</value>
+    </data>
+    <data name="badge_edit_success" xml:space="preserve">
+        <value>Das Abzeichen „{0}" wurde aktualisiert.</value>
+    </data>
+    <data name="badge_edit_failure" xml:space="preserve">
+        <value>Beim Aktualisieren des Abzeichens ist ein Fehler aufgetreten : {0}</value>
+    </data>
+    <data name="badge_edit_panel_title" xml:space="preserve">
+        <value>Abzeichen-Editor von {0}</value>
+    </data>
+    <data name="badge_edit_panel_id" xml:space="preserve">
+        <value>Abzeichen-ID</value>
+    </data>
+    <data name="badge_edit_panel_name" xml:space="preserve">
+        <value>Name</value>
+    </data>
+    <data name="badge_edit_panel_image" xml:space="preserve">
+        <value>Bild-URL</value>
+    </data>
+    <data name="badge_edit_panel_is_trophy" xml:space="preserve">
+        <value>Trophäe</value>
+    </data>
+    <data name="badge_edit_panel_prev" xml:space="preserve">
+        <value>Vorherige</value>
+    </data>
+    <data name="badge_edit_panel_next" xml:space="preserve">
+        <value>Nächste</value>
+    </data>
+    <data name="badge_edit_panel_page" xml:space="preserve">
+        <value>Seite {0} / {1}</value>
+    </data>
+    <data name="badge_edit_panel_no_badges" xml:space="preserve">
+        <value>Keine Abzeichen für {0} gefunden.</value>
+    </data>
+    <data name="badge_edit_panel_help_message" xml:space="preserve">
+        <value>Zeigt das Abzeichen-Bearbeitungspanel. Syntax: -badge-edit-panel [&lt;Raum&gt;]</value>
+    </data>
+    <data name="badge_add_success_message" xml:space="preserve">
+        <value>Neues Abzeichen erfolgreich hinzugefügt.</value>
+    </data>
+    <data name="badge_add_failure_message" xml:space="preserve">
+        <value>Beim Hinzufügen des Abzeichens ist ein Fehler aufgetreten : {0}</value>
+    </data>
+    <data name="badge_add_already_exist" xml:space="preserve">
+        <value>Das Abzeichen {0} existiert bereits.</value>
+    </data>
+    <data name="badge_give_help_message" xml:space="preserve">
+        <value>Gibt jemandem ein Abzeichen. Syntax : -givebadge &lt;Benutzer&gt;, &lt;Abzeichen&gt;</value>
+    </data>
+    <data name="badge_give_could_not_find_badge" xml:space="preserve">
+        <value>Abzeichen {0} wurde nicht gefunden.</value>
+    </data>
+    <data name="badge_give_error" xml:space="preserve">
+        <value>Beim Vergeben des Abzeichens ist ein Fehler aufgetreten : {0}</value>
+    </data>
+    <data name="badge_give_success" xml:space="preserve">
+        <value>Benutzer „{0}" hat das Abzeichen „{1}" erhalten.</value>
+    </data>
+    <data name="badge_pm_missing_room" xml:space="preserve">
+        <value>Im PM bitte den Raum angeben. Syntax: -givebadge user, badge, room</value>
+    </data>
+    <data name="badge_pm_insufficient_rank" xml:space="preserve">
+        <value>Du hast nicht genügend Berechtigungen in diesem Raum.</value>
+    </data>
+    <data name="user_badge_panel_help" xml:space="preserve">
+        <value>Syntax: -userbadges benutzername, [raum]</value>
+    </data>
+    <data name="user_badge_panel_title" xml:space="preserve">
+        <value>Abzeichen von {0} — {1}</value>
+    </data>
+    <data name="user_badge_panel_no_badges" xml:space="preserve">
+        <value>In diesem Raum existieren keine Abzeichen.</value>
+    </data>
+    <data name="user_badge_panel_owned" xml:space="preserve">
+        <value>Besitzt</value>
+    </data>
+    <data name="user_badge_panel_give" xml:space="preserve">
+        <value>Geben</value>
+    </data>
+    <data name="user_badge_panel_take" xml:space="preserve">
+        <value>Entfernen</value>
+    </data>
+    <data name="user_badge_panel_refresh" xml:space="preserve">
+        <value>Aktualisieren</value>
+    </data>
+    <data name="badge_delete_help_message" xml:space="preserve">
+        <value>Löscht ein Abzeichen. Syntax: -deletebadge &lt;Abzeichen&gt;</value>
+    </data>
+    <data name="badge_delete_doesnt_exist" xml:space="preserve">
+        <value>Das Abzeichen „{0}" existiert nicht.</value>
+    </data>
+    <data name="badge_delete_failure" xml:space="preserve">
+        <value>Beim Löschen des Abzeichens ist ein Fehler aufgetreten : {0}</value>
+    </data>
+    <data name="badge_delete_success" xml:space="preserve">
+        <value>Das Abzeichen „{0}" wurde entfernt.</value>
+    </data>
+    <data name="takebadge_badge_doesnt_exist" xml:space="preserve">
+        <value>Benutzer „{0}" hat das Abzeichen „{1}" nicht</value>
+    </data>
+    <data name="takebadge_failure" xml:space="preserve">
+        <value>Beim Entfernen des Abzeichens ist ein Fehler aufgetreten : {0}</value>
+    </data>
+    <data name="takebadge_help_message" xml:space="preserve">
+        <value>Entfernt das Abzeichen eines Benutzers. Syntax : -takebadge &lt;Benutzer&gt;, &lt;Abzeichen&gt;</value>
+    </data>
+    <data name="takebadge_success" xml:space="preserve">
+        <value>Benutzer „{0}" hat das Abzeichen „{1}" nicht mehr.</value>
+    </data>
+    <data name="badge_display_help_message" xml:space="preserve">
+        <value>Zeigt Details zu einem Abzeichen. Syntax: -badge &lt;Abzeichen&gt;</value>
+    </data>
+    <data name="badge_display_not_found" xml:space="preserve">
+        <value>Abzeichen {0} wurde nicht gefunden.</value>
+    </data>
+    <data name="badge_display_is_trophy" xml:space="preserve">
+        <value>Trophäe</value>
+    </data>
+    <data name="badge_display_is_team_tournament" xml:space="preserve">
+        <value>Teamturnier</value>
+    </data>
+    <data name="badge_display_holders" xml:space="preserve">
+        <value>Inhaber</value>
+    </data>
+    <data name="badge_display_no_holders" xml:space="preserve">
+        <value>Keine</value>
+    </data>
+    <data name="badgelist_help_message" xml:space="preserve">
+        <value>Zeigt alle Abzeichen für einen Raum. Syntax: -badgelist [&lt;Raum&gt;]</value>
+    </data>
+    <data name="badgeholders_help_message" xml:space="preserve">
+        <value>Zeigt alle Abzeichenträger eines Raums. Syntax: -badgeholders [&lt;Raum&gt;]</value>
+    </data>
+    <data name="badgelist_room_not_found" xml:space="preserve">
+        <value>Raum „{0}" wurde nicht gefunden.</value>
+    </data>
+    <data name="hall_of_fame_rank" xml:space="preserve">
+        <value>Rang</value>
+    </data>
+    <data name="hall_of_fame_user" xml:space="preserve">
+        <value>Spieler</value>
+    </data>
+    <data name="hall_of_fame_trophy" xml:space="preserve">
+        <value>Trophäe</value>
+    </data>
+    <data name="hall_of_fame_trophies" xml:space="preserve">
+        <value>Trophäen</value>
+    </data>
+    <data name="hall_of_fame_total" xml:space="preserve">
+        <value>Gesamt</value>
+    </data>
+    <data name="hall_of_fame_trophies_header" xml:space="preserve">
+        <value>Trophäen</value>
+    </data>
+    <data name="hall_of_fame_solo" xml:space="preserve">
+        <value>solo</value>
+    </data>
+    <data name="hall_of_fame_team" xml:space="preserve">
+        <value>als Team</value>
+    </data>
+    <data name="hall_of_fame_title" xml:space="preserve">
+        <value>Ruhmeshalle</value>
+    </data>
+    <data name="hall_of_fame_no_trophies" xml:space="preserve">
+        <value>Keine Trophäen gefunden</value>
+    </data>
+    <data name="hall_of_fame_help_message" xml:space="preserve">
+        <value>Zeigt die Ehrenhalle für einen Raum. Syntax: -halloffame [&lt;Raum&gt;]</value>
+    </data>
+</root>

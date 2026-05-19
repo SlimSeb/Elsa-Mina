@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="team_preview_title" xml:space="preserve">
+        <value>{0}'s team</value>
+    </data>
+    <data name="team_preview_author" xml:space="preserve">
+        <value>(Created by {0})</value>
+    </data>
+    <data name="team_preview_click_icons" xml:space="preserve">
+        <value>Click the icons to display the importable version</value>
+    </data>
+    <data name="team_preview_copy" xml:space="preserve">
+        <value>Copy team</value>
+    </data>
+    <data name="add_team_help_message" xml:space="preserve">
+        <value>Add a team to samples. Syntax: -add-team &lt;link&gt;, &lt;name&gt;, &lt;tier&gt;</value>
+    </data>
+    <data name="add_team_name_too_long" xml:space="preserve">
+        <value>Team name is too long.</value>
+    </data>
+    <data name="add_team_no_provider" xml:space="preserve">
+        <value>Impossible to find the team from the link. Please provide either a Pokepaste or a CoupCritique link.</value>
+    </data>
+    <data name="add_team_no_export_error" xml:space="preserve">
+        <value>No team export found.</value>
+    </data>
+    <data name="add_team_success" xml:space="preserve">
+        <value>Added team with id "{0}"</value>
+    </data>
+    <data name="add_team_failure" xml:space="preserve">
+        <value>An error occurred when adding team: {0}</value>
+    </data>
+    <data name="add_team_to_room_no_arg" xml:space="preserve">
+        <value>Please specify the team id.</value>
+    </data>
+    <data name="add_team_to_room_no_team" xml:space="preserve">
+        <value>Could not find this team.</value>
+    </data>
+    <data name="add_team_to_room_team_already_in_room" xml:space="preserve">
+        <value>This team is already in this room.</value>
+    </data>
+    <data name="add_team_to_room_success" xml:space="preserve">
+        <value>Team added to room.</value>
+    </data>
+    <data name="add_team_to_room_failure" xml:space="preserve">
+        <value>An error occurred while adding a room to a team : {0}</value>
+    </data>
+    <data name="add_team_to_room_help_message" xml:space="preserve">
+        <value>Adds a team to the current room. Syntax: -add-team-to-room &lt;team_id&gt;</value>
+    </data>
+    <data name="sample_team_description" xml:space="preserve">
+        <value>Added by {0} on {1}</value>
+    </data>
+    <data name="sample_team_info" xml:space="preserve">
+        <value>Rooms: {0}, Format: {1}</value>
+    </data>
+    <data name="deleteteam_team_not_found" xml:space="preserve">
+        <value>Could not find team.</value>
+    </data>
+    <data name="deleteteam_team_deleted_successfully" xml:space="preserve">
+        <value>This team has been deleted.</value>
+    </data>
+    <data name="deleteteam_team_deletion_error" xml:space="preserve">
+        <value>An error occurred while deleting team  : {0}</value>
+    </data>
+    <data name="deleteteam_help" xml:space="preserve">
+        <value>Deletes a team. Syntax: -delete-team &lt;team_id&gt;</value>
+    </data>
+    <data name="team_showcase_not_found" xml:space="preserve">
+        <value>Could not find this team.</value>
+    </data>
+    <data name="team_showcase_help" xml:space="preserve">
+        <value>Displays a team's details. Syntax: -team-showcase &lt;team_id&gt;</value>
+    </data>
+    <data name="team_list_empty" xml:space="preserve">
+        <value>Could not find any teams.</value>
+    </data>
+    <data name="team_list_help" xml:space="preserve">
+        <value>Lists all teams in the room. Syntax: -team-list [&lt;format&gt;]</value>
+    </data>
+    <data name="deleteallteams_help" xml:space="preserve">
+        <value>Deletes all teams of a specific tier from this room. Usage: -deleteallteams &lt;tier&gt;</value>
+    </data>
+    <data name="deleteallteams_no_teams_found" xml:space="preserve">
+        <value>No teams found for the tier "{0}" in this room.</value>
+    </data>
+    <data name="deleteallteams_success" xml:space="preserve">
+        <value>{0} team(s) of tier "{1}" have been deleted from this room.</value>
+    </data>
+    <data name="deleteallteams_error" xml:space="preserve">
+        <value>An error occurred while deleting teams: {0}</value>
+    </data>
+</root>

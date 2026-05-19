@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="top_play_times_help" xml:space="preserve">
+        <value>Zeigt die Top 20 Benutzer nach Spielzeit in diesem Raum an.</value>
+    </data>
+    <data name="top_play_times_title" xml:space="preserve">
+        <value>Top-Spielzeiten in {0}</value>
+    </data>
+    <data name="top_play_times_user" xml:space="preserve">
+        <value>Benutzer</value>
+    </data>
+    <data name="top_play_times_play_time" xml:space="preserve">
+        <value>Spielzeit</value>
+    </data>
+    <data name="top_play_times_no_data" xml:space="preserve">
+        <value>Keine Spielzeitdaten für diesen Raum gefunden.</value>
+    </data>
+    <data name="top_play_times_error" xml:space="preserve">
+        <value>Spielzeiten konnten nicht abgerufen werden.</value>
+    </data>
+    <data name="play_time_format" xml:space="preserve">
+        <value>d'd 'hh'h 'mm'm 'ss's'</value>
+    </data>
+    <data name="play_time_help" xml:space="preserve">
+        <value>Zeigt die Spielzeit eines Benutzers in diesem Raum an. Syntax: -playtime [Benutzer[, Raum]]</value>
+    </data>
+    <data name="play_time_result" xml:space="preserve">
+        <value>{0} hat **{1}** in **{2}** verbracht.</value>
+    </data>
+    <data name="play_time_no_data" xml:space="preserve">
+        <value>Keine Spielzeit für {0} in diesem Raum gefunden.</value>
+    </data>
+    <data name="play_time_error" xml:space="preserve">
+        <value>Spielzeit konnte nicht abgerufen werden.</value>
+    </data>
+    <data name="streak_result" xml:space="preserve">
+        <value>**{0}**: aktuelle Serie **{1}** Tag(e), längste Serie **{2}** Tag(e).</value>
+    </data>
+    <data name="streak_no_data" xml:space="preserve">
+        <value>Keine Seriendaten für {0} in diesem Raum gefunden.</value>
+    </data>
+    <data name="streak_error" xml:space="preserve">
+        <value>Seriendaten konnten nicht abgerufen werden.</value>
+    </data>
+    <data name="streak_help" xml:space="preserve">
+        <value>Verwendung: streak [Nutzername] — zeigt die tägliche Aktivitätsserie eines Nutzers.</value>
+    </data>
+    <data name="streak_leaderboard_title" xml:space="preserve">
+        <value>Serien-Rangliste — {0}</value>
+    </data>
+    <data name="streak_leaderboard_user" xml:space="preserve">
+        <value>Nutzer</value>
+    </data>
+    <data name="streak_leaderboard_current" xml:space="preserve">
+        <value>Aktuelle Serie</value>
+    </data>
+    <data name="streak_leaderboard_longest" xml:space="preserve">
+        <value>Längste Serie</value>
+    </data>
+    <data name="streak_leaderboard_no_data" xml:space="preserve">
+        <value>Keine Seriendaten für diesen Raum gefunden.</value>
+    </data>
+    <data name="streak_leaderboard_error" xml:space="preserve">
+        <value>Serien-Rangliste konnte nicht abgerufen werden.</value>
+    </data>
+    <data name="streak_leaderboard_help" xml:space="preserve">
+        <value>Verwendung: streakboard — zeigt die besten täglichen Aktivitätsserien in diesem Raum.</value>
+    </data>
+</root>
