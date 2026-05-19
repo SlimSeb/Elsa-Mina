@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\ElsaMina.Battles\ElsaMina.Battles.csproj"/>
         <ProjectReference Include="..\ElsaMina.Commands\ElsaMina.Commands.csproj"/>
         <ProjectReference Include="..\ElsaMina.Core\ElsaMina.Core.csproj"/>
         <Content Include="*config.json">

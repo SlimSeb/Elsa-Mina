@@ -3,6 +3,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using Autofac;
+using ElsaMina.Battles;
 using ElsaMina.Commands;
 using ElsaMina.Console;
 using ElsaMina.Core;
@@ -72,6 +73,7 @@ else
 var builder = new ContainerBuilder();
 builder.RegisterInstance(configuration).As<IConfiguration>().As<IS3CredentialsProvider>().SingleInstance();
 builder.RegisterModule<CoreModule>();
+builder.RegisterModule<BattlesModule>();
 builder.RegisterModule<CommandModule>();
 builder.RegisterType<VersionProvider>().As<IVersionProvider>();
 var container = builder.Build();

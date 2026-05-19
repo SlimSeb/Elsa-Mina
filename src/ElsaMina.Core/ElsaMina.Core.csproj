@@ -9,7 +9,6 @@
 
     <ItemGroup>
         <PackageReference Include="Autofac"/>
-        <PackageReference Include="Lusamine.DamageCalc" />
         <PackageReference Include="NCalcSync"/>
         <PackageReference Include="Newtonsoft.Json"/>
         <PackageReference Include="RazorLight"/>
