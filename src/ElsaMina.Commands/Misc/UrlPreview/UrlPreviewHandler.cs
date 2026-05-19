@@ -10,6 +10,7 @@ using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
+using HtmlAgilityPack;
 
 namespace ElsaMina.Commands.Misc.UrlPreview;
 
@@ -27,15 +28,6 @@ public class UrlPreviewHandler : ChatMessageHandler
 
     private static readonly Regex REPLAY_URL_REGEX =
         new(@"https://replay\.pokemonshowdown\.com/", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
-
-    private static readonly Regex OG_TAG_REGEX =
-        new(
-            @"<meta[^>]+property=""og:(\w+)""[^>]+content=""([^""]*)""|<meta[^>]+content=""([^""]*)""[^>]+property=""og:(\w+)""",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase, Constants.REGEX_MATCH_TIMEOUT);
-
-    private static readonly Regex TITLE_TAG_REGEX =
-        new(@"<title[^>]*>([^<]+)</title>",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase, Constants.REGEX_MATCH_TIMEOUT);
 
     private const int MAX_DESCRIPTION_LENGTH = 300;
 
@@ -101,16 +93,19 @@ public class UrlPreviewHandler : ChatMessageHandler
                 return;
             }
 
-            var ogData = ParseOpenGraph(response.Data);
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(response.Data);
+
+            var ogData = ParseOpenGraph(htmlDoc);
             if (!ogData.TryGetValue("title", out var title) || string.IsNullOrWhiteSpace(title))
             {
-                var titleMatch = TITLE_TAG_REGEX.Match(response.Data);
-                if (!titleMatch.Success)
+                var titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
+                if (titleNode == null)
                 {
                     return;
                 }
 
-                title = titleMatch.Groups[1].Value.Trim();
+                title = HtmlEntity.DeEntitize(titleNode.InnerText)?.Trim() ?? string.Empty;
             }
 
             ogData.TryGetValue("description", out var description);
@@ -154,14 +149,24 @@ public class UrlPreviewHandler : ChatMessageHandler
         }
     }
 
-    private static Dictionary<string, string> ParseOpenGraph(string html)
+    private static Dictionary<string, string> ParseOpenGraph(HtmlDocument htmlDoc)
     {
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (Match match in OG_TAG_REGEX.Matches(html))
+        var metaNodes = htmlDoc.DocumentNode.SelectNodes("//meta[@property and @content]");
+        if (metaNodes == null)
         {
-            var property = match.Groups[1].Success ? match.Groups[1].Value : match.Groups[4].Value;
-            var content = match.Groups[2].Success ? match.Groups[2].Value : match.Groups[3].Value;
-            result.TryAdd(property, content);
+            return result;
+        }
+
+        foreach (var node in metaNodes)
+        {
+            var property = node.GetAttributeValue("property", string.Empty);
+            var content = node.GetAttributeValue("content", string.Empty);
+            if (property.StartsWith("og:", StringComparison.OrdinalIgnoreCase))
+            {
+                var key = property["og:".Length..];
+                result.TryAdd(key, HtmlEntity.DeEntitize(content));
+            }
         }
 
         return result;

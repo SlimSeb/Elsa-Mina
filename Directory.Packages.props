@@ -8,6 +8,7 @@
     <PackageVersion Include="coverlet.collector" Version="10.0.0" />
     <PackageVersion Include="coverlet.msbuild" Version="10.0.0" />
     <PackageVersion Include="Google.Apis.Drive.v3" Version="1.74.0.4135" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.12.1" />
     <PackageVersion Include="Google.Apis.Sheets.v4" Version="1.74.0.4061" />
     <PackageVersion Include="GitVersion.MsBuild" Version="6.7.0" />
     <PackageVersion Include="Grafana.OpenTelemetry" Version="1.7.0" />
