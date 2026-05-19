@@ -11,38 +11,29 @@
     <File Path="README.md" />
     <File Path="TODO.md" />
   </Folder>
-  <Folder Name="/Scripts/">
-    <File Path="scripts\build.sh" />
-    <File Path="scripts\clear-bucket.sh" />
-    <File Path="scripts\full_publish.sh" />
-    <File Path="scripts\publish.sh" />
-    <File Path="scripts\shared.sh" />
-    <File Path="scripts\restart_remote.sh" />
-    <File Path="scripts\restore.sh" />
-    <File Path="scripts\test.sh" />
-  </Folder>
   <Folder Name="/Scripts/Build/">
-    <File Path="scripts\build.sh" />
-    <File Path="scripts\full_publish.sh" />
-    <File Path="scripts\publish.sh" />
-    <File Path="scripts\restart_remote.sh" />
-    <File Path="scripts\restore.sh" />
-    <File Path="scripts\shared.sh" />
-    <File Path="scripts\test.sh" />
+    <File Path="scripts\Build\build.sh" />
+    <File Path="scripts\Build\full_publish.sh" />
+    <File Path="scripts\Build\publish.sh" />
+    <File Path="scripts\Build\restart_remote.sh" />
+    <File Path="scripts\Build\restore.sh" />
+    <File Path="scripts\Build\shared.sh" />
+    <File Path="scripts\Build\test.sh" />
   </Folder>
   <Folder Name="/Scripts/DataMigrationScripts/">
-    <File Path="scripts\backup-db.sh" />
-    <File Path="scripts\import-wintours.py" />
-    <File Path="scripts\import_teams.py" />
-    <File Path="scripts\migrate-db.py" />
-    <File Path="scripts\migrate_shop.py" />
-    <File Path="scripts\normalize_arcade_level_ids.py" />
-    <File Path="scripts\sync_room_teams.py" />
-    <File Path="scripts\update_team_badges.py" />
+    <File Path="scripts\DataMigrationScripts\backup-db.sh" />
+    <File Path="scripts\DataMigrationScripts\import-wintours.py" />
+    <File Path="scripts\DataMigrationScripts\import_teams.py" />
+    <File Path="scripts\DataMigrationScripts\migrate-db.py" />
+    <File Path="scripts\DataMigrationScripts\migrate_arcade_levels.py" />
+    <File Path="scripts\DataMigrationScripts\migrate_shop.py" />
+    <File Path="scripts\DataMigrationScripts\normalize_arcade_level_ids.py" />
+    <File Path="scripts\DataMigrationScripts\sync_room_teams.py" />
+    <File Path="scripts\DataMigrationScripts\update_team_badges.py" />
   </Folder>
   <Folder Name="/Scripts/S3/">
-    <File Path="scripts\clear-bucket.sh" />
-    <File Path="scripts\set-bucket-lifecycle.sh" />
+    <File Path="scripts\S3\clear-bucket.sh" />
+    <File Path="scripts\S3\set-bucket-lifecycle.sh" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src\ElsaMina.Commands\ElsaMina.Commands.csproj" />

@@ -1,5 +1,5 @@
 #!/bin/bash
 set -euo pipefail
 
-source ./scripts/shared.sh
+source "$(dirname "$0")/shared.sh"
 dotnet restore

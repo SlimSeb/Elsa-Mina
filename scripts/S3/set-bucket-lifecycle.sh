@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-CONFIG_FILE="$(dirname "$0")/../src/ElsaMina.Console/config.json"
+CONFIG_FILE="$(dirname "$0")/../../src/ElsaMina.Console/config.json"
 
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "config.json not found at $CONFIG_FILE"

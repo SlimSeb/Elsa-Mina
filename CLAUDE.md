@@ -10,9 +10,9 @@ Elsa-Mina is a Pokémon Showdown chat bot written in C# (.NET 10.0). It connects
 
 ```bash
 # Build, restore, test
-./scripts/restore.sh       # Restore NuGet packages
-./scripts/build.sh         # Build the solution
-./scripts/test.sh          # Run all tests
+./scripts/Build/restore.sh       # Restore NuGet packages
+./scripts/Build/build.sh         # Build the solution
+./scripts/Build/test.sh          # Run all tests
 
 # Run a single test project
 dotnet test test/ElsaMina.UnitTests/ElsaMina.UnitTests.csproj --no-restore --verbosity normal

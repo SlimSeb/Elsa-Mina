@@ -2,9 +2,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/shared.sh"
+source "$SCRIPT_DIR/../Build/shared.sh"
 
-CONFIG_FILE="${CONFIG_FILE:-$SCRIPT_DIR/../src/ElsaMina.Console/config.json}"
+CONFIG_FILE="${CONFIG_FILE:-$SCRIPT_DIR/../../src/ElsaMina.Console/config.json}"
 
 if [[ -f "$CONFIG_FILE" ]]; then
   CONN_STR=$(CONFIG_FILE="$CONFIG_FILE" python3 << 'PYEOF'
@@ -69,7 +69,7 @@ DB_USER="${DB_USER:-${PGCONN_user:-postgres}}"
 DB_HOST="${DB_HOST:-${PGCONN_host:-localhost}}"
 DB_PORT="${DB_PORT:-${PGCONN_port:-5432}}"
 DB_PASSWORD="${DB_PASSWORD:-${PGCONN_password:-}}"
-BACKUP_DIR="${BACKUP_DIR:-$SCRIPT_DIR/../backups}"
+BACKUP_DIR="${BACKUP_DIR:-$SCRIPT_DIR/../../backups}"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 DUMP_FILE="$BACKUP_DIR/${DB_NAME}_${TIMESTAMP}.sql"
 ZIP_FILE="${DUMP_FILE}.zip"

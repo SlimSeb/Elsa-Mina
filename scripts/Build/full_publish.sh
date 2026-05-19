@@ -2,15 +2,15 @@
 set -euo pipefail
 
 echo "=== Restore ==="
-./scripts/restore.sh
+./scripts/Build/restore.sh
 
 echo "=== Build ==="
-./scripts/build.sh
+./scripts/Build/build.sh
 
 echo "=== Test ==="
-./scripts/test.sh
+./scripts/Build/test.sh
 
 echo "=== Publish ==="
-./scripts/publish.sh
+./scripts/Build/publish.sh
 
 echo "=== Done ==="
