@@ -380,6 +380,9 @@
     <data name="team_preview_click_icons" xml:space="preserve">
         <value>Click the icons to display the importable version</value>
     </data>
+    <data name="team_preview_copy" xml:space="preserve">
+        <value>Copy team</value>
+    </data>
     <data name="dashboard_team_previews_name" xml:space="preserve">
         <value>Team previews</value>
     </data>

@@ -375,6 +375,9 @@
     <data name="team_preview_click_icons" xml:space="preserve">
         <value>Clique nos ícones para exibir a versão importável</value>
     </data>
+    <data name="team_preview_copy" xml:space="preserve">
+        <value>Copiar equipe</value>
+    </data>
     <data name="dashboard_team_previews_name" xml:space="preserve">
         <value>Prévia de time</value>
     </data>
@@ -2730,5 +2733,125 @@
     </data>
     <data name="ladder_graph_upload_failed" xml:space="preserve">
         <value>Falha ao enviar o gráfico. Tente novamente mais tarde.</value>
+    </data>
+    <data name="banpoll_already_banned" xml:space="preserve">
+        <value>{0} já está banido de -pollsuggest.</value>
+    </data>
+    <data name="banpoll_help" xml:space="preserve">
+        <value>Sintaxe: -banpoll [usuário]</value>
+    </data>
+    <data name="banpoll_staff_message" xml:space="preserve">
+        <value>{0} foi banido das sugestões de poll por {1}.</value>
+    </data>
+    <data name="banpoll_success" xml:space="preserve">
+        <value>{0} foi banido de -pollsuggest.</value>
+    </data>
+    <data name="bj_dealer" xml:space="preserve">
+        <value>Dealer</value>
+    </data>
+    <data name="bj_game_already_active" xml:space="preserve">
+        <value>Você já tem um jogo de blackjack ativo.</value>
+    </data>
+    <data name="bj_game_already_running" xml:space="preserve">
+        <value>Outro jogo já está em andamento nesta sala.</value>
+    </data>
+    <data name="bj_game_cancelled" xml:space="preserve">
+        <value>O jogo de blackjack foi cancelado.</value>
+    </data>
+    <data name="bj_game_no_game" xml:space="preserve">
+        <value>Nenhum jogo de blackjack está em andamento no momento.</value>
+    </data>
+    <data name="bj_game_not_owner" xml:space="preserve">
+        <value>Apenas o jogador que iniciou este jogo pode fazer isso.</value>
+    </data>
+    <data name="bj_hit" xml:space="preserve">
+        <value>Pedir</value>
+    </data>
+    <data name="bj_outcome_blackjack" xml:space="preserve">
+        <value>Blackjack! Você venceu!</value>
+    </data>
+    <data name="bj_outcome_bust" xml:space="preserve">
+        <value>Estourou! Você perdeu.</value>
+    </data>
+    <data name="bj_outcome_dealer_won" xml:space="preserve">
+        <value>O dealer ganhou.</value>
+    </data>
+    <data name="bj_outcome_player_won" xml:space="preserve">
+        <value>Você venceu!</value>
+    </data>
+    <data name="bj_outcome_tie" xml:space="preserve">
+        <value>Empate!</value>
+    </data>
+    <data name="bj_panel_deal" xml:space="preserve">
+        <value>Distribuir</value>
+    </data>
+    <data name="bj_panel_title" xml:space="preserve">
+        <value>Blackjack</value>
+    </data>
+    <data name="bj_panel_waiting_for_player" xml:space="preserve">
+        <value>Um jogo está aguardando um jogador!</value>
+    </data>
+    <data name="bj_player" xml:space="preserve">
+        <value>{0}</value>
+    </data>
+    <data name="bj_pm_invalid_room" xml:space="preserve">
+        <value>A sala especificada não foi encontrada ou o bot não está nela.</value>
+    </data>
+    <data name="bj_pm_missing_room" xml:space="preserve">
+        <value>Por favor, especifique uma sala. Uso: -blackjack nomesala</value>
+    </data>
+    <data name="bj_stand" xml:space="preserve">
+        <value>Parar</value>
+    </data>
+    <data name="deletesuggpoll_help" xml:space="preserve">
+        <value>Sintaxe: -deletesuggpoll [id]</value>
+    </data>
+    <data name="deletesuggpoll_not_found" xml:space="preserve">
+        <value>Nenhuma sugestão encontrada com ID {0}.</value>
+    </data>
+    <data name="deletesuggpoll_success" xml:space="preserve">
+        <value>Sugestão {0} foi deletada.</value>
+    </data>
+    <data name="lo_leaderboard_stars" xml:space="preserve">
+        <value>Estrelas</value>
+    </data>
+    <data name="lo_panel_total_stars" xml:space="preserve">
+        <value>Estrelas: {0} ★</value>
+    </data>
+    <data name="pollsuggest_banned" xml:space="preserve">
+        <value>Você foi banido de usar este comando.</value>
+    </data>
+    <data name="pollsuggest_help" xml:space="preserve">
+        <value>Sintaxe: -pollsuggest [sugestão]</value>
+    </data>
+    <data name="pollsuggest_staff_list" xml:space="preserve">
+        <value>Lista de sugestões</value>
+    </data>
+    <data name="pollsuggest_staff_new" xml:space="preserve">
+        <value>Sugerido por {0}: {1}</value>
+    </data>
+    <data name="pollsuggest_staff_title" xml:space="preserve">
+        <value>Nova sugestão de poll:</value>
+    </data>
+    <data name="pollsuggest_success" xml:space="preserve">
+        <value>Sua sugestão de poll foi registrada.</value>
+    </data>
+    <data name="pollsuggestlist_empty" xml:space="preserve">
+        <value>Sem sugestões de poll no momento.</value>
+    </data>
+    <data name="team_preview_copy" xml:space="preserve">
+        <value>Copiar equipe</value>
+    </data>
+    <data name="unbanpoll_help" xml:space="preserve">
+        <value>Sintaxe: -unbanpoll [usuário]</value>
+    </data>
+    <data name="unbanpoll_not_banned" xml:space="preserve">
+        <value>{0} não está banido de -pollsuggest.</value>
+    </data>
+    <data name="unbanpoll_staff_message" xml:space="preserve">
+        <value>{0} foi desbanido das sugestões de poll por {1}.</value>
+    </data>
+    <data name="unbanpoll_success" xml:space="preserve">
+        <value>{0} foi desbanido das sugestões de poll.</value>
     </data>
 </root>

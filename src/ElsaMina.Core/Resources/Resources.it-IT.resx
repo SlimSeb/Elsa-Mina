@@ -380,6 +380,9 @@
     <data name="team_preview_click_icons" xml:space="preserve">
         <value>Clicca sulle icone per importare la squadra</value>
     </data>
+    <data name="team_preview_copy" xml:space="preserve">
+        <value>Copia squadra</value>
+    </data>
     <data name="dashboard_team_previews_name" xml:space="preserve">
         <value>Anteprima squadra</value>
     </data>
