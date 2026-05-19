@@ -28,15 +28,28 @@
         <value>Umfrage-ID: {0}, Beendet am: {1} &lt;br/&gt;{2}&lt;br/&gt;</value>
     </data>
     <data name="show_polls_history_header" xml:space="preserve">
-        <value>Umfragehistorie für {0}:&lt;br&gt;</value>
+        <value>Umfragehistorie für {0}</value>
     </data>
-    <data name="show_polls_history_sent" xml:space="preserve">
-        <value>Umfragehistorie gesendet.</value>
-    </data>
+
     <data name="show_polls_no_polls" xml:space="preserve">
         <value>Für Raum {0} wurde keine Umfrage aufgezeichnet.</value>
     </data>
     <data name="show_polls_room_not_exist" xml:space="preserve">
         <value>Der Raum {0} existiert nicht.</value>
+    </data>
+    <data name="show_polls_prev" xml:space="preserve">
+        <value>Vorherige</value>
+    </data>
+    <data name="show_polls_next" xml:space="preserve">
+        <value>Nächste</value>
+    </data>
+    <data name="show_polls_page" xml:space="preserve">
+        <value>Seite {0} / {1}</value>
+    </data>
+    <data name="show_polls_entry_id" xml:space="preserve">
+        <value>Umfrage-ID:</value>
+    </data>
+    <data name="show_polls_entry_ended_at" xml:space="preserve">
+        <value>Beendet am:</value>
     </data>
 </root>

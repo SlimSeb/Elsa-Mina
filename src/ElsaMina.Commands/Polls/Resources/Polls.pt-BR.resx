@@ -28,16 +28,29 @@
         <value>ID da enquete: {0}, Encerrada em: {1} &lt;br/&gt;{2}&lt;br/&gt;</value>
     </data>
     <data name="show_polls_history_header" xml:space="preserve">
-        <value>Histórico de enquetes para {0}:&lt;br&gt;</value>
+        <value>Histórico de enquetes para {0}</value>
     </data>
-    <data name="show_polls_history_sent" xml:space="preserve">
-        <value>Histórico de enquetes enviado.</value>
-    </data>
+
     <data name="show_polls_no_polls" xml:space="preserve">
         <value>Nenhuma enquete foi registrada para a sala {0}.</value>
     </data>
     <data name="show_polls_room_not_exist" xml:space="preserve">
         <value>A sala {0} não existe.</value>
+    </data>
+    <data name="show_polls_prev" xml:space="preserve">
+        <value>Anterior</value>
+    </data>
+    <data name="show_polls_next" xml:space="preserve">
+        <value>Próximo</value>
+    </data>
+    <data name="show_polls_page" xml:space="preserve">
+        <value>Página {0} / {1}</value>
+    </data>
+    <data name="show_polls_entry_id" xml:space="preserve">
+        <value>ID da enquete:</value>
+    </data>
+    <data name="show_polls_entry_ended_at" xml:space="preserve">
+        <value>Encerrada em:</value>
     </data>
     <data name="banpoll_already_banned" xml:space="preserve">
         <value>{0} já está banido de -pollsuggest.</value>

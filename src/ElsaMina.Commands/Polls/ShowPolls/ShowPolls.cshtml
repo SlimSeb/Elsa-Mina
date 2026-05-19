@@ -1,0 +1,45 @@
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Polls.ShowPolls.ShowPollsViewModel>
+
+@{
+    const string containerStyle = "padding: 1.5rem;";
+    const string rowStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};" +
+                            "padding: .5rem;" +
+                            "margin: .5rem;" +
+                            $"background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string labelStyle = "display: inline-block; min-width: 100px; font-weight: bold;";
+}
+
+<div style="@containerStyle">
+    <h2>@GetString("show_polls_history_header", Model.RoomName)</h2>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div style="margin-bottom: .5rem;">
+            @if (Model.Page > 1)
+            {
+                <button class="button" name="send" value="/w @Model.BotName,@(Model.Trigger)showpolls @Model.RoomId, @(Model.Page - 1)">← @GetString("show_polls_prev")</button>
+            }
+            <span>@GetString("show_polls_page", Model.Page, Model.TotalPages)</span>
+            @if (Model.Page < Model.TotalPages)
+            {
+                <button class="button" name="send" value="/w @Model.BotName,@(Model.Trigger)showpolls @Model.RoomId, @(Model.Page + 1)">@GetString("show_polls_next") →</button>
+            }
+        </div>
+    }
+
+    @foreach (var poll in Model.Polls)
+    {
+        <div style="@rowStyle">
+            <div>
+                <span style="@labelStyle">@GetString("show_polls_entry_id")</span>
+                <span>@poll.Id</span>
+            </div>
+            <div>
+                <span style="@labelStyle">@GetString("show_polls_entry_ended_at")</span>
+                <span>@TimeZoneInfo.ConvertTime(poll.EndedAt, Model.TimeZone).ToString("G", Model.Culture)</span>
+            </div>
+            <div style="margin-top: .35rem;">@Raw(poll.Content)</div>
+        </div>
+    }
+</div>

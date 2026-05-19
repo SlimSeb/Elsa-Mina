@@ -28,15 +28,28 @@
         <value>Poll ID: {0} Terminato il: {1} &lt;br/&gt;{2}&lt;br/&gt;</value>
     </data>
     <data name="show_polls_history_header" xml:space="preserve">
-        <value>Storico dei sondaggi per: {0}&lt;br&gt;</value>
+        <value>Storico dei sondaggi per: {0}</value>
     </data>
-    <data name="show_polls_history_sent" xml:space="preserve">
-        <value>Storico dei sondaggi inviato.</value>
-    </data>
+
     <data name="show_polls_no_polls" xml:space="preserve">
         <value>Nessun sondaggio trovato.</value>
     </data>
     <data name="show_polls_room_not_exist" xml:space="preserve">
         <value>La sala {0} non esiste</value>
+    </data>
+    <data name="show_polls_prev" xml:space="preserve">
+        <value>Precedente</value>
+    </data>
+    <data name="show_polls_next" xml:space="preserve">
+        <value>Successivo</value>
+    </data>
+    <data name="show_polls_page" xml:space="preserve">
+        <value>Pagina {0} / {1}</value>
+    </data>
+    <data name="show_polls_entry_id" xml:space="preserve">
+        <value>ID sondaggio:</value>
+    </data>
+    <data name="show_polls_entry_ended_at" xml:space="preserve">
+        <value>Terminato il:</value>
     </data>
 </root>

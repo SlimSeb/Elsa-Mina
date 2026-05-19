@@ -28,16 +28,29 @@
         <value>Poll ID: {0} Terminé le: {1} &lt;br/&gt;{2}&lt;br/&gt;</value>
     </data>
     <data name="show_polls_history_header" xml:space="preserve">
-        <value>L'historique des sondages pour: {0}&lt;br&gt;</value>
+        <value>L'historique des sondages pour: {0}</value>
     </data>
-    <data name="show_polls_history_sent" xml:space="preserve">
-        <value>Historique des sondages envoyé.</value>
-    </data>
+
     <data name="show_polls_no_polls" xml:space="preserve">
         <value>Aucun sondage n'a été trouvé.</value>
     </data>
     <data name="show_polls_room_not_exist" xml:space="preserve">
         <value>La salle {0} n'existe pas</value>
+    </data>
+    <data name="show_polls_prev" xml:space="preserve">
+        <value>Précédent</value>
+    </data>
+    <data name="show_polls_next" xml:space="preserve">
+        <value>Suivant</value>
+    </data>
+    <data name="show_polls_page" xml:space="preserve">
+        <value>Page {0} / {1}</value>
+    </data>
+    <data name="show_polls_entry_id" xml:space="preserve">
+        <value>ID du sondage :</value>
+    </data>
+    <data name="show_polls_entry_ended_at" xml:space="preserve">
+        <value>Terminé le :</value>
     </data>
     <data name="pollsuggest_help" xml:space="preserve">
         <value>Syntaxe : -pollsuggest [suggestion]</value>

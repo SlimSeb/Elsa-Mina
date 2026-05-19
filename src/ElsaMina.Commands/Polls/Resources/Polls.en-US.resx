@@ -28,16 +28,29 @@
         <value>Poll ID: {0}, Ended At: {1} &lt;br/&gt;{2}&lt;br/&gt;</value>
     </data>
     <data name="show_polls_history_header" xml:space="preserve">
-        <value>Poll history for {0}:&lt;br&gt;</value>
+        <value>Poll history for {0}</value>
     </data>
-    <data name="show_polls_history_sent" xml:space="preserve">
-        <value>Poll history sent.</value>
-    </data>
+
     <data name="show_polls_no_polls" xml:space="preserve">
         <value>No poll has been recorded for room {0}.</value>
     </data>
     <data name="show_polls_room_not_exist" xml:space="preserve">
         <value>The room {0} does not exist.</value>
+    </data>
+    <data name="show_polls_prev" xml:space="preserve">
+        <value>Previous</value>
+    </data>
+    <data name="show_polls_next" xml:space="preserve">
+        <value>Next</value>
+    </data>
+    <data name="show_polls_page" xml:space="preserve">
+        <value>Page {0} / {1}</value>
+    </data>
+    <data name="show_polls_entry_id" xml:space="preserve">
+        <value>Poll ID:</value>
+    </data>
+    <data name="show_polls_entry_ended_at" xml:space="preserve">
+        <value>Ended at:</value>
     </data>
     <data name="pollsuggest_help" xml:space="preserve">
         <value>Syntax: -pollsuggest [suggestion]</value>

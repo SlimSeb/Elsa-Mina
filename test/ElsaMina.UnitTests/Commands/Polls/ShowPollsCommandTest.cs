@@ -1,200 +1,359 @@
+using System.Globalization;
+using ElsaMina.Commands.Polls;
+using ElsaMina.Commands.Polls.ShowPolls;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Templates;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
-using System.Globalization;
-using ElsaMina.Commands.Polls;
 
 namespace ElsaMina.UnitTests.Commands.Polls;
 
 public class ShowPollsCommandTest
 {
-    private ShowPollsCommand _sut;
-    private IRoomsManager _roomsManager;
-    private IBotDbContextFactory _dbContextFactory;
-    private DbContextOptions<BotDbContext> _dbContextOptions;
-    private IContext _context;
-    private IRoom _room;
-
     private const string TestRoomId = "currentroom";
     private const string TargetRoomId = "targetroom";
-    private readonly CultureInfo _culture = new CultureInfo("en-US");
 
-    // Helper method to create unique in-memory options for each test run
-    private DbContextOptions<BotDbContext> CreateOptions() =>
+    private static DbContextOptions<BotDbContext> CreateOptions() =>
         new DbContextOptionsBuilder<BotDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-    // Helper method to mock the factory to return a new context connected to the shared options
-    private IBotDbContextFactory CreateFactory(DbContextOptions<BotDbContext> options)
+    private static IBotDbContextFactory CreateFactoryReturning(BotDbContext ctx)
     {
         var factory = Substitute.For<IBotDbContextFactory>();
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())
-            .Returns(ci => Task.FromResult(new BotDbContext(options)));
+            .Returns(ctx);
         return factory;
     }
 
-    // Helper method to seed the database
-    private async Task SeedDatabaseAsync(IEnumerable<SavedPoll> polls)
+    private static async Task SeedPolls(BotDbContext ctx, string roomId, int count)
     {
-        await using var context = new BotDbContext(_dbContextOptions);
-        await context.Database.EnsureCreatedAsync();
-        context.SavedPolls.AddRange(polls);
-        await context.SaveChangesAsync();
-    }
-
-    [SetUp]
-    public void Setup()
-    {
-        // Arrange
-        _dbContextOptions = CreateOptions();
-        _roomsManager = Substitute.For<IRoomsManager>();
-        _dbContextFactory = CreateFactory(_dbContextOptions);
-        _sut = new ShowPollsCommand(_roomsManager, _dbContextFactory);
-
-        _context = Substitute.For<IContext>();
-        _room = Substitute.For<IRoom>();
-        _room.TimeZone.Returns(TimeZoneInfo.Utc);
-        _context.RoomId.Returns(TestRoomId);
-        _context.Room.Returns(_room);
-        _context.Culture.Returns(_culture);
-        _context.GetString(Arg.Any<string>(), Arg.Any<object[]>())
-            .Returns(ci =>
-                $"[{ci.Arg<string>()} {string.Join(", ", ci.Arg<object[]>().Select(o => o?.ToString() ?? "null"))}]");
-    }
-
-    [Test]
-    public async Task RunAsync_WhenTargetIsCurrentRoomAndPollsExist_ShouldReplyWithHtmlPage()
-    {
-        // Arrange
-        _context.Target.Returns("");
-        var poll1 = new SavedPoll
+        await ctx.Database.EnsureCreatedAsync();
+        for (var i = 1; i <= count; i++)
         {
-            Id = 101, RoomId = TestRoomId, Content = "Poll A",
-            EndedAt = new DateTime(2025, 1, 1, 10, 0, 0, DateTimeKind.Utc)
-        };
-        var poll2 = new SavedPoll
+            ctx.SavedPolls.Add(new SavedPoll
+            {
+                RoomId = roomId,
+                Content = $"Poll {i:D2}",
+                EndedAt = new DateTimeOffset(2025, 1, i, 10, 0, 0, TimeSpan.Zero)
+            });
+        }
+        await ctx.SaveChangesAsync();
+    }
+
+    private static ShowPollsCommand CreateCommand(IBotDbContextFactory factory,
+        ITemplatesManager templatesManager,
+        IRoomsManager roomsManager,
+        IConfiguration configuration = null)
+    {
+        configuration ??= CreateDefaultConfiguration();
+        return new ShowPollsCommand(roomsManager, factory, templatesManager, configuration);
+    }
+
+    private static IConfiguration CreateDefaultConfiguration()
+    {
+        var configuration = Substitute.For<IConfiguration>();
+        configuration.Name.Returns("Elsa");
+        configuration.Trigger.Returns("-");
+        return configuration;
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyNoPollsMessage_WhenCurrentRoomHasNoPolls()
+    {
+        var options = CreateOptions();
+        await using var ctx = new BotDbContext(options);
+        await ctx.Database.EnsureCreatedAsync();
+
+        var factory = CreateFactoryReturning(ctx);
+        var templatesManager = Substitute.For<ITemplatesManager>();
+        var roomsManager = Substitute.For<IRoomsManager>();
+
+        var context = Substitute.For<IContext>();
+        context.Target.Returns("");
+        context.RoomId.Returns(TestRoomId);
+
+        var command = CreateCommand(factory, templatesManager, roomsManager);
+        await command.RunAsync(context);
+
+        context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_no_polls", TestRoomId);
+        context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
+        await templatesManager.DidNotReceive().GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyRoomNotExist_WhenTargetRoomIsUnknown()
+    {
+        var options = CreateOptions();
+        await using var ctx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(ctx);
+        var templatesManager = Substitute.For<ITemplatesManager>();
+        var roomsManager = Substitute.For<IRoomsManager>();
+        roomsManager.HasRoom(TargetRoomId).Returns(false);
+
+        var context = Substitute.For<IContext>();
+        context.Target.Returns(TargetRoomId);
+
+        var command = CreateCommand(factory, templatesManager, roomsManager);
+        await command.RunAsync(context);
+
+        context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_room_not_exist", TargetRoomId);
+        context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldRenderTemplate_WhenCurrentRoomHasPolls()
+    {
+        var options = CreateOptions();
+        await using (var setup = new BotDbContext(options))
         {
-            Id = 102, RoomId = TestRoomId, Content = "Poll B",
-            EndedAt = new DateTime(2025, 1, 2, 11, 0, 0, DateTimeKind.Utc)
-        };
-        await SeedDatabaseAsync(new[] { poll1, poll2 });
+            await SeedPolls(setup, TestRoomId, 2);
+        }
 
-        // Act
-        await _sut.RunAsync(_context);
+        await using var ctx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(ctx);
+        var templatesManager = Substitute.For<ITemplatesManager>();
+        templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<ShowPollsViewModel>())
+            .Returns("<div>polls</div>");
 
-        // Assert
-        _context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_history_sent");
-        _context.Received(1).ReplyHtmlPage(
-            "polls-history",
-            Arg.Is<string>(content =>
-                content.Contains($"[show_polls_history_header {TestRoomId}]") &&
-                content.Contains("Poll A") &&
-                content.Contains("Poll B")));
+        var room = Substitute.For<IRoom>();
+        room.Name.Returns("Current Room");
+        room.TimeZone.Returns(TimeZoneInfo.Utc);
+
+        var roomsManager = Substitute.For<IRoomsManager>();
+
+        var context = Substitute.For<IContext>();
+        context.Target.Returns("");
+        context.RoomId.Returns(TestRoomId);
+        context.Room.Returns(room);
+        context.Culture.Returns(CultureInfo.InvariantCulture);
+
+        var command = CreateCommand(factory, templatesManager, roomsManager);
+        await command.RunAsync(context);
+
+        await templatesManager.Received(1).GetTemplateAsync(
+            "Polls/ShowPolls/ShowPolls",
+            Arg.Is<ShowPollsViewModel>(vm =>
+                vm.RoomId == TestRoomId &&
+                vm.BotName == "Elsa" &&
+                vm.Trigger == "-" &&
+                vm.Polls.Count == 2 &&
+                vm.Page == 1 &&
+                vm.TotalPages == 1));
+        context.Received(1).ReplyHtmlPage("polls-history", Arg.Any<string>());
     }
 
     [Test]
-    public async Task RunAsync_WhenTargetIsSpecifiedRoomAndPollsExist_ShouldReplyWithHtmlPage()
+    public async Task Test_RunAsync_ShouldRenderTemplate_WhenTargetRoomHasPolls()
     {
-        // Arrange
-        _context.Target.Returns(TargetRoomId.ToUpper());
-        _roomsManager.HasRoom(TargetRoomId).Returns(true);
-        var poll = new SavedPoll
+        var options = CreateOptions();
+        await using (var setup = new BotDbContext(options))
         {
-            Id = 201, RoomId = TargetRoomId, Content = "Target Poll",
-            EndedAt = new DateTime(2025, 3, 3, 12, 0, 0, DateTimeKind.Utc)
-        };
-        await SeedDatabaseAsync(new[] { poll });
+            await SeedPolls(setup, TargetRoomId, 1);
+        }
 
-        // Act
-        await _sut.RunAsync(_context);
+        await using var ctx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(ctx);
+        var templatesManager = Substitute.For<ITemplatesManager>();
+        templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<ShowPollsViewModel>())
+            .Returns("<div>polls</div>");
 
-        // Assert
-        _context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_history_sent");
-        _context.Received(1).ReplyHtmlPage(
-            "polls-history",
-            Arg.Is<string>(content =>
-                content.Contains($"[show_polls_history_header {TargetRoomId}]") &&
-                content.Contains("Target Poll")));
+        var room = Substitute.For<IRoom>();
+        room.Name.Returns("Target Room");
+        room.TimeZone.Returns(TimeZoneInfo.Utc);
+
+        var roomsManager = Substitute.For<IRoomsManager>();
+        roomsManager.HasRoom(TargetRoomId).Returns(true);
+        roomsManager.GetRoom(TargetRoomId).Returns(room);
+
+        var context = Substitute.For<IContext>();
+        context.Target.Returns(TargetRoomId);
+        context.Culture.Returns(CultureInfo.InvariantCulture);
+
+        var command = CreateCommand(factory, templatesManager, roomsManager);
+        await command.RunAsync(context);
+
+        await templatesManager.Received(1).GetTemplateAsync(
+            "Polls/ShowPolls/ShowPolls",
+            Arg.Is<ShowPollsViewModel>(vm =>
+                vm.RoomId == TargetRoomId &&
+                vm.RoomName == "Target Room" &&
+                vm.Polls.Count == 1));
+        context.Received(1).ReplyHtmlPage("polls-history", Arg.Any<string>());
     }
 
     [Test]
-    public async Task RunAsync_WhenTargetIsCurrentRoomAndNoPollsExist_ShouldReplyNoPollsMessage()
+    public async Task Test_RunAsync_ShouldRenderFirstPage_WhenMorePollsThanPageSize()
     {
-        // Arrange
-        _context.Target.Returns("");
-
-        // Act
-        await _sut.RunAsync(_context);
-
-        // Assert
-        _context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_no_polls", TestRoomId);
-        _context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
-    }
-
-    [Test]
-    public async Task RunAsync_WhenTargetRoomDoesNotExist_ShouldReplyRoomNotExistMessage()
-    {
-        // Arrange
-        _context.Target.Returns(TargetRoomId);
-        _roomsManager.HasRoom(TargetRoomId).Returns(false);
-
-        // Act
-        await _sut.RunAsync(_context);
-
-        // Assert
-        _context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_room_not_exist", TargetRoomId);
-        _context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
-    }
-
-    [Test]
-    public async Task RunAsync_WhenTargetIsSpecifiedRoomButNoPollsExist_ShouldReplyNoPollsMessage()
-    {
-        // Arrange
-        _context.Target.Returns(TargetRoomId);
-        _roomsManager.HasRoom(TargetRoomId).Returns(true);
-        // Seed polls for a DIFFERENT room
-        await SeedDatabaseAsync(new[]
+        var options = CreateOptions();
+        await using (var setup = new BotDbContext(options))
         {
-            new SavedPoll { Id = 301, RoomId = "otherroom", Content = "Poll X", EndedAt = new DateTime(2025, 5, 5) }
-        });
+            await SeedPolls(setup, TestRoomId, 12);
+        }
 
-        // Act
-        await _sut.RunAsync(_context);
+        await using var ctx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(ctx);
+        var templatesManager = Substitute.For<ITemplatesManager>();
+        templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<ShowPollsViewModel>())
+            .Returns("<div>polls</div>");
 
-        // Assert
-        _context.Received(1).ReplyRankAwareLocalizedMessage("show_polls_no_polls", TargetRoomId);
-        _context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
+        var roomsManager = Substitute.For<IRoomsManager>();
+
+        var context = Substitute.For<IContext>();
+        context.Target.Returns("");
+        context.RoomId.Returns(TestRoomId);
+        context.Culture.Returns(CultureInfo.InvariantCulture);
+
+        var command = CreateCommand(factory, templatesManager, roomsManager);
+        await command.RunAsync(context);
+
+        await templatesManager.Received(1).GetTemplateAsync(
+            "Polls/ShowPolls/ShowPolls",
+            Arg.Is<ShowPollsViewModel>(vm =>
+                vm.Page == 1 &&
+                vm.TotalPages == 2 &&
+                vm.Polls.Count == 10));
     }
 
     [Test]
-    public async Task RunAsync_WhenPollsExist_ShouldFormatPollDateUsingRoomTimeZone()
+    public async Task Test_RunAsync_ShouldRenderRequestedPage_WhenPageSpecifiedInTarget()
     {
-        // Arrange
-        _context.Target.Returns("");
-        var customTimeZone = TimeZoneInfo.CreateCustomTimeZone("utc-plus-2", TimeSpan.FromHours(2), "UTC+2", "UTC+2");
-        _room.TimeZone.Returns(customTimeZone);
-        var poll = new SavedPoll
+        var options = CreateOptions();
+        await using (var setup = new BotDbContext(options))
         {
-            Id = 401,
-            RoomId = TestRoomId,
-            Content = "Timezone poll",
-            EndedAt = new DateTimeOffset(2025, 1, 1, 10, 0, 0, TimeSpan.Zero)
-        };
-        await SeedDatabaseAsync(new[] { poll });
-        var expectedDate = TimeZoneInfo.ConvertTime(poll.EndedAt, customTimeZone).ToString("G", _culture);
+            await SeedPolls(setup, TestRoomId, 12);
+        }
 
-        // Act
-        await _sut.RunAsync(_context);
+        await using var ctx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(ctx);
+        var templatesManager = Substitute.For<ITemplatesManager>();
+        templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<ShowPollsViewModel>())
+            .Returns("<div>polls</div>");
 
-        // Assert
-        _context.Received(1).ReplyHtmlPage(
-            "polls-history",
-            Arg.Is<string>(content =>
-                content.Contains(expectedDate) &&
-                content.Contains("Timezone poll")));
+        var roomsManager = Substitute.For<IRoomsManager>();
+
+        var context = Substitute.For<IContext>();
+        context.Target.Returns($"{TestRoomId}, 2");
+        context.RoomId.Returns(TestRoomId);
+        context.Culture.Returns(CultureInfo.InvariantCulture);
+
+        roomsManager.HasRoom(TestRoomId).Returns(true);
+
+        var command = CreateCommand(factory, templatesManager, roomsManager);
+        await command.RunAsync(context);
+
+        await templatesManager.Received(1).GetTemplateAsync(
+            "Polls/ShowPolls/ShowPolls",
+            Arg.Is<ShowPollsViewModel>(vm =>
+                vm.Page == 2 &&
+                vm.TotalPages == 2 &&
+                vm.Polls.Count == 2));
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldClampToLastPage_WhenPageExceedsTotalPages()
+    {
+        var options = CreateOptions();
+        await using (var setup = new BotDbContext(options))
+        {
+            await SeedPolls(setup, TestRoomId, 12);
+        }
+
+        await using var ctx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(ctx);
+        var templatesManager = Substitute.For<ITemplatesManager>();
+        templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<ShowPollsViewModel>())
+            .Returns("<div>polls</div>");
+
+        var roomsManager = Substitute.For<IRoomsManager>();
+        roomsManager.HasRoom(TestRoomId).Returns(true);
+
+        var context = Substitute.For<IContext>();
+        context.Target.Returns($"{TestRoomId}, 99");
+        context.RoomId.Returns(TestRoomId);
+        context.Culture.Returns(CultureInfo.InvariantCulture);
+
+        var command = CreateCommand(factory, templatesManager, roomsManager);
+        await command.RunAsync(context);
+
+        await templatesManager.Received(1).GetTemplateAsync(
+            "Polls/ShowPolls/ShowPolls",
+            Arg.Is<ShowPollsViewModel>(vm =>
+                vm.Page == 2 &&
+                vm.TotalPages == 2 &&
+                vm.Polls.Count == 2));
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldDefaultToPage1_WhenPageIsZeroOrNegative()
+    {
+        var options = CreateOptions();
+        await using (var setup = new BotDbContext(options))
+        {
+            await SeedPolls(setup, TestRoomId, 12);
+        }
+
+        await using var ctx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(ctx);
+        var templatesManager = Substitute.For<ITemplatesManager>();
+        templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<ShowPollsViewModel>())
+            .Returns("<div>polls</div>");
+
+        var roomsManager = Substitute.For<IRoomsManager>();
+        roomsManager.HasRoom(TestRoomId).Returns(true);
+
+        var context = Substitute.For<IContext>();
+        context.Target.Returns($"{TestRoomId}, 0");
+        context.RoomId.Returns(TestRoomId);
+        context.Culture.Returns(CultureInfo.InvariantCulture);
+
+        var command = CreateCommand(factory, templatesManager, roomsManager);
+        await command.RunAsync(context);
+
+        await templatesManager.Received(1).GetTemplateAsync(
+            "Polls/ShowPolls/ShowPolls",
+            Arg.Is<ShowPollsViewModel>(vm =>
+                vm.Page == 1 &&
+                vm.TotalPages == 2 &&
+                vm.Polls.Count == 10));
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldSetCultureFromRoom_WhenCalledViaPrivateMessage()
+    {
+        var options = CreateOptions();
+        await using (var setup = new BotDbContext(options))
+        {
+            await SeedPolls(setup, TargetRoomId, 1);
+        }
+
+        await using var ctx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(ctx);
+        var templatesManager = Substitute.For<ITemplatesManager>();
+        templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<ShowPollsViewModel>())
+            .Returns("<div>polls</div>");
+
+        var roomCulture = new CultureInfo("fr-FR");
+        var room = Substitute.For<IRoom>();
+        room.Culture.Returns(roomCulture);
+        room.TimeZone.Returns(TimeZoneInfo.Utc);
+
+        var roomsManager = Substitute.For<IRoomsManager>();
+        roomsManager.HasRoom(TargetRoomId).Returns(true);
+        roomsManager.GetRoom(TargetRoomId).Returns(room);
+
+        var context = Substitute.For<IContext>();
+        context.Target.Returns(TargetRoomId);
+        context.IsPrivateMessage.Returns(true);
+        context.Culture.Returns(CultureInfo.InvariantCulture);
+
+        var command = CreateCommand(factory, templatesManager, roomsManager);
+        await command.RunAsync(context);
+
+        context.Received(1).Culture = roomCulture;
     }
 }

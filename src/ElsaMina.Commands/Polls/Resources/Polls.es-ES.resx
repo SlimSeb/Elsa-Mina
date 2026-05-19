@@ -28,15 +28,28 @@
         <value>Poll ID: {0} Finalizado el: {1} &lt;br/&gt;{2}&lt;br/&gt;</value>
     </data>
     <data name="show_polls_history_header" xml:space="preserve">
-        <value>Historial de encuestas para: {0}&lt;br&gt;</value>
+        <value>Historial de encuestas para: {0}</value>
     </data>
-    <data name="show_polls_history_sent" xml:space="preserve">
-        <value>Historial de encuestas enviado.</value>
-    </data>
+
     <data name="show_polls_no_polls" xml:space="preserve">
         <value>No se ha encontrado ninguna encuesta.</value>
     </data>
     <data name="show_polls_room_not_exist" xml:space="preserve">
         <value>La sala {0} no existe</value>
+    </data>
+    <data name="show_polls_prev" xml:space="preserve">
+        <value>Anterior</value>
+    </data>
+    <data name="show_polls_next" xml:space="preserve">
+        <value>Siguiente</value>
+    </data>
+    <data name="show_polls_page" xml:space="preserve">
+        <value>Página {0} / {1}</value>
+    </data>
+    <data name="show_polls_entry_id" xml:space="preserve">
+        <value>ID de encuesta:</value>
+    </data>
+    <data name="show_polls_entry_ended_at" xml:space="preserve">
+        <value>Finalizado el:</value>
     </data>
 </root>
