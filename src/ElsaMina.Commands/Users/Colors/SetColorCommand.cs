@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
 
-namespace ElsaMina.Commands.Misc.Colors;
+namespace ElsaMina.Commands.Users.Colors;
 
 [NamedCommand("setcolor", Aliases = ["addnamecolor"])]
 public class SetColorCommand : Command

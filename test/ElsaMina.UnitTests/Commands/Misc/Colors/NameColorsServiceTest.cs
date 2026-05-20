@@ -1,10 +1,10 @@
-using ElsaMina.Commands.Misc.Colors;
+using ElsaMina.Commands.Users.Colors;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
-namespace ElsaMina.UnitTests.Commands.Misc.Colors;
+namespace ElsaMina.UnitTests.Commands.Users.Colors;
 
 public class NameColorsServiceTest
 {

@@ -1,4 +1,4 @@
-namespace ElsaMina.Commands.Misc.Colors;
+namespace ElsaMina.Commands.Users.Colors;
 
 public interface INameColorsService
 {

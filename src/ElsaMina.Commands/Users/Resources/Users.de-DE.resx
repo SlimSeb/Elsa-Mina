@@ -90,4 +90,25 @@
     <data name="streak_leaderboard_help" xml:space="preserve">
         <value>Verwendung: streakboard — zeigt die besten täglichen Aktivitätsserien in diesem Raum.</value>
     </data>
+    <data name="name_color_help" xml:space="preserve">
+        <value>Zeigt die Farbinformationen für einen Benutzernamen an.</value>
+    </data>
+    <data name="setcolor_help" xml:space="preserve">
+        <value>Setzt eine benutzerdefinierte Namensfarbe für einen Benutzer. Syntax: -setcolor &lt;Benutzer&gt;, &lt;#Hexfarbe&gt; (z. B. -setcolor Distrib, #9d6b15)</value>
+    </data>
+    <data name="setcolor_invalid_hex" xml:space="preserve">
+        <value>Ungültige Hexfarbe. Verwende das Format #RGB oder #RRGGBB (z. B. #9d6b15).</value>
+    </data>
+    <data name="setcolor_success" xml:space="preserve">
+        <value>Namensfarbe {0} für {1} gespeichert.</value>
+    </data>
+    <data name="removecolor_help" xml:space="preserve">
+        <value>Entfernt eine benutzerdefinierte Namensfarbe für einen Benutzer. Syntax: -removecolor &lt;Benutzer&gt;</value>
+    </data>
+    <data name="removecolor_success" xml:space="preserve">
+        <value>Namensfarbe für {0} entfernt.</value>
+    </data>
+    <data name="removecolor_not_found" xml:space="preserve">
+        <value>Keine benutzerdefinierte Farbe für {0} gefunden.</value>
+    </data>
 </root>

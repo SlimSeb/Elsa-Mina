@@ -90,4 +90,25 @@
     <data name="streak_leaderboard_help" xml:space="preserve">
         <value>Utilisation : streakboard — affiche les meilleures séries d'activité quotidienne de ce salon.</value>
     </data>
+    <data name="name_color_help" xml:space="preserve">
+        <value>Donne la couleur associée à un pseudo.</value>
+    </data>
+    <data name="setcolor_help" xml:space="preserve">
+        <value>Définit une couleur de pseudo personnalisée pour un utilisateur. Syntaxe : -setcolor &lt;joueur&gt;, &lt;#hexcouleur&gt; (ex : -setcolor Distrib, #9d6b15)</value>
+    </data>
+    <data name="setcolor_invalid_hex" xml:space="preserve">
+        <value>Couleur hexadécimale invalide. Utilisez le format #RGB ou #RRGGBB (ex : #9d6b15).</value>
+    </data>
+    <data name="setcolor_success" xml:space="preserve">
+        <value>Couleur de pseudo {0} enregistrée pour {1}.</value>
+    </data>
+    <data name="removecolor_help" xml:space="preserve">
+        <value>Supprime la couleur de pseudo personnalisée d'un utilisateur. Syntaxe : -removecolor &lt;joueur&gt;</value>
+    </data>
+    <data name="removecolor_success" xml:space="preserve">
+        <value>Couleur de pseudo supprimée pour {0}.</value>
+    </data>
+    <data name="removecolor_not_found" xml:space="preserve">
+        <value>Aucune couleur personnalisée trouvée pour {0}.</value>
+    </data>
 </root>

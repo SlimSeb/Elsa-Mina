@@ -90,4 +90,25 @@
     <data name="streak_leaderboard_help" xml:space="preserve">
         <value>Uso: streakboard — mostra le migliori serie di attività giornaliera in questa stanza.</value>
     </data>
+    <data name="name_color_help" xml:space="preserve">
+        <value>Mostra il colore associato a un nickname.</value>
+    </data>
+    <data name="setcolor_help" xml:space="preserve">
+        <value>Imposta un colore personalizzato per il nickname di un utente. Sintassi: -setcolor &lt;utente&gt;, &lt;#coloreesadecimale&gt; (es. -setcolor Distrib, #9d6b15)</value>
+    </data>
+    <data name="setcolor_invalid_hex" xml:space="preserve">
+        <value>Colore esadecimale non valido. Usa il formato #RGB o #RRGGBB (es. #9d6b15).</value>
+    </data>
+    <data name="setcolor_success" xml:space="preserve">
+        <value>Colore del nickname {0} salvato per {1}.</value>
+    </data>
+    <data name="removecolor_help" xml:space="preserve">
+        <value>Rimuove il colore personalizzato del nickname di un utente. Sintassi: -removecolor &lt;utente&gt;</value>
+    </data>
+    <data name="removecolor_success" xml:space="preserve">
+        <value>Colore del nickname rimosso per {0}.</value>
+    </data>
+    <data name="removecolor_not_found" xml:space="preserve">
+        <value>Nessun colore personalizzato trovato per {0}.</value>
+    </data>
 </root>

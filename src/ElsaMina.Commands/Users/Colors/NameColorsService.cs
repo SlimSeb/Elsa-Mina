@@ -4,7 +4,7 @@ using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ElsaMina.Commands.Misc.Colors;
+namespace ElsaMina.Commands.Users.Colors;
 
 public class NameColorsService : INameColorsService, IRoomColorsCache
 {

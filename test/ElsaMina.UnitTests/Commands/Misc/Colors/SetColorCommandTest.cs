@@ -1,9 +1,9 @@
-using ElsaMina.Commands.Misc.Colors;
+using ElsaMina.Commands.Users.Colors;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Rooms;
 using NSubstitute;
 
-namespace ElsaMina.UnitTests.Commands.Misc.Colors;
+namespace ElsaMina.UnitTests.Commands.Users.Colors;
 
 [TestFixture]
 public class SetColorCommandTest

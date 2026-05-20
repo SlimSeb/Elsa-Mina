@@ -6,7 +6,7 @@ using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 
-namespace ElsaMina.Commands.Misc.Colors;
+namespace ElsaMina.Commands.Users.Colors;
 
 [NamedCommand("namecolor", Aliases = ["name-color", "colorinfo", "namecolorinfo"])]
 public class NameColorInfoCommand : Command

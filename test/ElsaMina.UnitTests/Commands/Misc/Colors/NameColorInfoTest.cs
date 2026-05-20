@@ -1,11 +1,11 @@
-using ElsaMina.Commands.Misc.Colors;
+using ElsaMina.Commands.Users.Colors;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using NSubstitute;
 
-namespace ElsaMina.UnitTests.Commands.Misc.Colors;
+namespace ElsaMina.UnitTests.Commands.Users.Colors;
 
 public class NameColorInfoCommandTests
 {

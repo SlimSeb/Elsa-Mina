@@ -3,7 +3,7 @@ using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
 
-namespace ElsaMina.Commands.Misc.Colors;
+namespace ElsaMina.Commands.Users.Colors;
 
 [NamedCommand("removecolor", Aliases = ["removenamecolor", "delnamecolor"])]
 public class RemoveColorCommand : Command

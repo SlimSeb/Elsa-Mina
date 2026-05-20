@@ -90,4 +90,25 @@
     <data name="streak_leaderboard_help" xml:space="preserve">
         <value>Usage: streakboard — shows the top daily activity streaks in this room.</value>
     </data>
+    <data name="name_color_help" xml:space="preserve">
+        <value>Gives the color info for a given username.</value>
+    </data>
+    <data name="setcolor_help" xml:space="preserve">
+        <value>Sets a custom name color for a user. Syntax: -setcolor &lt;user&gt;, &lt;#hexcolor&gt; (e.g. -setcolor Distrib, #9d6b15)</value>
+    </data>
+    <data name="setcolor_invalid_hex" xml:space="preserve">
+        <value>Invalid hex color. Use format #RGB or #RRGGBB (e.g. #9d6b15).</value>
+    </data>
+    <data name="setcolor_success" xml:space="preserve">
+        <value>Name color {0} saved for {1}.</value>
+    </data>
+    <data name="removecolor_help" xml:space="preserve">
+        <value>Removes a custom name color for a user. Syntax: -removecolor &lt;user&gt;</value>
+    </data>
+    <data name="removecolor_success" xml:space="preserve">
+        <value>Name color removed for {0}.</value>
+    </data>
+    <data name="removecolor_not_found" xml:space="preserve">
+        <value>No custom color found for {0}.</value>
+    </data>
 </root>

@@ -1,7 +1,7 @@
 using System.Drawing;
 using ElsaMina.Core.Services.Templates;
 
-namespace ElsaMina.Commands.Misc.Colors;
+namespace ElsaMina.Commands.Users.Colors;
 
 public class NameColorInfoViewModel : LocalizableViewModel
 {

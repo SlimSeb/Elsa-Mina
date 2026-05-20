@@ -27,9 +27,6 @@
     <data name="help" xml:space="preserve">
         <value>Elsa-Mina v{0}</value>
     </data>
-    <data name="name_color_help" xml:space="preserve">
-        <value>Da el color asociado a un nombre de usuario.</value>
-    </data>
     <data name="dicoenglish_help" xml:space="preserve">
         <value>Busca la definición de una palabra en inglés. Sintaxis: -dict &lt;palabra&gt;</value>
     </data>
@@ -278,24 +275,5 @@
     </data>
     <data name="ship_result" xml:space="preserve">
         <value>💘 {0} &amp; {1} — compatibilidad: {2}% {3}</value>
-    </data>
-
-    <data name="setcolor_help" xml:space="preserve">
-        <value>Establece un color de nombre personalizado para un usuario. Sintaxis: -setcolor &lt;usuario&gt;, &lt;#colorhex&gt; (ej: -setcolor Distrib, #9d6b15)</value>
-    </data>
-    <data name="setcolor_invalid_hex" xml:space="preserve">
-        <value>Color hexadecimal no válido. Usa el formato #RGB o #RRGGBB (ej: #9d6b15).</value>
-    </data>
-    <data name="setcolor_success" xml:space="preserve">
-        <value>Color de nombre {0} guardado para {1}.</value>
-    </data>
-    <data name="removecolor_help" xml:space="preserve">
-        <value>Elimina el color de nombre personalizado de un usuario. Sintaxis: -removecolor &lt;usuario&gt;</value>
-    </data>
-    <data name="removecolor_success" xml:space="preserve">
-        <value>Color de nombre eliminado para {0}.</value>
-    </data>
-    <data name="removecolor_not_found" xml:space="preserve">
-        <value>No se encontró ningún color personalizado para {0}.</value>
     </data>
 </root>
