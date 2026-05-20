@@ -13,11 +13,13 @@ public class ShowdownRanksProviderTest
     private IHttpService _httpService;
     private ShowdownRanksProvider _provider;
 
+    private static readonly TimeSpan FAST_RETRY = TimeSpan.FromMilliseconds(1);
+
     [SetUp]
     public void SetUp()
     {
         _httpService = Substitute.For<IHttpService>();
-        _provider = new ShowdownRanksProvider(_httpService);
+        _provider = new ShowdownRanksProvider(_httpService, FAST_RETRY);
     }
 
     [Test]
@@ -84,5 +86,79 @@ public class ShowdownRanksProviderTest
             Arg.Any<bool>(),
             Arg.Any<bool>(),
             cts.Token);
+    }
+
+    [Test]
+    public async Task Test_GetRankingDataAsync_ShouldRetryOnFailure_AndSucceedOnSecondAttempt()
+    {
+        // Arrange
+        var mockResponse = Substitute.For<IHttpResponse<IEnumerable<RankingDataDto>>>();
+        mockResponse.Data.Returns([new RankingDataDto { FormatId = "gen9ou" }]);
+
+        var callCount = 0;
+        _httpService
+            .GetAsync<IEnumerable<RankingDataDto>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
+                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                callCount++;
+                if (callCount < 2)
+                {
+                    throw new HttpRequestException("temporary failure");
+                }
+
+                return Task.FromResult(mockResponse);
+            });
+
+        // Act
+        var result = await _provider.GetRankingDataAsync("testuser");
+
+        // Assert
+        Assert.That(result, Is.Not.Empty);
+        await _httpService.Received(2).GetAsync<IEnumerable<RankingDataDto>>(
+            Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
+            Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_GetRankingDataAsync_ShouldRetryUpToThreeTimes_AndThrowOnAllFailures()
+    {
+        // Arrange
+        _httpService
+            .GetAsync<IEnumerable<RankingDataDto>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
+                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
+                Arg.Any<CancellationToken>())
+            .Returns<Task<IHttpResponse<IEnumerable<RankingDataDto>>>>(_ =>
+                throw new HttpRequestException("always fails"));
+
+        // Act & Assert
+        Assert.ThrowsAsync<HttpRequestException>(() => _provider.GetRankingDataAsync("testuser"));
+        await _httpService.Received(3).GetAsync<IEnumerable<RankingDataDto>>(
+            Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
+            Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_GetRankingDataAsync_ShouldNotRetry_WhenCancelled()
+    {
+        // Arrange
+        using var cts = new CancellationTokenSource();
+        _httpService
+            .GetAsync<IEnumerable<RankingDataDto>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
+                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
+                Arg.Any<CancellationToken>())
+            .Returns<Task<IHttpResponse<IEnumerable<RankingDataDto>>>>(_ =>
+                throw new OperationCanceledException());
+
+        // Act & Assert
+        Assert.ThrowsAsync<OperationCanceledException>(() =>
+            _provider.GetRankingDataAsync("testuser", cts.Token));
+        await _httpService.Received(1).GetAsync<IEnumerable<RankingDataDto>>(
+            Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
+            Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
+            Arg.Any<CancellationToken>());
     }
 }

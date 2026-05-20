@@ -404,6 +404,7 @@ public class CommandModule : Module
         builder.RegisterType<SmogonUsageDataProvider>().As<ISmogonUsageDataProvider>().SingleInstance();
         builder.RegisterType<LadderHistoryManager>().As<ILadderHistoryManager>().SingleInstance();
         builder.RegisterType<LadderTrackerManager>().As<ILadderTrackerManager>().SingleInstance();
+        builder.RegisterType<EloProgressionManager>().As<IEloProgressionManager>().SingleInstance();
         builder.RegisterType<PokepasteProvider>().As<ITeamProvider>().SingleInstance();
         builder.RegisterType<CoupCritiqueProvider>().As<ITeamProvider>().SingleInstance();
         builder.RegisterType<ShowdownTeamProvider>().As<ITeamProvider>().SingleInstance();
@@ -417,6 +418,9 @@ public class CommandModule : Module
             e.Instance.Start();
         }).AutoActivate();
         builder.RegisterCommand<LadderGraphCommand>();
+        builder.RegisterCommand<TrackEloProgressionCommand>();
+        builder.RegisterCommand<UntrackEloProgressionCommand>();
+        builder.RegisterCommand<ListTrackedEloProgressionsCommand>();
         builder.RegisterType<LagTestManager>().As<ILagTestManager>().SingleInstance();
         builder.RegisterType<ArcadeInscriptionsManager>().As<IArcadeInscriptionsManager>().SingleInstance();
         builder.RegisterType<ArcadeEventsService>().As<IArcadeEventsService>().SingleInstance();

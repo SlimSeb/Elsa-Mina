@@ -154,9 +154,33 @@
         <value>Generates an ELO history graph for a player. Usage: -ladderhistory &lt;format&gt;, &lt;username&gt;</value>
     </data>
     <data name="ladder_graph_not_enough_data" xml:space="preserve">
-        <value>Not enough ELO history for {0}. Data is recorded hourly while the ladder tracker is active.</value>
+        <value>Not enough ELO history for {0}. Data is recorded hourly for tracked users.</value>
     </data>
     <data name="ladder_graph_upload_failed" xml:space="preserve">
         <value>Failed to upload the graph. Please try again later.</value>
+    </data>
+    <data name="track_elo_progression_help" xml:space="preserve">
+        <value>Track a user's ELO progression in a format. Syntax: -trackelo &lt;format&gt;, &lt;username&gt;</value>
+    </data>
+    <data name="track_elo_progression_success" xml:space="preserve">
+        <value>Now tracking ELO progression for {0} in {1}.</value>
+    </data>
+    <data name="track_elo_progression_already_tracked" xml:space="preserve">
+        <value>{0} is already being tracked in {1}.</value>
+    </data>
+    <data name="untrack_elo_progression_help" xml:space="preserve">
+        <value>Stop tracking a user's ELO progression. Syntax: -untrackelo &lt;format&gt;, &lt;username&gt;</value>
+    </data>
+    <data name="untrack_elo_progression_success" xml:space="preserve">
+        <value>Stopped tracking ELO progression for {0} in {1}.</value>
+    </data>
+    <data name="untrack_elo_progression_not_found" xml:space="preserve">
+        <value>{0} is not currently being tracked in {1}.</value>
+    </data>
+    <data name="list_elo_progressions_none" xml:space="preserve">
+        <value>No users are currently being tracked for ELO progression.</value>
+    </data>
+    <data name="list_elo_progressions_entry" xml:space="preserve">
+        <value>{0} in {1}</value>
     </data>
 </root>

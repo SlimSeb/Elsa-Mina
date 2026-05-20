@@ -13,8 +13,8 @@ namespace ElsaMina.Commands.Showdown.Ladder.EloHistory;
 [NamedCommand("ladderhistory", "laddergraph", "elograph")]
 public class LadderGraphCommand : Command
 {
-    private const int CHART_WIDTH = 900;
-    private const int CHART_HEIGHT = 450;
+    private const int CHART_WIDTH = 600;
+    private const int CHART_HEIGHT = 300;
 
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly IFileSharingService _fileSharingService;
@@ -73,7 +73,7 @@ public class LadderGraphCommand : Command
             }
 
             context.ReplyHtml(
-                $"""<a href="{url}" target="_blank" rel="noopener"><img src="{url}" style="max-width:100%;border-radius:6px" /></a>""",
+                $"""<a href="{url}" target="_blank" rel="noopener"><img src="{url}" width={CHART_WIDTH} height={CHART_HEIGHT} style="max-width:100%;border-radius:6px" /></a>""",
                 rankAware: true);
         }
         catch (Exception ex)
@@ -95,8 +95,6 @@ public class LadderGraphCommand : Command
         plot.Title($"ELO history — {username} ({format})");
         plot.XLabel("Date");
         plot.YLabel("ELO");
-        plot.FigureBackground.Color = Color.FromHex("#1e1e2e");
-        plot.DataBackground.Color = Color.FromHex("#181825");
 
         return plot.GetImage(CHART_WIDTH, CHART_HEIGHT).GetImageBytes(ImageFormat.Png);
     }

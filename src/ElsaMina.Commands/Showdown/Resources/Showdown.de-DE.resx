@@ -154,9 +154,33 @@
         <value>Erstellt ein ELO-Verlaufsdiagramm für einen Spieler. Nutzung: -ladderhistory &lt;Format&gt;, &lt;Benutzername&gt;</value>
     </data>
     <data name="ladder_graph_not_enough_data" xml:space="preserve">
-        <value>Nicht genug ELO-Verlauf für {0}. Daten werden stündlich aufgezeichnet, solange der Tracker aktiv ist.</value>
+        <value>Nicht genug ELO-Verlauf für {0}. Daten werden stündlich für verfolgte Spieler aufgezeichnet.</value>
     </data>
     <data name="ladder_graph_upload_failed" xml:space="preserve">
         <value>Hochladen des Diagramms fehlgeschlagen. Bitte später erneut versuchen.</value>
+    </data>
+    <data name="track_elo_progression_help" xml:space="preserve">
+        <value>Verfolgt den ELO-Verlauf eines Spielers in einem Format. Syntax: -trackelo &lt;Format&gt;, &lt;Benutzername&gt;</value>
+    </data>
+    <data name="track_elo_progression_success" xml:space="preserve">
+        <value>ELO-Verlauf von {0} in {1} wird jetzt verfolgt.</value>
+    </data>
+    <data name="track_elo_progression_already_tracked" xml:space="preserve">
+        <value>{0} wird in {1} bereits verfolgt.</value>
+    </data>
+    <data name="untrack_elo_progression_help" xml:space="preserve">
+        <value>Beendet die Verfolgung des ELO-Verlaufs eines Spielers. Syntax: -untrackelo &lt;Format&gt;, &lt;Benutzername&gt;</value>
+    </data>
+    <data name="untrack_elo_progression_success" xml:space="preserve">
+        <value>ELO-Verlauf von {0} in {1} wird nicht mehr verfolgt.</value>
+    </data>
+    <data name="untrack_elo_progression_not_found" xml:space="preserve">
+        <value>{0} wird in {1} derzeit nicht verfolgt.</value>
+    </data>
+    <data name="list_elo_progressions_none" xml:space="preserve">
+        <value>Derzeit werden keine Spieler für den ELO-Verlauf verfolgt.</value>
+    </data>
+    <data name="list_elo_progressions_entry" xml:space="preserve">
+        <value>{0} in {1}</value>
     </data>
 </root>
