@@ -56,17 +56,17 @@ jobs:
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_KEY }}
-          passphrase: ${{ secrets.SERVER_KEY_PASSPHRASE }}
+          username: ${{ secrets.CI_USERNAME }}
+          key: ${{ secrets.CI_KEY }}
+          passphrase: ${{ secrets.CI_KEY_PASSPHRASE }}
           script: rm -rf ./ElsaV2/output
       - name: upload package
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_KEY }}
-          passphrase: ${{ secrets.SERVER_KEY_PASSPHRASE }}
+          username: ${{ secrets.CI_USERNAME }}
+          key: ${{ secrets.CI_KEY }}
+          passphrase: ${{ secrets.CI_KEY_PASSPHRASE }}
           source: ./output
           target: ./ElsaV2
       - name: restart app
@@ -76,8 +76,8 @@ jobs:
           SERVICE_ACCOUNT_CREDENTIALS: ${{ secrets.SERVICE_ACCOUNT_CREDENTIALS }}
         with:
           host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_KEY }}
-          passphrase: ${{ secrets.SERVER_KEY_PASSPHRASE }}
+          username: ${{ secrets.CI_USERNAME }}
+          key: ${{ secrets.CI_KEY }}
+          passphrase: ${{ secrets.CI_KEY_PASSPHRASE }}
           envs: CONFIG_FILE,SERVICE_ACCOUNT_CREDENTIALS
           script_path: ./output/restart_remote.sh
