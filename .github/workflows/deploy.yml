@@ -73,11 +73,10 @@ jobs:
         uses: appleboy/ssh-action@v1
         env:
           CONFIG_FILE: ${{ secrets.CONFIG_FILE }}
-          SERVICE_ACCOUNT_CREDENTIALS: ${{ secrets.SERVICE_ACCOUNT_CREDENTIALS }}
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.CI_USERNAME }}
           key: ${{ secrets.CI_KEY }}
           passphrase: ${{ secrets.CI_KEY_PASSPHRASE }}
-          envs: CONFIG_FILE,SERVICE_ACCOUNT_CREDENTIALS
+          envs: CONFIG_FILE
           script_path: ./output/restart_remote.sh
