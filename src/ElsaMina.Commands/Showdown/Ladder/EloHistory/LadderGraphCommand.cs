@@ -58,7 +58,11 @@ public class LadderGraphCommand : Command
             var xs = snapshots.Select(s => s.RecordedAt.ToOADate()).ToArray();
             var ys = snapshots.Select(s => (double)s.Elo).ToArray();
 
-            var pngBytes = GenerateChart(xs, ys, parts[1], format);
+            var chartTitle = context.GetString("ladder_graph_chart_title", parts[1], parts[0]);
+            var xLabel = context.GetString("ladder_graph_chart_x_label");
+            var yLabel = context.GetString("ladder_graph_chart_y_label");
+
+            var pngBytes = GenerateChart(xs, ys, chartTitle, xLabel, yLabel);
 
             var fileName = $"elograph-{userId}-{format}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.png";
             var url = await _fileSharingService.CreateFileAsync(pngBytes, fileName,
@@ -83,7 +87,7 @@ public class LadderGraphCommand : Command
         }
     }
 
-    private static byte[] GenerateChart(double[] xs, double[] ys, string username, string format)
+    private static byte[] GenerateChart(double[] xs, double[] ys, string title, string xLabel, string yLabel)
     {
         var plot = new Plot();
 
@@ -92,9 +96,9 @@ public class LadderGraphCommand : Command
         scatter.MarkerSize = 5;
 
         plot.Axes.DateTimeTicksBottom();
-        plot.Title($"ELO history — {username} ({format})");
-        plot.XLabel("Date");
-        plot.YLabel("ELO");
+        plot.Title(title);
+        plot.XLabel(xLabel);
+        plot.YLabel(yLabel);
 
         return plot.GetImage(CHART_WIDTH, CHART_HEIGHT).GetImageBytes(ImageFormat.Png);
     }

@@ -153,6 +153,15 @@
     <data name="ladder_graph_help" xml:space="preserve">
         <value>Erstellt ein ELO-Verlaufsdiagramm für einen Spieler. Nutzung: -ladderhistory &lt;Format&gt;, &lt;Benutzername&gt;</value>
     </data>
+    <data name="ladder_graph_chart_title" xml:space="preserve">
+        <value>ELO-Verlauf — {0} ({1})</value>
+    </data>
+    <data name="ladder_graph_chart_x_label" xml:space="preserve">
+        <value>Datum</value>
+    </data>
+    <data name="ladder_graph_chart_y_label" xml:space="preserve">
+        <value>ELO</value>
+    </data>
     <data name="ladder_graph_not_enough_data" xml:space="preserve">
         <value>Nicht genug ELO-Verlauf für {0}. Daten werden stündlich für verfolgte Spieler aufgezeichnet.</value>
     </data>

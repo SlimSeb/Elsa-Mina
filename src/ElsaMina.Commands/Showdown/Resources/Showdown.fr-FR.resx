@@ -153,6 +153,15 @@
     <data name="ladder_graph_help" xml:space="preserve">
         <value>Génère un graphique d'historique ELO pour un joueur. Utilisation : -ladderhistory &lt;format&gt;, &lt;pseudo&gt;</value>
     </data>
+    <data name="ladder_graph_chart_title" xml:space="preserve">
+        <value>Historique ELO — {0} ({1})</value>
+    </data>
+    <data name="ladder_graph_chart_x_label" xml:space="preserve">
+        <value>Date</value>
+    </data>
+    <data name="ladder_graph_chart_y_label" xml:space="preserve">
+        <value>ELO</value>
+    </data>
     <data name="ladder_graph_not_enough_data" xml:space="preserve">
         <value>Pas assez d'historique ELO pour {0}. Les données sont enregistrées toutes les heures pour les joueurs suivis.</value>
     </data>
