@@ -192,4 +192,13 @@
     <data name="list_elo_progressions_entry" xml:space="preserve">
         <value>{0} en {1}</value>
     </data>
+    <data name="showavy_help" xml:space="preserve">
+        <value>Affiche l'image de l'avatar pour un nom donné. Syntaxe : -showavy &lt;nom de l'avatar&gt;</value>
+    </data>
+    <data name="showavy_no_target" xml:space="preserve">
+        <value>Vous devez fournir le nom de l'avatar.</value>
+    </data>
+    <data name="showavy_not_found" xml:space="preserve">
+        <value>Avatar '{0}' introuvable.</value>
+    </data>
 </root>

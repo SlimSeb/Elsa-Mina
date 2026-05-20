@@ -61,6 +61,7 @@ using ElsaMina.Commands.Repeats.List;
 using ElsaMina.Commands.Replays;
 using ElsaMina.Commands.RoomDashboard;
 using ElsaMina.Commands.Shop;
+using ElsaMina.Commands.Showdown;
 using ElsaMina.Commands.Showdown.BattleTracker;
 using ElsaMina.Commands.Showdown.Ladder;
 using ElsaMina.Commands.Showdown.Ladder.EloHistory;
@@ -223,6 +224,7 @@ public class CommandModule : Module
         builder.RegisterCommand<RankingCommand>();
         builder.RegisterCommand<SmogonStatsCommand>();
         builder.RegisterCommand<LadderCommand>();
+        builder.RegisterCommand<ShowAvatarCommand>();
         builder.RegisterCommand<ToggleLadderTrackerCommand>();
         builder.RegisterCommand<FailCommand>();
         builder.RegisterCommand<RepeatFormCommand>();
