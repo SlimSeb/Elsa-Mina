@@ -35,6 +35,7 @@
   <Folder Name="/Scripts/S3/">
     <File Path="scripts\S3\clear-bucket.sh" />
     <File Path="scripts\S3\set-bucket-lifecycle.sh" />
+    <File Path="scripts\S3\set-bucket-policy.sh" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/ElsaMina.Battles/ElsaMina.Battles.csproj" />
