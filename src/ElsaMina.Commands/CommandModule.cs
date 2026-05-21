@@ -48,6 +48,7 @@ using ElsaMina.Commands.Misc.Facts;
 using ElsaMina.Commands.Misc.Food;
 using ElsaMina.Commands.Misc.Genius;
 using ElsaMina.Commands.Misc.Help;
+using ElsaMina.Commands.Misc.LeagueOfLegends;
 using ElsaMina.Commands.Misc.Legacy;
 using ElsaMina.Commands.Misc.Pokemon;
 using ElsaMina.Commands.Misc.RandomImages;
@@ -187,6 +188,7 @@ public class CommandModule : Module
         builder.RegisterCommand<RemoveColorCommand>();
         builder.RegisterCommand<FactsCommand>();
         builder.RegisterCommand<BitcoinCommand>();
+        builder.RegisterCommand<LeagueRankCommand>();
         builder.RegisterCommand<RandRecipeCommand>();
         builder.RegisterCommand<RecipeSearchCommand>();
         builder.RegisterCommand<RandPastaCommand>();
