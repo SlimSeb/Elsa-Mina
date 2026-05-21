@@ -1,4 +1,7 @@
-﻿using Autofac;
+﻿using System.Globalization;
+using System.Resources;
+using System.Text.RegularExpressions;
+using Autofac;
 using ElsaMina.Commands.Ai.Chat;
 using ElsaMina.Commands.Ai.LanguageModel;
 using ElsaMina.Commands.Ai.LanguageModel.Google;
@@ -19,6 +22,7 @@ using ElsaMina.Commands.Badges.BadgeHolders;
 using ElsaMina.Commands.Badges.BadgeList;
 using ElsaMina.Commands.Badges.HallOfFame;
 using ElsaMina.Commands.Badges.UserBadgePanel;
+using ElsaMina.Commands.ChatLog;
 using ElsaMina.Commands.CustomCommands;
 using ElsaMina.Commands.Development;
 using ElsaMina.Commands.Development.Commands;
@@ -82,16 +86,14 @@ using ElsaMina.Commands.Tournaments.History;
 using ElsaMina.Commands.Tournaments.Leaderboard;
 using ElsaMina.Commands.Tournaments.Trade;
 using ElsaMina.Commands.Users;
+using ElsaMina.Commands.Users.Colors;
 using ElsaMina.Commands.Users.PlayTimes;
 using ElsaMina.Commands.Users.Streaks;
 using ElsaMina.Commands.Watchlist;
-using System.Resources;
-using System.Text.RegularExpressions;
-using ElsaMina.Commands.Users.Colors;
-using Assembly = System.Reflection.Assembly;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Utils;
+using Assembly = System.Reflection.Assembly;
 
 namespace ElsaMina.Commands;
 
@@ -103,7 +105,7 @@ public class CommandModule : Module
 
     private static IEnumerable<ResourceManager> DiscoverFeatureResources()
     {
-        var probeCulture = new System.Globalization.CultureInfo("en-US");
+        var probeCulture = new CultureInfo("en-US");
         var seen = new HashSet<(string BaseName, Assembly Assembly)>();
         foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
@@ -419,6 +421,11 @@ public class CommandModule : Module
         {
             e.Instance.Start();
         }).AutoActivate();
+        builder.RegisterType<ChatLogService>().As<IChatLogService>().SingleInstance().OnActivating(e =>
+        {
+            e.Instance.Start();
+        }).AutoActivate();
+        builder.RegisterHandler<ChatLogHandler>();
         builder.RegisterCommand<LadderGraphCommand>();
         builder.RegisterCommand<TrackEloProgressionCommand>();
         builder.RegisterCommand<UntrackEloProgressionCommand>();
