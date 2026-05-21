@@ -69,7 +69,7 @@ public class ElevenLabsAiTextToSpeechProvider : IAiTextToSpeechProvider
             return null;
         }
 
-        var fileName = $"tts_{_clockService.CurrentUtcDateTime:yyyyMMdd_HHmmssfff}.mp3";
+        var fileName = $"audio/tts_{_clockService.CurrentUtcDateTime:yyyyMMdd_HHmmssfff}.mp3";
         var url = await _fileSharingService.CreateFileAsync(
             stream, fileName, "Text to Speech", "audio/mpeg", cancellationToken);
         if (string.IsNullOrEmpty(url))

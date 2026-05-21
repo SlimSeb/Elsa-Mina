@@ -169,7 +169,7 @@ public class LadderGraphCommandTest
         // Assert
         await _fileSharingService.Received(1).CreateFileAsync(
             Arg.Is<byte[]>(b => b.Length > 0),
-            Arg.Is<string>(name => name.StartsWith("elograph-alice-gen9ou-")),
+            Arg.Is<string>(name => name.StartsWith("elographs/elograph-alice-gen9ou-")),
             description: "ELO history for alice in gen9ou",
             mimeType: "image/png",
             cancellationToken: Arg.Any<CancellationToken>());

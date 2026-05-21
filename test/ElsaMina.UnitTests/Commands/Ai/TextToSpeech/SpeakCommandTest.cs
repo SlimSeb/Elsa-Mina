@@ -1,7 +1,5 @@
 using ElsaMina.Commands.Ai.TextToSpeech;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.Clock;
-using ElsaMina.FileSharing;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 
