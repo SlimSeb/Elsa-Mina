@@ -13,6 +13,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="ElsaMina.UnitTests"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="HtmlAgilityPack" />
         <PackageReference Include="Serilog.Sinks.File" />
         <PackageReference Include="Lusamine.GTranslate" />

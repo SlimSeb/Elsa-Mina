@@ -300,6 +300,9 @@ public class CommandModule : Module
         builder.RegisterCommand<RandomCustomCommand>();
         builder.RegisterCommand<MakeLogRoomCommand>();
         builder.RegisterCommand<DisableLogRoomCommand>();
+        builder.RegisterCommand<DayLineCountCommand>();
+        builder.RegisterCommand<LinecountCommand>();
+        builder.RegisterCommand<TopUsersCommand>();
 
         RegisterRandomImagesCommands(builder);
         RegisterTournamentCommands(builder);

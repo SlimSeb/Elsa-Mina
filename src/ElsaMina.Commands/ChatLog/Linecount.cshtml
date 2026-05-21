@@ -1,0 +1,8 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.ChatLog.LinecountViewModel>
+<div style="max-height: 180px; overflow-y: auto;">
+    @foreach (var day in Model.Days)
+    {
+        @($"{day.Day}/{Model.Month:D2}: ")<progress max="@Model.MaxCount" value="@day.Count"></progress> @day.Count<br />
+    }
+    @GetString("linecount_total", Model.TotalCount, Model.AvgPerDay.ToString("F2"))
+</div>

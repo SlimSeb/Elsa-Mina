@@ -1,0 +1,31 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.ChatLog.DayLineCountViewModel>
+@using ElsaMina.Core.Services.Templates
+@{
+    const string tableStyle = "border: 1px solid #68A; border-radius: 10px;";
+    const string headerStyle = $"border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; padding: 5px;";
+}
+<div style="max-height: 200px; overflow-y: auto;">
+    <center>
+        <table style="@tableStyle">
+            <tbody>
+            <tr>
+                <th style="@headerStyle">@GetString("daylinecount_header_user")</th>
+                <th style="@headerStyle">@GetString("daylinecount_header_messages")</th>
+                <th style="@headerStyle">@GetString("daylinecount_header_words")</th>
+                <th style="@headerStyle">@GetString("daylinecount_header_chars")</th>
+            </tr>
+            @foreach (var row in Model.Rows)
+            {
+                <tr>
+                    <td align="center">
+                        <span class="username" data-name="@row.UserId" style="color: @row.Color">@row.UserId</span>
+                    </td>
+                    <td align="center">@row.Messages</td>
+                    <td align="center">@row.Words <small>(@row.WordsPerMessage.ToString("F1"))</small></td>
+                    <td align="center">@row.Chars <small>(@row.CharsPerMessage.ToString("F1"))</small></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </center>
+</div>

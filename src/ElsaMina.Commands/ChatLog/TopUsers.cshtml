@@ -1,0 +1,18 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.ChatLog.TopUsersViewModel>
+<div style="max-height: 180px; overflow-y: auto;">
+    <b>@GetString("topusers_title", Model.RoomId)</b>
+    <table>
+        <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td><small>@user.UserId</small></td>
+                <td>
+                    <progress style="width: 80px;" max="@Model.MaxCount" value="@user.Count"></progress>
+                    @user.Count
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

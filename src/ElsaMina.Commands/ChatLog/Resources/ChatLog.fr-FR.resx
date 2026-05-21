@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true"/>
+    </xsd:schema>
+    <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+    <resheader name="version"><value>1.3</value></resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+
+    <data name="daylinecount_help" xml:space="preserve">
+        <value>Syntaxe : daylinecount &lt;date&gt;[, &lt;salon&gt;] — ex. daylinecount 2026-05-21</value>
+    </data>
+    <data name="daylinecount_no_logs" xml:space="preserve">
+        <value>Aucun log trouvé pour cette date.</value>
+    </data>
+    <data name="daylinecount_no_messages" xml:space="preserve">
+        <value>Aucun message trouvé pour cette date.</value>
+    </data>
+    <data name="daylinecount_header_user" xml:space="preserve">
+        <value>Utilisateur</value>
+    </data>
+    <data name="daylinecount_header_messages" xml:space="preserve">
+        <value>Messages</value>
+    </data>
+    <data name="daylinecount_header_words" xml:space="preserve">
+        <value>Mots</value>
+    </data>
+    <data name="daylinecount_header_chars" xml:space="preserve">
+        <value>Caractères</value>
+    </data>
+    <data name="linecount_help" xml:space="preserve">
+        <value>Syntaxe : linecount &lt;utilisateur&gt;, &lt;salon&gt;</value>
+    </data>
+    <data name="linecount_no_logs" xml:space="preserve">
+        <value>Aucun log trouvé pour le mois en cours.</value>
+    </data>
+    <data name="linecount_total" xml:space="preserve">
+        <value>Total : {0}, Moyenne par jour : {1}</value>
+    </data>
+    <data name="topusers_no_logs" xml:space="preserve">
+        <value>Aucun log trouvé pour le mois en cours.</value>
+    </data>
+    <data name="topusers_title" xml:space="preserve">
+        <value>Top utilisateurs {0}</value>
+    </data>
+</root>

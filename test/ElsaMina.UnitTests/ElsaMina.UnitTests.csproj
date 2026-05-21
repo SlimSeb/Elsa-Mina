@@ -26,6 +26,7 @@
     <ItemGroup>
       <ProjectReference Include="..\..\src\ElsaMina.Core\ElsaMina.Core.csproj" />
       <ProjectReference Include="..\..\src\ElsaMina.Commands\ElsaMina.Commands.csproj" />
+      <ProjectReference Include="..\..\src\ElsaMina.FileSharing\ElsaMina.FileSharing.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -70,6 +70,44 @@ public class S3FileSharingService : IFileSharingService
         return GetUrlFromObject(fileName);
     }
 
+    public async Task<Stream?> GetFileAsync(string fileName, CancellationToken cancellationToken = default)
+    {
+        if (_client == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            var response = await _client.GetObjectAsync(new GetObjectRequest
+            {
+                BucketName = _credentialsProvider.S3BucketName,
+                Key = fileName
+            }, cancellationToken);
+            return response.ResponseStream;
+        }
+        catch (AmazonS3Exception ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+    }
+
+    public async Task<IReadOnlyList<string>> ListFilesAsync(string prefix, CancellationToken cancellationToken = default)
+    {
+        if (_client == null)
+        {
+            return [];
+        }
+
+        var response = await _client.ListObjectsV2Async(new ListObjectsV2Request
+        {
+            BucketName = _credentialsProvider.S3BucketName,
+            Prefix = prefix
+        }, cancellationToken);
+
+        return response.S3Objects.Select(obj => obj.Key).ToList();
+    }
+
     private string GetUrlFromObject(string objectName)
     {
         var baseUrl = new Uri(_credentialsProvider.S3BaseUrl);
