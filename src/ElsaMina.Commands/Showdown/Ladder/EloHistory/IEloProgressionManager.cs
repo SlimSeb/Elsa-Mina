@@ -3,6 +3,6 @@ namespace ElsaMina.Commands.Showdown.Ladder.EloHistory;
 public interface IEloProgressionManager
 {
     IReadOnlyCollection<EloTrackedUser> GetAllTrackedUsers();
-    bool TrackUser(string format, string userId);
-    bool UntrackUser(string format, string userId);
+    Task<bool> TrackUserAsync(string format, string userId, CancellationToken cancellationToken = default);
+    Task<bool> UntrackUserAsync(string format, string userId, CancellationToken cancellationToken = default);
 }

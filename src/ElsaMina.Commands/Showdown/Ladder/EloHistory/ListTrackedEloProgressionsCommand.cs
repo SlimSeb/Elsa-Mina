@@ -30,7 +30,8 @@ public class ListTrackedEloProgressionsCommand : Command
         var builder = new StringBuilder();
         foreach (var user in trackedUsers.OrderBy(u => u.Format).ThenBy(u => u.UserId))
         {
-            builder.AppendLine(context.GetString("list_elo_progressions_entry", user.UserId, user.Format));
+            builder.Append(context.GetString("list_elo_progressions_entry", user.UserId, user.Format));
+            builder.Append("<br />");
         }
 
         context.ReplyHtml(builder.ToString());

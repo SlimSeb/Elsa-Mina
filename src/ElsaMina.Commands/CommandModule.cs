@@ -408,7 +408,10 @@ public class CommandModule : Module
         builder.RegisterType<SmogonUsageDataProvider>().As<ISmogonUsageDataProvider>().SingleInstance();
         builder.RegisterType<LadderHistoryManager>().As<ILadderHistoryManager>().SingleInstance();
         builder.RegisterType<LadderTrackerManager>().As<ILadderTrackerManager>().SingleInstance();
-        builder.RegisterType<EloProgressionManager>().As<IEloProgressionManager>().SingleInstance();
+        builder.RegisterType<EloProgressionManager>().As<IEloProgressionManager>().SingleInstance().OnActivating(e =>
+        {
+            e.Instance.InitializeAsync().Wait();
+        }).AutoActivate();
         builder.RegisterType<PokepasteProvider>().As<ITeamProvider>().SingleInstance();
         builder.RegisterType<CoupCritiqueProvider>().As<ITeamProvider>().SingleInstance();
         builder.RegisterType<ShowdownTeamProvider>().As<ITeamProvider>().SingleInstance();

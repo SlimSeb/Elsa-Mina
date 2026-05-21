@@ -19,14 +19,14 @@ public class TrackEloProgressionCommand : Command
     public override bool IsAllowedInPrivateMessage => false;
     public override string HelpMessageKey => "track_elo_progression_help";
 
-    public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
+    public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var parts = context.Target?.Split(',', 2, StringSplitOptions.TrimEntries);
         if (parts == null || parts.Length != 2
             || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
         {
             ReplyLocalizedHelpMessage(context);
-            return Task.CompletedTask;
+            return;
         }
 
         var format = parts[0].ToLowerAlphaNum();
@@ -35,10 +35,10 @@ public class TrackEloProgressionCommand : Command
         if (string.IsNullOrWhiteSpace(format) || string.IsNullOrWhiteSpace(userId))
         {
             ReplyLocalizedHelpMessage(context);
-            return Task.CompletedTask;
+            return;
         }
 
-        if (_eloProgressionManager.TrackUser(format, userId))
+        if (await _eloProgressionManager.TrackUserAsync(format, userId, cancellationToken))
         {
             context.ReplyLocalizedMessage("track_elo_progression_success", parts[1], parts[0]);
         }
@@ -46,7 +46,5 @@ public class TrackEloProgressionCommand : Command
         {
             context.ReplyLocalizedMessage("track_elo_progression_already_tracked", parts[1], parts[0]);
         }
-
-        return Task.CompletedTask;
     }
 }

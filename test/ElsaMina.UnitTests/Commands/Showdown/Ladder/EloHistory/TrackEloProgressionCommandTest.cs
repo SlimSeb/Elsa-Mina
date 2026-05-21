@@ -30,7 +30,8 @@ public class TrackEloProgressionCommandTest
 
         // Assert
         _context.Received(1).GetString(_command.HelpMessageKey);
-        _eloProgressionManager.DidNotReceive().TrackUser(Arg.Any<string>(), Arg.Any<string>());
+        await _eloProgressionManager.DidNotReceive()
+            .TrackUserAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -44,7 +45,8 @@ public class TrackEloProgressionCommandTest
 
         // Assert
         _context.Received(1).GetString(_command.HelpMessageKey);
-        _eloProgressionManager.DidNotReceive().TrackUser(Arg.Any<string>(), Arg.Any<string>());
+        await _eloProgressionManager.DidNotReceive()
+            .TrackUserAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -58,7 +60,8 @@ public class TrackEloProgressionCommandTest
 
         // Assert
         _context.Received(1).GetString(_command.HelpMessageKey);
-        _eloProgressionManager.DidNotReceive().TrackUser(Arg.Any<string>(), Arg.Any<string>());
+        await _eloProgressionManager.DidNotReceive()
+            .TrackUserAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -66,13 +69,15 @@ public class TrackEloProgressionCommandTest
     {
         // Arrange
         _context.Target.Returns("Gen 9 OU, Alice Test");
-        _eloProgressionManager.TrackUser("gen9ou", "alicetest").Returns(true);
+        _eloProgressionManager.TrackUserAsync("gen9ou", "alicetest", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(true));
 
         // Act
         await _command.RunAsync(_context);
 
         // Assert
-        _eloProgressionManager.Received(1).TrackUser("gen9ou", "alicetest");
+        await _eloProgressionManager.Received(1)
+            .TrackUserAsync("gen9ou", "alicetest", Arg.Any<CancellationToken>());
         _context.Received(1).ReplyLocalizedMessage("track_elo_progression_success", "Alice Test", "Gen 9 OU");
     }
 
@@ -81,7 +86,8 @@ public class TrackEloProgressionCommandTest
     {
         // Arrange
         _context.Target.Returns("gen9ou, alice");
-        _eloProgressionManager.TrackUser("gen9ou", "alice").Returns(false);
+        _eloProgressionManager.TrackUserAsync("gen9ou", "alice", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(false));
 
         // Act
         await _command.RunAsync(_context);
