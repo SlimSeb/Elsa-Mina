@@ -630,4 +630,58 @@
     <data name="tfe_leaderboard_empty" xml:space="preserve">
         <value>Die 2048-Bestenliste ist leer.</value>
     </data>
+    <data name="rps_help" xml:space="preserve">
+        <value>Startet ein Schere Stein Papier Spiel. Benutze -rpsjoin zum Mitmachen.</value>
+    </data>
+    <data name="rps_already_running" xml:space="preserve">
+        <value>Ein Schere Stein Papier Spiel läuft bereits! Benutze -rpsjoin zum Mitmachen.</value>
+    </data>
+    <data name="rps_other_game_running" xml:space="preserve">
+        <value>Ein anderes Spiel läuft bereits in diesem Raum.</value>
+    </data>
+    <data name="rps_game_created" xml:space="preserve">
+        <value>Ein Schere Stein Papier Spiel wurde erstellt! Benutze -rpsjoin zum Mitmachen.</value>
+    </data>
+    <data name="rps_players_label" xml:space="preserve">
+        <value>Spieler:</value>
+    </data>
+    <data name="rps_waiting_for_players" xml:space="preserve">
+        <value>Warte auf {0} weiteren Spieler. Benutze -rpsjoin!</value>
+    </data>
+    <data name="rps_choose_prompt" xml:space="preserve">
+        <value>Wähle per Klick auf einen Button (wird als PM gesendet):</value>
+    </data>
+    <data name="rps_choices_hidden" xml:space="preserve">
+        <value>Die Auswahl bleibt verborgen, bis beide Spieler gewählt haben.</value>
+    </data>
+    <data name="rps_result_title" xml:space="preserve">
+        <value>Ergebnis</value>
+    </data>
+    <data name="rps_tie" xml:space="preserve">
+        <value>Unentschieden!</value>
+    </data>
+    <data name="rps_wins_with" xml:space="preserve">
+        <value>gewinnt mit</value>
+    </data>
+    <data name="rps_against" xml:space="preserve">
+        <value>gegen</value>
+    </data>
+    <data name="rps_not_running" xml:space="preserve">
+        <value>Kein Schere Stein Papier Spiel aktiv. Benutze -rps um eines zu starten.</value>
+    </data>
+    <data name="rps_already_joined" xml:space="preserve">
+        <value>Du hast dieses Spiel bereits betreten.</value>
+    </data>
+    <data name="rps_game_full" xml:space="preserve">
+        <value>Das Spiel ist bereits voll (2 Spieler).</value>
+    </data>
+    <data name="rps_join_success" xml:space="preserve">
+        <value>{0} ist dem Spiel beigetreten!</value>
+    </data>
+    <data name="rps_already_chosen" xml:space="preserve">
+        <value>Du hast bereits gewählt!</value>
+    </data>
+    <data name="rps_game_cancelled" xml:space="preserve">
+        <value>Das Schere Stein Papier Spiel wurde abgebrochen.</value>
+    </data>
 </root>

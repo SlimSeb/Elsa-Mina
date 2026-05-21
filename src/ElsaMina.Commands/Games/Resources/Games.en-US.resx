@@ -693,4 +693,58 @@
     <data name="bj_game_cancelled" xml:space="preserve">
         <value>The blackjack game has been cancelled.</value>
     </data>
+    <data name="rps_help" xml:space="preserve">
+        <value>Starts a Rock Paper Scissors game. Use -rpsjoin to participate.</value>
+    </data>
+    <data name="rps_already_running" xml:space="preserve">
+        <value>A Rock Paper Scissors game is already running! Use -rpsjoin to participate.</value>
+    </data>
+    <data name="rps_other_game_running" xml:space="preserve">
+        <value>Another game is already running in this room.</value>
+    </data>
+    <data name="rps_game_created" xml:space="preserve">
+        <value>A Rock Paper Scissors game has been created! Use -rpsjoin to participate.</value>
+    </data>
+    <data name="rps_players_label" xml:space="preserve">
+        <value>Players:</value>
+    </data>
+    <data name="rps_waiting_for_players" xml:space="preserve">
+        <value>Waiting for {0} more player(s). Use -rpsjoin!</value>
+    </data>
+    <data name="rps_choose_prompt" xml:space="preserve">
+        <value>Choose by clicking a button (sent as PM):</value>
+    </data>
+    <data name="rps_choices_hidden" xml:space="preserve">
+        <value>Choices are hidden until both players have chosen.</value>
+    </data>
+    <data name="rps_result_title" xml:space="preserve">
+        <value>Result</value>
+    </data>
+    <data name="rps_tie" xml:space="preserve">
+        <value>It's a tie!</value>
+    </data>
+    <data name="rps_wins_with" xml:space="preserve">
+        <value>wins with</value>
+    </data>
+    <data name="rps_against" xml:space="preserve">
+        <value>against</value>
+    </data>
+    <data name="rps_not_running" xml:space="preserve">
+        <value>No Rock Paper Scissors game is running. Use -rps to start one.</value>
+    </data>
+    <data name="rps_already_joined" xml:space="preserve">
+        <value>You have already joined this game.</value>
+    </data>
+    <data name="rps_game_full" xml:space="preserve">
+        <value>The game is already full (2 players).</value>
+    </data>
+    <data name="rps_join_success" xml:space="preserve">
+        <value>{0} joined the game!</value>
+    </data>
+    <data name="rps_already_chosen" xml:space="preserve">
+        <value>You have already made your choice!</value>
+    </data>
+    <data name="rps_game_cancelled" xml:space="preserve">
+        <value>The Rock Paper Scissors game has been cancelled.</value>
+    </data>
 </root>

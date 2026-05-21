@@ -693,4 +693,58 @@
     <data name="bj_game_cancelled" xml:space="preserve">
         <value>La partie de blackjack a été annulée.</value>
     </data>
+    <data name="rps_help" xml:space="preserve">
+        <value>Lance un jeu de Pierre-Papier-Ciseaux. Utilisez -rpsjoin pour participer.</value>
+    </data>
+    <data name="rps_already_running" xml:space="preserve">
+        <value>Un jeu de Pierre-Papier-Ciseaux est déjà en cours ! Utilisez -rpsjoin pour participer.</value>
+    </data>
+    <data name="rps_other_game_running" xml:space="preserve">
+        <value>Un autre jeu est déjà en cours dans cette salle.</value>
+    </data>
+    <data name="rps_game_created" xml:space="preserve">
+        <value>Un jeu de Pierre-Papier-Ciseaux a été créé ! Utilisez -rpsjoin pour participer.</value>
+    </data>
+    <data name="rps_players_label" xml:space="preserve">
+        <value>Joueurs :</value>
+    </data>
+    <data name="rps_waiting_for_players" xml:space="preserve">
+        <value>En attente de {0} joueur(s). Utilisez -rpsjoin !</value>
+    </data>
+    <data name="rps_choose_prompt" xml:space="preserve">
+        <value>Choisissez en cliquant un bouton (envoyé en MP) :</value>
+    </data>
+    <data name="rps_choices_hidden" xml:space="preserve">
+        <value>Les choix sont cachés jusqu'à ce que les deux joueurs aient choisi.</value>
+    </data>
+    <data name="rps_result_title" xml:space="preserve">
+        <value>Résultat</value>
+    </data>
+    <data name="rps_tie" xml:space="preserve">
+        <value>Égalité !</value>
+    </data>
+    <data name="rps_wins_with" xml:space="preserve">
+        <value>gagne avec</value>
+    </data>
+    <data name="rps_against" xml:space="preserve">
+        <value>contre</value>
+    </data>
+    <data name="rps_not_running" xml:space="preserve">
+        <value>Aucun jeu de Pierre-Papier-Ciseaux en cours. Utilisez -rps pour en lancer un.</value>
+    </data>
+    <data name="rps_already_joined" xml:space="preserve">
+        <value>Vous avez déjà rejoint ce jeu.</value>
+    </data>
+    <data name="rps_game_full" xml:space="preserve">
+        <value>Le jeu est déjà complet (2 joueurs).</value>
+    </data>
+    <data name="rps_join_success" xml:space="preserve">
+        <value>{0} a rejoint le jeu !</value>
+    </data>
+    <data name="rps_already_chosen" xml:space="preserve">
+        <value>Vous avez déjà fait votre choix !</value>
+    </data>
+    <data name="rps_game_cancelled" xml:space="preserve">
+        <value>Le jeu de Pierre-Papier-Ciseaux a été annulé.</value>
+    </data>
 </root>

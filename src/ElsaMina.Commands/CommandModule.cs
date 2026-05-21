@@ -38,6 +38,7 @@ using ElsaMina.Commands.Games.GuessingGame.PokeCries;
 using ElsaMina.Commands.Games.GuessingGame.PokeDesc;
 using ElsaMina.Commands.Games.LightsOut;
 using ElsaMina.Commands.Games.PokeRace;
+using ElsaMina.Commands.Games.RockPaperScissors;
 using ElsaMina.Commands.Games.TwentyFortyEight;
 using ElsaMina.Commands.Games.VoltorbFlip;
 using ElsaMina.Commands.JoinPhrases;
@@ -188,6 +189,8 @@ public class CommandModule : Module
         builder.RegisterCommand<RemoveColorCommand>();
         builder.RegisterCommand<FactsCommand>();
         builder.RegisterCommand<BitcoinCommand>();
+        builder.RegisterCommand<DogecoinCommand>();
+        builder.RegisterCommand<EthereumCommand>();
         builder.RegisterCommand<LeagueRankCommand>();
         builder.RegisterCommand<LeagueOfLegendsHistoryCommand>();
         builder.RegisterCommand<RandRecipeCommand>();
@@ -371,6 +374,13 @@ public class CommandModule : Module
         builder.RegisterCommand<EndFloodItCommand>();
         builder.RegisterCommand<FloodItLeaderboardCommand>();
 
+        builder.RegisterCommand<StartRpsCommand>();
+        builder.RegisterCommand<JoinRpsCommand>();
+        builder.RegisterCommand<RockRpsCommand>();
+        builder.RegisterCommand<PaperRpsCommand>();
+        builder.RegisterCommand<ScissorsRpsCommand>();
+        builder.RegisterCommand<EndRpsCommand>();
+
         builder.RegisterCommand<StartTwentyFortyEightCommand>();
         builder.RegisterCommand<JoinTwentyFortyEightCommand>();
         builder.RegisterCommand<MoveTwentyFortyEightCommand>();
@@ -383,6 +393,7 @@ public class CommandModule : Module
         builder.RegisterType<ConnectFourRatingService>().As<IConnectFourRatingService>().SingleInstance();
         builder.RegisterType<VoltorbFlipGame>().AsSelf();
         builder.RegisterType<PokeRaceGame>().AsSelf();
+        builder.RegisterType<RpsGame>().AsSelf();
         builder.RegisterType<PokeDescGame>().AsSelf();
         builder.RegisterType<PokeCriesGame>().AsSelf();
         builder.RegisterType<GatekeepersGame>().AsSelf();

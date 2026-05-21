@@ -1,0 +1,45 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.RockPaperScissors.RpsViewModel>
+@using ElsaMina.Commands.Games.RockPaperScissors
+@using ElsaMina.Core.Utils
+
+@{
+    var name1 = Model.Players[0];
+    var name2 = Model.Players[1];
+    var choice1 = Model.Choices[name1.ToLowerAlphaNum()];
+    var choice2 = Model.Choices[name2.ToLowerAlphaNum()];
+    var emoji1 = RpsGame.ChoiceEmoji(choice1);
+    var emoji2 = RpsGame.ChoiceEmoji(choice2);
+    var color1 = name1.ToColorHexCodeWithCustoms();
+    var color2 = name2.ToColorHexCodeWithCustoms();
+    var isTie = choice1 == choice2;
+    var player1Wins = !isTie && RpsGame.Beats(choice1, choice2);
+    var winnerName = player1Wins ? name1 : name2;
+    var winnerColor = player1Wins ? color1 : color2;
+    var winnerEmoji = player1Wins ? emoji1 : emoji2;
+    var winnerChoice = player1Wins ? choice1 : choice2;
+    var loserName = player1Wins ? name2 : name1;
+    var loserColor = player1Wins ? color2 : color1;
+    var loserEmoji = player1Wins ? emoji2 : emoji1;
+    var loserChoice = player1Wins ? choice2 : choice1;
+}
+
+<div style="background:#333;color:white;padding:10px;border-radius:5px;text-align:center">
+    <h3 style="margin:0">✊📄✂️ Rock Paper Scissors — @GetString("rps_result_title") ✊📄✂️</h3>
+    <p style="font-size:1.1em;margin:10px 0">
+        @if (isTie)
+        {
+            <b>@GetString("rps_tie")</b>
+        }
+        else
+        {
+            <b style="color:@winnerColor">@winnerName</b>
+            <text> @GetString("rps_wins_with") @winnerEmoji <b>@winnerChoice</b> @GetString("rps_against") </text>
+            <b style="color:@loserColor">@loserName</b>
+            <text>'s @loserEmoji @loserChoice!</text>
+        }
+    </p>
+    <p style="color:#aaa">
+        <b style="color:@color1">@name1</b>: @emoji1 @choice1 &nbsp;|&nbsp;
+        <b style="color:@color2">@name2</b>: @emoji2 @choice2
+    </p>
+</div>

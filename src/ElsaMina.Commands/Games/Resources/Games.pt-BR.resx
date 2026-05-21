@@ -693,4 +693,58 @@
     <data name="lo_panel_total_stars" xml:space="preserve">
         <value>Estrelas: {0} ★</value>
     </data>
+    <data name="rps_help" xml:space="preserve">
+        <value>Inicia um jogo de Pedra Papel Tesoura. Use -rpsjoin para participar.</value>
+    </data>
+    <data name="rps_already_running" xml:space="preserve">
+        <value>Já há um jogo de Pedra Papel Tesoura em andamento! Use -rpsjoin para participar.</value>
+    </data>
+    <data name="rps_other_game_running" xml:space="preserve">
+        <value>Outro jogo já está em andamento nesta sala.</value>
+    </data>
+    <data name="rps_game_created" xml:space="preserve">
+        <value>Um jogo de Pedra Papel Tesoura foi criado! Use -rpsjoin para participar.</value>
+    </data>
+    <data name="rps_players_label" xml:space="preserve">
+        <value>Jogadores:</value>
+    </data>
+    <data name="rps_waiting_for_players" xml:space="preserve">
+        <value>Aguardando mais {0} jogador(es). Use -rpsjoin!</value>
+    </data>
+    <data name="rps_choose_prompt" xml:space="preserve">
+        <value>Escolha clicando num botão (enviado como MP):</value>
+    </data>
+    <data name="rps_choices_hidden" xml:space="preserve">
+        <value>As escolhas ficam ocultas até que ambos os jogadores tenham escolhido.</value>
+    </data>
+    <data name="rps_result_title" xml:space="preserve">
+        <value>Resultado</value>
+    </data>
+    <data name="rps_tie" xml:space="preserve">
+        <value>Empate!</value>
+    </data>
+    <data name="rps_wins_with" xml:space="preserve">
+        <value>vence com</value>
+    </data>
+    <data name="rps_against" xml:space="preserve">
+        <value>contra</value>
+    </data>
+    <data name="rps_not_running" xml:space="preserve">
+        <value>Nenhum jogo de Pedra Papel Tesoura em andamento. Use -rps para iniciar um.</value>
+    </data>
+    <data name="rps_already_joined" xml:space="preserve">
+        <value>Você já entrou neste jogo.</value>
+    </data>
+    <data name="rps_game_full" xml:space="preserve">
+        <value>O jogo já está completo (2 jogadores).</value>
+    </data>
+    <data name="rps_join_success" xml:space="preserve">
+        <value>{0} entrou no jogo!</value>
+    </data>
+    <data name="rps_already_chosen" xml:space="preserve">
+        <value>Você já fez sua escolha!</value>
+    </data>
+    <data name="rps_game_cancelled" xml:space="preserve">
+        <value>O jogo de Pedra Papel Tesoura foi cancelado.</value>
+    </data>
 </root>

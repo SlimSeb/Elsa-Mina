@@ -1,0 +1,18 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.RockPaperScissors.RpsViewModel>
+@using ElsaMina.Core.Utils
+
+<div style="background:#333;color:white;padding:10px;border-radius:5px;text-align:center">
+    <h3 style="margin:0">✊📄✂️ Rock Paper Scissors ✊📄✂️</h3>
+    <p>@GetString("rps_game_created")</p>
+    @if (Model.Players.Count > 0)
+    {
+        <p><b>@GetString("rps_players_label")</b>
+            @foreach (var name in Model.Players)
+            {
+                <b style="color:@name.ToColorHexCodeWithCustoms()">@name</b>
+                <text> </text>
+            }
+        </p>
+    }
+    <p>@GetString("rps_waiting_for_players", Model.WaitingCount)</p>
+</div>

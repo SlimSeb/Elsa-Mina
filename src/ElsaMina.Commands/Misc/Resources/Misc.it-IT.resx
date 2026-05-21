@@ -63,6 +63,18 @@
     <data name="bitcoin_help" xml:space="preserve">
         <value>Mostra il prezzo attuale del Bitcoin in EUR e USD.</value>
     </data>
+    <data name="dogecoin_error" xml:space="preserve">
+        <value>Si è verificato un errore.</value>
+    </data>
+    <data name="dogecoin_help" xml:space="preserve">
+        <value>Mostra il prezzo attuale del Dogecoin in EUR e USD.</value>
+    </data>
+    <data name="ethereum_error" xml:space="preserve">
+        <value>Si è verificato un errore.</value>
+    </data>
+    <data name="ethereum_help" xml:space="preserve">
+        <value>Mostra il prezzo attuale di Ethereum in EUR e USD.</value>
+    </data>
     <data name="fact_error" xml:space="preserve">
         <value>Si è verificato un errore.</value>
     </data>

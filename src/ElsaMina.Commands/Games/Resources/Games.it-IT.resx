@@ -687,4 +687,58 @@
     <data name="bj_game_cancelled" xml:space="preserve">
         <value>La partita di blackjack è stata annullata.</value>
     </data>
+    <data name="rps_help" xml:space="preserve">
+        <value>Avvia una partita di Carta Forbice Sasso. Usa -rpsjoin per partecipare.</value>
+    </data>
+    <data name="rps_already_running" xml:space="preserve">
+        <value>Una partita di Carta Forbice Sasso è già in corso! Usa -rpsjoin per partecipare.</value>
+    </data>
+    <data name="rps_other_game_running" xml:space="preserve">
+        <value>Un altro gioco è già in corso in questa stanza.</value>
+    </data>
+    <data name="rps_game_created" xml:space="preserve">
+        <value>È stata creata una partita di Carta Forbice Sasso! Usa -rpsjoin per partecipare.</value>
+    </data>
+    <data name="rps_players_label" xml:space="preserve">
+        <value>Giocatori:</value>
+    </data>
+    <data name="rps_waiting_for_players" xml:space="preserve">
+        <value>In attesa di {0} altro/i giocatore/i. Usa -rpsjoin!</value>
+    </data>
+    <data name="rps_choose_prompt" xml:space="preserve">
+        <value>Scegli cliccando un pulsante (inviato come MP):</value>
+    </data>
+    <data name="rps_choices_hidden" xml:space="preserve">
+        <value>Le scelte sono nascoste finché entrambi i giocatori non hanno scelto.</value>
+    </data>
+    <data name="rps_result_title" xml:space="preserve">
+        <value>Risultato</value>
+    </data>
+    <data name="rps_tie" xml:space="preserve">
+        <value>Pareggio!</value>
+    </data>
+    <data name="rps_wins_with" xml:space="preserve">
+        <value>vince con</value>
+    </data>
+    <data name="rps_against" xml:space="preserve">
+        <value>contro</value>
+    </data>
+    <data name="rps_not_running" xml:space="preserve">
+        <value>Nessuna partita di Carta Forbice Sasso in corso. Usa -rps per avviarne una.</value>
+    </data>
+    <data name="rps_already_joined" xml:space="preserve">
+        <value>Hai già partecipato a questo gioco.</value>
+    </data>
+    <data name="rps_game_full" xml:space="preserve">
+        <value>Il gioco è già al completo (2 giocatori).</value>
+    </data>
+    <data name="rps_join_success" xml:space="preserve">
+        <value>{0} si è unito al gioco!</value>
+    </data>
+    <data name="rps_already_chosen" xml:space="preserve">
+        <value>Hai già fatto la tua scelta!</value>
+    </data>
+    <data name="rps_game_cancelled" xml:space="preserve">
+        <value>La partita di Carta Forbice Sasso è stata annullata.</value>
+    </data>
 </root>

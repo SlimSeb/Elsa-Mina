@@ -8,7 +8,7 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 
-[NamedCommand("lolrank", Aliases = ["lol", "rank"])]
+[NamedCommand("lolrank", Aliases = ["lolelo"])]
 public class LeagueRankCommand : Command
 {
     private const string SOLO_QUEUE = "RANKED_SOLO_5x5";

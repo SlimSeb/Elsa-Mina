@@ -687,4 +687,58 @@
     <data name="bj_game_cancelled" xml:space="preserve">
         <value>La partida de blackjack ha sido cancelada.</value>
     </data>
+    <data name="rps_help" xml:space="preserve">
+        <value>Inicia un juego de Piedra Papel Tijeras. Usa -rpsjoin para participar.</value>
+    </data>
+    <data name="rps_already_running" xml:space="preserve">
+        <value>¡Ya hay un juego de Piedra Papel Tijeras en curso! Usa -rpsjoin para participar.</value>
+    </data>
+    <data name="rps_other_game_running" xml:space="preserve">
+        <value>Ya hay otro juego en curso en esta sala.</value>
+    </data>
+    <data name="rps_game_created" xml:space="preserve">
+        <value>¡Se ha creado un juego de Piedra Papel Tijeras! Usa -rpsjoin para participar.</value>
+    </data>
+    <data name="rps_players_label" xml:space="preserve">
+        <value>Jugadores:</value>
+    </data>
+    <data name="rps_waiting_for_players" xml:space="preserve">
+        <value>Esperando {0} jugador(es) más. ¡Usa -rpsjoin!</value>
+    </data>
+    <data name="rps_choose_prompt" xml:space="preserve">
+        <value>Elige haciendo clic en un botón (enviado como MP):</value>
+    </data>
+    <data name="rps_choices_hidden" xml:space="preserve">
+        <value>Las elecciones están ocultas hasta que ambos jugadores hayan elegido.</value>
+    </data>
+    <data name="rps_result_title" xml:space="preserve">
+        <value>Resultado</value>
+    </data>
+    <data name="rps_tie" xml:space="preserve">
+        <value>¡Empate!</value>
+    </data>
+    <data name="rps_wins_with" xml:space="preserve">
+        <value>gana con</value>
+    </data>
+    <data name="rps_against" xml:space="preserve">
+        <value>contra</value>
+    </data>
+    <data name="rps_not_running" xml:space="preserve">
+        <value>No hay ningún juego de Piedra Papel Tijeras en curso. Usa -rps para iniciar uno.</value>
+    </data>
+    <data name="rps_already_joined" xml:space="preserve">
+        <value>Ya te has unido a este juego.</value>
+    </data>
+    <data name="rps_game_full" xml:space="preserve">
+        <value>El juego ya está completo (2 jugadores).</value>
+    </data>
+    <data name="rps_join_success" xml:space="preserve">
+        <value>¡{0} se unió al juego!</value>
+    </data>
+    <data name="rps_already_chosen" xml:space="preserve">
+        <value>¡Ya has hecho tu elección!</value>
+    </data>
+    <data name="rps_game_cancelled" xml:space="preserve">
+        <value>El juego de Piedra Papel Tijeras ha sido cancelado.</value>
+    </data>
 </root>
