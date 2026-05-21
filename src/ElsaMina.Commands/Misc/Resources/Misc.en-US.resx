@@ -306,4 +306,34 @@
     <data name="lolrank_flex" xml:space="preserve">
         <value>Flex: {0} {1} {2} LP ({3}W/{4}L, {5}%)</value>
     </data>
+    <data name="lolhistory_help" xml:space="preserve">
+        <value>Shows the last 5 games for a player. Syntax: -lolhistory &lt;gameName#tagLine&gt; [region]</value>
+    </data>
+    <data name="lolhistory_no_api_key" xml:space="preserve">
+        <value>Riot API key is not configured.</value>
+    </data>
+    <data name="lolhistory_invalid_region" xml:space="preserve">
+        <value>Unknown region: {0}. Valid regions: na1, euw1, eun1, kr, br1, la1, la2, oc1, tr1, ru, jp1</value>
+    </data>
+    <data name="lolhistory_player_not_found" xml:space="preserve">
+        <value>Player not found: {0}</value>
+    </data>
+    <data name="lolhistory_no_games" xml:space="preserve">
+        <value>{0}#{1} has no recent games.</value>
+    </data>
+    <data name="lolhistory_error" xml:space="preserve">
+        <value>An error occurred while fetching match history.</value>
+    </data>
+    <data name="lolhistory_header" xml:space="preserve">
+        <value>Last 5 games for {0}#{1}:</value>
+    </data>
+    <data name="lolhistory_win" xml:space="preserve">
+        <value>W</value>
+    </data>
+    <data name="lolhistory_loss" xml:space="preserve">
+        <value>L</value>
+    </data>
+    <data name="lolhistory_game_entry" xml:space="preserve">
+        <value>[{0}] {1} {2}/{3}/{4} {5}cs ({6}, {7}m)</value>
+    </data>
 </root>

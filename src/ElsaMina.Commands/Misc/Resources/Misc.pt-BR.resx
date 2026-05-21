@@ -306,4 +306,34 @@
     <data name="lolrank_flex" xml:space="preserve">
         <value>Flex: {0} {1} {2} LP ({3}V/{4}D, {5}%)</value>
     </data>
+    <data name="lolhistory_help" xml:space="preserve">
+        <value>Mostra as últimas 5 partidas de um jogador. Sintaxe: -lolhistory &lt;nome#tag&gt; [região]</value>
+    </data>
+    <data name="lolhistory_no_api_key" xml:space="preserve">
+        <value>A chave de API da Riot não está configurada.</value>
+    </data>
+    <data name="lolhistory_invalid_region" xml:space="preserve">
+        <value>Região desconhecida: {0}. Regiões válidas: na1, euw1, eun1, kr, br1, la1, la2, oc1, tr1, ru, jp1</value>
+    </data>
+    <data name="lolhistory_player_not_found" xml:space="preserve">
+        <value>Jogador não encontrado: {0}</value>
+    </data>
+    <data name="lolhistory_no_games" xml:space="preserve">
+        <value>{0}#{1} não tem partidas recentes.</value>
+    </data>
+    <data name="lolhistory_error" xml:space="preserve">
+        <value>Ocorreu um erro ao buscar o histórico de partidas.</value>
+    </data>
+    <data name="lolhistory_header" xml:space="preserve">
+        <value>Últimas 5 partidas de {0}#{1}:</value>
+    </data>
+    <data name="lolhistory_win" xml:space="preserve">
+        <value>V</value>
+    </data>
+    <data name="lolhistory_loss" xml:space="preserve">
+        <value>D</value>
+    </data>
+    <data name="lolhistory_game_entry" xml:space="preserve">
+        <value>[{0}] {1} {2}/{3}/{4} {5}cs ({6}, {7}m)</value>
+    </data>
 </root>

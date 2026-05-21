@@ -1,3 +1,4 @@
+using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
@@ -10,33 +11,6 @@ namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 [NamedCommand("lolrank", Aliases = ["lol", "rank"])]
 public class LeagueRankCommand : Command
 {
-    private static readonly IReadOnlyDictionary<string, string> PLATFORM_TO_ROUTING =
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["na1"] = "americas",
-            ["na"] = "americas",
-            ["br1"] = "americas",
-            ["br"] = "americas",
-            ["la1"] = "americas",
-            ["la2"] = "americas",
-            ["euw1"] = "europe",
-            ["euw"] = "europe",
-            ["eun1"] = "europe",
-            ["eune"] = "europe",
-            ["tr1"] = "europe",
-            ["tr"] = "europe",
-            ["ru"] = "europe",
-            ["kr"] = "asia",
-            ["jp1"] = "asia",
-            ["jp"] = "asia",
-            ["oc1"] = "sea",
-            ["oce"] = "sea",
-            ["sg2"] = "sea",
-            ["tw2"] = "sea",
-            ["vn2"] = "sea",
-        };
-
-    private const string DEFAULT_PLATFORM = "euw1";
     private const string SOLO_QUEUE = "RANKED_SOLO_5x5";
     private const string FLEX_QUEUE = "RANKED_FLEX_SR";
 
@@ -63,36 +37,29 @@ public class LeagueRankCommand : Command
             return;
         }
 
-        var parts = context.Target.Trim().Split(',', 2, StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 0 || !parts[0].Contains('#'))
+        var parsed = LeagueApiHelper.TryParseInput(context.Target);
+        if (parsed == null)
         {
             context.ReplyLocalizedMessage("lolrank_help");
             return;
         }
 
-        var riotId = parts[0];
-        var platform = parts.Length > 1 ? parts[1].Trim() : DEFAULT_PLATFORM;
-
-        if (!PLATFORM_TO_ROUTING.TryGetValue(platform, out var routing))
+        var (riotId, platform) = parsed.Value;
+        var routing = LeagueApiHelper.GetRouting(platform);
+        if (routing == null)
         {
             context.ReplyLocalizedMessage("lolrank_invalid_region", platform);
             return;
         }
 
-        var separatorIndex = riotId.IndexOf('#');
-        var gameName = riotId[..separatorIndex];
-        var tagLine = riotId[(separatorIndex + 1)..];
-
-        var headers = new Dictionary<string, string> { ["X-Riot-Token"] = apiKey };
+        var (gameName, tagLine) = LeagueApiHelper.SplitRiotId(riotId);
+        var headers = LeagueApiHelper.BuildHeaders(apiKey);
 
         try
         {
-            var accountUrl =
-                $"https://{routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{Uri.EscapeDataString(gameName)}/{Uri.EscapeDataString(tagLine)}";
-            var accountResponse = await _httpService.GetAsync<RiotAccountDto>(accountUrl, headers: headers,
-                cancellationToken: cancellationToken);
-            var puuid = accountResponse.Data?.Puuid;
-            if (string.IsNullOrEmpty(puuid))
+            var puuid = await LeagueApiHelper.GetPuuidAsync(_httpService, routing, gameName, tagLine, headers,
+                cancellationToken);
+            if (puuid == null)
             {
                 context.ReplyLocalizedMessage("lolrank_player_not_found", riotId);
                 return;
@@ -115,19 +82,11 @@ public class LeagueRankCommand : Command
 
             var lines = new List<string> { context.GetString("lolrank_header", gameName, tagLine) };
             if (soloEntry != null)
-            {
                 lines.Add(FormatEntry(context, "lolrank_solo", soloEntry));
-            }
-
             if (flexEntry != null)
-            {
                 lines.Add(FormatEntry(context, "lolrank_flex", flexEntry));
-            }
-
             if (soloEntry == null && flexEntry == null)
-            {
                 lines.Add(context.GetString("lolrank_unranked_queues"));
-            }
 
             context.Reply(string.Join(" | ", lines), rankAware: true);
         }

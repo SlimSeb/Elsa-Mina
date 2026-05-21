@@ -189,6 +189,7 @@ public class CommandModule : Module
         builder.RegisterCommand<FactsCommand>();
         builder.RegisterCommand<BitcoinCommand>();
         builder.RegisterCommand<LeagueRankCommand>();
+        builder.RegisterCommand<LeagueOfLegendsHistoryCommand>();
         builder.RegisterCommand<RandRecipeCommand>();
         builder.RegisterCommand<RecipeSearchCommand>();
         builder.RegisterCommand<RandPastaCommand>();
