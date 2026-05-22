@@ -49,7 +49,7 @@ public class DayLineCountCommandTest
     [Test]
     public void Test_RequiredRank_ShouldBeRoomOwner()
     {
-        Assert.That(_command.RequiredRank, Is.EqualTo(Rank.RoomOwner));
+        Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Driver));
     }
 
     [Test]

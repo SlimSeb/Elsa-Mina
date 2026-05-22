@@ -19,7 +19,7 @@ public class DayLineCountCommand : Command
         _templatesManager = templatesManager;
     }
 
-    public override Rank RequiredRank => Rank.RoomOwner;
+    public override Rank RequiredRank => Rank.Driver;
     public override bool IsAllowedInPrivateMessage => true;
     public override bool IsWhitelistOnly => true;
     public override string HelpMessageKey => "daylinecount_help";
