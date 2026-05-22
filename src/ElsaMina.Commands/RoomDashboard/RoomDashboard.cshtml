@@ -2,43 +2,48 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.RoomDashboard.RoomDashboardViewModel>
 
 @{
-    const string tableStyle = "border-collapse: collapse; width: 100%;";
-    const string headerStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};" +
-                               "text-align: center;" +
-                               "padding: 0px;" +
-                               "height: 1px;" +
-                               "text-align: center;" +
+    const string wrapperStyle = "padding-top: 40px; text-align: center;";
+    const string containerStyle = "font-family: Verdana, sans-serif; width: 560px; display: inline-block; text-align: left;";
+    const string headerStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; padding: 12px 16px;" +
+                               "border-radius: 6px 6px 0 0; text-align: center;";
+    const string titleStyle = "margin: 0; font-size: 1.2em; font-weight: bold; letter-spacing: 0.5px;";
+    const string subtitleStyle = "margin: 4px 0 0 0; font-size: 0.8em; opacity: 0.85;";
+    const string tableStyle = $"border-collapse: collapse; width: 100%; border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-top: none;";
+    const string footerStyle = $"padding: 12px; text-align: center; border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};" +
+                               "border-top: none; border-radius: 0 0 6px 6px;" +
                                $"background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string btnStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; border: none;" +
+                            "padding: 8px 24px; border-radius: 4px; cursor: pointer;" +
+                            "font-size: 0.9em; font-weight: bold; letter-spacing: 0.3px;";
 }
 
+<div style="@wrapperStyle">
 <form
-    style="padding: 2rem;"
+    style="@containerStyle"
     data-submitsend="@Model.Command">
+    <div style="@headerStyle">
+        <p style="@titleStyle">@GetString("room_dashboard", Model.RoomName)</p>
+        <p style="@subtitleStyle">@Model.RoomId</p>
+    </div>
     <table style="@tableStyle">
-        <thead>
-        <tr style="@headerStyle">
-            <th colspan="2">
-                <h1>@GetString("room_dashboard", Model.RoomName)</h1>
-            </th>
-        </tr>
-        </thead>
-
         <tbody>
         @foreach (var parameterModel in Model.RoomParameterLines)
         {
-            <div>
+            <text>
                 @{
                     await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
                 }
-            </div>
+            </text>
         }
         </tbody>
     </table>
-
-    <br/><br/>
-    <button
-        class="button"
-        type="submit">
-        @GetString("submit")
-    </button>
+    <div style="@footerStyle">
+        <button
+            class="button"
+            type="submit"
+            style="@btnStyle">
+            @GetString("submit")
+        </button>
+    </div>
 </form>
+</div>

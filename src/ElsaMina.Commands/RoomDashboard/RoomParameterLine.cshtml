@@ -5,29 +5,32 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.RoomDashboard.RoomParameterLineModel>
 
 @{
-    const string cellStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};" +
-                             $"text-align: center;" +
-                             $"padding: .25rem";
+    const string rowStyle = $"border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string labelCellStyle = "padding: 10px 14px; vertical-align: middle;";
+    const string controlCellStyle = "padding: 10px 14px; vertical-align: middle; text-align: center; width: 1%; white-space: nowrap;";
+    const string nameStyle = "font-weight: bold; font-size: 0.9em; display: block;";
+    const string descStyle = $"font-size: 0.78em; color: {StyleConstants.PRIMARY_BORDER_COLOR}; margin-top: 2px; display: block;";
+    const string selectStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-radius: 3px;" +
+                               "padding: 3px 6px; font-size: 0.85em; max-width: 140px;";
+    const string inputStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-radius: 3px;" +
+                              "padding: 3px 6px; font-size: 0.85em; width: 100%; box-sizing: border-box;";
 }
-<tr>
-    <td style="@cellStyle">
+<tr style="@rowStyle">
+    <td style="@labelCellStyle">
         <label for="@Model.RoomParameterDefinition.Identifier">
-            <h3>
-                @GetString(Model.RoomParameterDefinition.NameKey)
-            </h3>
-            <span>
-                @GetString(Model.RoomParameterDefinition.DescriptionKey)
-            </span>
+            <span style="@nameStyle">@GetString(Model.RoomParameterDefinition.NameKey)</span>
+            <span style="@descStyle">@GetString(Model.RoomParameterDefinition.DescriptionKey)</span>
         </label>
     </td>
-    <td style="@cellStyle">
+    <td style="@controlCellStyle">
         @switch (Model.RoomParameterDefinition.Type)
         {
             case RoomBotConfigurationType.Enumeration:
             {
                 <select
                     name="@Model.RoomParameterDefinition.Identifier"
-                    id="@Model.RoomParameterDefinition.Identifier">
+                    id="@Model.RoomParameterDefinition.Identifier"
+                    style="@selectStyle">
                     @foreach (var option in Model.RoomParameterDefinition.PossibleValues)
                     {
                         <option
@@ -51,7 +54,8 @@
                     type="text"
                     id="@Model.RoomParameterDefinition.Identifier"
                     name="@Model.RoomParameterDefinition.Identifier"
-                    value="@Model.CurrentValue"/>
+                    value="@Model.CurrentValue"
+                    style="@inputStyle"/>
                 break;
         }
     </td>
