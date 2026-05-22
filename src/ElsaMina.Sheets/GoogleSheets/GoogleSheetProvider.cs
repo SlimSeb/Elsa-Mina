@@ -1,3 +1,4 @@
+using System.Text;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
@@ -68,15 +69,15 @@ public class GoogleSheetProvider : ISheetProvider
     
     private static string ToA1Column(int column)
     {
-        var col = "";
+        var colBuilder = new StringBuilder();
         column += 1;
         while (column > 0)
         {
             var mod = (column - 1) % 26;
-            col = (char)('A' + mod) + col;
+            colBuilder.Insert(0, (char)('A' + mod));
             column = (column - mod) / 26;
         }
-        return col;
+        return colBuilder.ToString();
     }
 
     /// <summary>

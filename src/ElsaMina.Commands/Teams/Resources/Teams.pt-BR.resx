@@ -114,7 +114,4 @@
     <data name="deleteallteams_error" xml:space="preserve">
         <value>Ocorreu um erro ao excluir os times: {0}</value>
     </data>
-    <data name="team_preview_copy" xml:space="preserve">
-        <value>Copiar equipe</value>
-    </data>
 </root>

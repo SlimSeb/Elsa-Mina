@@ -12,7 +12,6 @@ public interface ILightsOutGame : IGame
     int Stars { get; }
     int TotalStars { get; }
     bool IsRoundActive { get; }
-    bool IsEnded { get; }
     bool[,] Grid { get; }
     bool IsPrivateMode { get; }
     string TargetRoomId { get; }

@@ -38,13 +38,14 @@ public class PollSuggestListCommand : Command
         }
 
         var trigger = _configuration.Trigger;
-        var html = $"<h3>{context.GetString("pollsuggest_staff_list")}</h3><ul>";
+        var htmlBuilder = new System.Text.StringBuilder();
+        htmlBuilder.Append($"<h3>{context.GetString("pollsuggest_staff_list")}</h3><ul>");
         foreach (var poll in suggestions)
         {
-            html += $"""<li>({poll.Id}) - {poll.UserName} - {poll.Content} <button class="button" name="send" value="{trigger}deletesuggpoll {poll.Id}">Supprimer</button></li>""";
+            htmlBuilder.Append($"""<li>({poll.Id}) - {poll.UserName} - {poll.Content} <button class="button" name="send" value="{trigger}deletesuggpoll {poll.Id}">Supprimer</button></li>""");
         }
-        html += "</ul>";
+        htmlBuilder.Append("</ul>");
 
-        context.ReplyHtml(html);
+        context.ReplyHtml(htmlBuilder.ToString());
     }
 }

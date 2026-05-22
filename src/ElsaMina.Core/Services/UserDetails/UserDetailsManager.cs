@@ -34,7 +34,6 @@ public class UserDetailsManager : IUserDetailsManager
 
         try
         {
-            // Handle servers returning "rooms: false" instead of {}
             message = message.Replace("\"rooms\":false", "\"rooms\":{}")
                              .Replace("\"rooms\": false", "\"rooms\":{}");
 

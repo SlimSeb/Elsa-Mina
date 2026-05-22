@@ -6,7 +6,7 @@ public static class TwentyFortyEightConstants
     public const int TARGET_TILE = 2048;
     public static readonly TimeSpan INACTIVITY_TIMEOUT = TimeSpan.FromMinutes(5);
 
-    public static readonly Dictionary<int, (string Background, string Text)> TILE_STYLES = new()
+    public static readonly IReadOnlyDictionary<int, (string Background, string Text)> TILE_STYLES = new Dictionary<int, (string Background, string Text)>()
     {
         [0]    = ("#cdc1b4", "#776e65"),
         [2]    = ("#eee4da", "#776e65"),

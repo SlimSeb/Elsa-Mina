@@ -39,7 +39,7 @@ public class JoinPokeRaceCommand : Command
             return Task.CompletedTask;
         }
 
-        var (success, messageKey, args) = pokeRace.JoinRace(context.Sender.Name, pokemonName);
+        var (_, messageKey, args) = pokeRace.JoinRace(context.Sender.Name, pokemonName);
         context.ReplyLocalizedMessage(messageKey, args);
 
         return Task.CompletedTask;

@@ -68,7 +68,6 @@ public class RequestTradeCommand : Command
         }
 
         var trigger = _configuration.Trigger;
-        var botName = _configuration.Name;
         var approveButton = $"""<button class="button" name="send" value="{trigger}tradepoints {originUserId}, {newUserId}, {points}, {roomId}">Approuver</button>""";
         var disapproveButton = $"""<button class="button" name="send" value="{trigger}notrade {originUserId}, {points}">Refuser</button>""";
 

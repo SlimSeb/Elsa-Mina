@@ -56,7 +56,7 @@ public class EndVoltorbFlipCommand : Command
         context.ReplyLocalizedMessage("vf_game_cancelled");
     }
 
-    private async Task HandleRoomMessageAsync(IContext context)
+    private static async Task HandleRoomMessageAsync(IContext context)
     {
         if (context.Room?.Game is IVoltorbFlipGame voltorbFlip)
         {

@@ -4,20 +4,25 @@ namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 
 public static class LeagueApiHelper
 {
+    private const string AMERICAS = "americas";
+    private const string EUROPE = "europe";
+    private const string ASIA = "asia";
+    private const string SEA = "sea";
+
     private static readonly Dictionary<string, string> PLATFORM_TO_ROUTING =
         new(StringComparer.OrdinalIgnoreCase)
         {
-            ["na1"] = "americas", ["na"] = "americas",
-            ["br1"] = "americas", ["br"] = "americas",
-            ["la1"] = "americas", ["la2"] = "americas",
-            ["euw1"] = "europe", ["euw"] = "europe",
-            ["eun1"] = "europe", ["eune"] = "europe",
-            ["tr1"] = "europe", ["tr"] = "europe",
-            ["ru"] = "europe",
-            ["kr"] = "asia",
-            ["jp1"] = "asia", ["jp"] = "asia",
-            ["oc1"] = "sea", ["oce"] = "sea",
-            ["sg2"] = "sea", ["tw2"] = "sea", ["vn2"] = "sea",
+            ["na1"] = AMERICAS, ["na"] = AMERICAS,
+            ["br1"] = AMERICAS, ["br"] = AMERICAS,
+            ["la1"] = AMERICAS, ["la2"] = AMERICAS,
+            ["euw1"] = EUROPE, ["euw"] = EUROPE,
+            ["eun1"] = EUROPE, ["eune"] = EUROPE,
+            ["tr1"] = EUROPE, ["tr"] = EUROPE,
+            ["ru"] = EUROPE,
+            ["kr"] = ASIA,
+            ["jp1"] = ASIA, ["jp"] = ASIA,
+            ["oc1"] = SEA, ["oce"] = SEA,
+            ["sg2"] = SEA, ["tw2"] = SEA, ["vn2"] = SEA,
         };
 
     private const string DEFAULT_PLATFORM = "euw1";

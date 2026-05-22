@@ -59,7 +59,7 @@ public class PendingQueryRequestsManager<TKey, TResult>
 
         return _pendingRequests
             .Select(request => TryResolve(request.Key, result))
-            .FirstOrDefault();
+            .First();
     }
 
     private async Task RunTimeoutAsync(TKey requestKey, CancellationToken cancellationToken)

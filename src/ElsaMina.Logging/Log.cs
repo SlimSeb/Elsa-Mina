@@ -38,7 +38,6 @@ public static class Log
             case LogLevel.Warning:
                 config.MinimumLevel.Warning();
                 break;
-            case LogLevel.Error:
             default:
                 config.MinimumLevel.Error();
                 break;

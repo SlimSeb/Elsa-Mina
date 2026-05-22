@@ -16,7 +16,6 @@ public interface IVoltorbFlipGame : IGame
     int[] ColSums { get; }
     int[] RowVoltorbs { get; }
     int[] ColVoltorbs { get; }
-    bool IsEnded { get; }
     bool IsMarkingMode { get; }
     VoltorbFlipMarkerType ActiveMarkerType { get; }
     VoltorbFlipMarkerType[,] Markers { get; }

@@ -1,3 +1,4 @@
+using System.Text;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 
@@ -120,17 +121,17 @@ public class GoogleSheet : ISheet
 
     private static string ToA1(int column, int row)
     {
-        var col = "";
+        var colBuilder = new StringBuilder();
         var dividend = column + 1;
 
         while (dividend > 0)
         {
             var modulo = (dividend - 1) % 26;
-            col = Convert.ToChar('A' + modulo) + col;
+            colBuilder.Insert(0, Convert.ToChar('A' + modulo));
             dividend = (dividend - modulo) / 26;
         }
 
-        return $"{col}{row + 1}";
+        return $"{colBuilder}{row + 1}";
     }
 
     public void Dispose()

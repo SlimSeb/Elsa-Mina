@@ -80,7 +80,7 @@ public class CalcBasedBattleDecisionService : IBattleDecisionService
 
     // ── Minimax (single battle) ───────────────────────────────────────────────
 
-    private record SimState
+    private sealed record SimState
     {
         public double OurHpRatio { get; init; }
         public double OppHpRatio { get; init; }

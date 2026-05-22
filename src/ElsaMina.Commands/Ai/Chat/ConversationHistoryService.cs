@@ -50,7 +50,7 @@ public sealed class ConversationHistoryService : IConversationHistoryService
         return conversation;
     }
 
-    private void TrimHistory(List<LanguageModelMessage> history)
+    private static void TrimHistory(List<LanguageModelMessage> history)
     {
         if (history.Count <= MAX_HISTORY_MESSAGES)
         {
@@ -63,9 +63,12 @@ public sealed class ConversationHistoryService : IConversationHistoryService
 
     private static string FormatUserName(string user)
     {
-        return string.IsNullOrEmpty(user)
-            ? user
-            : user.Length > 1 && !char.IsLetterOrDigit(user[0]) ? user[1..] : user;
+        if (string.IsNullOrEmpty(user))
+        {
+            return user;
+        }
+
+        return user.Length > 1 && !char.IsLetterOrDigit(user[0]) ? user[1..] : user;
     }
 
     private bool IsCommandMessage(string message)

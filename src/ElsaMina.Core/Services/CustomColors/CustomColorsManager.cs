@@ -76,9 +76,9 @@ public partial class CustomColorsManager : ICustomColorsManager
 
         var block = blockMatch.Groups[1].Value;
         var result = new Dictionary<string, string>();
-        foreach (Match entry in ENTRY_REGEX.Matches(block))
+        foreach (var groups in ENTRY_REGEX.Matches(block).Select(entry => entry.Groups))
         {
-            result.TryAdd(entry.Groups[1].Value, entry.Groups[2].Value);
+            result.TryAdd(groups[1].Value, groups[2].Value);
         }
         return result;
     }

@@ -47,23 +47,27 @@ public static class PokeRaceConstants
                 "https://play.pokemonshowdown.com/sprites/gen5ani/weavile.gif", "Glace/Ténèbre"),
         };
 
+    private const string BOOST = "boost";
+    private const string NEUTRAL = "neutral";
+    private const string SLOW = "slow";
+
     public static readonly IReadOnlyList<RaceEvent> RACE_EVENTS = new List<RaceEvent>
     {
         // Boosts
-        new("boost", "{pokemon} a trouvé un raccourci et gagne une avance!", 2, "boost"),
-        new("boost_big", "{pokemon} utilise une attaque spéciale et fait un bond en avant!", 3, "boost"),
-        new("nitro", "{pokemon} active son turbo et dépasse ses adversaires!", 4, "boost"),
-        new("tailwind", "{pokemon} bénéficie d'un vent favorable!", 2.5, "boost"),
-        new("item", "{pokemon} utilise une Vive Griffe pour accélérer!", 2, "boost"),
+        new("boost", "{pokemon} a trouvé un raccourci et gagne une avance!", 2, BOOST),
+        new("boost_big", "{pokemon} utilise une attaque spéciale et fait un bond en avant!", 3, BOOST),
+        new("nitro", "{pokemon} active son turbo et dépasse ses adversaires!", 4, BOOST),
+        new("tailwind", "{pokemon} bénéficie d'un vent favorable!", 2.5, BOOST),
+        new("item", "{pokemon} utilise une Vive Griffe pour accélérer!", 2, BOOST),
         // Neutral
-        new("normal", "{pokemon} maintient son allure!", 0, "neutral"),
-        new("focus", "{pokemon} se concentre sur la course!", 0.5, "neutral"),
-        new("cheer", "{pokemon} est encouragé par la foule!", 1, "neutral"),
+        new("normal", "{pokemon} maintient son allure!", 0, NEUTRAL),
+        new("focus", "{pokemon} se concentre sur la course!", 0.5, NEUTRAL),
+        new("cheer", "{pokemon} est encouragé par la foule!", 1, NEUTRAL),
         // Slows
-        new("slow", "{pokemon} a trébuché et perd du terrain!", -1, "slow"),
-        new("slow_big", "{pokemon} est distrait par un obstacle et perd beaucoup de terrain!", -2, "slow"),
-        new("mud", "{pokemon} s'est enlisé dans de la boue!", -1.5, "slow"),
-        new("tired", "{pokemon} commence à fatiguer!", -1, "slow"),
+        new("slow", "{pokemon} a trébuché et perd du terrain!", -1, SLOW),
+        new("slow_big", "{pokemon} est distrait par un obstacle et perd beaucoup de terrain!", -2, SLOW),
+        new("mud", "{pokemon} s'est enlisé dans de la boue!", -1.5, SLOW),
+        new("tired", "{pokemon} commence à fatiguer!", -1, SLOW),
         // Special
         new("leader_slow", "{pokemon} est trop confiant et ralentit!", -3, "leader_penalty"),
         new("comeback", "{pokemon} refuse d'abandonner et accélère!", 5, "trailing_boost"),

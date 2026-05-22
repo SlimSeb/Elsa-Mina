@@ -72,20 +72,21 @@ public class PollSuggestCommand : Command
             .OrderByDescending(poll => poll.Id)
             .ToListAsync(cancellationToken);
 
-        var html = $"<h3>{context.GetString("pollsuggest_staff_title")}</h3>";
-        html += $"<p>{context.GetString("pollsuggest_staff_new", context.Sender.Name, suggestion)}</p>";
+        var htmlBuilder = new System.Text.StringBuilder();
+        htmlBuilder.Append($"<h3>{context.GetString("pollsuggest_staff_title")}</h3>");
+        htmlBuilder.Append($"<p>{context.GetString("pollsuggest_staff_new", context.Sender.Name, suggestion)}</p>");
 
         if (allSuggestions.Count > 0)
         {
-            html += $"<details><summary>{context.GetString("pollsuggest_staff_list")}</summary><ul>";
+            htmlBuilder.Append($"<details><summary>{context.GetString("pollsuggest_staff_list")}</summary><ul>");
             foreach (var poll in allSuggestions)
             {
-                html += $"""<li>({poll.Id}) - {poll.UserName} - {poll.Content} <button class="button" name="send" value="{trigger}deletesuggpoll {poll.Id}">Supprimer</button></li>""";
+                htmlBuilder.Append($"""<li>({poll.Id}) - {poll.UserName} - {poll.Content} <button class="button" name="send" value="{trigger}deletesuggpoll {poll.Id}">Supprimer</button></li>""");
             }
-            html += "</ul></details>";
+            htmlBuilder.Append("</ul></details>");
         }
 
-        context.SendMessageIn(STAFF_ROOM, $"/addhtmlbox {html}");
+        context.SendMessageIn(STAFF_ROOM, $"/addhtmlbox {htmlBuilder}");
         context.ReplyLocalizedMessage("pollsuggest_success");
     }
 }

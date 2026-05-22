@@ -79,7 +79,7 @@ public class TypeMatchupBattleDecisionService : IBattleDecisionService
         return choices;
     }
 
-    private List<int> GetSwitchCandidates(BattleContext context)
+    private static List<int> GetSwitchCandidates(BattleContext context)
     {
         var candidates = new List<int>();
         for (var index = 0; index < context.SidePokemon.Count; index++)
@@ -119,7 +119,7 @@ public class TypeMatchupBattleDecisionService : IBattleDecisionService
                 return [];
             }
 
-            var opponentTypes = GetOpponentTypes(context, slotIndex);
+            var opponentTypes = GetOpponentTypes();
             var moveChoice = opponentTypes.Count == 0
                 ? _randomService.RandomElement(availableMoves)
                 : GetBestMoveChoice(slot, availableMoves, opponentTypes);
@@ -158,15 +158,8 @@ public class TypeMatchupBattleDecisionService : IBattleDecisionService
         return _randomService.RandomElement(bestMoves);
     }
 
-    private static IReadOnlyList<string> GetOpponentTypes(BattleContext context, int slotIndex)
+    private static IReadOnlyList<string> GetOpponentTypes()
     {
-        /*
-        if (context.OpponentActiveTypes.Count <= slotIndex)
-        {
-            return Array.Empty<string>();
-        }
-
-        return context.OpponentActiveTypes[slotIndex] ?? [];*/
         return [];
     }
 }

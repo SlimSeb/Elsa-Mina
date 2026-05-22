@@ -1,4 +1,5 @@
 using ElsaMina.Core.Contexts;
+using System.Threading;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Utils;
@@ -8,7 +9,10 @@ namespace ElsaMina.Commands.Games.PokeRace;
 
 public class PokeRaceGame : Game, IPokeRaceGame
 {
-    private static int _nextGameId = 1;
+    private const string RACE_OUTER_DIV = "<div style=\"background-color: #333; color: white; padding: 10px; border-radius: 5px;\">";
+    private const string CLOSING_DIV = "</div>";
+
+    private static int _nextGameId;
 
     private readonly IRandomService _randomService;
     private readonly PeriodicTimerRunner _autoStartTimer;
@@ -30,7 +34,7 @@ public class PokeRaceGame : Game, IPokeRaceGame
     public PokeRaceGame(IRandomService randomService, TimeSpan autoStartDelay, TimeSpan updateInterval)
     {
         _randomService = randomService;
-        GameId = _nextGameId++;
+        GameId = Interlocked.Increment(ref _nextGameId);
         _autoStartTimer = new PeriodicTimerRunner(autoStartDelay, OnAutoStartAsync, runOnce: true);
         _raceUpdateTimer = new PeriodicTimerRunner(updateInterval, OnRaceUpdateAsync);
     }
@@ -211,7 +215,7 @@ public class PokeRaceGame : Game, IPokeRaceGame
     private string BuildLobbyHtml()
     {
         var html = new System.Text.StringBuilder();
-        html.Append("<div style=\"background-color: #333; color: white; padding: 10px; border-radius: 5px;\">");
+        html.Append(RACE_OUTER_DIV);
         html.Append("<h3 style=\"text-align: center; margin: 0;\">🏁 Course de Pokémon 🏁</h3>");
         html.Append("<p style=\"text-align: center;\">Une nouvelle course de Pokémon va commencer!</p>");
 
@@ -256,21 +260,21 @@ public class PokeRaceGame : Game, IPokeRaceGame
                 html.Append($"<img src=\"{PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite}\" width=\"40\" height=\"40\"><br>");
                 html.Append($"<b style=\"color: {color}\">{name}</b><br>");
                 html.Append($"<span>{pokemon}</span>");
-                html.Append("</div>");
+                html.Append(CLOSING_DIV);
             }
-            html.Append("</div>");
+            html.Append(CLOSING_DIV);
         }
 
         html.Append("<p style=\"text-align: center;\">Pour participer, tapez <b>-racejoin [Pokémon]</b></p>");
         html.Append("<p style=\"text-align: center;\">La course commencera dans 60 secondes ou quand quelqu'un tapera <b>-racestart</b></p>");
-        html.Append("</div>");
+        html.Append(CLOSING_DIV);
         return html.ToString();
     }
 
     private string BuildRaceStartHtml()
     {
         var html = new System.Text.StringBuilder();
-        html.Append("<div style=\"background-color: #333; color: white; padding: 10px; border-radius: 5px;\">");
+        html.Append(RACE_OUTER_DIV);
         html.Append("<h3 style=\"text-align: center; margin: 0;\">🏁 Course de Pokémon 🏁</h3>");
         html.Append("<p style=\"text-align: center;\">Les Pokémon se préparent sur la ligne de départ!</p>");
 
@@ -305,14 +309,14 @@ public class PokeRaceGame : Game, IPokeRaceGame
         html.Append("</table>");
 
         html.Append("<p style=\"text-align: center;\">La course va commencer dans 3 secondes...</p>");
-        html.Append("</div>");
+        html.Append(CLOSING_DIV);
         return html.ToString();
     }
 
     private string BuildRaceUpdateHtml()
     {
         var html = new System.Text.StringBuilder();
-        html.Append("<div style=\"background-color: #333; color: white; padding: 10px; border-radius: 5px;\">");
+        html.Append(RACE_OUTER_DIV);
         html.Append($"<h3 style=\"text-align: center; margin: 0;\">🏁 Course de Pokémon - Tour {_turn} 🏁</h3>");
         html.Append("<div style=\"margin: 10px 0;\">");
 
@@ -330,14 +334,14 @@ public class PokeRaceGame : Game, IPokeRaceGame
             html.Append("</div></div></div>");
         }
 
-        html.Append("</div>");
+        html.Append(CLOSING_DIV);
 
         if (_allEvents.Count > 0)
         {
             html.Append("<div style=\"margin-top: 10px; text-align: center;\"><b>Événements récents:</b><br>");
             foreach (var evt in _allEvents)
                 html.Append($"{evt}<br>");
-            html.Append("</div>");
+            html.Append(CLOSING_DIV);
         }
 
         if (_finished.Count > 0)
@@ -350,10 +354,10 @@ public class PokeRaceGame : Game, IPokeRaceGame
                 var color = playerName.ToColorHexCodeWithCustoms();
                 html.Append($"#{i + 1} - <b style=\"color: {color}\">{playerName}</b> avec {pokemon}<br>");
             }
-            html.Append("</div>");
+            html.Append(CLOSING_DIV);
         }
 
-        html.Append("</div>");
+        html.Append(CLOSING_DIV);
         return html.ToString();
     }
 
@@ -364,7 +368,7 @@ public class PokeRaceGame : Game, IPokeRaceGame
         var podiumOrder = new[] { 1, 0, 2 };
 
         var html = new System.Text.StringBuilder();
-        html.Append("<div style=\"background-color: #333; color: white; padding: 10px; border-radius: 5px;\">");
+        html.Append(RACE_OUTER_DIV);
         html.Append("<h3 style=\"text-align: center; margin: 0;\">🏆 Résultats de la Course 🏆</h3>");
         html.Append("<div style=\"display: flex; justify-content: center; align-items: flex-end; margin: 15px 0; padding-top: 50px;\">");
 
@@ -388,7 +392,7 @@ public class PokeRaceGame : Game, IPokeRaceGame
                 html.Append($"<div style=\"position: relative; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 24px; text-shadow: 0 0 3px #000;\">#{rank}</div></div>");
                 html.Append("<div style=\"background-color: #444; padding: 8px; border-radius: 0 0 5px 5px;\">");
                 html.Append($"<b style=\"color: {nameColor}\">{playerName}</b><br><span style=\"color: #DDD;\">{pokemon}</span></div>");
-                html.Append("</div>");
+                html.Append(CLOSING_DIV);
             }
             else
             {
@@ -399,7 +403,7 @@ public class PokeRaceGame : Game, IPokeRaceGame
             }
         }
 
-        html.Append("</div>");
+        html.Append(CLOSING_DIV);
         html.Append("<div style=\"margin-top: 15px;\"><h4 style=\"text-align: center; margin: 5px 0;\">Classement complet</h4>");
 
         for (var i = 0; i < _finished.Count; i++)
@@ -411,9 +415,9 @@ public class PokeRaceGame : Game, IPokeRaceGame
             html.Append($"<b>#{i + 1}</b> - <b style=\"color: {nameColor}\">{playerName}</b> avec {pokemon} ({PokeRaceConstants.RACE_POKEMON[pokemon].Type})</div>");
         }
 
-        html.Append("</div>");
+        html.Append(CLOSING_DIV);
         html.Append("<p style=\"text-align: center; margin-top: 15px;\">Merci d'avoir participé à la course! Tapez <b>-pokerace</b> pour commencer une nouvelle course.</p>");
-        html.Append("</div>");
+        html.Append(CLOSING_DIV);
         return html.ToString();
     }
 }

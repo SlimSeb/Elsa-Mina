@@ -77,7 +77,7 @@ public class RandomBattleDecisionService : IBattleDecisionService
         return choices;
     }
 
-    private List<int> GetSwitchCandidates(BattleContext context)
+    private static List<int> GetSwitchCandidates(BattleContext context)
     {
         var candidates = new List<int>();
         for (var index = 0; index < context.SidePokemon.Count; index++)
@@ -95,21 +95,17 @@ public class RandomBattleDecisionService : IBattleDecisionService
     private List<int> BuildMoveChoices(BattleContext context)
     {
         var choices = new List<int>();
-        foreach (var slot in context.ActiveSlots)
+        foreach (var moves in context.ActiveSlots.Select(slot => slot.Moves))
         {
-            if (slot.Moves.Count == 0)
+            if (moves.Count == 0)
             {
                 return [];
             }
 
-            var availableMoves = new List<int>();
-            for (var index = 0; index < slot.Moves.Count; index++)
-            {
-                if (!slot.Moves[index].IsDisabled)
-                {
-                    availableMoves.Add(index + 1);
-                }
-            }
+            var availableMoves = Enumerable.Range(0, moves.Count)
+                .Where(index => !moves[index].IsDisabled)
+                .Select(index => index + 1)
+                .ToList();
 
             if (availableMoves.Count == 0)
             {

@@ -25,9 +25,6 @@ public class SmogonPokemonUsageDataDto
     [JsonProperty("Raw count")]
     public int RawCount { get; set; }
 
-    //[JsonProperty("Viability Ceiling")]
-    //public Dictionary<string, int> ViabilityCeiling { get; set; }
-
     [JsonProperty("Checks and Counters")]
     public Dictionary<string, double[]> ChecksAndCounters { get; set; }
 }

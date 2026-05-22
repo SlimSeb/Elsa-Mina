@@ -135,7 +135,7 @@ public abstract class WikiMediaSearchCommand : Command
                    .Select(paragraph => paragraph.Trim())
                    .FirstOrDefault(paragraph => paragraph.Length > 0
                                                 && !paragraph.StartsWith("==")
-                                                && !paragraph.StartsWith("{"))
+                                                && !paragraph.StartsWith('{'))
                ?? string.Empty;
     }
 

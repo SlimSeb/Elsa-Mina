@@ -1,4 +1,5 @@
 using ElsaMina.Core.Contexts;
+using System.Threading;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.System;
@@ -10,7 +11,7 @@ namespace ElsaMina.Commands.Games.RockPaperScissors;
 
 public class RpsGame : Game, IRpsGame
 {
-    private static int _nextGameId = 1;
+    private static int _nextGameId;
 
     private readonly IConfiguration _configuration;
     private readonly ISystemService _systemService;
@@ -24,7 +25,7 @@ public class RpsGame : Game, IRpsGame
         _configuration = configuration;
         _systemService = systemService;
         _templatesManager = templatesManager;
-        GameId = _nextGameId++;
+        GameId = Interlocked.Increment(ref _nextGameId);
     }
 
     private int GameId { get; }

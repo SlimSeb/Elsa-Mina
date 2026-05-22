@@ -12,7 +12,7 @@ namespace ElsaMina.Commands.Tournaments.Betting;
 
 public class TournamentBettingService : ITournamentBettingService
 {
-    private record ActiveBet(string BettorId, string TargetPlayerId);
+    private sealed record ActiveBet(string BettorId, string TargetPlayerId);
 
     private const int BETTING_WINDOW_SECONDS = 60;
     private const string HTML_ID_PREFIX = "betting-";
@@ -155,7 +155,7 @@ public class TournamentBettingService : ITournamentBettingService
     }
 
     private async Task<string> BuildTemplateAsync(string roomId, bool isBettingOpen,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var culture = _roomsManager.GetRoom(roomId)?.Culture;
         var players = _activePlayers.TryGetValue(roomId, out var p) ? p : [];

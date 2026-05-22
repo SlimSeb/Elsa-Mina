@@ -7,7 +7,6 @@ namespace ElsaMina.Commands.Ai.LanguageModel.OpenAi;
 public abstract class GptLanguageModelProvider : ILanguageModelProvider
 {
     private const string OPENAI_CONVERSATIONS_URL = "https://api.openai.com/v1/chat/completions";
-    private const string MESSAGE_TYPE = "message";
     private const string SYSTEM_ROLE = "system";
     private const string USER_ROLE = "user";
     private const string ASSISTANT_ROLE = "assistant";

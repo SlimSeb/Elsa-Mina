@@ -14,7 +14,6 @@ public interface IFloodItGame : IGame
     int Stars { get; }
     int TotalStars { get; }
     bool IsRoundActive { get; }
-    bool IsEnded { get; }
     int[,] Grid { get; }
     bool[,] IsClaimed { get; }
     bool IsPrivateMode { get; }

@@ -51,7 +51,7 @@ public class BetCommand : Command
                 context.ReplyLocalizedMessage("bet_already_placed");
                 break;
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new NotImplementedException("Unhandled bet placement error");
         }
     }
 }

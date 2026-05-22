@@ -71,6 +71,7 @@ public sealed class PeriodicTimerRunner : IDisposable
         }
         catch (OperationCanceledException)
         {
+            // Normal: cancelled on Stop()
         }
         catch
         {
