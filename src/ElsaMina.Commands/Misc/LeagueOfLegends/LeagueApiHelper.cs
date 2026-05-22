@@ -4,8 +4,8 @@ namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 
 public static class LeagueApiHelper
 {
-    private static readonly IReadOnlyDictionary<string, string> PLATFORM_TO_ROUTING =
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, string> PLATFORM_TO_ROUTING =
+        new(StringComparer.OrdinalIgnoreCase)
         {
             ["na1"] = "americas", ["na"] = "americas",
             ["br1"] = "americas", ["br"] = "americas",

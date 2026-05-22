@@ -29,7 +29,7 @@ public class DayLineCountCommand : Command
         var parts = context.Target.Split(',');
         var roomId = parts.Length >= 2 ? parts[1].Trim().ToLowerAlphaNum() : context.RoomId;
 
-        if (!DateOnly.TryParse(parts[0].Trim(), out var date))
+        if (!DateOnly.TryParse(parts[0].Trim(), context.Culture, out var date))
         {
             ReplyLocalizedHelpMessage(context);
             return;

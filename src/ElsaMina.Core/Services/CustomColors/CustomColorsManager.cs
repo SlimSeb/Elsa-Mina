@@ -4,18 +4,14 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Services.CustomColors;
 
-public class CustomColorsManager : ICustomColorsManager
+public partial class CustomColorsManager : ICustomColorsManager
 {
     public const string CUSTOM_COLORS_JSON_URL = "https://play.pokemonshowdown.com/config/colors.json";
     public const string CUSTOM_COLORS_JS_URL = "https://play.pokemonshowdown.com/config/config.js";
 
-    private static readonly Regex BLOCK_REGEX = new(
-        @"Config\.customcolors\s*=\s*\{(.+?)\};",
-        RegexOptions.Singleline | RegexOptions.Compiled);
+    private static readonly Regex BLOCK_REGEX = BlockRegex();
 
-    private static readonly Regex ENTRY_REGEX = new(
-        @"'([^']+)'\s*:\s*'([^']*)'",
-        RegexOptions.Compiled);
+    private static readonly Regex ENTRY_REGEX = EntryRegex();
 
     private readonly IHttpService _httpService;
 
@@ -70,7 +66,7 @@ public class CustomColorsManager : ICustomColorsManager
         }
     }
 
-    private static IReadOnlyDictionary<string, string> ParseCustomColors(string js)
+    private static Dictionary<string, string> ParseCustomColors(string js)
     {
         var blockMatch = BLOCK_REGEX.Match(js);
         if (!blockMatch.Success)
@@ -86,4 +82,9 @@ public class CustomColorsManager : ICustomColorsManager
         }
         return result;
     }
+
+    [GeneratedRegex(@"'([^']+)'\s*:\s*'([^']*)'", RegexOptions.Compiled)]
+    private static partial Regex EntryRegex();
+    [GeneratedRegex(@"Config\.customcolors\s*=\s*\{(.+?)\};", RegexOptions.Compiled | RegexOptions.Singleline)]
+    private static partial Regex BlockRegex();
 }

@@ -100,11 +100,10 @@ using Assembly = System.Reflection.Assembly;
 
 namespace ElsaMina.Commands;
 
-public class CommandModule : Module
+public partial class CommandModule : Module
 {
     private static readonly Regex FEATURE_RESOURCE_PATTERN =
-        new(@"^(.+\.Resources\.\w+?)\.[\w-]+\.resources$",
-            RegexOptions.Compiled);
+        FeatureResourcePatternRegex();
 
     private static IEnumerable<ResourceManager> DiscoverFeatureResources()
     {
@@ -532,4 +531,7 @@ public class CommandModule : Module
         builder.RegisterCommand<WalkCommand>();
         builder.RegisterCommand<RandHelpCommand>();
     }
+
+    [GeneratedRegex(@"^(.+\.Resources\.\w+?)\.[\w-]+\.resources$", RegexOptions.Compiled)]
+    private static partial Regex FeatureResourcePatternRegex();
 }

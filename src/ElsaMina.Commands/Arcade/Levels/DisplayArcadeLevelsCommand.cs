@@ -70,5 +70,5 @@ public class DisplayArcadeLevelsCommand : Command
         context.ReplyHtml(template.RemoveNewlines().CollapseAttributeWhitespace(), rankAware: true);
     }
 
-    private record ArcadeLevelRow(int Level, string UserId, string UserName);
+    private sealed record ArcadeLevelRow(int Level, string UserId, string UserName);
 }

@@ -99,9 +99,8 @@ public class LeagueOfLegendsHistoryCommand : Command
             var matchResponses = await Task.WhenAll(matchTasks);
 
             var entries = new List<string>();
-            foreach (var matchResponse in matchResponses)
+            foreach (var match in matchResponses.Select(matchResponse => matchResponse.Data))
             {
-                var match = matchResponse.Data;
                 var participant = match?.Info?.Participants?.FirstOrDefault(p => p.Puuid == puuid);
                 if (participant == null)
                     continue;
