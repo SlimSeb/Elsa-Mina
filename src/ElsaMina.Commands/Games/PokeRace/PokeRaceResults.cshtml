@@ -1,0 +1,63 @@
+@using ElsaMina.Commands.Games.PokeRace
+@using ElsaMina.Core.Utils
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.PokeRace.PokeRaceModel>
+
+@{
+    var podiumColors = new[] { "#C0C0C0", "#FFD700", "#CD7F32" };
+    var podiumHeights = new[] { "80px", "110px", "60px" };
+    var podiumOrder = new[] { 1, 0, 2 };
+}
+
+<div style="background-color: #333; color: white; padding: 10px; border-radius: 5px;">
+    <h3 style="text-align: center; margin: 0;">🏆 Résultats de la Course 🏆</h3>
+    <div style="display: flex; justify-content: center; align-items: flex-end; margin: 15px 0; padding-top: 50px;">
+        @for (var i = 0; i < podiumOrder.Length; i++)
+        {
+            var pos = podiumOrder[i];
+            var podiumColor = podiumColors[i];
+            var podiumHeight = podiumHeights[i];
+            if (pos < Model.Finished.Count)
+            {
+                var pokemon = Model.Finished[pos];
+                var playerName = Model.Players.Values.FirstOrDefault(p => p.Pokemon == pokemon).Name ?? "???";
+                var nameColor = playerName.ToColorHexCodeWithCustoms();
+                var rank = pos + 1;
+                <div style="text-align: center; margin: 0 15px; position: relative;">
+                    <div style="position: absolute; top: -45px; left: 50%; transform: translateX(-50%);">
+                        <img src="@PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite" width="60" height="60" style="filter: drop-shadow(0 0 3px @podiumColor);">
+                    </div>
+                    <div style="background: linear-gradient(to bottom, @podiumColor, @(podiumColor)CC); height: @podiumHeight; width: 90px; border-radius: 5px 5px 0 0; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+                        <div style="position: relative; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 24px; text-shadow: 0 0 3px #000;">#@rank</div>
+                    </div>
+                    <div style="background-color: #444; padding: 8px; border-radius: 0 0 5px 5px;">
+                        <b style="color: @nameColor">@playerName</b><br><span style="color: #DDD;">@pokemon</span>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div style="text-align: center; margin: 0 15px;">
+                    <div style="background: linear-gradient(to bottom, @(podiumColor)88, @(podiumColor)44); height: @podiumHeight; width: 90px; border-radius: 5px 5px 0 0;">
+                        <div style="position: relative; top: 50%; transform: translateY(-50%); font-weight: bold; font-size: 24px;">#@(pos + 1)</div>
+                    </div>
+                    <div style="background-color: #444; padding: 8px; border-radius: 0 0 5px 5px;"><span style="color: #888;">Vide</span></div>
+                </div>
+            }
+        }
+    </div>
+
+    <div style="margin-top: 15px;">
+        <h4 style="text-align: center; margin: 5px 0;">Classement complet</h4>
+        @for (var i = 0; i < Model.Finished.Count; i++)
+        {
+            var pokemon = Model.Finished[i];
+            var playerName = Model.Players.Values.FirstOrDefault(p => p.Pokemon == pokemon).Name ?? "???";
+            var nameColor = playerName.ToColorHexCodeWithCustoms();
+            <div style="margin: 3px 0; text-align: center;">
+                <b>#@(i + 1)</b> - <b style="color: @nameColor">@playerName</b> avec @pokemon (@PokeRaceConstants.RACE_POKEMON[pokemon].Type)
+            </div>
+        }
+    </div>
+
+    <p style="text-align: center; margin-top: 15px;">Merci d'avoir participé à la course! Tapez <b>-pokerace</b> pour commencer une nouvelle course.</p>
+</div>

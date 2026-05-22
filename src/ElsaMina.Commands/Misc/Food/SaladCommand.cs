@@ -1,12 +1,10 @@
-using ElsaMina.Core;
-using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Probabilities;
 
 namespace ElsaMina.Commands.Misc.Food;
 
 [NamedCommand("salad")]
-public class SaladCommand : Command
+public class SaladCommand : RandomFoodPickerCommand
 {
     private static readonly string[] INGREDIENTS =
     [
@@ -23,34 +21,12 @@ public class SaladCommand : Command
         "Balsamic vinaigrette", "Ranch dressing", "Caesar dressing", "Italian dressing", "Thousand Island dressing"
     ];
 
-    public override bool IsAllowedInPrivateMessage => true;
-    public override Rank RequiredRank => Rank.Regular;
+    public SaladCommand(IRandomService randomService) : base(randomService) { }
+
     public override string HelpMessageKey => "salad_help";
-
-    public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
-    {
-        int count;
-        if (!string.IsNullOrWhiteSpace(context.Target))
-        {
-            if (!int.TryParse(context.Target.Trim(), out count) || count <= 0)
-            {
-                context.ReplyLocalizedMessage("salad_invalid_number");
-                return Task.CompletedTask;
-            }
-
-            if (count > INGREDIENTS.Length)
-            {
-                context.ReplyLocalizedMessage("salad_too_many_ingredients");
-                return Task.CompletedTask;
-            }
-        }
-        else
-        {
-            count = Random.Shared.Next(3, 8);
-        }
-
-        var selected = INGREDIENTS.OrderBy(_ => Random.Shared.Next()).Take(count);
-        context.Reply(string.Join(", ", selected));
-        return Task.CompletedTask;
-    }
+    protected override string[] Items => INGREDIENTS;
+    protected override int DefaultMinCount => 3;
+    protected override int DefaultMaxCount => 8;
+    protected override string InvalidCountMessageKey => "salad_invalid_number";
+    protected override string TooManyItemsMessageKey => "salad_too_many_ingredients";
 }

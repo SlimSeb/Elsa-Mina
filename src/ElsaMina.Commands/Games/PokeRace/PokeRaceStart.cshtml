@@ -1,0 +1,42 @@
+@using ElsaMina.Commands.Games.PokeRace
+@using ElsaMina.Core.Utils
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.PokeRace.PokeRaceModel>
+
+@{
+    var playersList = Model.Players.Values.ToList();
+    var numCols = Math.Min(5, playersList.Count);
+    var numRows = (playersList.Count + numCols - 1) / numCols;
+}
+
+<div style="background-color: #333; color: white; padding: 10px; border-radius: 5px;">
+    <h3 style="text-align: center; margin: 0;">🏁 Course de Pokémon 🏁</h3>
+    <p style="text-align: center;">Les Pokémon se préparent sur la ligne de départ!</p>
+
+    <table style="margin: 0 auto; border-collapse: separate; border-spacing: 8px 4px;">
+        @for (var row = 0; row < numRows; row++)
+        {
+            <tr>
+                @for (var col = 0; col < numCols; col++)
+                {
+                    var idx = row * numCols + col;
+                    if (idx < playersList.Count)
+                    {
+                        var (name, pokemon) = playersList[idx];
+                        var color = name.ToColorHexCodeWithCustoms();
+                        <td style="text-align: center; padding: 5px; width: 100px;">
+                            <img src="@PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite" width="40" height="40"><br>
+                            <b style="color: @color">@name</b><br>
+                            <span>@pokemon</span>
+                        </td>
+                    }
+                    else
+                    {
+                        <td style="width: 100px;"></td>
+                    }
+                }
+            </tr>
+        }
+    </table>
+
+    <p style="text-align: center;">La course va commencer dans 3 secondes...</p>
+</div>

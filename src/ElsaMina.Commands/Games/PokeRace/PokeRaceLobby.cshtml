@@ -1,0 +1,59 @@
+@using ElsaMina.Commands.Games.PokeRace
+@using ElsaMina.Core.Utils
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.PokeRace.PokeRaceModel>
+
+@{
+    var pokemonList = PokeRaceConstants.RACE_POKEMON.ToList();
+    var numRows = (pokemonList.Count + 4) / 5;
+}
+
+<div style="background-color: #333; color: white; padding: 10px; border-radius: 5px;">
+    <h3 style="text-align: center; margin: 0;">🏁 Course de Pokémon 🏁</h3>
+    <p style="text-align: center;">Une nouvelle course de Pokémon va commencer!</p>
+
+    <table style="margin: 0 auto; border-collapse: separate; border-spacing: 8px 4px;">
+        @for (var row = 0; row < numRows; row++)
+        {
+            <tr>
+                @for (var col = 0; col < 5; col++)
+                {
+                    var idx = row * 5 + col;
+                    if (idx < pokemonList.Count)
+                    {
+                        var (pokemonName, data) = pokemonList[idx];
+                        var isChosen = Model.ChosenPokemons.Contains(pokemonName);
+                        var opacity = isChosen ? " opacity: 0.4;" : "";
+                        <td style="text-align: center; padding: 2px; width: 80px;@opacity">
+                            <img src="@data.MiniSprite" width="32" height="32"><br>
+                            <b>@pokemonName</b><br>
+                            <em style="color: gray">Vit @data.Speed</em><br>@data.Type
+                        </td>
+                    }
+                    else
+                    {
+                        <td style="width: 80px;"></td>
+                    }
+                }
+            </tr>
+        }
+    </table>
+
+    @if (Model.Players.Count > 0)
+    {
+        <p style="text-align: center;"><b>Participants:</b></p>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+            @foreach (var (_, (name, pokemon)) in Model.Players)
+            {
+                var color = name.ToColorHexCodeWithCustoms();
+                <div style="text-align: center; padding: 5px; margin: 0 8px;">
+                    <img src="@PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite" width="40" height="40"><br>
+                    <b style="color: @color">@name</b><br>
+                    <span>@pokemon</span>
+                </div>
+            }
+        </div>
+    }
+
+    <p style="text-align: center;">Pour participer, tapez <b>-racejoin [Pokémon]</b></p>
+    <p style="text-align: center;">La course commencera dans 60 secondes ou quand quelqu'un tapera <b>-racestart</b></p>
+</div>

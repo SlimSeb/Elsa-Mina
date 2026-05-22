@@ -1,0 +1,49 @@
+@using System.Globalization
+@using ElsaMina.Commands.Games.PokeRace
+@using ElsaMina.Core.Utils
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.PokeRace.PokeRaceModel>
+
+<div style="background-color: #333; color: white; padding: 10px; border-radius: 5px;">
+    <h3 style="text-align: center; margin: 0;">🏁 Course de Pokémon - Tour @Model.Turn 🏁</h3>
+    <div style="margin: 10px 0;">
+        @foreach (var (pokemon, position) in Model.SortedPositions)
+        {
+            var playerName = Model.Players.Values.FirstOrDefault(p => p.Pokemon == pokemon).Name ?? "???";
+            var color = playerName.ToColorHexCodeWithCustoms();
+            var progress = Math.Min(100.0, position / PokeRaceConstants.RACE_LENGTH * 100);
+            <div style="margin: 5px 0;">
+                <b style="color: @color">@playerName</b> - @pokemon
+                <div style="background-color: #555; height: 20px; border-radius: 10px; margin-top: 2px;">
+                    <div style="background-color: #f0f0f0; height: 20px; border-radius: 10px; width: @(progress.ToString("F1", CultureInfo.InvariantCulture))%; position: relative;">
+                        <img src="@PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite" style="position: absolute; right: 0; top: -15px;" width="40" height="40">
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (Model.AllEvents.Count > 0)
+    {
+        <div style="margin-top: 10px; text-align: center;">
+            <b>Événements récents:</b><br>
+            @foreach (var evt in Model.AllEvents)
+            {
+                @evt<br>
+            }
+        </div>
+    }
+
+    @if (Model.Finished.Count > 0)
+    {
+        <div style="margin-top: 10px; text-align: center;">
+            <b>Arrivées:</b><br>
+            @for (var i = 0; i < Model.Finished.Count; i++)
+            {
+                var pokemon = Model.Finished[i];
+                var playerName = Model.Players.Values.FirstOrDefault(p => p.Pokemon == pokemon).Name ?? "???";
+                var color = playerName.ToColorHexCodeWithCustoms();
+                <text>#@(i + 1) - </text><b style="color: @color">@playerName</b><text> avec @pokemon</text><br>
+            }
+        </div>
+    }
+</div>

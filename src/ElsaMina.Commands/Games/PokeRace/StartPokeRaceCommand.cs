@@ -17,25 +17,23 @@ public class StartPokeRaceCommand : Command
 
     public override Rank RequiredRank => Rank.Driver;
 
-    public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
+    public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (context.Room.Game is IPokeRaceGame)
         {
             context.ReplyLocalizedMessage("pokerace_already_running");
-            return Task.CompletedTask;
+            return;
         }
 
         if (context.Room.Game is not null)
         {
             context.ReplyLocalizedMessage("pokerace_other_game_running");
-            return Task.CompletedTask;
+            return;
         }
 
         var game = _dependencyContainerService.Resolve<PokeRaceGame>();
         game.Context = context;
         context.Room.Game = game;
-        game.BeginJoinPhase();
-
-        return Task.CompletedTask;
+        await game.BeginJoinPhaseAsync();
     }
 }

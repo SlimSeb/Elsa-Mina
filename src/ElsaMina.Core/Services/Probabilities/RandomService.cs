@@ -1,4 +1,6 @@
-﻿namespace ElsaMina.Core.Services.Probabilities;
+﻿using System.Security.Cryptography;
+
+namespace ElsaMina.Core.Services.Probabilities;
 
 public class RandomService : IRandomService
 {

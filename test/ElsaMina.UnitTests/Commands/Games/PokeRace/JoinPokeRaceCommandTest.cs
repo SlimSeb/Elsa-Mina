@@ -31,54 +31,54 @@ public class JoinPokeRaceCommandTest
     }
 
     [Test]
-    public void Test_RunAsync_ShouldReplyNotRunning_WhenNoPokeRaceGameIsActive()
+    public async Task Test_RunAsync_ShouldReplyNotRunning_WhenNoPokeRaceGameIsActive()
     {
         _room.Game.Returns((IGame)null);
         _context.Target.Returns("Rapidash");
 
-        _command.RunAsync(_context);
+        await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("pokerace_not_running");
     }
 
     [Test]
-    public void Test_RunAsync_ShouldReplyNotRunning_WhenDifferentGameIsActive()
+    public async Task Test_RunAsync_ShouldReplyNotRunning_WhenDifferentGameIsActive()
     {
         var otherGame = Substitute.For<IGame>();
         _room.Game.Returns(otherGame);
         _context.Target.Returns("Rapidash");
 
-        _command.RunAsync(_context);
+        await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("pokerace_not_running");
     }
 
     [Test]
-    public void Test_RunAsync_ShouldListAvailablePokemon_WhenTargetIsEmpty()
+    public async Task Test_RunAsync_ShouldListAvailablePokemon_WhenTargetIsEmpty()
     {
         _room.Game.Returns(_pokeRaceGame);
         _context.Target.Returns(string.Empty);
         _pokeRaceGame.Players.Returns(new Dictionary<string, (string Name, string Pokemon)>());
 
-        _command.RunAsync(_context);
+        await _command.RunAsync(_context);
 
         _context.Received(1).Reply(Arg.Is<string>(msg => msg.Contains("Rapidash")));
     }
 
     [Test]
-    public void Test_RunAsync_ShouldReplyInvalidPokemon_WhenPokemonNotInList()
+    public async Task Test_RunAsync_ShouldReplyInvalidPokemon_WhenPokemonNotInList()
     {
         _room.Game.Returns(_pokeRaceGame);
         _context.Target.Returns("Pikachu");
         _pokeRaceGame.Players.Returns(new Dictionary<string, (string Name, string Pokemon)>());
 
-        _command.RunAsync(_context);
+        await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("pokerace_join_invalid_pokemon", Arg.Any<object[]>());
     }
 
     [Test]
-    public void Test_RunAsync_ShouldCallJoinRace_WhenValidPokemonProvided()
+    public async Task Test_RunAsync_ShouldCallJoinRaceAsync_WhenValidPokemonProvided()
     {
         _room.Game.Returns(_pokeRaceGame);
         _context.Target.Returns("Rapidash");
@@ -86,17 +86,17 @@ public class JoinPokeRaceCommandTest
         sender.Name.Returns("TestPlayer");
         _context.Sender.Returns(sender);
         _pokeRaceGame.Players.Returns(new Dictionary<string, (string Name, string Pokemon)>());
-        _pokeRaceGame.JoinRace("TestPlayer", "Rapidash")
-            .Returns((true, "pokerace_join_success", new object[] { "TestPlayer", "Rapidash" }));
+        _pokeRaceGame.JoinRaceAsync("TestPlayer", "Rapidash")
+            .Returns(Task.FromResult((true, "pokerace_join_success", new object[] { "TestPlayer", "Rapidash" })));
 
-        _command.RunAsync(_context);
+        await _command.RunAsync(_context);
 
-        _pokeRaceGame.Received(1).JoinRace("TestPlayer", "Rapidash");
+        await _pokeRaceGame.Received(1).JoinRaceAsync("TestPlayer", "Rapidash");
         _context.Received(1).ReplyLocalizedMessage("pokerace_join_success", Arg.Any<object[]>());
     }
 
     [Test]
-    public void Test_RunAsync_ShouldBeCaseInsensitiveForPokemonName()
+    public async Task Test_RunAsync_ShouldBeCaseInsensitiveForPokemonName()
     {
         _room.Game.Returns(_pokeRaceGame);
         _context.Target.Returns("rapidash");
@@ -104,11 +104,11 @@ public class JoinPokeRaceCommandTest
         sender.Name.Returns("TestPlayer");
         _context.Sender.Returns(sender);
         _pokeRaceGame.Players.Returns(new Dictionary<string, (string Name, string Pokemon)>());
-        _pokeRaceGame.JoinRace("TestPlayer", "Rapidash")
-            .Returns((true, "pokerace_join_success", new object[] { "TestPlayer", "Rapidash" }));
+        _pokeRaceGame.JoinRaceAsync("TestPlayer", "Rapidash")
+            .Returns(Task.FromResult((true, "pokerace_join_success", new object[] { "TestPlayer", "Rapidash" })));
 
-        _command.RunAsync(_context);
+        await _command.RunAsync(_context);
 
-        _pokeRaceGame.Received(1).JoinRace("TestPlayer", "Rapidash");
+        await _pokeRaceGame.Received(1).JoinRaceAsync("TestPlayer", "Rapidash");
     }
 }

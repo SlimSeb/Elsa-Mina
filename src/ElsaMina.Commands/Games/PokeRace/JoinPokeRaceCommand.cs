@@ -9,12 +9,12 @@ public class JoinPokeRaceCommand : Command
 {
     public override Rank RequiredRank => Rank.Regular;
 
-    public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
+    public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (context.Room?.Game is not IPokeRaceGame pokeRace)
         {
             context.ReplyLocalizedMessage("pokerace_not_running");
-            return Task.CompletedTask;
+            return;
         }
 
         var target = context.Target.Trim();
@@ -25,7 +25,7 @@ public class JoinPokeRaceCommand : Command
             context.Reply(available.Length > 0
                 ? $"Choisissez un Pokémon parmi: {available}"
                 : "Tous les Pokémon ont déjà été choisis!");
-            return Task.CompletedTask;
+            return;
         }
 
         var pokemonName = PokeRaceConstants.RACE_POKEMON.Keys
@@ -36,12 +36,10 @@ public class JoinPokeRaceCommand : Command
             context.ReplyLocalizedMessage("pokerace_join_invalid_pokemon",
                 target,
                 string.Join(", ", PokeRaceConstants.RACE_POKEMON.Keys));
-            return Task.CompletedTask;
+            return;
         }
 
-        var (_, messageKey, args) = pokeRace.JoinRace(context.Sender.Name, pokemonName);
+        var (_, messageKey, args) = await pokeRace.JoinRaceAsync(context.Sender.Name, pokemonName);
         context.ReplyLocalizedMessage(messageKey, args);
-
-        return Task.CompletedTask;
     }
 }

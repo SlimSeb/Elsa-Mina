@@ -1,13 +1,10 @@
-using ElsaMina.Core;
-using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Probabilities;
-using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Misc.Food;
 
 [NamedCommand("pizza")]
-public class PizzaCommand : Command
+public class PizzaCommand : RandomFoodPickerCommand
 {
     private static readonly string[] TOPPINGS =
     [
@@ -24,41 +21,12 @@ public class PizzaCommand : Command
         "Pine nuts", "Olive oil", "Rosemary", "Cilantro", "Jalapeno peppers"
     ];
 
-    private readonly IRandomService _randomService;
+    public PizzaCommand(IRandomService randomService) : base(randomService) { }
 
-    public PizzaCommand(IRandomService randomService)
-    {
-        _randomService = randomService;
-    }
-
-    public override bool IsAllowedInPrivateMessage => true;
-    public override Rank RequiredRank => Rank.Regular;
     public override string HelpMessageKey => "pizza_help";
-
-    public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
-    {
-        int count;
-        if (!string.IsNullOrWhiteSpace(context.Target))
-        {
-            if (!int.TryParse(context.Target.Trim(), out count) || count <= 0)
-            {
-                context.ReplyLocalizedMessage("pizza_invalid_number");
-                return Task.CompletedTask;
-            }
-
-            if (count > TOPPINGS.Length)
-            {
-                context.ReplyLocalizedMessage("pizza_too_many_toppings");
-                return Task.CompletedTask;
-            }
-        }
-        else
-        {
-            count = _randomService.NextInt(1, 6);
-        }
-
-        var selected = TOPPINGS.OrderBy(_ => _randomService.NextDouble()).Take(count);
-        context.Reply(string.Join(", ", selected));
-        return Task.CompletedTask;
-    }
+    protected override string[] Items => TOPPINGS;
+    protected override int DefaultMinCount => 1;
+    protected override int DefaultMaxCount => 6;
+    protected override string InvalidCountMessageKey => "pizza_invalid_number";
+    protected override string TooManyItemsMessageKey => "pizza_too_many_toppings";
 }
