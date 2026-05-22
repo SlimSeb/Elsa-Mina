@@ -168,6 +168,12 @@
     <data name="ladder_graph_upload_failed" xml:space="preserve">
         <value>Error al subir el gráfico. Por favor, inténtalo de nuevo más tarde.</value>
     </data>
+    <data name="ladder_graph_trend_slope" xml:space="preserve">
+        <value>pendiente = {0} ELO/día</value>
+    </data>
+    <data name="ladder_graph_trend_r_squared" xml:space="preserve">
+        <value>R² = {0}</value>
+    </data>
     <data name="track_elo_progression_help" xml:space="preserve">
         <value>Sigue la progresión ELO de un jugador en un formato. Sintaxis: -trackelo &lt;formato&gt;, &lt;usuario&gt;</value>
     </data>

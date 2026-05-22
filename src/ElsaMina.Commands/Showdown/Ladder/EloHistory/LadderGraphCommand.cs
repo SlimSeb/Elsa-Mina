@@ -1,3 +1,4 @@
+using System.Globalization;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
@@ -10,7 +11,7 @@ using ScottPlot;
 
 namespace ElsaMina.Commands.Showdown.Ladder.EloHistory;
 
-[NamedCommand("ladderhistory", "laddergraph", "elograph")]
+[NamedCommand("ladderhistory", "laddergraph", "elograph", "elotrend", "laddertrend")]
 public class LadderGraphCommand : Command
 {
     private const int CHART_WIDTH = 600;
@@ -62,7 +63,11 @@ public class LadderGraphCommand : Command
             var xLabel = context.GetString("ladder_graph_chart_x_label");
             var yLabel = context.GetString("ladder_graph_chart_y_label");
 
-            var pngBytes = GenerateChart(xs, ys, chartTitle, xLabel, yLabel);
+            var showTrend = context.Command is "elotrend" or "laddertrend";
+            var slopeLabelFormat = context.GetString("ladder_graph_trend_slope");
+            var rSquaredLabelFormat = context.GetString("ladder_graph_trend_r_squared");
+            var pngBytes = GenerateChart(xs, ys, chartTitle, xLabel, yLabel, context.Culture, showTrend,
+                slopeLabelFormat, rSquaredLabelFormat);
 
             var fileName = $"elographs/elograph-{userId}-{format}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.png";
             var url = await _fileSharingService.CreateFileAsync(pngBytes, fileName,
@@ -87,19 +92,75 @@ public class LadderGraphCommand : Command
         }
     }
 
-    private static byte[] GenerateChart(double[] xs, double[] ys, string title, string xLabel, string yLabel)
+    private static byte[] GenerateChart(double[] xs, double[] ys, string title, string xLabel, string yLabel,
+        CultureInfo culture, bool showTrend, string slopeLabelFormat, string rSquaredLabelFormat)
     {
-        var plot = new Plot();
+        var previousCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = culture;
 
-        var scatter = plot.Add.Scatter(xs, ys);
-        scatter.LineWidth = 2;
-        scatter.MarkerSize = 5;
+            var plot = new Plot();
 
-        plot.Axes.DateTimeTicksBottom();
-        plot.Title(title);
-        plot.XLabel(xLabel);
-        plot.YLabel(yLabel);
+            var scatter = plot.Add.Scatter(xs, ys);
+            scatter.LineWidth = 2;
+            scatter.MarkerSize = 5;
 
-        return plot.GetImage(CHART_WIDTH, CHART_HEIGHT).GetImageBytes(ImageFormat.Png);
+            if (showTrend)
+            {
+                var (slope, intercept, rSquared) = ComputeLinearRegression(xs, ys);
+                var trendLine = plot.Add.Line(xs[0], slope * xs[0] + intercept, xs[^1], slope * xs[^1] + intercept);
+                trendLine.Color = Colors.Red;
+                trendLine.LineWidth = 2;
+
+                var slopeLine = string.Format(slopeLabelFormat, $"{slope:+0.##;-0.##}");
+                var rSquaredLine = string.Format(rSquaredLabelFormat, $"{rSquared:F4}");
+                var annotation = plot.Add.Annotation($"{slopeLine}\n{rSquaredLine}");
+                annotation.Alignment = Alignment.UpperRight;
+            }
+
+            plot.Axes.DateTimeTicksBottom();
+            plot.Title(title);
+            plot.XLabel(xLabel);
+            plot.YLabel(yLabel);
+
+            return plot.GetImage(CHART_WIDTH, CHART_HEIGHT).GetImageBytes(ImageFormat.Png);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+        }
+    }
+
+    private static (double slope, double intercept, double rSquared) ComputeLinearRegression(double[] xs, double[] ys)
+    {
+        var n = xs.Length;
+        var sumX = 0.0;
+        var sumY = 0.0;
+        var sumXx = 0.0;
+        var sumXy = 0.0;
+
+        for (var i = 0; i < n; i++)
+        {
+            sumX += xs[i];
+            sumY += ys[i];
+            sumXx += xs[i] * xs[i];
+            sumXy += xs[i] * ys[i];
+        }
+
+        var slope = (n * sumXy - sumX * sumY) / (n * sumXx - sumX * sumX);
+        var intercept = (sumY - slope * sumX) / n;
+
+        var meanY = sumY / n;
+        var ssTot = 0.0;
+        var ssRes = 0.0;
+        for (var i = 0; i < n; i++)
+        {
+            ssTot += (ys[i] - meanY) * (ys[i] - meanY);
+            ssRes += (ys[i] - (slope * xs[i] + intercept)) * (ys[i] - (slope * xs[i] + intercept));
+        }
+
+        var rSquared = ssTot == 0 ? 1.0 : 1.0 - ssRes / ssTot;
+        return (slope, intercept, rSquared);
     }
 }

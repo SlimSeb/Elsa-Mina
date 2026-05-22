@@ -1,3 +1,4 @@
+using System.Globalization;
 using ElsaMina.Commands.Showdown.Ladder.EloHistory;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Rooms;
@@ -33,6 +34,10 @@ public class LadderGraphCommandTest
 
         _fileSharingService = Substitute.For<IFileSharingService>();
         _context = Substitute.For<IContext>();
+        _context.Culture.Returns(CultureInfo.InvariantCulture);
+        _context.Command.Returns("ladderhistory");
+        _context.GetString(Arg.Any<string>()).Returns("{0}");
+        _context.GetString(Arg.Any<string>(), Arg.Any<object[]>()).Returns(string.Empty);
 
         _command = new LadderGraphCommand(_dbContextFactory, _fileSharingService);
     }
@@ -99,7 +104,6 @@ public class LadderGraphCommandTest
     {
         // Arrange
         _context.Target.Returns("gen9ou, alice");
-        _context.GetString(Arg.Any<string>(), Arg.Any<object[]>()).Returns(string.Empty);
         await SeedSnapshotsAsync("gen9ou", "alice", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -118,7 +122,6 @@ public class LadderGraphCommandTest
     {
         // Arrange
         _context.Target.Returns("gen9ou, alice");
-        _context.GetString(Arg.Any<string>(), Arg.Any<object[]>()).Returns(string.Empty);
         await SeedSnapshotsAsync("gen9ou", "alice", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -139,7 +142,6 @@ public class LadderGraphCommandTest
     {
         // Arrange
         _context.Target.Returns("Gen 9 OU, Alice Test");
-        _context.GetString(Arg.Any<string>(), Arg.Any<object[]>()).Returns(string.Empty);
         await SeedSnapshotsAsync("gen9ou", "alicetest", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -157,7 +159,6 @@ public class LadderGraphCommandTest
     {
         // Arrange
         _context.Target.Returns("gen9ou, alice");
-        _context.GetString(Arg.Any<string>(), Arg.Any<object[]>()).Returns(string.Empty);
         await SeedSnapshotsAsync("gen9ou", "alice", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -180,7 +181,6 @@ public class LadderGraphCommandTest
     {
         // Arrange
         _context.Target.Returns("gen9ou, alice");
-        _context.GetString(Arg.Any<string>(), Arg.Any<object[]>()).Returns(string.Empty);
         await SeedSnapshotsAsync("gen9ou", "alice", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -193,6 +193,48 @@ public class LadderGraphCommandTest
         _context.Received(1).GetString("ladder_graph_chart_title", "alice", "gen9ou");
         _context.Received(1).GetString("ladder_graph_chart_x_label");
         _context.Received(1).GetString("ladder_graph_chart_y_label");
+        _context.Received(1).GetString("ladder_graph_trend_slope");
+        _context.Received(1).GetString("ladder_graph_trend_r_squared");
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldGenerateAndUploadGraph_WhenCommandIsElotrend()
+    {
+        // Arrange
+        _context.Target.Returns("gen9ou, alice");
+        _context.Command.Returns("elotrend");
+        await SeedSnapshotsAsync("gen9ou", "alice", 3);
+        _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
+                Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns("https://cdn.example.com/elograph.png");
+
+        // Act
+        await _command.RunAsync(_context);
+
+        // Assert
+        _context.Received(1).ReplyHtml(
+            Arg.Is<string>(html => html.Contains("https://cdn.example.com/elograph.png") && html.Contains("<img")),
+            rankAware: true);
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldGenerateAndUploadGraph_WhenCommandIsLaddertrend()
+    {
+        // Arrange
+        _context.Target.Returns("gen9ou, alice");
+        _context.Command.Returns("laddertrend");
+        await SeedSnapshotsAsync("gen9ou", "alice", 3);
+        _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
+                Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns("https://cdn.example.com/elograph.png");
+
+        // Act
+        await _command.RunAsync(_context);
+
+        // Assert
+        _context.Received(1).ReplyHtml(
+            Arg.Is<string>(html => html.Contains("https://cdn.example.com/elograph.png") && html.Contains("<img")),
+            rankAware: true);
     }
 
     [Test]

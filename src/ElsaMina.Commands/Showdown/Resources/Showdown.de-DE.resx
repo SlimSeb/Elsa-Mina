@@ -168,6 +168,12 @@
     <data name="ladder_graph_upload_failed" xml:space="preserve">
         <value>Hochladen des Diagramms fehlgeschlagen. Bitte später erneut versuchen.</value>
     </data>
+    <data name="ladder_graph_trend_slope" xml:space="preserve">
+        <value>Steigung = {0} ELO/Tag</value>
+    </data>
+    <data name="ladder_graph_trend_r_squared" xml:space="preserve">
+        <value>R² = {0}</value>
+    </data>
     <data name="track_elo_progression_help" xml:space="preserve">
         <value>Verfolgt den ELO-Verlauf eines Spielers in einem Format. Syntax: -trackelo &lt;Format&gt;, &lt;Benutzername&gt;</value>
     </data>

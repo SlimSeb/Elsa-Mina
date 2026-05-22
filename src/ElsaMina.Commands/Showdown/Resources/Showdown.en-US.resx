@@ -168,6 +168,12 @@
     <data name="ladder_graph_upload_failed" xml:space="preserve">
         <value>Failed to upload the graph. Please try again later.</value>
     </data>
+    <data name="ladder_graph_trend_slope" xml:space="preserve">
+        <value>slope = {0} ELO/day</value>
+    </data>
+    <data name="ladder_graph_trend_r_squared" xml:space="preserve">
+        <value>R² = {0}</value>
+    </data>
     <data name="track_elo_progression_help" xml:space="preserve">
         <value>Track a user's ELO progression in a format. Syntax: -trackelo &lt;format&gt;, &lt;username&gt;</value>
     </data>
