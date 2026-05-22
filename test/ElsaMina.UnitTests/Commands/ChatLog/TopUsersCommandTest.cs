@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using ElsaMina.Commands.ChatLog;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.FileSharing;
@@ -13,6 +14,7 @@ public class TopUsersCommandTest
 {
     private IFileSharingService _fileSharingService;
     private ITemplatesManager _templatesManager;
+    private IClockService _clockService;
     private TopUsersCommand _command;
 
     [SetUp]
@@ -20,9 +22,10 @@ public class TopUsersCommandTest
     {
         _fileSharingService = Substitute.For<IFileSharingService>();
         _templatesManager = Substitute.For<ITemplatesManager>();
+        _clockService = Substitute.For<IClockService>();
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>())
             .Returns("<div></div>");
-        _command = new TopUsersCommand(_fileSharingService, _templatesManager);
+        _command = new TopUsersCommand(_fileSharingService, _templatesManager, _clockService);
     }
 
     [Test]
@@ -48,13 +51,14 @@ public class TopUsersCommandTest
     {
         var context = BuildContext(string.Empty, "myroom");
         _fileSharingService.ListFilesAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(Array.Empty<string>());
+            .Returns([]);
+        var date = new DateTime(2026, 5, 22, 0, 0, 0, DateTimeKind.Utc);
+        _clockService.CurrentUtcDateTime.Returns(date);
 
         await _command.RunAsync(context);
 
-        var now = DateTime.UtcNow;
         await _fileSharingService.Received(1).ListFilesAsync(
-            $"chatlogs/myroom/{now.Year:D4}-{now.Month:D2}-",
+            "chatlogs/myroom/2026-05-",
             Arg.Any<CancellationToken>());
     }
 
@@ -105,7 +109,7 @@ public class TopUsersCommandTest
         await _templatesManager.Received(1).GetTemplateAsync(
             "ChatLog/TopUsers",
             Arg.Is<TopUsersViewModel>(vm =>
-                vm.Users.Count == 20 &&
+                vm.Users.Count == 25 &&
                 vm.Users[0].UserId == "user01" &&
                 vm.Users[0].Count == 3));
         context.Received(1).ReplyHtml(Arg.Any<string>());
