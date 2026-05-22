@@ -527,6 +527,8 @@ public partial class CommandModule : Module
         builder.RegisterCommand<RandCommand>();
         builder.RegisterCommand<RandGifCommand>();
         builder.RegisterCommand<RandMp4Command>();
+        builder.RegisterCommand<TenorSearchCommand>();
+        builder.RegisterCommand<TenorGifCommand>();
         builder.RegisterCommand<RandFurretCommand>();
         builder.RegisterCommand<WalkCommand>();
         builder.RegisterCommand<RandHelpCommand>();

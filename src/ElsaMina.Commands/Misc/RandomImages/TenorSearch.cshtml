@@ -1,0 +1,19 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Misc.RandomImages.TenorSearchViewModel>
+
+<table>
+    <tbody>
+        @for (var i = 0; i < Model.Gifs.Count; i += 4)
+        {
+            <tr>
+                @for (var j = i; j < i + 4 && j < Model.Gifs.Count; j++)
+                {
+                    var gif = Model.Gifs[j];
+                    <td style="padding:4px;text-align:center;">
+                        <img src="@gif.Url" width="@gif.ThumbWidth" height="@gif.ThumbHeight" style="transform:rotate(0deg);display:block;" />
+                        <button class="button" name="send" value="@Model.Trigger@("tenorgif") @gif.Url|@gif.OriginalWidth|@gif.OriginalHeight">Send</button>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

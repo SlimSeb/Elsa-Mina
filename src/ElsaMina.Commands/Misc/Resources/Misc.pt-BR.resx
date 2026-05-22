@@ -348,4 +348,13 @@
     <data name="lolhistory_game_entry" xml:space="preserve">
         <value>[{0}] {1} {2}/{3}/{4} {5}cs ({6}, {7}m)</value>
     </data>
+    <data name="tenorsearch_help" xml:space="preserve">
+        <value>Pesquisa no Tenor e mostra um mosaico de 4 GIFs no MP. Clique em um para enviá-lo no chat. Sintaxe: -tenorsearch &lt;palavras-chave&gt;</value>
+    </data>
+    <data name="tenorgif_help" xml:space="preserve">
+        <value>Envia um GIF do Tenor no chat. Sintaxe: -tenorgif &lt;url&gt;</value>
+    </data>
+    <data name="tenorgif_invalid_url" xml:space="preserve">
+        <value>URL de GIF inválida. Apenas links do CDN do Tenor são aceitos.</value>
+    </data>
 </root>
