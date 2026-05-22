@@ -15,8 +15,8 @@ namespace ElsaMina.Commands.Misc.Youtube;
 public class YoutubeVideoOnLinkHandler : ChatMessageHandler
 {
     private static readonly Regex YOUTUBE_URL_REGEX =
-        new(@"(?:https?://)?(?:(?:www\.|m\.)?youtube\.com/(?:watch\?(?:.*&)?v=|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
-            RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+        new(@"(?:https?://)?(?:(?:www\.|m\.)?youtube\.com/(?:watch\?(?:[^&]*&)?v=|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})",
+            RegexOptions.Compiled | RegexOptions.NonBacktracking, Constants.REGEX_MATCH_TIMEOUT);
 
     private const string YOUTUBE_VIDEOS_API_URL = "https://www.googleapis.com/youtube/v3/videos";
     private const int THUMBNAIL_WIDTH = 160;
