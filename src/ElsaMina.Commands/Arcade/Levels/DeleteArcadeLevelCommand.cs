@@ -30,7 +30,7 @@ public class DeleteArcadeLevelCommand : Command
 
         var id = context.Target.ToLowerAlphaNum();
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var arcadeLevel = await dbContext.ArcadeLevels.FindAsync(id, cancellationToken);
+        var arcadeLevel = await dbContext.ArcadeLevels.FindAsync([id], cancellationToken);
         if (arcadeLevel == null)
         {
             context.ReplyLocalizedMessage("arcade_level_delete_not_found");

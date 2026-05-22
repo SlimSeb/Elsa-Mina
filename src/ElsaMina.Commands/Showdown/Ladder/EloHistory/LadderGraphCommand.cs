@@ -132,6 +132,31 @@ public class LadderGraphCommand : Command
         }
     }
 
+    // In this context, R² answers: "how much of the ELO variance is 
+    // explained by time progressing linearly?"
+    //  
+    // Concretely:
+    // - R² near 1: the player's ELO moved almost monotonically in one
+    //     direction — the slope is trustworthy. "+5 ELO/day, R²=0.92" 
+    // genuinely means steady improvement.
+    // - R² near 0: the ELO bounced around a lot and the linear fit is
+    // meaningless. "+5 ELO/day, R²=0.03" could just be noise between two
+    // similar endpoints.
+    //
+    //     The practical reading for Showdown laddering:
+    //
+    // - Most active players will have low R² (0.05–0.3) because ELO
+    //     oscillates with win/loss streaks, and that's normal — not a sign
+    //     the trend line is wrong, just that laddering is noisy.
+    // - A high R² (>0.6) is actually unusual and meaningful: it means the
+    //     player was consistently climbing or consistently dropping, with
+    // little variance around the trend.
+    // - A negative slope with high R² is a red flag: consistent decay,
+    //     not just a bad session.
+    //
+    //     So R² here is less "goodness of fit" in the regression-report sense
+    // and more "how consistent was this trend" — which is actually quite
+    // natural for players to understand once you frame it that way.
     private static (double slope, double intercept, double rSquared) ComputeLinearRegression(double[] xs, double[] ys)
     {
         var n = xs.Length;
