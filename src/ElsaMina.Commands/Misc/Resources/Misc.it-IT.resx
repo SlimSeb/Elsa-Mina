@@ -357,4 +357,7 @@
     <data name="tenorgif_invalid_url" xml:space="preserve">
         <value>URL GIF non valido. Sono accettati solo i link del CDN di Tenor.</value>
     </data>
+    <data name="tenorsearch_send" xml:space="preserve">
+        <value>Invia</value>
+    </data>
 </root>
