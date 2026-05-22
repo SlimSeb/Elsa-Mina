@@ -1,11 +1,10 @@
-using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Logging;
 
-namespace ElsaMina.Commands.Misc;
+namespace ElsaMina.Commands.Misc.Crypto;
 
 public abstract class CryptoPriceCommand : Command
 {

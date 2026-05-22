@@ -1,7 +1,7 @@
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Http;
 
-namespace ElsaMina.Commands.Misc;
+namespace ElsaMina.Commands.Misc.Crypto;
 
 [NamedCommand("ethereum", Aliases = ["eth"])]
 public class EthereumCommand : CryptoPriceCommand

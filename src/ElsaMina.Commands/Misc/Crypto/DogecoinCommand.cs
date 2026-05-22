@@ -1,7 +1,7 @@
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Http;
 
-namespace ElsaMina.Commands.Misc;
+namespace ElsaMina.Commands.Misc.Crypto;
 
 [NamedCommand("dogecoin", Aliases = ["doge"])]
 public class DogecoinCommand : CryptoPriceCommand

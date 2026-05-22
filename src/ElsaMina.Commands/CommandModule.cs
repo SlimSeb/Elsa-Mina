@@ -43,6 +43,7 @@ using ElsaMina.Commands.Games.TwentyFortyEight;
 using ElsaMina.Commands.Games.VoltorbFlip;
 using ElsaMina.Commands.JoinPhrases;
 using ElsaMina.Commands.Misc;
+using ElsaMina.Commands.Misc.Crypto;
 using ElsaMina.Commands.Misc.Dailymotion;
 using ElsaMina.Commands.Misc.Dictionary;
 using ElsaMina.Commands.Misc.Facts;

@@ -1,17 +1,17 @@
-using ElsaMina.Commands.Misc;
+using ElsaMina.Commands.Misc.Crypto;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Rooms;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
-namespace ElsaMina.UnitTests.Commands.Misc;
+namespace ElsaMina.UnitTests.Commands.Misc.Crypto;
 
 [TestFixture]
-public class EthereumCommandTest
+public class DogecoinCommandTest
 {
     private IHttpService _httpService;
-    private EthereumCommand _command;
+    private DogecoinCommand _command;
     private IContext _context;
 
     [SetUp]
@@ -19,7 +19,7 @@ public class EthereumCommandTest
     {
         _httpService = Substitute.For<IHttpService>();
         _context = Substitute.For<IContext>();
-        _command = new EthereumCommand(_httpService);
+        _command = new DogecoinCommand(_httpService);
     }
 
     [Test]
@@ -35,17 +35,17 @@ public class EthereumCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReplyWithEthereumRates_WhenApiCallSucceeds()
+    public async Task Test_RunAsync_ShouldReplyWithDogecoinRates_WhenApiCallSucceeds()
     {
         // Arrange
         var mockResponse = new HttpResponse<IDictionary<string, IDictionary<string, double>>>
         {
             Data = new Dictionary<string, IDictionary<string, double>>
             {
-                ["ethereum"] = new Dictionary<string, double>
+                ["dogecoin"] = new Dictionary<string, double>
                 {
-                    ["eur"] = 2500.50,
-                    ["usd"] = 2750.75
+                    ["eur"] = 0.0851,
+                    ["usd"] = 0.0923
                 }
             }
         };
@@ -57,7 +57,7 @@ public class EthereumCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        _context.Received(1).Reply("1 Ethereum = 2500.50€ = 2750.75$", rankAware: true);
+        _context.Received(1).Reply("1 Dogecoin = 0.0851€ = 0.0923$", rankAware: true);
     }
 
     [Test]
@@ -72,6 +72,6 @@ public class EthereumCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        _context.Received(1).ReplyLocalizedMessage("ethereum_error");
+        _context.Received(1).ReplyLocalizedMessage("dogecoin_error");
     }
 }

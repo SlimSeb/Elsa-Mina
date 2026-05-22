@@ -1,17 +1,17 @@
-using ElsaMina.Commands.Misc;
+using ElsaMina.Commands.Misc.Crypto;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Rooms;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
-namespace ElsaMina.UnitTests.Commands.Misc;
+namespace ElsaMina.UnitTests.Commands.Misc.Crypto;
 
 [TestFixture]
-public class BitcoinCommandTests
+public class EthereumCommandTest
 {
     private IHttpService _httpService;
-    private BitcoinCommand _bitcoinCommand;
+    private EthereumCommand _command;
     private IContext _context;
 
     [SetUp]
@@ -19,33 +19,33 @@ public class BitcoinCommandTests
     {
         _httpService = Substitute.For<IHttpService>();
         _context = Substitute.For<IContext>();
-        _bitcoinCommand = new BitcoinCommand(_httpService);
+        _command = new EthereumCommand(_httpService);
     }
 
     [Test]
     public void Test_IsAllowedInPrivateMessage_ShouldReturnTrue()
     {
-        Assert.That(_bitcoinCommand.IsAllowedInPrivateMessage, Is.True);
+        Assert.That(_command.IsAllowedInPrivateMessage, Is.True);
     }
 
     [Test]
     public void Test_RequiredRank_ShouldBeRegular()
     {
-        Assert.That(_bitcoinCommand.RequiredRank, Is.EqualTo(Rank.Regular));
+        Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Regular));
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReplyWithBitcoinRates_WhenApiCallSucceeds()
+    public async Task Test_RunAsync_ShouldReplyWithEthereumRates_WhenApiCallSucceeds()
     {
         // Arrange
         var mockResponse = new HttpResponse<IDictionary<string, IDictionary<string, double>>>
         {
             Data = new Dictionary<string, IDictionary<string, double>>
             {
-                ["bitcoin"] = new Dictionary<string, double>
+                ["ethereum"] = new Dictionary<string, double>
                 {
-                    ["eur"] = 40000,
-                    ["usd"] = 42000
+                    ["eur"] = 2500.50,
+                    ["usd"] = 2750.75
                 }
             }
         };
@@ -54,10 +54,10 @@ public class BitcoinCommandTests
             .Returns(mockResponse);
 
         // Act
-        await _bitcoinCommand.RunAsync(_context);
+        await _command.RunAsync(_context);
 
         // Assert
-        _context.Received(1).Reply("1 bitcoin = 40000€ = 42000$", rankAware: true);
+        _context.Received(1).Reply("1 Ethereum = 2500.50€ = 2750.75$", rankAware: true);
     }
 
     [Test]
@@ -69,9 +69,9 @@ public class BitcoinCommandTests
             .Throws(new Exception("API error"));
 
         // Act
-        await _bitcoinCommand.RunAsync(_context);
+        await _command.RunAsync(_context);
 
         // Assert
-        _context.Received(1).ReplyLocalizedMessage("bitcoin_error");
+        _context.Received(1).ReplyLocalizedMessage("ethereum_error");
     }
 }
