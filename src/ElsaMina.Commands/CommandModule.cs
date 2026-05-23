@@ -427,7 +427,7 @@ public partial class CommandModule : Module
         builder.RegisterType<LadderTrackerManager>().As<ILadderTrackerManager>().SingleInstance();
         builder.RegisterType<EloProgressionManager>().As<IEloProgressionManager>().SingleInstance().OnActivating(e =>
         {
-            e.Instance.InitializeAsync().Wait();
+            e.Instance.InitializeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }).AutoActivate();
         builder.RegisterType<PokepasteProvider>().As<ITeamProvider>().SingleInstance();
         builder.RegisterType<CoupCritiqueProvider>().As<ITeamProvider>().SingleInstance();
@@ -435,7 +435,7 @@ public partial class CommandModule : Module
         builder.RegisterType<TeamLinkMatchFactory>().As<ITeamLinkMatchFactory>().SingleInstance();
         builder.RegisterType<DataManager>().As<IDataManager>().SingleInstance().OnActivating(e =>
         {
-            e.Instance.Initialize().Wait(); // Risque d'ANR mais obligé pour garantir la bonne initialisation...
+            e.Instance.Initialize().ConfigureAwait(false).GetAwaiter().GetResult();
         });
         builder.RegisterType<EloHistoryService>().As<IEloHistoryService>().SingleInstance().OnActivating(e =>
         {

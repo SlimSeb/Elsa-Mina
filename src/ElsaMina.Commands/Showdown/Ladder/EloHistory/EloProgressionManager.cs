@@ -18,8 +18,8 @@ public class EloProgressionManager : IEloProgressionManager
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var storedEntries = await dbContext.TrackedEloUsers.ToListAsync(cancellationToken);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        var storedEntries = await dbContext.TrackedEloUsers.ToListAsync(cancellationToken).ConfigureAwait(false);
 
         lock (_lock)
         {

@@ -1,0 +1,204 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ElsaMina.Gui.Pages.Setup"
+             x:DataType="vm:SetupViewModel"
+             x:Class="ElsaMina.Gui.Pages.Setup.SetupView">
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.section-header">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Opacity" Value="0.5"/>
+            <Setter Property="Margin" Value="0,20,0,8"/>
+            <Setter Property="LetterSpacing" Value="1"/>
+        </Style>
+        <Style Selector="StackPanel.field">
+            <Setter Property="Spacing" Value="4"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+        <Style Selector="TextBlock.field-label">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Opacity" Value="0.75"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="32,32,32,0" RowDefinitions="Auto,Auto,Auto">
+            <Button Grid.Row="0" Command="{Binding GoBackCommand}"
+                    IsVisible="{Binding CanGoBack}"
+                    HorizontalAlignment="Left"
+                    Padding="0" Background="Transparent" BorderThickness="0"
+                    Margin="0,0,0,12">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Width="12" Height="12" Data="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+                    <TextBlock Text="Back" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+            <TextBlock Grid.Row="1" Text="ElsaMina Setup" FontSize="26" FontWeight="Bold"/>
+            <TextBlock Grid.Row="2" Text="Configure your bot. Fill in at least Host and Username to get started."
+                       Opacity="0.65" TextWrapping="Wrap" Margin="0,8,0,0"/>
+        </Grid>
+
+        <!-- Form -->
+        <ScrollViewer Grid.Row="1" Margin="0,8,0,0" Padding="32,0,32,0">
+            <StackPanel Spacing="0">
+
+                <!-- CONNECTION -->
+                <TextBlock Text="CONNECTION" Classes="section-header"/>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Host" Classes="field-label"/>
+                    <TextBox Text="{Binding Host}" Watermark="sim.smogon.com"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Port" Classes="field-label"/>
+                    <TextBox Text="{Binding Port}" Watermark="8000"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Username" Classes="field-label"/>
+                    <TextBox Text="{Binding Name}" Watermark="Bot username"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Password" Classes="field-label"/>
+                    <TextBox Text="{Binding Password}" PasswordChar="●" Watermark="Bot password"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Command Trigger" Classes="field-label"/>
+                    <TextBox Text="{Binding Trigger}" Watermark="-"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Avatar (optional)" Classes="field-label"/>
+                    <TextBox Text="{Binding Avatar}" Watermark="Avatar name or number"/>
+                </StackPanel>
+
+                <!-- ROOMS -->
+                <TextBlock Text="ROOMS &amp; LOCALE" Classes="section-header"/>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Rooms (comma-separated)" Classes="field-label"/>
+                    <TextBox Text="{Binding RoomsText}" Watermark="lobby, français, vgc"
+                             Height="72" AcceptsReturn="True" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Default Room" Classes="field-label"/>
+                    <TextBox Text="{Binding DefaultRoom}" Watermark="lobby"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Default Locale" Classes="field-label"/>
+                    <ComboBox ItemsSource="{x:Static vm:SetupViewModel.AvailableLocales}"
+                              SelectedItem="{Binding DefaultLocaleCode}"
+                              HorizontalAlignment="Stretch"/>
+                </StackPanel>
+
+                <!-- DATABASE -->
+                <TextBlock Text="DATABASE" Classes="section-header"/>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="PostgreSQL Connection String" Classes="field-label"/>
+                    <TextBox Text="{Binding ConnectionString}"
+                             Watermark="Host=localhost;Port=5432;Database=elsamina;Username=postgres;Password=..."
+                             Height="72" AcceptsReturn="True" TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <!-- API KEYS -->
+                <TextBlock Text="API KEYS (OPTIONAL)" Classes="section-header"/>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="YouTube API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding YoutubeApiKey}" Watermark="AIza..."/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Tenor API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding TenorApiKey}" Watermark="Tenor GIF API key"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Mistral API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding MistralApiKey}" Watermark="Mistral AI key"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="ChatGPT API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding ChatGptApiKey}" Watermark="OpenAI key"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Gemini API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding GeminiApiKey}" Watermark="Google Gemini key"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="ElevenLabs API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding ElevenLabsApiKey}" Watermark="ElevenLabs TTS key"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Dictionary API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding DictionaryApiKey}" Watermark="Dictionary API key"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Genius API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding GeniusApiKey}" Watermark="Genius lyrics key"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Unsplash API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding UnsplashApiKey}" Watermark="Unsplash key"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Riot API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding RiotApiKey}" Watermark="RGAPI-..."/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Spoonacular API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding SpoonacularApiKey}" Watermark="Spoonacular key"/>
+                </StackPanel>
+
+                <!-- OBSERVABILITY -->
+                <TextBlock Text="OBSERVABILITY (OPTIONAL)" Classes="section-header"/>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Loki URL" Classes="field-label"/>
+                    <TextBox Text="{Binding LokiUrl}" Watermark="https://logs-prod.grafana.net"/>
+                </StackPanel>
+
+                <StackPanel Classes="field">
+                    <TextBlock Text="Loki Username" Classes="field-label"/>
+                    <TextBox Text="{Binding LokiUser}" Watermark="123456"/>
+                </StackPanel>
+
+                <StackPanel Classes="field" Margin="0,0,0,24">
+                    <TextBlock Text="Loki API Key" Classes="field-label"/>
+                    <TextBox Text="{Binding LokiApiKey}" Watermark="glc_..."/>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Padding="32,12" BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding ErrorMessage}" Foreground="#EF5350"
+                           VerticalAlignment="Center"
+                           IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+                <Button Grid.Column="1" Content="Save Configuration" Command="{Binding SaveCommand}"
+                        Classes="accent"/>
+            </Grid>
+        </Border>
+
+    </Grid>
+</UserControl>
