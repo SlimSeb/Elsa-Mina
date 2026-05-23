@@ -81,6 +81,12 @@
     <data name="parameter_description_is_showing_url_preview" xml:space="preserve">
         <value>Mostra um cartão de prévia com título e descrição quando uma URL é postada</value>
     </data>
+    <data name="parameter_name_tenor_gif_enabled" xml:space="preserve">
+        <value>GIFs do Tenor</value>
+    </data>
+    <data name="parameter_description_tenor_gif_enabled" xml:space="preserve">
+        <value>Habilita os comandos tenorgif e tenorsearch na sala</value>
+    </data>
     <data name="command_execution_error" xml:space="preserve">
         <value>A execução do comando gerou um erro.</value>
     </data>

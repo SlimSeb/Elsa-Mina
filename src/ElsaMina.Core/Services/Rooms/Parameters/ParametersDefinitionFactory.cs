@@ -104,6 +104,14 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
                 DescriptionKey = "parameter_description_is_showing_url_preview",
                 Type = RoomBotConfigurationType.Boolean,
                 DefaultValue = false.ToString()
+            },
+            [Parameter.TenorGifEnabled] = new ParameterDefinition
+            {
+                Identifier = "tgf",
+                NameKey = "parameter_name_tenor_gif_enabled",
+                DescriptionKey = "parameter_description_tenor_gif_enabled",
+                Type = RoomBotConfigurationType.Boolean,
+                DefaultValue = true.ToString()
             }
         };
 }

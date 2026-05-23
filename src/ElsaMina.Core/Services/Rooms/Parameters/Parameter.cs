@@ -10,5 +10,6 @@ public enum Parameter
     ShowReplaysPreview,
     TournamentBettingEnabled,
     ShowYoutubeLinkPreview,
-    ShowUrlPreview
+    ShowUrlPreview,
+    TenorGifEnabled
 }

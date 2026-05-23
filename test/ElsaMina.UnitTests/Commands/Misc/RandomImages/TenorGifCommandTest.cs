@@ -3,6 +3,7 @@ using ElsaMina.Commands.Misc.RandomImages;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Images;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Templates;
 using NSubstitute;
 
@@ -13,6 +14,7 @@ public class TenorGifCommandTest
 {
     private IImageService _imageService;
     private ITemplatesManager _templatesManager;
+    private IRoom _room;
     private TenorGifCommand _command;
 
     [SetUp]
@@ -20,8 +22,11 @@ public class TenorGifCommandTest
     {
         _imageService = Substitute.For<IImageService>();
         _templatesManager = Substitute.For<ITemplatesManager>();
+        _room = Substitute.For<IRoom>();
 
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("<img/>");
+        _room.GetParameterValueAsync(Parameter.TenorGifEnabled, Arg.Any<CancellationToken>())
+            .Returns("true");
 
         _command = new TenorGifCommand(_imageService, _templatesManager);
     }
@@ -31,6 +36,7 @@ public class TenorGifCommandTest
         var context = Substitute.For<IContext>();
         context.Target.Returns(target);
         context.Culture.Returns(CultureInfo.InvariantCulture);
+        context.Room.Returns(_room);
         return context;
     }
 
@@ -38,6 +44,20 @@ public class TenorGifCommandTest
     public void Test_RequiredRank_ShouldBeRegular()
     {
         Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Regular));
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldDoNothing_WhenTenorGifIsDisabled()
+    {
+        _room.GetParameterValueAsync(Parameter.TenorGifEnabled, Arg.Any<CancellationToken>())
+            .Returns("false");
+        var context = MakeContext("https://media.tenor.com/a.gif|200|100");
+
+        await _command.RunAsync(context);
+
+        context.DidNotReceive().ReplyHtml(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>());
+        context.DidNotReceive().Reply(Arg.Any<string>(), rankAware: Arg.Any<bool>());
+        context.DidNotReceive().ReplyLocalizedMessage(Arg.Any<string>(), Arg.Any<object[]>());
     }
 
     [Test]

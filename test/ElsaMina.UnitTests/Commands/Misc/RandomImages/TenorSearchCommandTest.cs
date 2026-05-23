@@ -3,6 +3,7 @@ using ElsaMina.Commands.Misc.RandomImages;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Templates;
 using NSubstitute;
 
@@ -14,6 +15,7 @@ public class TenorSearchCommandTest
     private ITenorService _tenorService;
     private IConfiguration _configuration;
     private ITemplatesManager _templatesManager;
+    private IRoom _room;
     private TenorSearchCommand _command;
 
     [SetUp]
@@ -22,9 +24,12 @@ public class TenorSearchCommandTest
         _tenorService = Substitute.For<ITenorService>();
         _configuration = Substitute.For<IConfiguration>();
         _templatesManager = Substitute.For<ITemplatesManager>();
+        _room = Substitute.For<IRoom>();
 
         _configuration.Trigger.Returns("-");
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("<html/>");
+        _room.GetParameterValueAsync(Parameter.TenorGifEnabled, Arg.Any<CancellationToken>())
+            .Returns("true");
 
         _command = new TenorSearchCommand(_tenorService, _configuration, _templatesManager);
     }
@@ -37,6 +42,7 @@ public class TenorSearchCommandTest
         context.Sender.Returns(user);
         context.Target.Returns(target);
         context.Culture.Returns(CultureInfo.InvariantCulture);
+        context.Room.Returns(_room);
         return context;
     }
 
@@ -44,6 +50,20 @@ public class TenorSearchCommandTest
     public void Test_RequiredRank_ShouldBeRegular()
     {
         Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Regular));
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldDoNothing_WhenTenorGifIsDisabled()
+    {
+        _room.GetParameterValueAsync(Parameter.TenorGifEnabled, Arg.Any<CancellationToken>())
+            .Returns("false");
+        var context = MakeContext("cats");
+
+        await _command.RunAsync(context);
+
+        await _tenorService.DidNotReceiveWithAnyArgs().GetMultipleMediaAsync(default, default, default);
+        context.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+        context.DidNotReceive().Reply(Arg.Any<string>(), rankAware: Arg.Any<bool>());
     }
 
     [Test]

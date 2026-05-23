@@ -2,6 +2,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 
@@ -31,6 +32,13 @@ public class TenorSearchCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
+        var isEnabled = (await context.Room.GetParameterValueAsync(Parameter.TenorGifEnabled,
+            cancellationToken)).ToBoolean();
+        if (!isEnabled)
+        {
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(context.Target))
         {
             ReplyLocalizedHelpMessage(context);

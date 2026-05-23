@@ -2,6 +2,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Images;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 
@@ -26,6 +27,13 @@ public class TenorGifCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
+        var isEnabled = (await context.Room.GetParameterValueAsync(Parameter.TenorGifEnabled,
+            cancellationToken)).ToBoolean();
+        if (!isEnabled)
+        {
+            return;
+        }
+
         var target = context.Target?.Trim();
         if (string.IsNullOrWhiteSpace(target))
         {
