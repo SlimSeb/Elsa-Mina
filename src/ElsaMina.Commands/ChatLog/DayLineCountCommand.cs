@@ -54,6 +54,10 @@ public class DayLineCountCommand : Command
             }
 
             var userId = username.ToLowerAlphaNum();
+            if (string.IsNullOrEmpty(userId))
+            {
+                userId = "[server]";
+            }
             var wordCount = message.Split(' ').Length;
             if (counts.TryGetValue(userId, out var existing))
             {
