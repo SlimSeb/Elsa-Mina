@@ -45,7 +45,7 @@ public class NameColorInfoCommand : Command
             color = context.Target.ToColor();
         }
 
-        var template = await _templatesManager.GetTemplateAsync("Misc/Colors/NameColorInfo", new NameColorInfoViewModel
+        var template = await _templatesManager.GetTemplateAsync("Users/Colors/NameColorInfo", new NameColorInfoViewModel
         {
             Culture = context.Culture,
             Name = context.Target,
