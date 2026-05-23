@@ -7,7 +7,7 @@ using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Misc.RandomImages;
 
-[NamedCommand("tenorsearch")]
+[NamedCommand("tenorsearch", "gifs", "gifsearch", "tenor")]
 public class TenorSearchCommand : Command
 {
     private const int GIF_COUNT = 8;
