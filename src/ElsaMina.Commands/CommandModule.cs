@@ -409,10 +409,7 @@ public partial class CommandModule : Module
         builder.RegisterType<TourConfigService>().As<ITourConfigService>().SingleInstance();
         builder.RegisterType<TourConfigLauncher>().As<IDynamicCommandProvider>().SingleInstance();
         builder.RegisterType<WatchlistService>().As<IWatchlistService>().SingleInstance();
-        builder.RegisterType<NameColorsService>()
-            .As<INameColorsService>()
-            .As<IRoomColorsCache>()
-            .SingleInstance();
+        builder.RegisterType<NameColorsService>().As<INameColorsService>().As<IRoomColorsCache>().SingleInstance();
         builder.RegisterType<ElevenLabsAiTextToSpeechProvider>().As<IAiTextToSpeechProvider>().SingleInstance();
         builder.RegisterType<Gemini25FlashProvider>().AsSelf().SingleInstance();
         builder.RegisterType<MistralMediumProvider>().AsSelf().SingleInstance();
