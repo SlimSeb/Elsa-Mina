@@ -1,0 +1,45 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="clr-namespace:ElsaMina.Gui.Pages.Error"
+    x:DataType="vm:ExceptionViewModel"
+    x:Class="ElsaMina.Gui.Pages.Error.ExceptionWindow"
+    Title="Unhandled Exception"
+    Width="800" Height="550"
+    MinWidth="500" MinHeight="300"
+    WindowStartupLocation="CenterScreen">
+
+    <Grid RowDefinitions="Auto,*,Auto" Margin="16">
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,12">
+            <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" Foreground="#EF5350" />
+            <TextBlock Text="Copy the stack trace below and check the logs for more details."
+                       Opacity="0.65" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <!-- Stack trace -->
+        <Border Grid.Row="1" BorderThickness="1"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                CornerRadius="4">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto">
+                <TextBox Text="{Binding StackTrace}"
+                         IsReadOnly="True"
+                         FontFamily="Courier New, Consolas, monospace"
+                         FontSize="11"
+                         TextWrapping="NoWrap"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Padding="8" />
+            </ScrollViewer>
+        </Border>
+
+        <!-- Footer -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right"
+                    Spacing="8" Margin="0,12,0,0">
+            <Button Content="Copy to Clipboard" Command="{Binding CopyCommand}" />
+            <Button Content="Close" Command="{Binding CloseCommand}" />
+        </StackPanel>
+
+    </Grid>
+</Window>

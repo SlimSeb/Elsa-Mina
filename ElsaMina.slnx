@@ -39,6 +39,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/ElsaMina.Battles/ElsaMina.Battles.csproj" />
+    <Project Path="src/ElsaMina.Gui/ElsaMina.Gui.csproj" />
     <Project Path="src\ElsaMina.Commands\ElsaMina.Commands.csproj" />
     <Project Path="src\ElsaMina.Console\ElsaMina.Console.csproj" />
     <Project Path="src\ElsaMina.Core\ElsaMina.Core.csproj" />

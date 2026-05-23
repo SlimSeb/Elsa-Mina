@@ -1,0 +1,169 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="clr-namespace:ElsaMina.Gui.Pages.Dashboard"
+    x:DataType="vm:DashboardViewModel"
+    x:Class="ElsaMina.Gui.Pages.Dashboard.DashboardView">
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.section-header">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="LetterSpacing" Value="1" />
+        </Style>
+        <Style Selector="Button.icon-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="8,4" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Padding="16,10"
+                BorderThickness="0,0,0,1"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto">
+
+                <Ellipse Grid.Column="0" Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,10,0">
+                    <Ellipse.Fill>
+                        <SolidColorBrush Color="{Binding StatusColor}" />
+                    </Ellipse.Fill>
+                </Ellipse>
+
+                <TextBlock Grid.Column="1" Text="ElsaMina" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="0,0,12,0" />
+
+                <TextBlock Grid.Column="2" Text="{Binding StatusText}"
+                           Opacity="0.6" VerticalAlignment="Center" />
+
+                <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="16,0" VerticalAlignment="Center">
+                    <TextBlock Text="Uptime: " Opacity="0.5" IsVisible="{Binding !HasError}" />
+                    <TextBlock Text="{Binding Uptime}" Opacity="0.7" IsVisible="{Binding !HasError}" />
+                    <TextBlock Text="{Binding ErrorMessage}" Foreground="#EF5350"
+                               IsVisible="{Binding HasError}" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <Button Grid.Column="4" Content="Start" Command="{Binding StartCommand}"
+                        Classes="accent" Padding="16,6" Margin="0,0,6,0" />
+                <Button Grid.Column="5" Content="Stop" Command="{Binding StopCommand}"
+                        Padding="16,6" Margin="0,0,6,0" />
+
+                <Button Grid.Column="6" Command="{Binding OpenSetupCommand}"
+                        Classes="icon-btn" ToolTip.Tip="Edit Configuration">
+                    <PathIcon
+                        Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+                </Button>
+
+            </Grid>
+        </Border>
+
+        <!-- Main content -->
+        <Grid Grid.Row="1" ColumnDefinitions="200,*">
+
+            <!-- Left sidebar: Rooms -->
+            <Border
+                Grid.Column="0"
+                Padding="16,16,16,0"
+                BorderThickness="0,0,1,0"
+                BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                <StackPanel>
+                    <TextBlock
+                        Text="CONNECTED ROOMS"
+                        Classes="section-header" />
+                    <ItemsControl ItemsSource="{Binding ConfiguredRooms}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:CompileBindings="False">
+                                <Button Content="{Binding}"
+                                        Command="{Binding $parent[UserControl].DataContext.SelectRoomCommand}"
+                                        CommandParameter="{Binding}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="0,3"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Left"
+                                        Cursor="Hand"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock
+                        Text="No rooms configured"
+                        Opacity="0.4"
+                        FontStyle="Italic"
+                        IsVisible="{Binding !ConfiguredRooms.Count}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Right: Log viewer -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,*">
+
+                <Border
+                    Grid.Row="0"
+                    Padding="16,10"
+                    BorderThickness="0,0,0,1"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}">
+                    <Grid
+                        ColumnDefinitions="*,Auto">
+                        <TextBlock
+                            Grid.Column="0"
+                            Text="LOGS"
+                            Classes="section-header"
+                            Margin="0"
+                            VerticalAlignment="Center" />
+                        <Button
+                            Grid.Column="1"
+                            Content="Clear"
+                            Command="{Binding ClearLogsCommand}"
+                            Classes="icon-btn" />
+                    </Grid>
+                </Border>
+
+                <ScrollViewer
+                    Grid.Row="1"
+                    x:Name="LogScrollViewer"
+                    Padding="8,4"
+                    Margin="0 0 0 16"
+                    HorizontalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding LogEntries}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:LogEntryViewModel">
+                                <DockPanel Margin="8,2" LastChildFill="True">
+                                    <TextBlock
+                                        DockPanel.Dock="Left"
+                                        Text="{Binding LevelText}"
+                                        FontFamily="Courier New, Consolas, monospace"
+                                        FontSize="11"
+                                        Width="36"
+                                        VerticalAlignment="Top">
+                                        <TextBlock.Foreground>
+                                            <SolidColorBrush Color="{Binding LevelColorHex}" />
+                                        </TextBlock.Foreground>
+                                    </TextBlock>
+                                    <TextBlock
+                                        DockPanel.Dock="Left"
+                                        Text="{Binding TimeText}"
+                                        FontFamily="Courier New, Consolas, monospace"
+                                        FontSize="11"
+                                        Opacity="0.45"
+                                        Width="64"
+                                        VerticalAlignment="Top" />
+                                    <TextBlock
+                                        Text="{Binding Message}"
+                                        FontFamily="Courier New, Consolas, monospace"
+                                        FontSize="11"
+                                        TextWrapping="Wrap"
+                                        VerticalAlignment="Top" />
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+            </Grid>
+        </Grid>
+
+    </Grid>
+</UserControl>

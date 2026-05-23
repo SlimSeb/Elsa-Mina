@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:ElsaMina.Gui.Pages.Main"
+        x:DataType="vm:MainWindowViewModel"
+        x:Class="ElsaMina.Gui.MainWindow"
+        Title="ElsaMina"
+        Width="1020"
+        Height="680"
+        MinWidth="800"
+        MinHeight="500"
+        WindowStartupLocation="CenterScreen"
+        SystemDecorations="Full"
+        ExtendClientAreaToDecorationsHint="False"
+        >
+
+    <ContentControl Content="{Binding CurrentViewModel}"/>
+
+</Window>

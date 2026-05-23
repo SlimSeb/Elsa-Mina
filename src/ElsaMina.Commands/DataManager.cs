@@ -18,11 +18,11 @@ public class DataManager : IDataManager
     public async Task Initialize()
     {
         CountriesGameData =
-            await GetDataFromFile<CountriesGameData>(Path.Join(DATA_DIRECTORY_NAME, "countries_game.json"));
+            await GetDataFromFile<CountriesGameData>(Path.Join(DATA_DIRECTORY_NAME, "countries_game.json")).ConfigureAwait(false);
         PokemonDescriptions =
-            await GetDataFromFile<List<PokemonDescription>>(Path.Join(DATA_DIRECTORY_NAME, "pokedesc.json"));
+            await GetDataFromFile<List<PokemonDescription>>(Path.Join(DATA_DIRECTORY_NAME, "pokedesc.json")).ConfigureAwait(false);
         var capitalsList =
-            await GetDataFromFile<List<CapitalCityData>>(Path.Join(DATA_DIRECTORY_NAME, "capital_cities.json"));
+            await GetDataFromFile<List<CapitalCityData>>(Path.Join(DATA_DIRECTORY_NAME, "capital_cities.json")).ConfigureAwait(false);
         CapitalCitiesGameData = new CapitalCitiesGameData { Capitals = capitalsList };
 
         Log.Information("Fetched countries, capital cities & pokemon descriptions.");
@@ -31,7 +31,7 @@ public class DataManager : IDataManager
     private static async Task<T> GetDataFromFile<T>(string filePath)
     {
         using var streamReader = new StreamReader(filePath);
-        var fileContent = await streamReader.ReadToEndAsync();
+        var fileContent = await streamReader.ReadToEndAsync().ConfigureAwait(false);
         return JsonConvert.DeserializeObject<T>(fileContent);
     }
 }
