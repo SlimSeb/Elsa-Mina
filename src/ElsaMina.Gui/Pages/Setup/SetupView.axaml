@@ -50,32 +50,32 @@
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Host" Classes="field-label"/>
-                    <TextBox Text="{Binding Host}" Watermark="sim.smogon.com"/>
+                    <TextBox Text="{Binding Host}" PlaceholderText="sim.smogon.com"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Port" Classes="field-label"/>
-                    <TextBox Text="{Binding Port}" Watermark="8000"/>
+                    <TextBox Text="{Binding Port}" PlaceholderText="8000"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Username" Classes="field-label"/>
-                    <TextBox Text="{Binding Name}" Watermark="Bot username"/>
+                    <TextBox Text="{Binding Name}" PlaceholderText="Bot username"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Password" Classes="field-label"/>
-                    <TextBox Text="{Binding Password}" PasswordChar="●" Watermark="Bot password"/>
+                    <TextBox Text="{Binding Password}" PasswordChar="●" PlaceholderText="Bot password"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Command Trigger" Classes="field-label"/>
-                    <TextBox Text="{Binding Trigger}" Watermark="-"/>
+                    <TextBox Text="{Binding Trigger}" PlaceholderText="-"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Avatar (optional)" Classes="field-label"/>
-                    <TextBox Text="{Binding Avatar}" Watermark="Avatar name or number"/>
+                    <TextBox Text="{Binding Avatar}" PlaceholderText="Avatar name or number"/>
                 </StackPanel>
 
                 <!-- ROOMS -->
@@ -83,13 +83,13 @@
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Rooms (comma-separated)" Classes="field-label"/>
-                    <TextBox Text="{Binding RoomsText}" Watermark="lobby, français, vgc"
+                    <TextBox Text="{Binding RoomsText}" PlaceholderText="lobby, français, vgc"
                              Height="72" AcceptsReturn="True" TextWrapping="Wrap"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Default Room" Classes="field-label"/>
-                    <TextBox Text="{Binding DefaultRoom}" Watermark="lobby"/>
+                    <TextBox Text="{Binding DefaultRoom}" PlaceholderText="lobby"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
@@ -105,7 +105,7 @@
                 <StackPanel Classes="field">
                     <TextBlock Text="PostgreSQL Connection String" Classes="field-label"/>
                     <TextBox Text="{Binding ConnectionString}"
-                             Watermark="Host=localhost;Port=5432;Database=elsamina;Username=postgres;Password=..."
+                             PlaceholderText="Host=localhost;Port=5432;Database=elsamina;Username=postgres;Password=..."
                              Height="72" AcceptsReturn="True" TextWrapping="Wrap"/>
                 </StackPanel>
 
@@ -114,57 +114,57 @@
 
                 <StackPanel Classes="field">
                     <TextBlock Text="YouTube API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding YoutubeApiKey}" Watermark="AIza..."/>
+                    <TextBox Text="{Binding YoutubeApiKey}" PlaceholderText="AIza..."/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Tenor API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding TenorApiKey}" Watermark="Tenor GIF API key"/>
+                    <TextBox Text="{Binding TenorApiKey}" PlaceholderText="Tenor GIF API key"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Mistral API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding MistralApiKey}" Watermark="Mistral AI key"/>
+                    <TextBox Text="{Binding MistralApiKey}" PlaceholderText="Mistral AI key"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="ChatGPT API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding ChatGptApiKey}" Watermark="OpenAI key"/>
+                    <TextBox Text="{Binding ChatGptApiKey}" PlaceholderText="OpenAI key"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Gemini API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding GeminiApiKey}" Watermark="Google Gemini key"/>
+                    <TextBox Text="{Binding GeminiApiKey}" PlaceholderText="Google Gemini key"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="ElevenLabs API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding ElevenLabsApiKey}" Watermark="ElevenLabs TTS key"/>
+                    <TextBox Text="{Binding ElevenLabsApiKey}" PlaceholderText="ElevenLabs TTS key"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Dictionary API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding DictionaryApiKey}" Watermark="Dictionary API key"/>
+                    <TextBox Text="{Binding DictionaryApiKey}" PlaceholderText="Dictionary API key"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Genius API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding GeniusApiKey}" Watermark="Genius lyrics key"/>
+                    <TextBox Text="{Binding GeniusApiKey}" PlaceholderText="Genius lyrics key"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Unsplash API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding UnsplashApiKey}" Watermark="Unsplash key"/>
+                    <TextBox Text="{Binding UnsplashApiKey}" PlaceholderText="Unsplash key"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Riot API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding RiotApiKey}" Watermark="RGAPI-..."/>
+                    <TextBox Text="{Binding RiotApiKey}" PlaceholderText="RGAPI-..."/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Spoonacular API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding SpoonacularApiKey}" Watermark="Spoonacular key"/>
+                    <TextBox Text="{Binding SpoonacularApiKey}" PlaceholderText="Spoonacular key"/>
                 </StackPanel>
 
                 <!-- OBSERVABILITY -->
@@ -172,17 +172,17 @@
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Loki URL" Classes="field-label"/>
-                    <TextBox Text="{Binding LokiUrl}" Watermark="https://logs-prod.grafana.net"/>
+                    <TextBox Text="{Binding LokiUrl}" PlaceholderText="https://logs-prod.grafana.net"/>
                 </StackPanel>
 
                 <StackPanel Classes="field">
                     <TextBlock Text="Loki Username" Classes="field-label"/>
-                    <TextBox Text="{Binding LokiUser}" Watermark="123456"/>
+                    <TextBox Text="{Binding LokiUser}" PlaceholderText="123456"/>
                 </StackPanel>
 
                 <StackPanel Classes="field" Margin="0,0,0,24">
                     <TextBlock Text="Loki API Key" Classes="field-label"/>
-                    <TextBox Text="{Binding LokiApiKey}" Watermark="glc_..."/>
+                    <TextBox Text="{Binding LokiApiKey}" PlaceholderText="glc_..."/>
                 </StackPanel>
 
             </StackPanel>
