@@ -9,6 +9,8 @@ using ElsaMina.Core.Modules;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.FileSharing.S3;
+using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Gui.Services.BotConfiguration;
 using ElsaMina.Gui.Services.Version;
 using ElsaMina.Logging;
@@ -29,7 +31,16 @@ public class BotService : IBotService
     public IReadOnlyList<string> ConfiguredRooms { get; private set; } = [];
     public string? ErrorMessage { get; private set; }
 
+    public IReadOnlyDictionary<Parameter, IParameterDefinition>? ParameterDefinitions =>
+        _container?.Resolve<IRoomsManager>()?.ParametersDefinitions;
+
     public event Action<BotStatus>? StatusChanged;
+
+    public IRoom? GetRoom(string roomId)
+    {
+        var manager = _container?.Resolve<IRoomsManager>();
+        return manager?.HasRoom(roomId) == true ? manager.GetRoom(roomId) : null;
+    }
 
     public BotService(IConfigurationFileService configFileService)
     {

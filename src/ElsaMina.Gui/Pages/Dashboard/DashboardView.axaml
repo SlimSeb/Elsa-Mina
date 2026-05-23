@@ -76,11 +76,16 @@
                         Classes="section-header" />
                     <ItemsControl ItemsSource="{Binding ConfiguredRooms}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock
-                                    Text="{Binding}"
-                                    Margin="0,3"
-                                    TextTrimming="CharacterEllipsis" />
+                            <DataTemplate x:CompileBindings="False">
+                                <Button Content="{Binding}"
+                                        Command="{Binding $parent[UserControl].DataContext.SelectRoomCommand}"
+                                        CommandParameter="{Binding}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="0,3"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Left"
+                                        Cursor="Hand"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

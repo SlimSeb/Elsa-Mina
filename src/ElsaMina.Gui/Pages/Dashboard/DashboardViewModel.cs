@@ -16,6 +16,7 @@ public partial class DashboardViewModel : ObservableObject
 
     public event Action? SetupRequested;
     public event Action? LogsUpdated;
+    public event Action<string>? RoomSelected;
 
     public ObservableCollection<LogEntryViewModel> LogEntries { get; } = [];
     public ObservableCollection<string> ConfiguredRooms { get; } = [];
@@ -55,6 +56,9 @@ public partial class DashboardViewModel : ObservableObject
 
     [RelayCommand]
     private void OpenSetup() => SetupRequested?.Invoke();
+
+    [RelayCommand]
+    private void SelectRoom(string roomId) => RoomSelected?.Invoke(roomId);
 
     private void OnStatusChanged(BotStatus status)
     {

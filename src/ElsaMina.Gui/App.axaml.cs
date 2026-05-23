@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using ElsaMina.Gui.Pages.Dashboard;
 using ElsaMina.Gui.Pages.Error;
 using ElsaMina.Gui.Pages.Main;
+using ElsaMina.Gui.Pages.Room;
 using ElsaMina.Gui.Pages.Setup;
 using ElsaMina.Gui.Services.Bot;
 using ElsaMina.Gui.Services.BotConfiguration;
@@ -98,6 +99,7 @@ public partial class App : Application
 
         builder.RegisterType<SetupViewModel>().SingleInstance();
         builder.RegisterType<DashboardViewModel>().SingleInstance();
+        builder.RegisterType<RoomViewModel>().SingleInstance();
         builder.RegisterType<MainWindowViewModel>().SingleInstance();
 
         return builder.Build();
