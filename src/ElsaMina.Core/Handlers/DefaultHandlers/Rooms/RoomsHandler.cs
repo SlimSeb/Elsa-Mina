@@ -6,6 +6,13 @@ namespace ElsaMina.Core.Handlers.DefaultHandlers.Rooms;
 
 public sealed class RoomsHandler : Handler
 {
+    private const string CHAT_MESSAGE_MARKER = "c:";
+    private const string DE_INIT_MARKER = "deinit";
+    private const string JOIN_MARKER = "J";
+    private const string LEAVE_MARKER = "L";
+    private const string RENAME_MARKER = "N";
+    private const string NO_INIT_MARKER = "noinit";
+
     private readonly IRoomsManager _roomsManager;
     private readonly IUserSaveQueue _userSaveQueue;
 
@@ -14,6 +21,11 @@ public sealed class RoomsHandler : Handler
         _roomsManager = roomsManager;
         _userSaveQueue = userSaveQueue;
     }
+
+    public override IReadOnlySet<string> HandledMessageTypes => (HashSet<string>)
+    [
+        CHAT_MESSAGE_MARKER, DE_INIT_MARKER, JOIN_MARKER, LEAVE_MARKER, RENAME_MARKER, NO_INIT_MARKER
+    ];
 
     public override Task HandleReceivedMessageAsync(string[] parts, string roomId = null,
         CancellationToken cancellationToken = default)
@@ -25,7 +37,7 @@ public sealed class RoomsHandler : Handler
 
         switch (parts[1])
         {
-            case "c:":
+            case CHAT_MESSAGE_MARKER:
                 if (parts.Length < 5)
                 {
                     break;
@@ -40,10 +52,10 @@ public sealed class RoomsHandler : Handler
                 _userSaveQueue.Enqueue(parts[3], roomId, UserAction.Chatting);
 
                 break;
-            case "deinit":
+            case DE_INIT_MARKER:
                 _roomsManager.RemoveRoom(roomId);
                 break;
-            case "J":
+            case JOIN_MARKER:
                 if (parts.Length < 3)
                 {
                     break;
@@ -52,7 +64,7 @@ public sealed class RoomsHandler : Handler
                 _roomsManager.AddUserToRoom(roomId, parts[2]);
                 _userSaveQueue.Enqueue(parts[2], roomId, UserAction.Joining);
                 break;
-            case "L":
+            case LEAVE_MARKER:
                 if (parts.Length < 3)
                 {
                     break;
@@ -61,10 +73,10 @@ public sealed class RoomsHandler : Handler
                 _roomsManager.RemoveUserFromRoom(roomId, parts[2]);
                 _userSaveQueue.Enqueue(parts[2], roomId, UserAction.Leaving);
                 break;
-            case "N":
+            case RENAME_MARKER:
                 _roomsManager.RenameUserInRoom(roomId, parts[3], parts[2]);
                 break;
-            case "noinit":
+            case NO_INIT_MARKER:
                 var errorMessage = parts[2] switch
                 {
                     "joinfailed" => "Could not join room '{0}', probably due to a lack of permissions",
@@ -74,7 +86,7 @@ public sealed class RoomsHandler : Handler
                 };
                 if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    Log.Error(errorMessage, roomId);
+                    Log.Error(errorMessage, roomId ?? "unknown");
                 }
 
                 break;
