@@ -83,6 +83,7 @@ using ElsaMina.Commands.Teams.TeamProviders.Showdown;
 using ElsaMina.Commands.TourConfigurator;
 using ElsaMina.Commands.Tournaments;
 using ElsaMina.Commands.Tournaments.Betting;
+using ElsaMina.Commands.Tournaments.Betting.Leaderboard;
 using ElsaMina.Commands.Tournaments.Handlers;
 using ElsaMina.Commands.Tournaments.Hebdo;
 using ElsaMina.Commands.Tournaments.History;
@@ -332,6 +333,7 @@ public partial class CommandModule : Module
         builder.RegisterType<TournamentBettingService>().As<ITournamentBettingService>().SingleInstance();
         builder.RegisterCommand<BetCommand>();
         builder.RegisterCommand<CancelBetCommand>();
+        builder.RegisterCommand<TopBettorsCommand>();
         builder.RegisterHandler<TourEndHandler>();
         builder.RegisterHandler<StaffIntroChangeHandler>();
         builder.RegisterHandler<StaffIntroContentHandler>();

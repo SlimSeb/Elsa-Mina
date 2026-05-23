@@ -1,0 +1,48 @@
+@using ElsaMina.Core.Services.Templates
+@using ElsaMina.Core.Utils
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Tournaments.Betting.Leaderboard.TopBettorsViewModel>
+
+@{
+    const string headerStyle = $"border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; padding: 4px";
+}
+<div style="max-height: 200px; overflow-y: auto">
+    <table
+        style="margin: auto; border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; border-radius: 12px; padding: 4px">
+        <thead>
+        <tr>
+            <th colspan="5" scope="colgroup">
+                @GetString("top_bettors_title", Model.Room)
+            </th>
+        </tr>
+        <tr>
+            <th scope="col" style="@headerStyle">#</th>
+            <th scope="col" style="@headerStyle">@GetString("top_bettors_user")</th>
+            <th scope="col" style="@headerStyle">@GetString("top_bettors_correct")</th>
+            <th scope="col" style="@headerStyle">@GetString("top_bettors_total")</th>
+            <th scope="col" style="@headerStyle">@GetString("top_bettors_accuracy")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var entry in Model.TopList)
+        {
+            var accuracy = entry.TotalBetsCount > 0
+                ? $"{(double)entry.CorrectBetsCount / entry.TotalBetsCount:P0}"
+                : "—";
+            <tr>
+                <td style="text-align:center">@entry.Rank</td>
+                <td style="text-align:center;">
+                    <span
+                        class="username"
+                        data-name="@entry.UserId"
+                        style="color: @entry.UserId.ToColorHexCodeWithCustoms()">
+                        @entry.UserName
+                    </span>
+                </td>
+                <td style="text-align:center">@entry.CorrectBetsCount</td>
+                <td style="text-align:center">@entry.TotalBetsCount</td>
+                <td style="text-align:center">@accuracy</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

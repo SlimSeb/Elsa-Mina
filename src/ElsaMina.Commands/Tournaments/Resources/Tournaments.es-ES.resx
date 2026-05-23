@@ -288,4 +288,28 @@
     <data name="betting_announcement_bet_button" xml:space="preserve">
         <value>Apostar</value>
     </data>
+    <data name="top_bettors_help" xml:space="preserve">
+        <value>Muestra los mejores apostadores de esta sala.</value>
+    </data>
+    <data name="top_bettors_title" xml:space="preserve">
+        <value>Mejores apostadores en {0}</value>
+    </data>
+    <data name="top_bettors_user" xml:space="preserve">
+        <value>Usuario</value>
+    </data>
+    <data name="top_bettors_correct" xml:space="preserve">
+        <value>Apuestas correctas</value>
+    </data>
+    <data name="top_bettors_total" xml:space="preserve">
+        <value>Total apuestas</value>
+    </data>
+    <data name="top_bettors_accuracy" xml:space="preserve">
+        <value>Precisión</value>
+    </data>
+    <data name="top_bettors_no_data" xml:space="preserve">
+        <value>No se encontraron datos de apuestas para esta sala.</value>
+    </data>
+    <data name="top_bettors_error" xml:space="preserve">
+        <value>No se pudieron recuperar los datos de apuestas.</value>
+    </data>
 </root>

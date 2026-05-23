@@ -20,6 +20,7 @@ public class RoomUser
     public int LongestStreak { get; set; }
     public DateOnly? LastActivityDate { get; set; }
     public TournamentRecord TournamentRecord { get; set; }
+    public BetRecord BetRecord { get; set; }
     public ICollection<BadgeHolding> Badges { get; set; } = new HashSet<BadgeHolding>();
     public SavedUser User { get; set; }
 }

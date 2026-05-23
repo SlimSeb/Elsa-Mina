@@ -288,4 +288,28 @@
     <data name="betting_announcement_bet_button" xml:space="preserve">
         <value>Parier</value>
     </data>
+    <data name="top_bettors_help" xml:space="preserve">
+        <value>Affiche le classement des parieurs dans ce salon.</value>
+    </data>
+    <data name="top_bettors_title" xml:space="preserve">
+        <value>Meilleurs parieurs dans {0}</value>
+    </data>
+    <data name="top_bettors_user" xml:space="preserve">
+        <value>Utilisateur</value>
+    </data>
+    <data name="top_bettors_correct" xml:space="preserve">
+        <value>Paris corrects</value>
+    </data>
+    <data name="top_bettors_total" xml:space="preserve">
+        <value>Total paris</value>
+    </data>
+    <data name="top_bettors_accuracy" xml:space="preserve">
+        <value>Précision</value>
+    </data>
+    <data name="top_bettors_no_data" xml:space="preserve">
+        <value>Aucune donnée de paris trouvée pour ce salon.</value>
+    </data>
+    <data name="top_bettors_error" xml:space="preserve">
+        <value>Impossible de récupérer les données de paris.</value>
+    </data>
 </root>

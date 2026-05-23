@@ -4,9 +4,13 @@ using ElsaMina.Core;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Resources;
+using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
+using ElsaMina.DataAccess;
+using ElsaMina.DataAccess.Models;
+using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Tournaments.Betting;
 
@@ -28,9 +32,12 @@ public class TournamentBettingService : ITournamentBettingService
     private readonly IResourcesService _resourcesService;
     private readonly IRoomsManager _roomsManager;
     private readonly IClockService _clockService;
+    private readonly IBotDbContextFactory _botDbContextFactory;
+    private readonly IRoomUserDataService _roomUserDataService;
 
     public TournamentBettingService(IBot bot, ITemplatesManager templatesManager, IConfiguration configuration,
-        IResourcesService resourcesService, IRoomsManager roomsManager, IClockService clockService)
+        IResourcesService resourcesService, IRoomsManager roomsManager, IClockService clockService,
+        IBotDbContextFactory botDbContextFactory, IRoomUserDataService roomUserDataService)
     {
         _bot = bot;
         _templatesManager = templatesManager;
@@ -38,6 +45,8 @@ public class TournamentBettingService : ITournamentBettingService
         _resourcesService = resourcesService;
         _roomsManager = roomsManager;
         _clockService = clockService;
+        _botDbContextFactory = botDbContextFactory;
+        _roomUserDataService = roomUserDataService;
 
         _defaultCulture = new CultureInfo(configuration.DefaultLocaleCode);
     }
@@ -106,12 +115,12 @@ public class TournamentBettingService : ITournamentBettingService
         return toCancel.Count;
     }
 
-    public Task ResolveBetsAsync(string winnerId, string roomId, CancellationToken cancellationToken = default)
+    public async Task ResolveBetsAsync(string winnerId, string roomId, CancellationToken cancellationToken = default)
     {
         if (!_activeBets.TryGetValue(roomId, out var bets) || bets.Count == 0)
         {
             CleanUp(roomId);
-            return Task.CompletedTask;
+            return;
         }
 
         var culture = _roomsManager.GetRoom(roomId)?.Culture;
@@ -136,8 +145,38 @@ public class TournamentBettingService : ITournamentBettingService
         }
 
         _bot.Say(roomId, $"/addhtmlbox <div>{message}</div>");
+
+        var allBettors = bets.Select(bet => bet.BettorId).Distinct().ToList();
+        var correctBettorSet = correctBettors.ToHashSet();
         CleanUp(roomId);
-        return Task.CompletedTask;
+
+        try
+        {
+            await using var dbContext = await _botDbContextFactory.CreateDbContextAsync(cancellationToken);
+            foreach (var bettorId in allBettors)
+            {
+                await _roomUserDataService.GetOrCreateRoomSpecificUserDataAsync(roomId, bettorId, cancellationToken);
+
+                var record = await dbContext.BetRecords.FindAsync([bettorId, roomId], cancellationToken);
+                if (record == null)
+                {
+                    record = new BetRecord { UserId = bettorId, RoomId = roomId };
+                    await dbContext.BetRecords.AddAsync(record, cancellationToken);
+                }
+
+                record.TotalBetsCount++;
+                if (correctBettorSet.Contains(bettorId))
+                {
+                    record.CorrectBetsCount++;
+                }
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error saving bet records for room {RoomId}", roomId);
+        }
     }
 
     public Task ReturnBetsAsync(string roomId, CancellationToken cancellationToken = default)

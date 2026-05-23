@@ -22,6 +22,7 @@ public class BotDbContext : DbContext
     public DbSet<SavedTournament> SavedTournaments { get; set; }
     public DbSet<RoomBotParameterValue> RoomBotParameterValues { get; set; }
     public DbSet<TournamentRecord> TournamentRecords { get; set; }
+    public DbSet<BetRecord> BetRecords { get; set; }
     public DbSet<SavedUser> Users { get; set; }
     public DbSet<VoltorbFlipLevel> VoltorbFlipLevels { get; set; }
     public DbSet<ShopItem> ShopItems { get; set; }

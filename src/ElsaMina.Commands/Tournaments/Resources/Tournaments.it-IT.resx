@@ -288,4 +288,28 @@
     <data name="betting_announcement_bet_button" xml:space="preserve">
         <value>Scommetti</value>
     </data>
+    <data name="top_bettors_help" xml:space="preserve">
+        <value>Mostra i migliori scommettitori in questa stanza.</value>
+    </data>
+    <data name="top_bettors_title" xml:space="preserve">
+        <value>Migliori scommettitori in {0}</value>
+    </data>
+    <data name="top_bettors_user" xml:space="preserve">
+        <value>Utente</value>
+    </data>
+    <data name="top_bettors_correct" xml:space="preserve">
+        <value>Scommesse corrette</value>
+    </data>
+    <data name="top_bettors_total" xml:space="preserve">
+        <value>Totale scommesse</value>
+    </data>
+    <data name="top_bettors_accuracy" xml:space="preserve">
+        <value>Precisione</value>
+    </data>
+    <data name="top_bettors_no_data" xml:space="preserve">
+        <value>Nessun dato sulle scommesse trovato per questa stanza.</value>
+    </data>
+    <data name="top_bettors_error" xml:space="preserve">
+        <value>Impossibile recuperare i dati sulle scommesse.</value>
+    </data>
 </root>

@@ -4,8 +4,12 @@ using ElsaMina.Core;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Resources;
+using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
+using ElsaMina.DataAccess;
+using ElsaMina.DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -20,6 +24,9 @@ public class TournamentBettingServiceTest
     private IResourcesService _resourcesService;
     private IRoomsManager _roomsManager;
     private IClockService _clockService;
+    private IBotDbContextFactory _botDbContextFactory;
+    private IRoomUserDataService _roomUserDataService;
+    private DbContextOptions<BotDbContext> _dbOptions;
     private TournamentBettingService _service;
 
     [SetUp]
@@ -31,6 +38,8 @@ public class TournamentBettingServiceTest
         _resourcesService = Substitute.For<IResourcesService>();
         _roomsManager = Substitute.For<IRoomsManager>();
         _clockService = Substitute.For<IClockService>();
+        _botDbContextFactory = Substitute.For<IBotDbContextFactory>();
+        _roomUserDataService = Substitute.For<IRoomUserDataService>();
 
         _configuration.Name.Returns("Elsa-Mina");
         _configuration.Trigger.Returns("-");
@@ -42,8 +51,21 @@ public class TournamentBettingServiceTest
         _resourcesService.GetString("bet_resolution_nobody_correct", Arg.Any<CultureInfo>())
             .Returns("🏆 {0} won! Nobody guessed correctly.");
 
+        _dbOptions = new DbContextOptionsBuilder<BotDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        _botDbContextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromResult(new BotDbContext(_dbOptions)));
+
         _service = new TournamentBettingService(_bot, _templatesManager, _configuration,
-            _resourcesService, _roomsManager, _clockService);
+            _resourcesService, _roomsManager, _clockService, _botDbContextFactory, _roomUserDataService);
+    }
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        await using var dbContext = new BotDbContext(_dbOptions);
+        await dbContext.Database.EnsureDeletedAsync();
     }
 
     // ── AnnounceBetsAsync ──────────────────────────────────────────────────
@@ -284,6 +306,84 @@ public class TournamentBettingServiceTest
         Assert.That(result, Is.EqualTo(BetPlacementError.NoBettingSession));
     }
 
+    [Test]
+    public async Task Test_ResolveBetsAsync_ShouldIncrementCorrectBetsCount_ForBettorWhoGuessedRight()
+    {
+        await using var seedContext = new BotDbContext(_dbOptions);
+        seedContext.RoomUsers.Add(new RoomUser { Id = "bettor1", RoomId = "room1" });
+        await seedContext.SaveChangesAsync();
+
+        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.PlaceBetAsync("bettor1", "playera", "room1");
+
+        await _service.ResolveBetsAsync("playera", "room1");
+
+        await using var dbContext = new BotDbContext(_dbOptions);
+        var record = await dbContext.BetRecords.FindAsync(["bettor1", "room1"]);
+        Assert.That(record, Is.Not.Null);
+        Assert.That(record.CorrectBetsCount, Is.EqualTo(1));
+        Assert.That(record.TotalBetsCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Test_ResolveBetsAsync_ShouldNotIncrementCorrectBetsCount_ForBettorWhoGuessedWrong()
+    {
+        await using var seedContext = new BotDbContext(_dbOptions);
+        seedContext.RoomUsers.Add(new RoomUser { Id = "bettor1", RoomId = "room1" });
+        await seedContext.SaveChangesAsync();
+
+        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.PlaceBetAsync("bettor1", "playerb", "room1");
+
+        await _service.ResolveBetsAsync("playera", "room1");
+
+        await using var dbContext = new BotDbContext(_dbOptions);
+        var record = await dbContext.BetRecords.FindAsync(["bettor1", "room1"]);
+        Assert.That(record, Is.Not.Null);
+        Assert.That(record.CorrectBetsCount, Is.EqualTo(0));
+        Assert.That(record.TotalBetsCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task Test_ResolveBetsAsync_ShouldSaveBetRecordsForAllBettors()
+    {
+        await using var seedContext = new BotDbContext(_dbOptions);
+        seedContext.RoomUsers.Add(new RoomUser { Id = "bettor1", RoomId = "room1" });
+        seedContext.RoomUsers.Add(new RoomUser { Id = "bettor2", RoomId = "room1" });
+        await seedContext.SaveChangesAsync();
+
+        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.PlaceBetAsync("bettor1", "playera", "room1");
+        await _service.PlaceBetAsync("bettor2", "playerb", "room1");
+
+        await _service.ResolveBetsAsync("playera", "room1");
+
+        await using var dbContext = new BotDbContext(_dbOptions);
+        var records = dbContext.BetRecords.Where(r => r.RoomId == "room1").ToList();
+        Assert.That(records.Count, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Test_ResolveBetsAsync_ShouldAccumulateCounts_AcrossMultipleTournaments()
+    {
+        await using var seedContext = new BotDbContext(_dbOptions);
+        seedContext.RoomUsers.Add(new RoomUser { Id = "bettor1", RoomId = "room1" });
+        await seedContext.SaveChangesAsync();
+
+        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.PlaceBetAsync("bettor1", "playera", "room1");
+        await _service.ResolveBetsAsync("playera", "room1");
+
+        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.PlaceBetAsync("bettor1", "playera", "room1");
+        await _service.ResolveBetsAsync("playera", "room1");
+
+        await using var dbContext = new BotDbContext(_dbOptions);
+        var record = await dbContext.BetRecords.FindAsync(["bettor1", "room1"]);
+        Assert.That(record.CorrectBetsCount, Is.EqualTo(2));
+        Assert.That(record.TotalBetsCount, Is.EqualTo(2));
+    }
+
     // ── ReturnBetsAsync ────────────────────────────────────────────────────
 
     [Test]
@@ -307,5 +407,16 @@ public class TournamentBettingServiceTest
         await _service.ReturnBetsAsync("room1");
 
         _bot.DidNotReceive().Say(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_ReturnBetsAsync_ShouldNotSaveBetRecords()
+    {
+        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.PlaceBetAsync("bettor1", "playera", "room1");
+
+        await _service.ReturnBetsAsync("room1");
+
+        await _botDbContextFactory.DidNotReceive().CreateDbContextAsync(Arg.Any<CancellationToken>());
     }
 }
