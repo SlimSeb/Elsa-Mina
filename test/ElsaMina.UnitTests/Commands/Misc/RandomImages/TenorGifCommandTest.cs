@@ -122,6 +122,6 @@ public class TenorGifCommandTest
 
         await _command.RunAsync(context);
 
-        context.Received(1).ReplyHtml(Arg.Any<string>(), rankAware: true);
+        context.Received(1).ReplyHtml(Arg.Any<string>(), rankAware: false);
     }
 }

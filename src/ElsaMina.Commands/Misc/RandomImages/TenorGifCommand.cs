@@ -81,6 +81,6 @@ public class TenorGifCommand : Command
                 Height = height / 2
             });
 
-        context.ReplyHtml(template.RemoveNewlines(), rankAware: true);
+        context.ReplyHtml(template.RemoveNewlines());
     }
 }
