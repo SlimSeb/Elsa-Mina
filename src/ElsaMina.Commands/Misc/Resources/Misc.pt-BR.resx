@@ -357,6 +357,21 @@
     <data name="tenorgif_invalid_url" xml:space="preserve">
         <value>URL de GIF inválida. Apenas links do CDN do Tenor são aceitos.</value>
     </data>
+    <data name="tenorgif_muted_for_events" xml:space="preserve">
+        <value>O comando tenorgif está temporariamente indisponível enquanto um evento arcade está em andamento.</value>
+    </data>
+    <data name="tenorgif_room_cooldown" xml:space="preserve">
+        <value>Este comando está em cooldown nesta sala. Tente novamente em {0} segundos.</value>
+    </data>
+    <data name="tenorgif_user_cooldown" xml:space="preserve">
+        <value>Você está em cooldown para este comando. Tente novamente em {0} minutos e {1} segundos.</value>
+    </data>
+    <data name="tenorsearch_room_cooldown" xml:space="preserve">
+        <value>Este comando está em cooldown nesta sala. Tente novamente em {0} segundos.</value>
+    </data>
+    <data name="tenorsearch_user_cooldown" xml:space="preserve">
+        <value>Você está em cooldown para este comando. Tente novamente em {0} minutos e {1} segundos.</value>
+    </data>
     <data name="tenorsearch_send" xml:space="preserve">
         <value>Enviar</value>
     </data>

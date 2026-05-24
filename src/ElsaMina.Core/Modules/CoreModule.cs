@@ -95,7 +95,7 @@ builder.RegisterType<EfRoomParameterStore>().As<IRoomParameterStore>();
         builder.RegisterHandler<AcceptChallengeHandler>();
         builder.RegisterHandler<ErrorHandler>();
 
-        builder.RegisterType<S3FileSharingService>().As<IFileSharingService>().SingleInstance().OnActivating(
-            ctx => ctx.Instance.InitializeAsync().Wait());
+        builder.RegisterType<S3FileSharingService>().As<IFileSharingService>().SingleInstance()
+            .OnActivating(ctx => ctx.Instance.InitializeAsync().Wait());
     }
 }

@@ -62,7 +62,7 @@ public class CommandExecutor : ICommandExecutor
         if (!context.IsPrivateMessage)
         {
             Log.Information("Trying command {0} as a custom command", commandName);
-            if (await _addedCommandsManager.TryExecuteAddedCommand(commandName, context))
+            if (await _addedCommandsManager.TryExecuteAddedCommand(commandName, context, cancellationToken))
             {
                 return;
             }

@@ -1,4 +1,7 @@
+using System.Collections.Concurrent;
+using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
@@ -13,17 +16,23 @@ public class TenorSearchCommand : Command
 {
     private const int GIF_COUNT = 8;
     private const int THUMBNAIL_MAX_WIDTH = 150;
+    private static readonly ConcurrentDictionary<string, DateTimeOffset> ROOM_COOLDOWNS = new();
+    private static readonly ConcurrentDictionary<string, DateTimeOffset> USER_COOLDOWNS = new();
 
     private readonly ITenorService _tenorService;
     private readonly IConfiguration _configuration;
     private readonly ITemplatesManager _templatesManager;
+    private readonly IClockService _clockService;
+    private readonly IArcadeEventsService _eventsService;
 
     public TenorSearchCommand(ITenorService tenorService, IConfiguration configuration,
-        ITemplatesManager templatesManager)
+        ITemplatesManager templatesManager, IClockService clockService, IArcadeEventsService eventsService)
     {
         _tenorService = tenorService;
         _configuration = configuration;
         _templatesManager = templatesManager;
+        _clockService = clockService;
+        _eventsService = eventsService;
     }
 
     public override Rank RequiredRank => Rank.Regular;
@@ -38,6 +47,37 @@ public class TenorSearchCommand : Command
         {
             return;
         }
+
+        if (_eventsService.AreGamesMuted(context.RoomId))
+        {
+            context.ReplyLocalizedMessage("tenorgif_muted_for_events");
+            return;
+        }
+
+        var now = _clockService.CurrentUtcDateTimeOffset;
+        if (ROOM_COOLDOWNS.TryGetValue(context.RoomId, out var lastRoomUse))
+        {
+            var remaining = TenorConstants.PER_ROOM_COOLDOWN - (now - lastRoomUse);
+            if (remaining > TimeSpan.Zero)
+            {
+                context.ReplyLocalizedMessage("tenorsearch_room_cooldown", remaining.Seconds);
+                return;
+            }
+        }
+
+        if (USER_COOLDOWNS.TryGetValue(context.Sender.UserId, out var lastUserUse))
+        {
+            var remaining = TenorConstants.PER_USER_COOLDOWN - (now - lastUserUse);
+            if (remaining > TimeSpan.Zero)
+            {
+                context.ReplyLocalizedMessage("tenorsearch_user_cooldown",
+                    (int)remaining.TotalMinutes, remaining.Seconds);
+                return;
+            }
+        }
+
+        ROOM_COOLDOWNS[context.RoomId] = now;
+        USER_COOLDOWNS[context.Sender.UserId] = now;
 
         if (string.IsNullOrWhiteSpace(context.Target))
         {

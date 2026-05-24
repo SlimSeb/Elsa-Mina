@@ -66,7 +66,8 @@ public class RandomCustomCommandTest
 
         await _addedCommandsManager.Received(1).ExecuteAddedCommand(
             Arg.Is<AddedCommand>(c => c.Id == "hello" && c.Content == "Hello world!"),
-            _context);
+            _context,
+            Arg.Any<CancellationToken>());
     }
 
     [Test]

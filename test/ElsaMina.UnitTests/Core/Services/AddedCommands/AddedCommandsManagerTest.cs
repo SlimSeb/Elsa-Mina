@@ -29,7 +29,7 @@ public class AddedCommandsManagerTest
         _db = new BotDbContext(options);
 
         _factory = Substitute.For<IBotDbContextFactory>();
-        _factory.CreateDbContextAsync().Returns(Task.FromResult(_db));
+        _factory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(_db));
 
         _imageService = Substitute.For<IImageService>();
         _randomService = Substitute.For<IRandomService>();
@@ -57,7 +57,7 @@ public class AddedCommandsManagerTest
         context.RoomId.Returns("franais");
 
         // Act
-        await _manager.TryExecuteAddedCommand("doesNotExist", context);
+        await _manager.TryExecuteAddedCommand("doesNotExist", context, CancellationToken.None);
 
         // Assert
         context.DidNotReceive().Reply(Arg.Any<string>(), Arg.Any<bool>());
@@ -72,11 +72,11 @@ public class AddedCommandsManagerTest
         context.RoomId.Returns("franais");
         await AddCommandAsync("imageCommand", "franais", "https://example.com/image.png");
 
-        _imageService.GetRemoteImageDimensions(Arg.Any<string>())
+        _imageService.GetRemoteImageDimensions(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult((400, 300)));
 
         // Act
-        await _manager.TryExecuteAddedCommand("imageCommand", context);
+        await _manager.TryExecuteAddedCommand("imageCommand", context, CancellationToken.None);
 
         // Assert
         context.Received().ReplyHtml(
@@ -92,7 +92,7 @@ public class AddedCommandsManagerTest
 
         await AddCommandAsync("text", "franais", "Hello!");
 
-        await _manager.TryExecuteAddedCommand("text", context);
+        await _manager.TryExecuteAddedCommand("text", context, CancellationToken.None);
 
         context.Received().Reply("Hello!", true);
     }
@@ -105,10 +105,10 @@ public class AddedCommandsManagerTest
 
         await AddCommandAsync("large", "franais", "https://example.com/large.png");
 
-        _imageService.GetRemoteImageDimensions("https://example.com/large.png")
+        _imageService.GetRemoteImageDimensions("https://example.com/large.png", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult((800, 600)));
 
-        await _manager.TryExecuteAddedCommand("large", context);
+        await _manager.TryExecuteAddedCommand("large", context, CancellationToken.None);
 
         context.Received().ReplyHtml(
             Arg.Is<string>(s => s.Contains("width=\"400\" height=\"300\"")),
@@ -123,10 +123,10 @@ public class AddedCommandsManagerTest
 
         await AddCommandAsync("small", "franais", "https://example.com/small.png");
 
-        _imageService.GetRemoteImageDimensions("https://example.com/small.png")
+        _imageService.GetRemoteImageDimensions("https://example.com/small.png", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult((200, 150)));
 
-        await _manager.TryExecuteAddedCommand("small", context);
+        await _manager.TryExecuteAddedCommand("small", context, CancellationToken.None);
 
         context.Received().ReplyHtml(
             Arg.Is<string>(s => s.Contains("width=\"200\" height=\"150\"")),
@@ -139,7 +139,7 @@ public class AddedCommandsManagerTest
         var context = Substitute.For<IContext>();
         var command = new AddedCommand { Id = "cmd", RoomId = "franais", Content = "Hello!" };
 
-        await _manager.ExecuteAddedCommand(command, context);
+        await _manager.ExecuteAddedCommand(command, context, CancellationToken.None);
 
         context.Received().Reply("Hello!", true);
     }
@@ -150,10 +150,10 @@ public class AddedCommandsManagerTest
         var context = Substitute.For<IContext>();
         var command = new AddedCommand { Id = "img", RoomId = "franais", Content = "https://example.com/image.png" };
 
-        _imageService.GetRemoteImageDimensions(Arg.Any<string>())
+        _imageService.GetRemoteImageDimensions(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult((400, 300)));
 
-        await _manager.ExecuteAddedCommand(command, context);
+        await _manager.ExecuteAddedCommand(command, context, CancellationToken.None);
 
         context.Received().ReplyHtml(
             Arg.Is<string>(s => s.Contains("https://example.com/image.png")),

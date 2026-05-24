@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Telemetry;
@@ -36,11 +37,12 @@ public class HandlerManager : IHandlerManager
         CancellationToken cancellationToken = default)
     {
         var messageType = parts.Length > 1 ? parts[1] : null;
+        var adequateHandlers = _handlers
+            .Values
+            .Where(handler => IsHandlerAdequate(handler, messageType));
+
         await Task.WhenAll(
-            _handlers
-                .Values
-                .Where(handler => IsHandlerAdequate(handler, messageType))
-                .Select(handler => TryHandleMessageAsync(parts, roomId, handler, cancellationToken))
+            adequateHandlers.Select(handler => TryHandleMessageAsync(parts, roomId, handler, cancellationToken))
         );
     }
 

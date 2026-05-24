@@ -237,7 +237,7 @@ public class CommandExecutorTest
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
 
         // Assert
-        await _addedCommandsManager.Received(1).TryExecuteAddedCommand(commandName, _context);
+        await _addedCommandsManager.Received(1).TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -252,7 +252,7 @@ public class CommandExecutorTest
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
 
         // Assert
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, _context);
+        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>());
     }
 
 
@@ -269,7 +269,7 @@ public class CommandExecutorTest
         await _commandExecutor.TryExecuteCommandAsync(commandName, context);
 
         // Assert
-        await _addedCommandsManager.Received().TryExecuteAddedCommand(commandName, context);
+        await _addedCommandsManager.Received().TryExecuteAddedCommand(commandName, context, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -283,7 +283,7 @@ public class CommandExecutorTest
         command.Aliases.Returns(Array.Empty<string>());
         _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
         _dependencyContainerService.GetAllNamedRegistrations<ICommand>().Returns([command]);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context).Returns(false);
+        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
         room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
@@ -317,7 +317,7 @@ public class CommandExecutorTest
         // Assert
         _context.Received(1)
             .ReplyLocalizedMessage("command_autocorrect_suggestion", commandName, "help");
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, _context);
+        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>());
         await room.DidNotReceive()
             .GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>());
     }
@@ -329,7 +329,7 @@ public class CommandExecutorTest
         var commandName = "hep";
         var room = Substitute.For<IRoom>();
         _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context).Returns(false);
+        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
         room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
@@ -350,7 +350,7 @@ public class CommandExecutorTest
         var commandName = "customCommand";
         var room = Substitute.For<IRoom>();
         _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context).Returns(true);
+        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(true);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
 
@@ -432,7 +432,7 @@ public class CommandExecutorTest
         await _commandExecutor.TryExecuteCommandAsync(commandName, context);
 
         // Assert
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, context);
+        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, context, Arg.Any<CancellationToken>());
         _dependencyContainerService.DidNotReceive().ResolveNamed<ICommand>(commandName);
     }
 }

@@ -30,25 +30,26 @@ public class AddedCommandsManager : IAddedCommandsManager
         _randomService = randomService;
     }
 
-    public async Task<bool> TryExecuteAddedCommand(string commandName, IContext context)
+    public async Task<bool> TryExecuteAddedCommand(string commandName, IContext context,
+        CancellationToken cancellationToken)
     {
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var command = await dbContext.AddedCommands.FindAsync(commandName, context.RoomId);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var command = await dbContext.AddedCommands.FindAsync([commandName, context.RoomId], cancellationToken);
         if (command == null)
         {
             return false;
         }
 
-        await ExecuteAddedCommand(command, context);
+        await ExecuteAddedCommand(command, context, cancellationToken);
         return true;
     }
 
-    public async Task ExecuteAddedCommand(AddedCommand command, IContext context)
+    public async Task ExecuteAddedCommand(AddedCommand command, IContext context, CancellationToken cancellationToken)
     {
         var content = command.Content;
         if (content.IsValidImageLink())
         {
-            await DisplayRemoteImage(context, content);
+            await DisplayRemoteImage(context, content, cancellationToken);
             return;
         }
 
@@ -56,9 +57,9 @@ public class AddedCommandsManager : IAddedCommandsManager
         context.Reply(content, rankAware: true);
     }
 
-    private async Task DisplayRemoteImage(IContext context, string content)
+    private async Task DisplayRemoteImage(IContext context, string content, CancellationToken cancellationToken)
     {
-        var (width, height) = await _imageService.GetRemoteImageDimensions(content);
+        var (width, height) = await _imageService.GetRemoteImageDimensions(content, cancellationToken);
         (width, height) = ImageUtils.ResizeWithSameAspectRatio(width, height, MAX_WIDTH, MAX_HEIGHT);
         context.ReplyHtml($"""<img src="{content}" width="{width}" height="{height}" />""", rankAware: true);
     }

@@ -38,7 +38,7 @@ public class RandomCustomCommand : Command
                 .AsNoTracking()
                 .ToListAsync(cancellationToken);
             var randomCommand = _randomService.RandomElement(commands);
-            await _addedCommandsManager.ExecuteAddedCommand(randomCommand, context);
+            await _addedCommandsManager.ExecuteAddedCommand(randomCommand, context, cancellationToken);
         }
         catch (Exception exception)
         {

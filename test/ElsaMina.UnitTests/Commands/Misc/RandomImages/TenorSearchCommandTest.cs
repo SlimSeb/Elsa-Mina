@@ -1,6 +1,8 @@
 using System.Globalization;
+using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Misc.RandomImages;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
@@ -15,6 +17,8 @@ public class TenorSearchCommandTest
     private ITenorService _tenorService;
     private IConfiguration _configuration;
     private ITemplatesManager _templatesManager;
+    private IClockService _clockService;
+    private IArcadeEventsService _eventsService;
     private IRoom _room;
     private TenorSearchCommand _command;
 
@@ -24,25 +28,32 @@ public class TenorSearchCommandTest
         _tenorService = Substitute.For<ITenorService>();
         _configuration = Substitute.For<IConfiguration>();
         _templatesManager = Substitute.For<ITemplatesManager>();
+        _eventsService = Substitute.For<IArcadeEventsService>();
+        _clockService = Substitute.For<IClockService>();
         _room = Substitute.For<IRoom>();
 
         _configuration.Trigger.Returns("-");
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("<html/>");
         _room.GetParameterValueAsync(Parameter.TenorGifEnabled, Arg.Any<CancellationToken>())
             .Returns("true");
+        _clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
 
-        _command = new TenorSearchCommand(_tenorService, _configuration, _templatesManager);
+        _command = new TenorSearchCommand(_tenorService, _configuration, _templatesManager, _clockService,
+            _eventsService);
     }
 
-    private IContext MakeContext(string target)
+    private IContext MakeContext(string target, string roomId = null, string userId = null)
     {
+        roomId ??= Guid.NewGuid().ToString();
+        userId ??= Guid.NewGuid().ToString();
         var context = Substitute.For<IContext>();
         var user = Substitute.For<IUser>();
-        user.UserId.Returns("testuser");
+        user.UserId.Returns(userId);
         context.Sender.Returns(user);
         context.Target.Returns(target);
         context.Culture.Returns(CultureInfo.InvariantCulture);
         context.Room.Returns(_room);
+        context.RoomId.Returns(roomId);
         return context;
     }
 
@@ -50,6 +61,82 @@ public class TenorSearchCommandTest
     public void Test_RequiredRank_ShouldBeRegular()
     {
         Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Regular));
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyErrorMessage_WhenArcadeGamesAreMuted()
+    {
+        var roomId = Guid.NewGuid().ToString();
+        var now = DateTimeOffset.UtcNow;
+        _clockService.CurrentUtcDateTimeOffset.Returns(now);
+        _eventsService.AreGamesMuted(roomId).Returns(true);
+        var firstContext = MakeContext("cats", roomId, Guid.NewGuid().ToString());
+        
+        await _command.RunAsync(firstContext);
+        
+        firstContext.Received(1).ReplyLocalizedMessage("tenorgif_muted_for_events");
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldNotSendGif_WhenRoomIsOnCooldown()
+    {
+        var roomId = Guid.NewGuid().ToString();
+        var now = DateTimeOffset.UtcNow;
+        _clockService.CurrentUtcDateTimeOffset.Returns(now);
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
+
+        var firstContext = MakeContext("cats", roomId, Guid.NewGuid().ToString());
+        await _command.RunAsync(firstContext);
+        firstContext.Received(1).SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+
+        var secondContext = MakeContext("dogs", roomId, Guid.NewGuid().ToString());
+        await _command.RunAsync(secondContext);
+
+        secondContext.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldNotSendGif_WhenUserIsOnCooldown()
+    {
+        var userId = Guid.NewGuid().ToString();
+        var now = DateTimeOffset.UtcNow;
+        _clockService.CurrentUtcDateTimeOffset.Returns(now);
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
+
+        var firstContext = MakeContext("cats", Guid.NewGuid().ToString(), userId);
+        await _command.RunAsync(firstContext);
+        firstContext.Received(1).SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+
+        _clockService.CurrentUtcDateTimeOffset.Returns(now.AddMinutes(5));
+        var secondContext = MakeContext("dogs", Guid.NewGuid().ToString(), userId);
+        await _command.RunAsync(secondContext);
+
+        secondContext.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldSendGif_WhenBothCooldownsHaveExpired()
+    {
+        var roomId = Guid.NewGuid().ToString();
+        var userId = Guid.NewGuid().ToString();
+        var start = DateTimeOffset.UtcNow;
+        _clockService.CurrentUtcDateTimeOffset.Returns(start);
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
+
+        var firstContext = MakeContext("cats", roomId, userId);
+        await _command.RunAsync(firstContext);
+
+        _clockService.CurrentUtcDateTimeOffset.Returns(start.AddHours(1));
+        var secondContext = MakeContext("dogs", roomId, userId);
+        await _command.RunAsync(secondContext);
+
+        secondContext.Received(1).SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
 
     [Test]
@@ -88,7 +175,8 @@ public class TenorSearchCommandTest
     public async Task Test_RunAsync_ShouldReplyError_WhenTenorReturnsNoResults()
     {
         var context = MakeContext("cats");
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
             .Returns([]);
 
         await _command.RunAsync(context);
@@ -101,19 +189,21 @@ public class TenorSearchCommandTest
     public async Task Test_RunAsync_ShouldSendPrivateHtml_WhenTenorReturnsResults()
     {
         var context = MakeContext("cats");
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
             .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
 
         await _command.RunAsync(context);
 
-        context.Received(1).SendHtmlTo("testuser", Arg.Any<string>(), Arg.Any<string>());
+        context.Received(1).SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
 
     [Test]
     public async Task Test_RunAsync_ShouldFetchGifsWithCorrectSearchTerm()
     {
         var context = MakeContext("  funny cats  ");
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
             .Returns([]);
 
         await _command.RunAsync(context);
@@ -126,7 +216,8 @@ public class TenorSearchCommandTest
     public async Task Test_RunAsync_ShouldRenderTemplate_WithCorrectViewModel()
     {
         var context = MakeContext("dogs");
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
             .Returns([
                 new TenorMediaInfo("https://media.tenor.com/a.gif", 400, 200),
                 new TenorMediaInfo("https://media.tenor.com/b.gif", 300, 150)
