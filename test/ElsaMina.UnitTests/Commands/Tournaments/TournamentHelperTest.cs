@@ -4,6 +4,91 @@ namespace ElsaMina.UnitTests.Commands.Tournaments;
 
 public class TournamentHelperTest
 {
+    private const string ROUND_ROBIN_JSON =
+        """{"results":[["chinchi !"],["RULT61 Sulfu"],["diptansh V"],["Animeshpokemon21"]],"format":"Troubadour du Fun","generator":"Round Robin","bracketData":{"type":"table","tableHeaders":{"cols":["chinchi !","diptansh V","RULT61 Sulfu","Animeshpokemon21"],"rows":["chinchi !","diptansh V","RULT61 Sulfu","Animeshpokemon21"]},"tableContents":[[null,null,null,null],[{"state":"finished","result":"loss","score":[0,1]},null,null,null],[{"state":"finished","result":"loss","score":[0,0]},{"state":"finished","result":"win","score":[1,0]},null,null],[{"state":"finished","result":"loss","score":[0,1]},{"state":"finished","result":"loss","score":[0,1]},{"state":"finished","result":"loss","score":[3,3]},null]],"scores":[3,1,2,0]}}""";
+
+    [Test]
+    public void Test_ParseTourResults_ShouldReturnNull_WhenGeneratorIsUnknown()
+    {
+        // Arrange
+        var json = """{"results":[["PlayerA"]],"format":"Some Format","generator":"Double Elimination","bracketData":{}}""";
+
+        // Act
+        var results = TournamentHelper.ParseTourResults(json);
+
+        // Assert
+        Assert.That(results, Is.Null);
+    }
+
+    [Test]
+    public void Test_ParseTourResults_ShouldParseRoundRobinWinner()
+    {
+        // Act
+        var results = TournamentHelper.ParseTourResults(ROUND_ROBIN_JSON);
+
+        // Assert
+        Assert.That(results.Winner, Is.EqualTo("chinchi"));
+    }
+
+    [Test]
+    public void Test_ParseTourResults_ShouldParseRoundRobinRunnerUp()
+    {
+        // Act
+        var results = TournamentHelper.ParseTourResults(ROUND_ROBIN_JSON);
+
+        // Assert
+        Assert.That(results.RunnerUp, Is.EqualTo("rult61sulfu"));
+    }
+
+    [Test]
+    public void Test_ParseTourResults_ShouldParseRoundRobinSemiFinalists()
+    {
+        // Act
+        var results = TournamentHelper.ParseTourResults(ROUND_ROBIN_JSON);
+
+        // Assert
+        Assert.That(results.SemiFinalists, Is.EquivalentTo(new List<string> { "diptanshv", "animeshpokemon21" }));
+    }
+
+    [Test]
+    public void Test_ParseTourResults_ShouldParseRoundRobinFormat()
+    {
+        // Act
+        var results = TournamentHelper.ParseTourResults(ROUND_ROBIN_JSON);
+
+        // Assert
+        Assert.That(results.Format, Is.EqualTo("Troubadour du Fun"));
+    }
+
+    [Test]
+    public void Test_ParseTourResults_ShouldParseRoundRobinPlayers()
+    {
+        // Act
+        var results = TournamentHelper.ParseTourResults(ROUND_ROBIN_JSON);
+
+        // Assert
+        Assert.That(results.Players, Is.EquivalentTo(new List<string>
+        {
+            "chinchi !", "diptansh V", "RULT61 Sulfu", "Animeshpokemon21"
+        }));
+    }
+
+    [Test]
+    public void Test_ParseTourResults_ShouldParseRoundRobinWinsCount()
+    {
+        // Act
+        var results = TournamentHelper.ParseTourResults(ROUND_ROBIN_JSON);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(results.WinsCount["chinchi"], Is.EqualTo(3));
+            Assert.That(results.WinsCount["diptanshv"], Is.EqualTo(1));
+            Assert.That(results.WinsCount["rult61sulfu"], Is.EqualTo(2));
+            Assert.That(results.WinsCount["animeshpokemon21"], Is.EqualTo(0));
+        }
+    }
+
     [Test]
     public void Test_ParseTourResults_ShouldParseResultsFromJson()
     {

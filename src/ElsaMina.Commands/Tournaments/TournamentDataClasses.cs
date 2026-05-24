@@ -35,10 +35,25 @@ public class TournamentNode
     public List<TournamentNode> Children { get; set; } = [];
 }
 
+public class RoundRobinTableHeaders
+{
+    [JsonProperty("cols")]
+    public List<string> Cols { get; set; } = [];
+
+    [JsonProperty("rows")]
+    public List<string> Rows { get; set; } = [];
+}
+
 public class BracketData
 {
     [JsonProperty("rootNode")]
     public TournamentNode RootNode { get; set; }
+
+    [JsonProperty("tableHeaders")]
+    public RoundRobinTableHeaders TableHeaders { get; set; }
+
+    [JsonProperty("scores")]
+    public List<int> Scores { get; set; } = [];
 }
 
 public class TournamentData
