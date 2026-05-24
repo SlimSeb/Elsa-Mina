@@ -1,18 +1,19 @@
+@using ElsaMina.Core.Services.Templates
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Shop.ShopViewModel>
 
 @{
-    const string tableStyle = "border-collapse: collapse; width: 100%";
+    const string tableStyle = $"border-collapse: collapse; width: 100%; border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
     const string cellStyle = "border: 1px solid #68A; text-align: left; padding: 4px";
     const string headerRowStyle = "border: 1px solid #68A; text-align: center; padding: 0; height: 1px; background-color: rgba(102, 136, 170, 0.45); font-style: italic";
     const string headerStyle = "border: 1px solid #68A; text-align: center";
 }
-<table border="1" style="@tableStyle">
+<table style="@tableStyle">
     <tr style="@headerRowStyle">
         <th style="@headerStyle">@GetString("shop_tier_column")</th>
         <th style="@headerStyle">@GetString("shop_article_column")</th>
         <th style="@headerStyle">@GetString("shop_price_column")</th>
     </tr>
-    @foreach (var (palier, articles) in Model.Items)
+    @foreach (var (tier, articles) in Model.Items)
     {
         for (var index = 0; index < articles.Count; index++)
         {
@@ -21,10 +22,10 @@
                 <td style="@cellStyle">
                     @if (index == 0)
                     {
-                        <b>@GetString("shop_tier_label") @palier</b>
+                        <b>@GetString("shop_tier_label") @tier</b>
                     }
                 </td>
-                <td style="@cellStyle">@article.Article</td>
+                <td style="@cellStyle">@Raw(article.Article)</td>
                 <td style="@cellStyle">@article.Price @GetString("shop_points_unit")</td>
             </tr>
         }
