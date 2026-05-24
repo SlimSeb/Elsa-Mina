@@ -66,8 +66,10 @@ public class LadderGraphCommand : Command
             var showTrend = context.Command is "elotrend" or "laddertrend";
             var slopeLabelFormat = context.GetString("ladder_graph_trend_slope");
             var rSquaredLabelFormat = context.GetString("ladder_graph_trend_r_squared");
+            var stdDevLabelFormat = context.GetString("ladder_graph_std_dev");
+            var meanLabelFormat = context.GetString("ladder_graph_mean");
             var pngBytes = GenerateChart(xs, ys, chartTitle, xLabel, yLabel, context.Culture, showTrend,
-                slopeLabelFormat, rSquaredLabelFormat);
+                slopeLabelFormat, rSquaredLabelFormat, stdDevLabelFormat, meanLabelFormat);
 
             var fileName = $"elographs/elograph-{userId}-{format}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.png";
             var url = await _fileSharingService.CreateFileAsync(pngBytes, fileName,
@@ -93,7 +95,8 @@ public class LadderGraphCommand : Command
     }
 
     private static byte[] GenerateChart(double[] xs, double[] ys, string title, string xLabel, string yLabel,
-        CultureInfo culture, bool showTrend, string slopeLabelFormat, string rSquaredLabelFormat)
+        CultureInfo culture, bool showTrend, string slopeLabelFormat, string rSquaredLabelFormat,
+        string stdDevLabelFormat, string meanLabelFormat)
     {
         var previousCulture = CultureInfo.CurrentCulture;
         try
@@ -102,9 +105,25 @@ public class LadderGraphCommand : Command
 
             var plot = new Plot();
 
+            var mean = ys.Average();
+            var stdDev = ComputeStdDev(ys, mean);
+
+            var band = plot.Add.Rectangle(xs[0], xs[^1], mean - stdDev, mean + stdDev);
+            band.FillColor = Colors.Gray.WithAlpha(0.15f);
+            band.LineColor = Colors.Transparent;
+
+            var meanHLine = plot.Add.HorizontalLine(mean);
+            meanHLine.Color = Colors.Gray.WithAlpha(0.5f);
+            meanHLine.LinePattern = LinePattern.Dashed;
+            meanHLine.LineWidth = 1;
+
             var scatter = plot.Add.Scatter(xs, ys);
             scatter.LineWidth = 2;
             scatter.MarkerSize = 5;
+
+            var annotationCorner = FindBestAnnotationCorner(xs, ys);
+            var meanLine2 = string.Format(meanLabelFormat, $"{mean:F1}");
+            var stdDevLine = string.Format(stdDevLabelFormat, $"{stdDev:F1}");
 
             if (showTrend)
             {
@@ -115,8 +134,13 @@ public class LadderGraphCommand : Command
 
                 var slopeLine = string.Format(slopeLabelFormat, $"{slope:+0.##;-0.##}");
                 var rSquaredLine = string.Format(rSquaredLabelFormat, $"{rSquared:F4}");
-                var annotation = plot.Add.Annotation($"{slopeLine}\n{rSquaredLine}");
-                annotation.Alignment = Alignment.UpperRight;
+                var annotation = plot.Add.Annotation($"{meanLine2}\n{stdDevLine}\n{slopeLine}\n{rSquaredLine}");
+                annotation.Alignment = annotationCorner;
+            }
+            else
+            {
+                var annotation = plot.Add.Annotation($"{meanLine2}\n{stdDevLine}");
+                annotation.Alignment = annotationCorner;
             }
 
             plot.Axes.DateTimeTicksBottom();
@@ -130,6 +154,39 @@ public class LadderGraphCommand : Command
         {
             CultureInfo.CurrentCulture = previousCulture;
         }
+    }
+
+    private static double ComputeStdDev(double[] ys, double mean)
+    {
+        var variance = ys.Sum(y => (y - mean) * (y - mean)) / ys.Length;
+        return Math.Sqrt(variance);
+    }
+
+    private static Alignment FindBestAnnotationCorner(double[] xs, double[] ys)
+    {
+        var midX = (xs[0] + xs[^1]) / 2;
+        var midY = (ys.Min() + ys.Max()) / 2;
+
+        var topRight = 0;
+        var topLeft = 0;
+        var bottomRight = 0;
+        var bottomLeft = 0;
+
+        for (var i = 0; i < xs.Length; i++)
+        {
+            var isRight = xs[i] >= midX;
+            var isTop = ys[i] >= midY;
+            if (isRight && isTop) topRight++;
+            else if (!isRight && isTop) topLeft++;
+            else if (isRight) bottomRight++;
+            else bottomLeft++;
+        }
+
+        var min = Math.Min(Math.Min(topRight, topLeft), Math.Min(bottomRight, bottomLeft));
+        if (min == bottomRight) return Alignment.LowerRight;
+        if (min == bottomLeft) return Alignment.LowerLeft;
+        if (min == topLeft) return Alignment.UpperLeft;
+        return Alignment.UpperRight;
     }
 
     // In this context, R² answers: "how much of the ELO variance is 

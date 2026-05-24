@@ -151,49 +151,55 @@
         <value>Si è verificato un errore durante il recupero dei dati di utilizzo.</value>
     </data>
     <data name="ladder_graph_help" xml:space="preserve">
-        <value>Genera un grafico dello storico ELO di un giocatore. Utilizzo: -ladderhistory &lt;formato&gt;, &lt;utente&gt;</value>
+        <value>Genera un grafico dello storico Elo di un giocatore. Utilizzo: -ladderhistory &lt;formato&gt;, &lt;utente&gt;</value>
     </data>
     <data name="ladder_graph_chart_title" xml:space="preserve">
-        <value>Storico ELO — {0} ({1})</value>
+        <value>Storico Elo — {0} ({1})</value>
     </data>
     <data name="ladder_graph_chart_x_label" xml:space="preserve">
         <value>Data</value>
     </data>
     <data name="ladder_graph_chart_y_label" xml:space="preserve">
-        <value>ELO</value>
+        <value>Elo</value>
     </data>
     <data name="ladder_graph_not_enough_data" xml:space="preserve">
-        <value>Storico ELO insufficiente per {0}. I dati vengono registrati ogni ora per gli utenti monitorati.</value>
+        <value>Storico Elo insufficiente per {0}. I dati vengono registrati ogni ora per gli utenti monitorati.</value>
     </data>
     <data name="ladder_graph_upload_failed" xml:space="preserve">
         <value>Caricamento del grafico fallito. Riprova più tardi.</value>
     </data>
     <data name="ladder_graph_trend_slope" xml:space="preserve">
-        <value>pendenza = {0} ELO/giorno</value>
+        <value>pendenza = {0} Elo/giorno</value>
     </data>
     <data name="ladder_graph_trend_r_squared" xml:space="preserve">
         <value>R² = {0}</value>
     </data>
+    <data name="ladder_graph_std_dev" xml:space="preserve">
+        <value>σ = {0} Elo</value>
+    </data>
+    <data name="ladder_graph_mean" xml:space="preserve">
+        <value>media = {0} Elo</value>
+    </data>
     <data name="track_elo_progression_help" xml:space="preserve">
-        <value>Monitora la progressione ELO di un giocatore in un formato. Sintassi: -trackelo &lt;formato&gt;, &lt;utente&gt;</value>
+        <value>Monitora la progressione Elo di un giocatore in un formato. Sintassi: -trackelo &lt;formato&gt;, &lt;utente&gt;</value>
     </data>
     <data name="track_elo_progression_success" xml:space="preserve">
-        <value>Ora si monitorizza la progressione ELO di {0} in {1}.</value>
+        <value>Ora si monitorizza la progressione Elo di {0} in {1}.</value>
     </data>
     <data name="track_elo_progression_already_tracked" xml:space="preserve">
         <value>{0} è già monitorato in {1}.</value>
     </data>
     <data name="untrack_elo_progression_help" xml:space="preserve">
-        <value>Smette di monitorare la progressione ELO di un giocatore. Sintassi: -untrackelo &lt;formato&gt;, &lt;utente&gt;</value>
+        <value>Smette di monitorare la progressione Elo di un giocatore. Sintassi: -untrackelo &lt;formato&gt;, &lt;utente&gt;</value>
     </data>
     <data name="untrack_elo_progression_success" xml:space="preserve">
-        <value>Monitoraggio della progressione ELO di {0} in {1} interrotto.</value>
+        <value>Monitoraggio della progressione Elo di {0} in {1} interrotto.</value>
     </data>
     <data name="untrack_elo_progression_not_found" xml:space="preserve">
         <value>{0} non è attualmente monitorato in {1}.</value>
     </data>
     <data name="list_elo_progressions_none" xml:space="preserve">
-        <value>Nessun utente è attualmente monitorato per la progressione ELO.</value>
+        <value>Nessun utente è attualmente monitorato per la progressione Elo.</value>
     </data>
     <data name="list_elo_progressions_entry" xml:space="preserve">
         <value>{0} in {1}</value>
