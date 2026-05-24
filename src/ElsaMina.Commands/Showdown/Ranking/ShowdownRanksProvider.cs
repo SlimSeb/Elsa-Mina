@@ -1,4 +1,5 @@
 using ElsaMina.Core.Services.Http;
+using ElsaMina.Core.Services.System;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Showdown.Ranking;
@@ -9,20 +10,22 @@ public class ShowdownRanksProvider : IShowdownRanksProvider
         "https://play.pokemonshowdown.com/~~showdown/action.php?act=ladderget&user={0}";
 
     private const int MAX_ATTEMPTS = 3;
-    private static readonly TimeSpan DEFAULT_RETRY_DELAY = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan DEFAULT_RETRY_DELAY = TimeSpan.FromSeconds(2);
 
     private readonly IHttpService _httpService;
     private readonly TimeSpan _retryDelay;
+    private readonly ISystemService _systemService;
 
-    public ShowdownRanksProvider(IHttpService httpService)
-        : this(httpService, DEFAULT_RETRY_DELAY)
+    public ShowdownRanksProvider(IHttpService httpService, ISystemService systemService)
+        : this(httpService, systemService, DEFAULT_RETRY_DELAY)
     {
     }
 
-    public ShowdownRanksProvider(IHttpService httpService, TimeSpan retryDelay)
+    public ShowdownRanksProvider(IHttpService httpService, ISystemService systemService, TimeSpan retryDelay)
     {
         _httpService = httpService;
         _retryDelay = retryDelay;
+        _systemService = systemService;
     }
 
     public async Task<IEnumerable<RankingDataDto>> GetRankingDataAsync(string userId,
@@ -34,7 +37,7 @@ public class ShowdownRanksProvider : IShowdownRanksProvider
         {
             if (attempt > 0)
             {
-                await Task.Delay(_retryDelay, cancellationToken);
+                await _systemService.SleepAsync(_retryDelay, cancellationToken);
             }
 
             try

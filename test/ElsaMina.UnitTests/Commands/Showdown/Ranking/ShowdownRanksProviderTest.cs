@@ -1,5 +1,6 @@
 using ElsaMina.Commands.Showdown.Ranking;
 using ElsaMina.Core.Services.Http;
+using ElsaMina.Core.Services.System;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Showdown.Ranking;
@@ -11,6 +12,7 @@ public class ShowdownRanksProviderTest
         "https://play.pokemonshowdown.com/~~showdown/action.php?act=ladderget&user={0}";
 
     private IHttpService _httpService;
+    private ISystemService _systemService;
     private ShowdownRanksProvider _provider;
 
     private static readonly TimeSpan FAST_RETRY = TimeSpan.FromMilliseconds(1);
@@ -19,7 +21,8 @@ public class ShowdownRanksProviderTest
     public void SetUp()
     {
         _httpService = Substitute.For<IHttpService>();
-        _provider = new ShowdownRanksProvider(_httpService, FAST_RETRY);
+        _systemService = Substitute.For<ISystemService>();
+        _provider = new ShowdownRanksProvider(_httpService, _systemService, FAST_RETRY);
     }
 
     [Test]
