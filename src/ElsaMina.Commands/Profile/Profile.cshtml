@@ -3,218 +3,191 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Profile.ProfileViewModel>
 
 @{
-    var borderColor = Model.ProfileBorderColor ?? StyleConstants.PRIMARY_BORDER_COLOR;
-    var border = $"border: 1px solid {borderColor};";
-
     var bgColor = !string.IsNullOrEmpty(Model.ProfileBackgroundColor)
         ? Model.ProfileBackgroundColor
-        : StyleConstants.PRIMARY_BACKGROUND_COLOR;
+        : "#1a1a2e";
 
-    var headerStyle = $"{border} padding: 4x; text-align: center; font-style: italic; background: {bgColor};";
-    var avatarCellStyle = $"{border} padding: 0px; width: 80px; text-align: center;";
-    var contentCellStyle = $"{border} padding: 4px 12px; text-align: left; vertical-align: top;";
-    var gameRecordsCellStyle = $"{border} padding: 4px 8px; text-align: left; vertical-align: top; white-space: nowrap;";
-    var badgesCellStyle = $"{border} padding: 4px; width: 56px; text-align: center;";
-    var bioCellStyle = $"{border} padding: 4px; text-align: start; background: {bgColor};";
+    var rankNameKey = Model.UserRoomRank switch
+    {
+        '#' => "rank_owner",
+        '*' => "rank_bot",
+        '@' => "rank_mod",
+        '^' => "rank_prizewinner",
+        '%' => "rank_driver",
+        '+' => "rank_voice",
+        '★' => "rank_host",
+        '♡' => "rank_former_staff",
+        _ => null
+    };
 }
 
-<table style="border-collapse: collapse; width: 100%;">
-    <thead>
-    <tr>
-        <th style="@headerStyle">
-            @GetString("profile_header_avatar")
-        </th>
-        <th style="@headerStyle">
-            @GetString("profile_header_info")
-        </th>
-        <th style="@headerStyle">
-            @GetString("profile_game_records")
-        </th>
-        <th style="@headerStyle">
-            @GetString("profile_header_badges")
-        </th>
-    </tr>
-    </thead>
+<table style="border-collapse:collapse;background:@bgColor;border:1px solid #2e2e4e;border-radius:6px;font-size:11px;color:#e0e0e0;font-family:monospace;">
     <tbody>
     <tr>
-        <td style="@avatarCellStyle">
+        <td style="padding:8px 8px 8px 10px;vertical-align:top;width:48px;text-align:center;">
             <img
                 class="pixelated"
-                width="80"
-                height="80"
+                width="44"
+                height="44"
                 src="@Model.Avatar"
-                alt="@Model.UserName Avatar"/>
+                alt="@Model.UserName Avatar"
+                style="display:block;border-radius:3px;"/>
+            @if (Model.Badges != null && Model.Badges.Any())
+            {
+                <div style="margin-top:4px;">
+                    @foreach (var badge in Model.Badges)
+                    {
+                        <span style="display:inline-block;margin:1px;">
+                            @{ await IncludeAsync("Badges/Badge", badge); }
+                        </span>
+                    }
+                </div>
+            }
         </td>
-        <td style="@contentCellStyle">
-            &bullet;
-            <span
-                class="username"
-                data-name="@Model.UserId"
-                style="font-weight: bold; font-style: italic; padding: 2px; color: @Model.UserId.ToColorHexCodeWithCustoms()">
-                @Model.UserName
-            </span>
-            @if (!string.IsNullOrEmpty(Model.ProfileEmoji))
-            {
-                <span style="font-size: 1.1em; margin-left: 2px;">@Raw(Model.ProfileEmoji)</span>
-            }
-            @{
-                var rankNameKey = Model.UserRoomRank switch
+        <td style="padding:8px 12px 8px 4px;vertical-align:top;">
+            <div style="margin-bottom:4px;">
+                <span
+                    class="username"
+                    data-name="@Model.UserId"
+                    style="font-weight:bold;font-size:12px;color:@Model.UserId.ToColorHexCodeWithCustoms();">
+                    @Model.UserName
+                </span>
+                @if (!string.IsNullOrEmpty(Model.ProfileEmoji))
                 {
-                    '#' => "rank_owner",
-                    '*' => "rank_bot",
-                    '@' => "rank_mod",
-                    '^' => "rank_prizewinner",
-                    '%' => "rank_driver",
-                    '+' => "rank_voice",
-                    '★' => "rank_host",
-                    '♡' => "rank_former_staff",
-                    _ => null
-                };
-            }
-            @if (!string.IsNullOrEmpty(rankNameKey))
-            {
-                <span>(@GetString(rankNameKey))</span>
-            }
-            <br/>
+                    <span style="font-size:1.1em;margin-left:3px;">@Raw(Model.ProfileEmoji)</span>
+                }
+                @if (!string.IsNullOrEmpty(rankNameKey))
+                {
+                    <span style="color:#a0a0c0;margin-left:4px;font-size:10px;">(@GetString(rankNameKey))</span>
+                }
+            </div>
+
             @if (!string.IsNullOrEmpty(Model.Status))
             {
-                <span style="text-decoration: underline">@GetString("profile_status")</span>
-                <span>: @Model.Status</span>
-                <br/>
+                <div style="margin-bottom:2px;">
+                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_status"):</span>
+                    <span>@Model.Status</span>
+                </div>
             }
+
             @if (Model.RegisterDate > DateTimeOffset.MinValue)
             {
-                <span style="text-decoration: underline">@GetString("profile_register_date")</span>
-                <span>: @Model.RegisterDate.ToString("d", Model.Culture)</span>
-                <br/>
+                <div style="margin-bottom:2px;">
+                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_register_date"):</span>
+                    <span>@Model.RegisterDate.ToString("d", Model.Culture)</span>
+                </div>
             }
+
             @if (Model.PlayTime > TimeSpan.Zero)
             {
-                <span style="text-decoration: underline">@GetString("profile_play_time")</span>
-                <span>: @Model.PlayTime.ToString(GetString("play_time_format"))</span>
-                <br/>
+                <div style="margin-bottom:2px;">
+                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_play_time"):</span>
+                    <span>@Model.PlayTime.ToString(GetString("play_time_format"))</span>
+                </div>
             }
+
             @if (Model.BestRanking != null)
             {
-                <span style="text-decoration: underline">@GetString("profile_best_rank")</span>
-                <span>: @Model.BestRanking.FormatId (@Model.BestRanking.Elo.ToString("F0", Model.Culture))</span>
-                <br/>
+                <div style="margin-bottom:2px;">
+                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_best_rank"):</span>
+                    <span>@Model.BestRanking.FormatId (@Model.BestRanking.Elo.ToString("F0", Model.Culture))</span>
+                </div>
             }
+
             @if (Model.TournamentRecord != null && Model.TournamentRecord.TournamentsEnteredCount > 0)
             {
                 var record = Model.TournamentRecord;
                 var wl = record.PlayedGames > 0
                     ? GetString("profile_tournament_wl", record.WonGames, record.PlayedGames - record.WonGames)
                     : "-";
-                <span style="text-decoration: underline">@GetString("profile_tournament_records")</span>
-                <span>:
-                    <span title="@GetString("top_tournament_players_wins")">🏆 @record.WinsCount</span>
-                    ·
-                    <span title="@GetString("top_tournament_players_runner_up")">🥈 @record.RunnerUpCount</span>
-                    ·
-                    <span title="@GetString("top_tournament_players_third_place")">🥉 @record.ThirdPlaceCount</span>
-                    ·
-                    <span title="@GetString("top_tournament_players_win_rate")">@wl</span>
-                    ·
-                    <span title="@GetString("top_tournament_players_entered")">(@record.TournamentsEnteredCount)</span>
-                </span>
+                <div style="margin-bottom:2px;">
+                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_tournament_records"):</span>
+                    <span>
+                        <span title="@GetString("top_tournament_players_wins")">🏆 @record.WinsCount</span>
+                        ·
+                        <span title="@GetString("top_tournament_players_runner_up")">🥈 @record.RunnerUpCount</span>
+                        ·
+                        <span title="@GetString("top_tournament_players_third_place")">🥉 @record.ThirdPlaceCount</span>
+                        ·
+                        <span title="@GetString("top_tournament_players_win_rate")">@wl</span>
+                        ·
+                        <span title="@GetString("top_tournament_players_entered")">(@record.TournamentsEnteredCount)</span>
+                    </span>
+                </div>
             }
-        </td>
-        <td style="@gameRecordsCellStyle">
+
             @if (Model.GameRecords != null && Model.GameRecords.HasAnyRecord)
             {
                 var gr = Model.GameRecords;
-                @if (gr.FloodIt != null)
-                {
-                    <span>@GetString("profile_flood_it"):
-                        <span title="@GetString("profile_game_max_level")">Lv. @gr.FloodIt.Level</span>
-                        ·
-                        <span title="@GetString("profile_game_total_stars")">⭐ @gr.FloodIt.TotalStars</span>
-                    </span>
-                    <br/>
-                }
+                <div style="margin-top:4px;border-top:1px solid #2e2e4e;padding-top:4px;">
+                    @if (gr.FloodIt != null)
+                    {
+                        <div style="margin-bottom:2px;">
+                            <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_flood_it"):</span>
+                            <span>
+                                <span title="@GetString("profile_game_max_level")">Lv. @gr.FloodIt.Level</span>
+                                · <span title="@GetString("profile_game_total_stars")">⭐ @gr.FloodIt.TotalStars</span>
+                            </span>
+                        </div>
+                    }
+                    @if (gr.LightsOut != null)
+                    {
+                        <div style="margin-bottom:2px;">
+                            <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_lights_out"):</span>
+                            <span>
+                                <span title="@GetString("profile_game_max_level")">Lv. @gr.LightsOut.Level</span>
+                                · <span title="@GetString("profile_game_total_stars")">⭐ @gr.LightsOut.TotalStars</span>
+                            </span>
+                        </div>
+                    }
+                    @if (gr.VoltorbFlip != null)
+                    {
+                        <div style="margin-bottom:2px;">
+                            <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_voltorb_flip"):</span>
+                            <span>
+                                <span title="@GetString("profile_game_max_level")">Lv. @gr.VoltorbFlip.MaxLevel</span>
+                                · <span title="@GetString("profile_game_coins")">💰 @gr.VoltorbFlip.Coins</span>
+                            </span>
+                        </div>
+                    }
+                    @if (gr.TwentyFortyEight != null)
+                    {
+                        <div style="margin-bottom:2px;">
+                            <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_2048"):</span>
+                            <span>
+                                <span title="@GetString("profile_game_best_score")">@gr.TwentyFortyEight.BestScore</span>
+                                · <span title="@GetString("profile_game_wins")">🏆 @gr.TwentyFortyEight.Wins</span>
+                            </span>
+                        </div>
+                    }
+                    @if (gr.ConnectFour != null)
+                    {
+                        <div style="margin-bottom:2px;">
+                            <span style="color:#6a9fd8;font-weight:bold;">@GetString("c4_game_name"):</span>
+                            <span>
+                                <span title="@GetString("c4_leaderboard_rating")">@gr.ConnectFour.Rating</span>
+                                · <span title="@GetString("c4_leaderboard_wins")">🏆 @gr.ConnectFour.Wins</span>
+                                · <span title="@GetString("c4_leaderboard_losses")">💀 @gr.ConnectFour.Losses</span>
+                                @if (gr.ConnectFour.Draws > 0)
+                                {
+                                    <span>· <span title="@GetString("c4_leaderboard_draws")">🤝 @gr.ConnectFour.Draws</span></span>
+                                }
+                            </span>
+                        </div>
+                    }
+                </div>
+            }
 
-                @if (gr.LightsOut != null)
+            <div style="margin-top:4px;border-top:1px solid #2e2e4e;padding-top:4px;">
+                @if (!string.IsNullOrEmpty(Model.Title))
                 {
-                    <span>@GetString("profile_lights_out"):
-                        <span title="@GetString("profile_game_max_level")">Lv. @gr.LightsOut.Level</span>
-                        ·
-                        <span title="@GetString("profile_game_total_stars")">⭐ @gr.LightsOut.TotalStars</span>
-                    </span>
-                    <br/>
+                    <span style="color:#a0a0c0;font-size:10px;font-style:italic;">@Raw(Model.Title)</span>
                 }
-
-                @if (gr.VoltorbFlip != null)
+                else
                 {
-                    <span>@GetString("profile_voltorb_flip"):
-                        <span title="@GetString("profile_game_max_level")">Lv. @gr.VoltorbFlip.MaxLevel</span>
-                        ·
-                        <span title="@GetString("profile_game_coins")">💰 @gr.VoltorbFlip.Coins</span>
-                    </span>
-                    <br/>
+                    <span style="font-style:italic;color:#606080;font-size:10px;">@GetString("profile_no_title")</span>
                 }
-
-                @if (gr.TwentyFortyEight != null)
-                {
-                    <span>@GetString("profile_2048"):
-                        <span title="@GetString("profile_game_best_score")">@gr.TwentyFortyEight.BestScore</span>
-                        ·
-                        <span title="@GetString("profile_game_wins")">🏆 @gr.TwentyFortyEight.Wins</span>
-                    </span>
-                    <br/>
-                }
-
-                @if (gr.ConnectFour != null)
-                {
-                    <span>@GetString("c4_game_name"):
-                        <span title="@GetString("c4_leaderboard_rating")">@gr.ConnectFour.Rating</span>
-                        ·
-                        <span title="@GetString("c4_leaderboard_wins")">🏆 @gr.ConnectFour.Wins</span>
-                        ·
-                        <span title="@GetString("c4_leaderboard_losses")">💀 @gr.ConnectFour.Losses</span>
-                        @if (gr.ConnectFour.Draws > 0)
-                        {
-                            <span>·</span>
-                            <span title="@GetString("c4_leaderboard_draws")">🤝 @gr.ConnectFour.Draws</span>
-                        }
-                    </span>
-                    <br/>
-                }
-            }
-            else
-            {
-                <span style="font-style: italic">@GetString("profile_no_game_record")</span>
-            }
-        </td>
-        <td style="@badgesCellStyle">
-            @if (Model.Badges != null && Model.Badges.Any())
-            {
-                @foreach (var badge in Model.Badges)
-                {
-                    <span>
-                        @{ await IncludeAsync("Badges/Badge", badge); }
-                    </span>
-                }
-            }
-            else
-            {
-                <span style="font-style: italic">@GetString("profile_no_badge")</span>
-            }
-        </td>
-    </tr>
-    <tr>
-        <td
-            style="@bioCellStyle"
-            colspan="4">
-            @if (!string.IsNullOrEmpty(Model.Title))
-            {
-                <span style="text-decoration: underline">@GetString("profile_title")</span>
-                <span>: @Raw(Model.Title)</span>
-            }
-            else
-            {
-                <span style="font-style: italic">@GetString("profile_no_title")</span>
-            }
+            </div>
         </td>
     </tr>
     </tbody>
