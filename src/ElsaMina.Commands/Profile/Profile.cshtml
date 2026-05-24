@@ -1,5 +1,5 @@
-@using ElsaMina.Core.Services.Templates
 @using ElsaMina.Core.Utils
+@using ElsaMina.DataAccess.Models
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Profile.ProfileViewModel>
 
 @{
@@ -62,6 +62,33 @@
                     <span style="color:#a0a0c0;margin-left:4px;font-size:10px;">(@GetString(rankNameKey))</span>
                 }
             </div>
+
+            @if (Model.IsOnline)
+            {
+                <div style="margin-bottom:2px;">
+                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_online")</span>
+                    <span style="color:#4caf50;">&#9679;</span>
+                </div>
+            }
+            else if (Model.LastSeenDate.HasValue && Model.LastSeenAction.HasValue)
+            {
+                var actionKey = Model.LastSeenAction.Value switch
+                {
+                    UserAction.Leaving => "seen_command_action_leaving",
+                    UserAction.Joining => "seen_command_action_joining",
+                    UserAction.Chatting => "seen_command_action_chatting",
+                    _ => null
+                };
+                <div style="margin-bottom:2px;">
+                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_last_seen"):</span>
+                    <span>@Model.LastSeenDate.Value.ToString("g", Model.Culture)
+                        @if (!string.IsNullOrEmpty(actionKey))
+                        {
+                            <span>(@GetString(actionKey))</span>
+                        }
+                    </span>
+                </div>
+            }
 
             @if (!string.IsNullOrEmpty(Model.Status))
             {

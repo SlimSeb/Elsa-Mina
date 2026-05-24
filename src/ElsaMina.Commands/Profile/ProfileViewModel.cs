@@ -21,4 +21,7 @@ public class ProfileViewModel : LocalizableViewModel
     public TournamentRecord TournamentRecord { get; init; }
     public TimeSpan PlayTime { get; init; }
     public GameRecords GameRecords { get; init; }
+    public bool IsOnline { get; init; }
+    public DateTimeOffset? LastSeenDate { get; init; }
+    public UserAction? LastSeenAction { get; init; }
 }

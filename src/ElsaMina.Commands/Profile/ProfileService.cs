@@ -90,6 +90,11 @@ public class ProfileService : IProfileService
             ConnectFour = connectFourRating
         };
 
+        var isOnline = showdownUserDetails?.Rooms != null;
+        var lastSeenDate = savedUser?.LastOnline.HasValue == true
+            ? TimeZoneInfo.ConvertTime(savedUser.LastOnline.Value, room?.TimeZone ?? TimeZoneInfo.Local)
+            : (DateTimeOffset?)null;
+
         var viewModel = new ProfileViewModel
         {
             Culture = culture,
@@ -107,7 +112,10 @@ public class ProfileService : IProfileService
             BestRanking = bestRanking,
             TournamentRecord = storedUserData?.TournamentRecord,
             PlayTime = storedUserData?.PlayTime ?? TimeSpan.Zero,
-            GameRecords = gameRecords
+            GameRecords = gameRecords,
+            IsOnline = isOnline,
+            LastSeenDate = lastSeenDate,
+            LastSeenAction = savedUser?.LastSeenAction
         };
 
         return await _templatesManager.GetTemplateAsync("Profile/Profile", viewModel);

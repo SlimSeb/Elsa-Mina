@@ -81,6 +81,12 @@
     <data name="allcommands_back" xml:space="preserve">
         <value>Volver</value>
     </data>
+    <data name="profile_online" xml:space="preserve">
+        <value>En línea</value>
+    </data>
+    <data name="profile_last_seen" xml:space="preserve">
+        <value>Última conexión</value>
+    </data>
     <data name="profile_register_date" xml:space="preserve">
         <value>Registrado el</value>
     </data>
