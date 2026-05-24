@@ -58,7 +58,7 @@ public class TournamentBettingService : ITournamentBettingService
         _activeBets[roomId] = [];
         _closingTimes[roomId] = _clockService.CurrentUtcDateTimeOffset.AddSeconds(BETTING_WINDOW_SECONDS);
 
-        var template = await BuildTemplateAsync(roomId, isBettingOpen: true, cancellationToken);
+        var template = await BuildTemplateAsync(roomId, isBettingOpen: true);
         _bot.Say(roomId, $"/adduhtml {HTML_ID_PREFIX}{roomId}, {template}");
     }
 
@@ -86,7 +86,7 @@ public class TournamentBettingService : ITournamentBettingService
         }
 
         bets.Add(new ActiveBet(bettorId, targetPlayerId));
-        await RefreshHtmlAsync(roomId, cancellationToken);
+        await RefreshHtmlAsync(roomId);
         return BetPlacementError.Success;
     }
 
@@ -109,7 +109,7 @@ public class TournamentBettingService : ITournamentBettingService
 
         if (toCancel.Count > 0)
         {
-            await RefreshHtmlAsync(roomId, cancellationToken);
+            await RefreshHtmlAsync(roomId);
         }
 
         return toCancel.Count;
@@ -185,16 +185,15 @@ public class TournamentBettingService : ITournamentBettingService
         return Task.CompletedTask;
     }
 
-    private async Task RefreshHtmlAsync(string roomId, CancellationToken cancellationToken)
+    private async Task RefreshHtmlAsync(string roomId)
     {
         var isBettingOpen = _closingTimes.TryGetValue(roomId, out var closingTime) &&
                             _clockService.CurrentUtcDateTimeOffset <= closingTime;
-        var template = await BuildTemplateAsync(roomId, isBettingOpen, cancellationToken);
+        var template = await BuildTemplateAsync(roomId, isBettingOpen);
         _bot.Say(roomId, $"/changeuhtml {HTML_ID_PREFIX}{roomId}, {template}");
     }
 
-    private async Task<string> BuildTemplateAsync(string roomId, bool isBettingOpen,
-        CancellationToken cancellationToken = default)
+    private async Task<string> BuildTemplateAsync(string roomId, bool isBettingOpen)
     {
         var culture = _roomsManager.GetRoom(roomId)?.Culture;
         var players = _activePlayers.TryGetValue(roomId, out var p) ? p : [];

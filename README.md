@@ -91,12 +91,17 @@ The following scripts are available:
 - **Guessing Games**: Multiple modes: Pokémon descriptions, cries, country capitals, and more
 - **Poke Race**: Multi-player racing mini-game
 - **Slots**: Slot machine mini-game
+- **Blackjack**: Multiplayer blackjack card game with join/hit/stand flow and leaderboard
+- **Flood It**: Color-flooding puzzle game with leaderboard tracking
+- **2048**: Multiplayer 2048 tile game with leaderboard
+- **Rock Paper Scissors**: 2-player RPS game with lobby and result display
 
 ### Tournaments
 - **Weekly Tournament Templates**: 23+ pre-configured formats (OU, RU, BH, AAA, 1v1, ZU, and more)
-- **Random Tournaments**: Create random tournament
+- **Random Tournaments**: Create random tournament (single elimination and round robin)
 - **Tournament Configuration**: Save, edit, and launch custom tournament setups
 - **Tournament Leaderboard**: Track top tournament players per room
+- **Tournament Betting**: Place bets on tournament participants, with winner payouts and a bettor leaderboard
 
 ### Arcade Commands
 - **Event Registration**: Join/leave arcade events, manage participants
@@ -113,6 +118,7 @@ The following scripts are available:
 - **Playtime Tracking**: Per-user playtime with top leaderboard
 - **Join Phrases**: Personalized greeting when entering a room
 - **Alts Detection**: Display known alternate accounts
+- **Streaks**: Track consecutive daily activity streaks with a top leaderboard
 
 ### AI & Media
 - **AI Chat**: Conversational AI with multi-turn history (OpenAI / Google / Mistral)
@@ -120,12 +126,20 @@ The following scripts are available:
 - **YouTube / Dailymotion Search**: Embed video search results
 - **Lyrics Search**: Look up song lyrics via Genius
 - **Wikipedia / Bulbapedia / Pokepedia**: Inline wiki searches
+- **Random Images**: Animal and themed image commands (cat, dog, bird, capybara, and 20+ more) via Unsplash
+- **Tenor GIF Search**: Search and display GIF mosaics from Tenor, with per-user and per-room cooldowns and a room-level enable/disable toggle
+- **URL Previews**: Automatic Open Graph-based link previews in chat
+- **Recipe Search**: Random and keyword-based food recipe lookup via Spoonacular
+- **Random Facts**: Fetch random trivia facts
 
 ### Pokémon Showdown Integration
 - **Ladder Tracking**: Monitor and display ladder rankings in real time
 - **Battle Tracking**: Subscribe to new battles from a subset of players
-- **Rank Display**: Fetch and show player ELO/GXE per format
+- **Rank Display**: Fetch and show player ELO/GXE per format with a visual showcase
+- **ELO History & Graphs**: Track ELO progression over time and render trend-line ladder graphs with mean and standard deviation
+- **Smogon Usage Stats**: Look up Pokémon usage statistics per tier and month
 - **Team Samples**: Add, showcase, and manage team lists per tier
+- **Replay Previews**: Automatic rich preview cards for Pokémon Showdown replay links
 
 ### Room Management
 - **Room Dashboard**: Overview of room configuration and state
@@ -138,9 +152,14 @@ The following scripts are available:
 ### Utilities
 - **Timer / Reminder**: Set countdown timers in chat
 - **Dictionary**: English word definitions
-- **Bitcoin Price**: Live BTC price lookup
+- **Crypto Prices**: Live price lookup for Bitcoin, Ethereum, and Dogecoin
 - **Pokémon Name Translation**: Cross-language Pokémon name lookup
 - **Bug Report**: Inline issue reporting shortcut
+- **Ship**: Compatibility score between two users
+- **League of Legends**: Player rank lookup and recent match history via Riot Games API
+- **Chat Logs**: Per-room message logging with S3 persistence, line count stats, daily activity graphs, and top-user leaderboards
+- **Changelog**: Display the bot's recent changelog generated from git history
+- **Pairings**: Generate and display bracket pairings
 
 ### Internationalization
 - **6 supported languages**: english, french, spanish, italian, portuguese, and german
