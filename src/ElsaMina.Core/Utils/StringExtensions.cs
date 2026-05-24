@@ -224,7 +224,7 @@ public static class StringExtensions
 
         var codePoint = char.ConvertToUtf32(element, 0);
 
-        // Regional indicator letters -> flag emoji (🇦–🇿)
+        // Regional indicator letters -> flag emoji (🇦-🇿)
         if (IsRegionalIndicator(codePoint) && element.Length >= 4)
         {
             return true;

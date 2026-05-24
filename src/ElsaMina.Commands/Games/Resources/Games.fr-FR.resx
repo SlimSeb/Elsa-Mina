@@ -304,16 +304,16 @@
         <value>Retournez toutes les cases ×2 et ×3 pour gagner la manche.</value>
     </data>
     <data name="vf_panel_legend_one" xml:space="preserve">
-        <value>×1 — Case sûre, pas de bonus</value>
+        <value>×1 - Case sûre, pas de bonus</value>
     </data>
     <data name="vf_panel_legend_two" xml:space="preserve">
-        <value>×2 — Double vos pièces</value>
+        <value>×2 - Double vos pièces</value>
     </data>
     <data name="vf_panel_legend_three" xml:space="preserve">
-        <value>×3 — Triple vos pièces</value>
+        <value>×3 - Triple vos pièces</value>
     </data>
     <data name="vf_panel_legend_voltorb" xml:space="preserve">
-        <value>V — Voltorb ! Perdez toutes vos pièces</value>
+        <value>V - Voltorb ! Perdez toutes vos pièces</value>
     </data>
     <data name="vf_panel_hint" xml:space="preserve">
         <value>Les totaux par ligne/colonne sont des indices stratégiques.</value>
@@ -403,7 +403,7 @@
         <value>Étoiles : {0} ★</value>
     </data>
     <data name="lo_game_started" xml:space="preserve">
-        <value>Lights Out — Niveau {0} ({1}x{2}). Éteignez toutes les lumières !</value>
+        <value>Lights Out - Niveau {0} ({1}x{2}). Éteignez toutes les lumières !</value>
     </data>
     <data name="lo_game_win" xml:space="preserve">
         <value>{0} a résolu le puzzle en {1} coups ({2} ★) ! Prochain niveau : {3}</value>
@@ -493,7 +493,7 @@
         <value>Étoiles : {0} ★</value>
     </data>
     <data name="fi_game_started" xml:space="preserve">
-        <value>Flood It — Niveau {0} ({1}x{2}). Remplissez toute la grille !</value>
+        <value>Flood It - Niveau {0} ({1}x{2}). Remplissez toute la grille !</value>
     </data>
     <data name="fi_game_win" xml:space="preserve">
         <value>{0} a rempli la grille en {1} coups ({2} ★) ! Prochain niveau : {3}</value>
@@ -592,7 +592,7 @@
         <value>Rejouer</value>
     </data>
     <data name="tfe_game_started" xml:space="preserve">
-        <value>2048 — atteignez la tuile 2048 ! Faites glisser les tuiles pour les combiner.</value>
+        <value>2048 - atteignez la tuile 2048 ! Faites glisser les tuiles pour les combiner.</value>
     </data>
     <data name="tfe_game_win" xml:space="preserve">
         <value>{0} a atteint 2048 ! Score : {1}.</value>

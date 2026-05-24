@@ -286,7 +286,7 @@
         <value>Calcula la compatibilidad entre dos usuarios. Uso: -ship &lt;user1&gt;, &lt;user2&gt;</value>
     </data>
     <data name="ship_result" xml:space="preserve">
-        <value>💘 {0} &amp; {1} — compatibilidad: {2}% {3}</value>
+        <value>💘 {0} &amp; {1} - compatibilidad: {2}% {3}</value>
     </data>
     <data name="lolrank_help" xml:space="preserve">
         <value>Muestra el rango de League of Legends de un jugador. Sintaxis: -lolrank &lt;nombre#tag&gt;, [región]</value>

@@ -67,10 +67,10 @@
         <value>Impossibile recuperare i dati della serie.</value>
     </data>
     <data name="streak_help" xml:space="preserve">
-        <value>Uso: streak [utente] — mostra la serie di attività giornaliera di un utente.</value>
+        <value>Uso: streak [utente] - mostra la serie di attività giornaliera di un utente.</value>
     </data>
     <data name="streak_leaderboard_title" xml:space="preserve">
-        <value>Classifica serie — {0}</value>
+        <value>Classifica serie - {0}</value>
     </data>
     <data name="streak_leaderboard_user" xml:space="preserve">
         <value>Utente</value>
@@ -88,7 +88,7 @@
         <value>Impossibile recuperare la classifica delle serie.</value>
     </data>
     <data name="streak_leaderboard_help" xml:space="preserve">
-        <value>Uso: streakboard — mostra le migliori serie di attività giornaliera in questa stanza.</value>
+        <value>Uso: streakboard - mostra le migliori serie di attività giornaliera in questa stanza.</value>
     </data>
     <data name="name_color_help" xml:space="preserve">
         <value>Mostra il colore associato a un nickname.</value>

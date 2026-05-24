@@ -42,7 +42,7 @@ public class PokemonTranslateCommand : Command
         }
 
         context.Reply(
-            $"**#{pokemon.PokedexId} {pokemon.Name.English}** — " +
+            $"**#{pokemon.PokedexId} {pokemon.Name.English}** - " +
             $"EN: {pokemon.Name.English} | FR: {pokemon.Name.French} | JP: {pokemon.Name.Japanese}",
             rankAware: true);
 

@@ -100,7 +100,7 @@
         <value>Syntax: -userbadges benutzername, [raum]</value>
     </data>
     <data name="user_badge_panel_title" xml:space="preserve">
-        <value>Abzeichen von {0} — {1}</value>
+        <value>Abzeichen von {0} - {1}</value>
     </data>
     <data name="user_badge_panel_no_badges" xml:space="preserve">
         <value>In diesem Raum existieren keine Abzeichen.</value>

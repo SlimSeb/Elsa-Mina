@@ -41,7 +41,7 @@ public class StreakServiceTest
         // Act
         await service.UpdateStreakAsync("unknownuser", "testroom", DateOnly.FromDateTime(DateTime.Today));
 
-        // Assert — no exception and DB still empty
+        // Assert - no exception and DB still empty
         Assert.That(await db.RoomUsers.CountAsync(), Is.EqualTo(0));
     }
 
@@ -164,10 +164,10 @@ public class StreakServiceTest
         await service.UpdateStreakAsync("alice", "testroom", today);
         callCount = 0;
 
-        // Act — second call same day
+        // Act - second call same day
         await service.UpdateStreakAsync("alice", "testroom", today);
 
-        // Assert — no DB access on second call
+        // Assert - no DB access on second call
         Assert.That(callCount, Is.EqualTo(0));
     }
 

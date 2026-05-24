@@ -67,10 +67,10 @@
         <value>Could not retrieve streak data.</value>
     </data>
     <data name="streak_help" xml:space="preserve">
-        <value>Usage: streak [username] — shows the daily activity streak for a user.</value>
+        <value>Usage: streak [username] - shows the daily activity streak for a user.</value>
     </data>
     <data name="streak_leaderboard_title" xml:space="preserve">
-        <value>Streak leaderboard — {0}</value>
+        <value>Streak leaderboard - {0}</value>
     </data>
     <data name="streak_leaderboard_user" xml:space="preserve">
         <value>User</value>
@@ -88,7 +88,7 @@
         <value>Could not retrieve streak leaderboard.</value>
     </data>
     <data name="streak_leaderboard_help" xml:space="preserve">
-        <value>Usage: streakboard — shows the top daily activity streaks in this room.</value>
+        <value>Usage: streakboard - shows the top daily activity streaks in this room.</value>
     </data>
     <data name="name_color_help" xml:space="preserve">
         <value>Gives the color info for a given username.</value>

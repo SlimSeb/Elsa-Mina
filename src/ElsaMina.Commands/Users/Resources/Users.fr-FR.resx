@@ -67,10 +67,10 @@
         <value>Impossible de récupérer les données de série.</value>
     </data>
     <data name="streak_help" xml:space="preserve">
-        <value>Utilisation : streak [pseudo] — affiche la série d'activité quotidienne d'un utilisateur.</value>
+        <value>Utilisation : streak [pseudo] - affiche la série d'activité quotidienne d'un utilisateur.</value>
     </data>
     <data name="streak_leaderboard_title" xml:space="preserve">
-        <value>Classement des séries — {0}</value>
+        <value>Classement des séries - {0}</value>
     </data>
     <data name="streak_leaderboard_user" xml:space="preserve">
         <value>Utilisateur</value>
@@ -88,7 +88,7 @@
         <value>Impossible de récupérer le classement des séries.</value>
     </data>
     <data name="streak_leaderboard_help" xml:space="preserve">
-        <value>Utilisation : streakboard — affiche les meilleures séries d'activité quotidienne de ce salon.</value>
+        <value>Utilisation : streakboard - affiche les meilleures séries d'activité quotidienne de ce salon.</value>
     </data>
     <data name="name_color_help" xml:space="preserve">
         <value>Donne la couleur associée à un pseudo.</value>

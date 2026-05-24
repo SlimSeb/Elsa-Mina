@@ -14,7 +14,7 @@
     </resheader>
 
     <data name="daylinecount_help" xml:space="preserve">
-        <value>Sintassi: daylinecount &lt;data&gt;[, &lt;stanza&gt;] — es. daylinecount 2026-05-21</value>
+        <value>Sintassi: daylinecount &lt;data&gt;[, &lt;stanza&gt;] - es. daylinecount 2026-05-21</value>
     </data>
     <data name="daylinecount_no_logs" xml:space="preserve">
         <value>Nessun log trovato per quella data.</value>

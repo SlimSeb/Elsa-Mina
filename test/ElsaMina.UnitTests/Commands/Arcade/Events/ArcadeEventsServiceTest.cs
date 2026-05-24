@@ -84,7 +84,7 @@ public class ArcadeEventsServiceTest
         // Re-mute with 45 minutes
         _service.MuteGames("arcade", TimeSpan.FromMinutes(45));
 
-        // 2 minutes later — original 1-minute mute would have expired, but new 45-minute is still active
+        // 2 minutes later - original 1-minute mute would have expired, but new 45-minute is still active
         _clockService.CurrentUtcDateTimeOffset.Returns(start.AddMinutes(2));
 
         Assert.That(_service.AreGamesMuted("arcade"), Is.True);

@@ -106,7 +106,7 @@ public class ArcadeEventsHandler : Handler
             var rolePing = roleMapping != null ? $"<@&{roleMapping.DiscordRoleId}>" : string.Empty;
 
             var notificationTitle = roleMapping != null
-                ? $"{NOTIFICATION_TITLE} — {detailEventName}"
+                ? $"{NOTIFICATION_TITLE} - {detailEventName}"
                 : NOTIFICATION_TITLE;
 
             var embedDescription =

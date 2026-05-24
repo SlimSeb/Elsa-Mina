@@ -67,10 +67,10 @@
         <value>No se pudieron obtener los datos de racha.</value>
     </data>
     <data name="streak_help" xml:space="preserve">
-        <value>Uso: streak [usuario] — muestra la racha de actividad diaria de un usuario.</value>
+        <value>Uso: streak [usuario] - muestra la racha de actividad diaria de un usuario.</value>
     </data>
     <data name="streak_leaderboard_title" xml:space="preserve">
-        <value>Clasificación de rachas — {0}</value>
+        <value>Clasificación de rachas - {0}</value>
     </data>
     <data name="streak_leaderboard_user" xml:space="preserve">
         <value>Usuario</value>
@@ -88,7 +88,7 @@
         <value>No se pudo obtener la clasificación de rachas.</value>
     </data>
     <data name="streak_leaderboard_help" xml:space="preserve">
-        <value>Uso: streakboard — muestra las mejores rachas de actividad diaria en esta sala.</value>
+        <value>Uso: streakboard - muestra las mejores rachas de actividad diaria en esta sala.</value>
     </data>
     <data name="name_color_help" xml:space="preserve">
         <value>Da el color asociado a un nombre de usuario.</value>

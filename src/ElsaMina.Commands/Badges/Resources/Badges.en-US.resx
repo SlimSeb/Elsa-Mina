@@ -100,7 +100,7 @@
         <value>Syntax: -userbadges username, [room]</value>
     </data>
     <data name="user_badge_panel_title" xml:space="preserve">
-        <value>Badges of {0} — {1}</value>
+        <value>Badges of {0} - {1}</value>
     </data>
     <data name="user_badge_panel_no_badges" xml:space="preserve">
         <value>No badges exist in this room.</value>

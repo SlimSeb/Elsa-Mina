@@ -159,7 +159,7 @@ public class ProfileServiceTest
 
     #endregion
 
-    #region GameRecords — no RoomUser (fallback Users query path)
+    #region GameRecords - no RoomUser (fallback Users query path)
 
     [Test]
     public async Task Test_GetProfileHtmlAsync_ShouldSetGameRecordsHasAnyRecordToFalse_WhenNoGameDataExists()
@@ -272,7 +272,7 @@ public class ProfileServiceTest
 
     #endregion
 
-    #region GameRecords — with RoomUser
+    #region GameRecords - with RoomUser
 
     [Test]
     public async Task Test_GetProfileHtmlAsync_ShouldSetFloodIt_WhenFloodItScoreExists_AndRoomUserPresent()
@@ -419,7 +419,7 @@ public class ProfileServiceTest
 
     #endregion
 
-    #region GameRecords — isolation
+    #region GameRecords - isolation
 
     [Test]
     public async Task Test_GetProfileHtmlAsync_ShouldNotReturnOtherUsersGameRecords()

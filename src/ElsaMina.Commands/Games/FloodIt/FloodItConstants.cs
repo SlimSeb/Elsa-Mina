@@ -17,7 +17,7 @@ public static class FloodItConstants
 
     // (GridSize, ColorCount, TargetMoves, MaxMoves) per level
     // TargetMoves = optimal threshold (3 stars); MaxMoves = hard limit (loss if exceeded)
-    // Leeway is 1 throughout — near-optimal play required to survive
+    // Leeway is 1 throughout - near-optimal play required to survive
     public static readonly (int GridSize, int ColorCount, int TargetMoves, int MaxMoves)[] LEVEL_CONFIGURATIONS =
     [
         (8,  6, 12, 13), // Level 1

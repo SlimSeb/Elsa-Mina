@@ -154,7 +154,7 @@
         <value>Genera un grafico dello storico Elo di un giocatore. Utilizzo: -ladderhistory &lt;formato&gt;, &lt;utente&gt;</value>
     </data>
     <data name="ladder_graph_chart_title" xml:space="preserve">
-        <value>Storico Elo — {0} ({1})</value>
+        <value>Storico Elo - {0} ({1})</value>
     </data>
     <data name="ladder_graph_chart_x_label" xml:space="preserve">
         <value>Data</value>

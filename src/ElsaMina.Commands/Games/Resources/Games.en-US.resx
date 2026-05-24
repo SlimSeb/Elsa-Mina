@@ -304,16 +304,16 @@
         <value>Flip all ×2 and ×3 tiles to win the round.</value>
     </data>
     <data name="vf_panel_legend_one" xml:space="preserve">
-        <value>×1 — Safe tile, no coin bonus</value>
+        <value>×1 - Safe tile, no coin bonus</value>
     </data>
     <data name="vf_panel_legend_two" xml:space="preserve">
-        <value>×2 — Doubles your coins</value>
+        <value>×2 - Doubles your coins</value>
     </data>
     <data name="vf_panel_legend_three" xml:space="preserve">
-        <value>×3 — Triples your coins</value>
+        <value>×3 - Triples your coins</value>
     </data>
     <data name="vf_panel_legend_voltorb" xml:space="preserve">
-        <value>V — Voltorb! Lose all coins</value>
+        <value>V - Voltorb! Lose all coins</value>
     </data>
     <data name="vf_panel_hint" xml:space="preserve">
         <value>Row/column totals are shown as strategy hints.</value>
@@ -403,7 +403,7 @@
         <value>Stars: {0} ★</value>
     </data>
     <data name="lo_game_started" xml:space="preserve">
-        <value>Lights Out — Level {0} ({1}x{2}). Turn off all the lights!</value>
+        <value>Lights Out - Level {0} ({1}x{2}). Turn off all the lights!</value>
     </data>
     <data name="lo_game_win" xml:space="preserve">
         <value>{0} solved the puzzle in {1} moves ({2} ★)! Next level: {3}</value>
@@ -493,7 +493,7 @@
         <value>Stars: {0} ★</value>
     </data>
     <data name="fi_game_started" xml:space="preserve">
-        <value>Flood It — Level {0} ({1}x{2}). Fill the entire grid!</value>
+        <value>Flood It - Level {0} ({1}x{2}). Fill the entire grid!</value>
     </data>
     <data name="fi_game_win" xml:space="preserve">
         <value>{0} flooded the grid in {1} moves ({2} ★)! Next level: {3}</value>
@@ -592,7 +592,7 @@
         <value>Play again</value>
     </data>
     <data name="tfe_game_started" xml:space="preserve">
-        <value>2048 — reach the 2048 tile! Slide tiles to combine them.</value>
+        <value>2048 - reach the 2048 tile! Slide tiles to combine them.</value>
     </data>
     <data name="tfe_game_win" xml:space="preserve">
         <value>{0} reached 2048! Score: {1}.</value>

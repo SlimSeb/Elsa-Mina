@@ -23,7 +23,7 @@ public class VoltorbFlipGameTest
     private IBotDbContextFactory _dbContextFactory;
     private DbContextOptions<BotDbContext> _dbOptions;
 
-    // Config: 1 voltorb, 1 two, 0 threes — with ShuffleInPlace doing nothing the layout is:
+    // Config: 1 voltorb, 1 two, 0 threes - with ShuffleInPlace doing nothing the layout is:
     // [0,0]=Voltorb  [0,1]=2  [0,2]=1  [0,3]=1  [0,4]=1
     // [1..4, 0..4] = all 1s
     private static readonly (int Twos, int Threes, int Voltorbs) TestConfig = (1, 0, 1);
@@ -154,7 +154,7 @@ public class VoltorbFlipGameTest
     [Test]
     public async Task Test_StartNewRound_ShouldLoadLevelFromDb_WhenPlayerHasSavedData()
     {
-        // Arrange — seed saved level 5
+        // Arrange - seed saved level 5
         await using (var db = new BotDbContext(_dbOptions))
         {
             db.VoltorbFlipLevels.Add(new DataAccess.Models.VoltorbFlipLevel

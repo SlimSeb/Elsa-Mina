@@ -76,14 +76,14 @@ public class ResourcesServiceTest
     [Test]
     public void Test_GetString_ShouldFallBackToNeutralCulture_WhenSpecificCultureMissing()
     {
-        // Arrange — only the neutral "fr" culture has the key, not "fr-FR"
+        // Arrange - only the neutral "fr" culture has the key, not "fr-FR"
         var manager = FakeResourceManager.For(new CultureInfo("fr"), new Dictionary<string, string>
         {
             ["hello"] = "Bonjour"
         });
         var sut = CreateService(manager);
 
-        // Act — request fr-FR, which should walk up to fr
+        // Act - request fr-FR, which should walk up to fr
         var result = sut.GetString("hello", new CultureInfo("fr-FR"));
 
         // Assert

@@ -15,7 +15,7 @@ import psycopg2
 from datetime import datetime, timezone
 
 LOG_INTERVAL = 500  # print progress every N rows
-MAX_PLAYTIME_SECONDS = 10 * 3_600  # 10 hours — only users above this are inserted into RoomUsers
+MAX_PLAYTIME_SECONDS = 10 * 3_600  # 10 hours - only users above this are inserted into RoomUsers
 
 def log_progress(i, total, label="rows"):
     if i % LOG_INTERVAL == 0 or i == total:
@@ -116,7 +116,7 @@ def run():
     # ── 3. RoomUsers  (userdata + titles + avatars + ontime + joinphrases) ────
     print("Migrating RoomUsers...")
 
-    # Only users above the playtime threshold get a RoomUsers row — PLUS any
+    # Only users above the playtime threshold get a RoomUsers row - PLUS any
     # user who holds a badge, since BadgeHoldings has FK → RoomUsers(Id, RoomId)
     # and that FK cannot be satisfied by a Users-only row.
     sc.execute(f"SELECT userid FROM ontime WHERE CAST(ontime AS INTEGER) > {MAX_PLAYTIME_SECONDS}")

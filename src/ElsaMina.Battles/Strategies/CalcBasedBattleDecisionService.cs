@@ -172,7 +172,7 @@ public class CalcBasedBattleDecisionService : IBattleDecisionService
             }
         }
 
-        // Evaluate each voluntary switch — we don't attack; opponent gets a free move on the new pokemon
+        // Evaluate each voluntary switch - we don't attack; opponent gets a free move on the new pokemon
         foreach (var candidateIndex in switchCandidates)
         {
             var candidate = context.SidePokemon[candidateIndex - 1];
@@ -202,7 +202,7 @@ public class CalcBasedBattleDecisionService : IBattleDecisionService
         return true;
     }
 
-    // Minimize node — opponent responds to our action
+    // Minimize node - opponent responds to our action
     private static double EvaluateAfterOurAction(SimState state, Pokemon ourMon, Pokemon oppMon,
         int ourMaxHp, int oppMaxHp, string opponentLastMove, List<string> ourMoveNames, int depth)
     {
@@ -223,7 +223,7 @@ public class CalcBasedBattleDecisionService : IBattleDecisionService
             ourMaxHp, oppMaxHp, opponentLastMove, ourMoveNames, depth - 1);
     }
 
-    // Maximize node — we respond to the opponent's action
+    // Maximize node - we respond to the opponent's action
     private static double EvaluateAfterOpponentAction(SimState state, Pokemon ourMon, Pokemon oppMon,
         int ourMaxHp, int oppMaxHp, string opponentLastMove, List<string> ourMoveNames, int depth)
     {
@@ -361,7 +361,7 @@ public class CalcBasedBattleDecisionService : IBattleDecisionService
             }
             catch
             {
-                // Move not in dex or produces no damage (status move) — skip
+                // Move not in dex or produces no damage (status move) - skip
             }
         }
 
@@ -504,7 +504,7 @@ public class CalcBasedBattleDecisionService : IBattleDecisionService
                 Boosts = BuildBoostsInput(state.Boosts)
             });
 
-            // Apply tracked HP percentage — derive actual HP from computed max
+            // Apply tracked HP percentage - derive actual HP from computed max
             var maxHp = pokemon.MaxHP(false);
             pokemon.OriginalCurHP = (int)Math.Max(1, Math.Round(maxHp * state.HpPercent / 100.0));
 

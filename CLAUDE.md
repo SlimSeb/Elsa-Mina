@@ -71,20 +71,20 @@ WebSocket → IClient.MessageReceived
 ### Context System
 
 `IContext` is the interface commands receive. It provides:
-- `context.Reply(msg)` / `context.ReplyHtml(html)` — send a response
-- `context.ReplyLocalizedMessage(key, args...)` — send a localized response
-- `context.GetString(key)` — get a localized string
+- `context.Reply(msg)` / `context.ReplyHtml(html)` - send a response
+- `context.ReplyLocalizedMessage(key, args...)` - send a localized response
+- `context.GetString(key)` - get a localized string
 - `context.Sender`, `context.Room`, `context.RoomId`, `context.Target`, `context.Command`
 - `context.HasRankOrHigher(rank)` / `context.HasSufficientRankInRoom(roomId, rank)`
-- `context.HandleErrorAsync(exception)` — standard error reply handling
+- `context.HandleErrorAsync(exception)` - standard error reply handling
 
 Two concrete implementations: `RoomContext` and `PmContext`.
 
 ### Dependency Injection
 
 Uses Autofac. Two main modules:
-- `CoreModule` — all core services (bot, client, rooms, handlers, etc.)
-- `CommandModule` — all commands, feature-level handlers, and feature services
+- `CoreModule` - all core services (bot, client, rooms, handlers, etc.)
+- `CommandModule` - all commands, feature-level handlers, and feature services
 
 `DependencyContainerService` wraps the Autofac container and is used for late-bound resolution (e.g., `HandlerManager` resolves handlers after startup).
 

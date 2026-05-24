@@ -103,7 +103,7 @@ public class DisplayTeamOnLinkHandlerTest
         // first call records the timestamp
         await _handler.HandleMessageAsync(_context);
 
-        // Act — call again too soon
+        // Act - call again too soon
         await _handler.HandleMessageAsync(_context);
 
         // Assert

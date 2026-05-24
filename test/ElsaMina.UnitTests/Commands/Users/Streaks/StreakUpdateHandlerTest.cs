@@ -68,7 +68,7 @@ public class StreakUpdateHandlerTest
     [Test]
     public async Task Test_HandleMessageAsync_ShouldConvertToRoomTimezone_WhenComputingDate()
     {
-        // Arrange —yo UTC midnight, room is UTC+2, so room date is May 14
+        // Arrange -yo UTC midnight, room is UTC+2, so room date is May 14
         _clockService.CurrentUtcDateTime.Returns(new DateTime(2026, 5, 13, 23, 30, 0, DateTimeKind.Utc));
         var utcPlus2 = TimeZoneInfo.CreateCustomTimeZone("utc+2", TimeSpan.FromHours(2), "UTC+2", "UTC+2");
         _room.TimeZone.Returns(utcPlus2);

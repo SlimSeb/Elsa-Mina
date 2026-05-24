@@ -100,7 +100,7 @@
         <value>Sintassi: -userbadges nomeutente, [stanza]</value>
     </data>
     <data name="user_badge_panel_title" xml:space="preserve">
-        <value>Badge di {0} — {1}</value>
+        <value>Badge di {0} - {1}</value>
     </data>
     <data name="user_badge_panel_no_badges" xml:space="preserve">
         <value>Nessun badge esiste in questa stanza.</value>

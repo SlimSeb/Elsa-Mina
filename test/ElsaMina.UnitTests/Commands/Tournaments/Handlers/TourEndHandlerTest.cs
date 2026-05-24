@@ -122,7 +122,7 @@ public class TourEndHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldSetCorrectStats_ForWinner()
     {
-        // Pujolly: winner — 3 match wins, 0 losses (no loss as winner in single elim)
+        // Pujolly: winner - 3 match wins, 0 losses (no loss as winner in single elim)
         var parts = new[] { "", "tournament", "end", TOUR_JSON };
 
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
@@ -142,7 +142,7 @@ public class TourEndHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldSetCorrectStats_ForRunnerUp()
     {
-        // Emon123: runner-up — 3 match wins + 1 final loss
+        // Emon123: runner-up - 3 match wins + 1 final loss
         var parts = new[] { "", "tournament", "end", TOUR_JSON };
 
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
@@ -162,7 +162,7 @@ public class TourEndHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldSetCorrectStats_ForSemiFinalists()
     {
-        // Reegychodon_64 and Bloody jae: semi-finalists — 1 match win + 1 loss each
+        // Reegychodon_64 and Bloody jae: semi-finalists - 1 match win + 1 loss each
         var parts = new[] { "", "tournament", "end", TOUR_JSON };
 
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
@@ -184,7 +184,7 @@ public class TourEndHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldSetCorrectStats_ForFirstRoundLoser()
     {
-        // Drafeu-kun: lost in round 1 — 0 wins, 1 game played
+        // Drafeu-kun: lost in round 1 - 0 wins, 1 game played
         var parts = new[] { "", "tournament", "end", TOUR_JSON };
 
         await _handler.HandleReceivedMessageAsync(parts, "arcade");

@@ -101,7 +101,7 @@ public class EndVoltorbFlipCommandTest
     [Test]
     public async Task Test_RunAsync_ShouldReplyNotOwner_WhenSenderIsNotOwner()
     {
-        // Arrange — use concrete TestUser to avoid NSubstitute auto-substitute sharing
+        // Arrange - use concrete TestUser to avoid NSubstitute auto-substitute sharing
         var owner = new TestUser("owner-id");
         var sender = new TestUser("sender-id");
         _voltorbFlipGame.Owner = owner;

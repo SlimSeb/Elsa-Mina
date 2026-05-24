@@ -150,7 +150,7 @@ public class LadderGraphCommandTest
         // Act
         await _command.RunAsync(_context);
 
-        // Assert — if normalization works, the snapshots are found and the graph is generated
+        // Assert - if normalization works, the snapshots are found and the graph is generated
         _context.Received(1).ReplyHtml(Arg.Any<string>(), rankAware: true);
     }
 

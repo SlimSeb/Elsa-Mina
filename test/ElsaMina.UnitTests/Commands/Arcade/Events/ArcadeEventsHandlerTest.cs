@@ -306,7 +306,7 @@ public class ArcadeEventsHandlerTests
     [Test]
     public async Task Test_HandleReceivedMessage_ShouldIgnore_WhenMessageTypeIsChat()
     {
-        // Simulates the bot's own |c:| response being received — parts[1] = "c:", not "raw"
+        // Simulates the bot's own |c:| response being received - parts[1] = "c:", not "raw"
         var chatParts = new[] { "", "c:", "1775074795", "*Elsa-Mina", "!events view Catch&Evolve #1" };
 
         await _handler.HandleReceivedMessageAsync(chatParts, "arcade");

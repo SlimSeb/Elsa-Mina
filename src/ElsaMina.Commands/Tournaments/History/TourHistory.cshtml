@@ -28,7 +28,7 @@
             {
                 <tr>
                     <td style="@cellStyle">@entry.EndedAt</td>
-                    <td style="@cellStyle">@(entry.Format ?? "—")</td>
+                    <td style="@cellStyle">@(entry.Format ?? "-")</td>
                     <td style="@cellStyle">
                         @if (!string.IsNullOrEmpty(entry.Winner))
                         {
@@ -36,7 +36,7 @@
                         }
                         else
                         {
-                            @:—
+                            @:-
                         }
                     </td>
                     <td style="@cellStyle">
@@ -46,7 +46,7 @@
                         }
                         else
                         {
-                            @:—
+                            @:-
                         }
                     </td>
                     <td style="@cellStyle">
@@ -56,7 +56,7 @@
                         }
                         else
                         {
-                            @:—
+                            @:-
                         }
                     </td>
                     <td style="@cellStyle">@entry.PlayerCount</td>

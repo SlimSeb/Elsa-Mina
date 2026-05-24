@@ -30,7 +30,7 @@ public class BattleMessageParser : IBattleMessageParser
             return true;
         }
 
-        // Opponent state tracking — handled before the request check since they all return false
+        // Opponent state tracking - handled before the request check since they all return false
         if (TryApplyOpponentMessage(parts, context))
         {
             return false;
@@ -78,7 +78,7 @@ public class BattleMessageParser : IBattleMessageParser
     private static bool TryApplyOpponentMessage(string[] parts, BattleContext context)
     {
         // SideId is set by the first |request| message. Until then we don't know which side is
-        // ours, so every switch message would be misidentified as opponent — skip entirely.
+        // ours, so every switch message would be misidentified as opponent - skip entirely.
         if (string.IsNullOrEmpty(context.SideId))
         {
             return false;
@@ -319,7 +319,7 @@ public class BattleMessageParser : IBattleMessageParser
 
     private static bool IsOpponentIdent(string ident, string ourSideId)
     {
-        // ident format: "p1a: Garchomp" — first two chars are the side id
+        // ident format: "p1a: Garchomp" - first two chars are the side id
         return ident.Length >= 2 && ident[..2] != ourSideId;
     }
 

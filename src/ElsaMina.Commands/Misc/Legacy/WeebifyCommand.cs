@@ -9,7 +9,7 @@ namespace ElsaMina.Commands.Misc.Legacy;
 public class WeebifyCommand : Command
 {
     private static readonly string[] SUFFIXES = ["sama", "san", "kun", "chan", "sensei", "senpai"];
-    private static readonly string[] LINKS = ["-", " ", "—"];
+    private static readonly string[] LINKS = ["-", " ", "-"];
 
     private readonly IRandomService _randomService;
 

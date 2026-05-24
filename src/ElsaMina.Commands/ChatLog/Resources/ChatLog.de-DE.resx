@@ -14,7 +14,7 @@
     </resheader>
 
     <data name="daylinecount_help" xml:space="preserve">
-        <value>Syntax: daylinecount &lt;Datum&gt;[, &lt;Raum&gt;] — z.B. daylinecount 2026-05-21</value>
+        <value>Syntax: daylinecount &lt;Datum&gt;[, &lt;Raum&gt;] - z.B. daylinecount 2026-05-21</value>
     </data>
     <data name="daylinecount_no_logs" xml:space="preserve">
         <value>Keine Logs für dieses Datum gefunden.</value>

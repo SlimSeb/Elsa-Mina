@@ -215,7 +215,7 @@ public class TwentyFortyEightGameTest
     public async Task Test_MakeMove_ShouldDoNothing_WhenMoveDoesNotChangeBoard()
     {
         await _game.StartNewRound();
-        // Already left-aligned, no adjacent equal — left slide does nothing
+        // Already left-aligned, no adjacent equal - left slide does nothing
         SetGrid(_game, new int[4, 4] { { 2, 4, 8, 16 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } });
         _mockTemplatesManager.ClearReceivedCalls();
 
@@ -229,7 +229,7 @@ public class TwentyFortyEightGameTest
     public async Task Test_MakeMove_ShouldSpawnNewTile_AfterValidMove()
     {
         await _game.StartNewRound();
-        // One tile not at the leftmost position — slide left moves it
+        // One tile not at the leftmost position - slide left moves it
         SetGrid(_game, new int[4, 4] { { 0, 2, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } });
 
         await _game.MakeMove(_mockUser, "left");
@@ -241,7 +241,7 @@ public class TwentyFortyEightGameTest
     public async Task Test_MakeMove_ShouldIncreaseScore_WhenTilesMerge()
     {
         await _game.StartNewRound();
-        // Two equal tiles side by side — sliding left merges them
+        // Two equal tiles side by side - sliding left merges them
         SetGrid(_game, new int[4, 4] { { 4, 4, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 } });
 
         await _game.MakeMove(_mockUser, "left");

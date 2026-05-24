@@ -67,10 +67,10 @@
         <value>Seriendaten konnten nicht abgerufen werden.</value>
     </data>
     <data name="streak_help" xml:space="preserve">
-        <value>Verwendung: streak [Nutzername] — zeigt die tägliche Aktivitätsserie eines Nutzers.</value>
+        <value>Verwendung: streak [Nutzername] - zeigt die tägliche Aktivitätsserie eines Nutzers.</value>
     </data>
     <data name="streak_leaderboard_title" xml:space="preserve">
-        <value>Serien-Rangliste — {0}</value>
+        <value>Serien-Rangliste - {0}</value>
     </data>
     <data name="streak_leaderboard_user" xml:space="preserve">
         <value>Nutzer</value>
@@ -88,7 +88,7 @@
         <value>Serien-Rangliste konnte nicht abgerufen werden.</value>
     </data>
     <data name="streak_leaderboard_help" xml:space="preserve">
-        <value>Verwendung: streakboard — zeigt die besten täglichen Aktivitätsserien in diesem Raum.</value>
+        <value>Verwendung: streakboard - zeigt die besten täglichen Aktivitätsserien in diesem Raum.</value>
     </data>
     <data name="name_color_help" xml:space="preserve">
         <value>Zeigt die Farbinformationen für einen Benutzernamen an.</value>

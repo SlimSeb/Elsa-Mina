@@ -68,7 +68,7 @@ public class GuessingGameAnswerCommandTest
 
         _command.RunAsync(_context);
 
-        // No exception — just silently ignored
+        // No exception - just silently ignored
         _roomsManager.Received(1).GetRoom("testroom");
     }
 

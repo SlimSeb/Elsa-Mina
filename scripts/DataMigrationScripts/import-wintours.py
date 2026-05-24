@@ -161,7 +161,7 @@ def run():
 
     pg.commit()
     pg.close()
-    print(f"\n✅ Done — {total_users} user entries processed across {len(target_files)} file(s).")
+    print(f"\n✅ Done - {total_users} user entries processed across {len(target_files)} file(s).")
 
 
 if __name__ == "__main__":

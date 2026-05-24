@@ -328,7 +328,7 @@ public class LightsOutGameTest
         await _game.StartNewRound();
         if (!_game.IsRoundActive) return;
 
-        // Force MoveCount to 2 (≤ presses=3), then solve with 1 more = 3 total — still ≤3.
+        // Force MoveCount to 2 (≤ presses=3), then solve with 1 more = 3 total - still ≤3.
         typeof(LightsOutGame).GetProperty("MoveCount")!.SetValue(_game, 2);
 
         var grid = new bool[_game.GridSize, _game.GridSize];
@@ -426,7 +426,7 @@ public class LightsOutGameTest
     [Test]
     public async Task Test_CancelAsync_ShouldNotDecrementBelowLevel1()
     {
-        // Level 1 — cancel should stay at 1
+        // Level 1 - cancel should stay at 1
         await _game.StartNewRound();
         Assert.That(_game.Level, Is.EqualTo(1));
 

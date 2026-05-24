@@ -105,7 +105,7 @@
                 var record = Model.TournamentRecord;
                 var wl = record.PlayedGames > 0
                     ? GetString("profile_tournament_wl", record.WonGames, record.PlayedGames - record.WonGames)
-                    : "—";
+                    : "-";
                 <span style="text-decoration: underline">@GetString("profile_tournament_records")</span>
                 <span>:
                     <span title="@GetString("top_tournament_players_wins")">🏆 @record.WinsCount</span>

@@ -100,7 +100,7 @@
         <value>Sintaxis: -userbadges usuario, [sala]</value>
     </data>
     <data name="user_badge_panel_title" xml:space="preserve">
-        <value>Insignias de {0} — {1}</value>
+        <value>Insignias de {0} - {1}</value>
     </data>
     <data name="user_badge_panel_no_badges" xml:space="preserve">
         <value>No existen insignias en esta sala.</value>

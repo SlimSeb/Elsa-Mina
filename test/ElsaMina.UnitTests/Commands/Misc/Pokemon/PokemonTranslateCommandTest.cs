@@ -62,7 +62,7 @@ public class PokemonTranslateCommandTest
 
         // Assert
         _context.Received(1).Reply(
-            "**#1 Bulbasaur** — EN: Bulbasaur | FR: Bulbizarre | JP: フシギダネ",
+            "**#1 Bulbasaur** - EN: Bulbasaur | FR: Bulbizarre | JP: フシギダネ",
             rankAware: true);
         _context.DidNotReceive().ReplyRankAwareLocalizedMessage(Arg.Any<string>(), Arg.Any<object[]>());
     }
@@ -78,7 +78,7 @@ public class PokemonTranslateCommandTest
 
         // Assert
         _context.Received(1).Reply(
-            "**#1 Bulbasaur** — EN: Bulbasaur | FR: Bulbizarre | JP: フシギダネ",
+            "**#1 Bulbasaur** - EN: Bulbasaur | FR: Bulbizarre | JP: フシギダネ",
             rankAware: true);
     }
 
@@ -93,7 +93,7 @@ public class PokemonTranslateCommandTest
 
         // Assert
         _context.Received(1).Reply(
-            "**#25 Pikachu** — EN: Pikachu | FR: Pikachu | JP: ピカチュウ",
+            "**#25 Pikachu** - EN: Pikachu | FR: Pikachu | JP: ピカチュウ",
             rankAware: true);
     }
 
@@ -108,7 +108,7 @@ public class PokemonTranslateCommandTest
 
         // Assert
         _context.Received(1).Reply(
-            "**#1 Bulbasaur** — EN: Bulbasaur | FR: Bulbizarre | JP: フシギダネ",
+            "**#1 Bulbasaur** - EN: Bulbasaur | FR: Bulbizarre | JP: フシギダネ",
             rankAware: true);
     }
 

@@ -266,7 +266,7 @@ public class AddBadgeCommandTest
         // Act
         await cmd.RunAsync(_context);
 
-        // Assert — if disposal failed, next context creation would throw or reuse stale tracking
+        // Assert - if disposal failed, next context creation would throw or reuse stale tracking
         await using var db = new BotDbContext(_options);
         Assert.That(db.Badges.Count(), Is.EqualTo(1));
     }
