@@ -60,16 +60,9 @@ public class LadderGraphCommand : Command
             var ys = snapshots.Select(s => (double)s.Elo).ToArray();
 
             var chartTitle = context.GetString("ladder_graph_chart_title", parts[1], parts[0]);
-            var xLabel = context.GetString("ladder_graph_chart_x_label");
-            var yLabel = context.GetString("ladder_graph_chart_y_label");
-
             var showTrend = context.Command is "elotrend" or "laddertrend";
-            var slopeLabelFormat = context.GetString("ladder_graph_trend_slope");
-            var rSquaredLabelFormat = context.GetString("ladder_graph_trend_r_squared");
-            var stdDevLabelFormat = context.GetString("ladder_graph_std_dev");
-            var meanLabelFormat = context.GetString("ladder_graph_mean");
-            var pngBytes = GenerateChart(xs, ys, chartTitle, xLabel, yLabel, context.Culture, showTrend,
-                slopeLabelFormat, rSquaredLabelFormat, stdDevLabelFormat, meanLabelFormat);
+
+            var pngBytes = GenerateChart(context, chartTitle, xs, ys, context.Culture, showTrend);
 
             var fileName = $"elographs/elograph-{userId}-{format}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.png";
             var url = await _fileSharingService.CreateFileAsync(pngBytes, fileName,
@@ -94,10 +87,15 @@ public class LadderGraphCommand : Command
         }
     }
 
-    private static byte[] GenerateChart(double[] xs, double[] ys, string title, string xLabel, string yLabel,
-        CultureInfo culture, bool showTrend, string slopeLabelFormat, string rSquaredLabelFormat,
-        string stdDevLabelFormat, string meanLabelFormat)
+    private static byte[] GenerateChart(IContext context, string title, double[] xs, double[] ys,
+        CultureInfo culture, bool showTrend)
     {
+        var xLabel = context.GetString("ladder_graph_chart_x_label");
+        var yLabel = context.GetString("ladder_graph_chart_y_label");
+        var slopeLabelFormat = context.GetString("ladder_graph_trend_slope");
+        var rSquaredLabelFormat = context.GetString("ladder_graph_trend_r_squared");
+        var stdDevLabelFormat = context.GetString("ladder_graph_std_dev");
+        var meanLabelFormat = context.GetString("ladder_graph_mean");
         var previousCulture = CultureInfo.CurrentCulture;
         try
         {
@@ -242,7 +240,7 @@ public class LadderGraphCommand : Command
             ssRes += (ys[i] - (slope * xs[i] + intercept)) * (ys[i] - (slope * xs[i] + intercept));
         }
 
-        var rSquared = ssTot == 0 ? 1.0 : 1.0 - ssRes / ssTot;
+        var rSquared = ssTot.IsApproximatelyEqualTo(0, tolerance: 1e-6) ? 1.0 : 1.0 - ssRes / ssTot;
         return (slope, intercept, rSquared);
     }
 }
