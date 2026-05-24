@@ -122,7 +122,7 @@ public class AddTeamCommandTests
         await using var dbContext = new BotDbContext(_options);
         var team = dbContext.Teams.Include(team => team.Rooms).Single();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(team.Id, Is.EqualTo("name".ToLowerAlphaNum()));
             Assert.That(team.Name, Is.EqualTo("name"));
@@ -134,7 +134,7 @@ public class AddTeamCommandTests
             Assert.That(team.Rooms.Count, Is.EqualTo(1));
             Assert.That(team.Rooms.ElementAt(0).RoomId, Is.EqualTo("room"));
             Assert.That(team.Rooms.ElementAt(0).TeamId, Is.EqualTo("name".ToLowerAlphaNum()));
-        });
+        }
 
         _context.Received().ReplyLocalizedMessage("add_team_success", "name".ToLowerAlphaNum());
     }
@@ -163,12 +163,12 @@ public class AddTeamCommandTests
         await using var dbContext = new BotDbContext(_options);
         var team = dbContext.Teams.Include(team => team.Rooms).Single();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(team.Rooms.Count, Is.EqualTo(2));
             Assert.That(team.Rooms.Any(rt => rt.RoomId == "arcade"));
             Assert.That(team.Rooms.Any(rt => rt.RoomId == "franais"));
-        });
+        }
     }
 
     [Test]

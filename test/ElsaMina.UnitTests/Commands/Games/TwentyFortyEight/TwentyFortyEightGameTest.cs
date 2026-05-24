@@ -109,8 +109,11 @@ public class TwentyFortyEightGameTest
     {
         await _game.StartNewRound();
 
-        Assert.That(_game.Grid, Is.Not.Null);
-        Assert.That(CountNonZeroCells(_game.Grid), Is.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Grid, Is.Not.Null);
+            Assert.That(CountNonZeroCells(_game.Grid), Is.EqualTo(2));
+        }
     }
 
     [Test]
@@ -126,11 +129,11 @@ public class TwentyFortyEightGameTest
     {
         await _game.StartNewRound();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.BestScore, Is.EqualTo(0));
             Assert.That(_game.Wins, Is.EqualTo(0));
-        });
+        }
     }
 
     [Test]
@@ -149,11 +152,11 @@ public class TwentyFortyEightGameTest
 
         await _game.StartNewRound();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.BestScore, Is.EqualTo(9000));
             Assert.That(_game.Wins, Is.EqualTo(3));
-        });
+        }
     }
 
     [Test]
@@ -257,11 +260,11 @@ public class TwentyFortyEightGameTest
 
         await _game.MakeMove(_mockUser, "left");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.IsRoundActive, Is.False);
             Assert.That(_game.IsEnded, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -308,9 +311,12 @@ public class TwentyFortyEightGameTest
 
         await using var db = new BotDbContext(_dbOptions);
         var record = await db.TwentyFortyEightScores.FindAsync("testplayer");
-        Assert.That(record, Is.Not.Null);
-        Assert.That(record.Wins, Is.EqualTo(1));
-        Assert.That(record.BestScore, Is.EqualTo(2048));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record, Is.Not.Null);
+            Assert.That(record.Wins, Is.EqualTo(1));
+            Assert.That(record.BestScore, Is.EqualTo(2048));
+        }
     }
 
     [Test]
@@ -329,11 +335,11 @@ public class TwentyFortyEightGameTest
 
         await _game.MakeMove(_mockUser, "right");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.IsRoundActive, Is.False);
             Assert.That(_game.IsEnded, Is.True);
-        });
+        }
     }
 
     [Test]

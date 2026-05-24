@@ -88,9 +88,12 @@ public class BotRoomInitializationIntegrationTest
         // Assert
         Assert.That(capturedLines, Is.Not.Null);
         var linesList = capturedLines.ToList();
-        Assert.That(linesList, Does.Contain("|init|chat"));
-        Assert.That(linesList, Does.Contain("|title|Lobby"));
-        Assert.That(linesList, Does.Contain("|users|2,+Earth, Mec"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(linesList, Does.Contain("|init|chat"));
+            Assert.That(linesList, Does.Contain("|title|Lobby"));
+            Assert.That(linesList, Does.Contain("|users|2,+Earth, Mec"));
+        }
     }
 
     [Test]

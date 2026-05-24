@@ -70,14 +70,14 @@ public class RoomFactoryTest
         await using var assertContext = new BotDbContext(_dbContextOptions);
         var dbRoom = await assertContext.RoomInfo.SingleOrDefaultAsync(r => r.Id == roomId);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(room, Is.Not.Null);
             Assert.That(room.Name, Is.EqualTo("New Room"));
             Assert.That(room.RoomId, Is.EqualTo(roomId));
             Assert.That(dbRoom, Is.Not.Null);
             Assert.That(dbRoom.Title, Is.EqualTo("New Room"));
-        });
+        }
     }
 
     [Test]
@@ -100,11 +100,11 @@ public class RoomFactoryTest
         await using var assertContext = new BotDbContext(_dbContextOptions);
         var dbRoom = await assertContext.RoomInfo.SingleOrDefaultAsync(r => r.Id == roomId);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(room.Name, Is.EqualTo("Updated Title"));
             Assert.That(dbRoom.Title, Is.EqualTo("Updated Title"));
-        });
+        }
     }
 
     [Test]
@@ -177,11 +177,11 @@ public class RoomFactoryTest
         var room = await _sut.CreateRoomAsync(roomId, lines);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(room.Users.ContainsKey("moderator"), Is.True);
             Assert.That(room.Users.ContainsKey("regularuser"), Is.True);
-        });
+        }
     }
 
     [Test]

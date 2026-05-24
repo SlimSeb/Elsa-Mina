@@ -48,11 +48,14 @@ public class PairingsCommandTest
             {
                 var list = (List<string>)x[0];
                 // Don't clear the list, just verify it has the right contents
-                Assert.That(list, Has.Count.EqualTo(4));
-                Assert.That(list, Does.Contain("Player1"));
-                Assert.That(list, Does.Contain("Player2"));
-                Assert.That(list, Does.Contain("Player3"));
-                Assert.That(list, Does.Contain("Player4"));
+                using (Assert.EnterMultipleScope())
+                {
+                    Assert.That(list, Has.Count.EqualTo(4));
+                    Assert.That(list, Does.Contain("Player1"));
+                    Assert.That(list, Does.Contain("Player2"));
+                    Assert.That(list, Does.Contain("Player3"));
+                    Assert.That(list, Does.Contain("Player4"));
+                }
             });
 
         // Act
@@ -87,11 +90,14 @@ public class PairingsCommandTest
             .Do(x => 
             {
                 var list = (List<string>)x[0];
-                Assert.That(list, Has.Count.EqualTo(4));
-                Assert.That(list, Does.Contain("Player1"));
-                Assert.That(list, Does.Contain("Player2"));
-                Assert.That(list, Does.Contain("Player3"));
-                Assert.That(list, Does.Contain("Player4"));
+                using (Assert.EnterMultipleScope())
+                {
+                    Assert.That(list, Has.Count.EqualTo(4));
+                    Assert.That(list, Does.Contain("Player1"));
+                    Assert.That(list, Does.Contain("Player2"));
+                    Assert.That(list, Does.Contain("Player3"));
+                    Assert.That(list, Does.Contain("Player4"));
+                }
             });
 
         // Act
@@ -125,10 +131,13 @@ public class PairingsCommandTest
             .Do(x => 
             {
                 var list = (List<string>)x[0];
-                Assert.That(list, Has.Count.EqualTo(3));
-                Assert.That(list, Does.Contain("Player1"));
-                Assert.That(list, Does.Contain("Player2"));
-                Assert.That(list, Does.Contain("Player3"));
+                using (Assert.EnterMultipleScope())
+                {
+                    Assert.That(list, Has.Count.EqualTo(3));
+                    Assert.That(list, Does.Contain("Player1"));
+                    Assert.That(list, Does.Contain("Player2"));
+                    Assert.That(list, Does.Contain("Player3"));
+                }
             });
 
         // Act

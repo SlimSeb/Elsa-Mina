@@ -40,10 +40,13 @@ public class ClearPointsCommandTest
     {
         var command = new ClearPointsCommand(_dbContextFactory);
 
-        Assert.That(command, Is.Not.Null);
-        Assert.That(command.Name, Is.EqualTo("clearpoints"));
-        Assert.That(command.RequiredRank, Is.EqualTo(Rank.Voiced));
-        Assert.That(command.HelpMessageKey, Is.EqualTo("clear_points_help"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(command, Is.Not.Null);
+            Assert.That(command.Name, Is.EqualTo("clearpoints"));
+            Assert.That(command.RequiredRank, Is.EqualTo(Rank.Voiced));
+            Assert.That(command.HelpMessageKey, Is.EqualTo("clear_points_help"));
+        }
     }
 
     [Test]
@@ -127,8 +130,11 @@ public class ClearPointsCommandTest
         var remainingPoints = await assertContext.UserPoints.CountAsync();
         var remainingLevels = await assertContext.ArcadeLevels.CountAsync();
 
-        Assert.That(remainingPoints, Is.EqualTo(0));
-        Assert.That(remainingLevels, Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(remainingPoints, Is.EqualTo(0));
+            Assert.That(remainingLevels, Is.EqualTo(1));
+        }
     }
 
     [Test]

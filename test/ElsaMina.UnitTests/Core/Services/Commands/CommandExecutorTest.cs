@@ -65,9 +65,12 @@ public class CommandExecutorTest
         var result = _commandExecutor.GetAllCommands().ToList();
 
         // Assert
-        Assert.That(result, Has.Count.EqualTo(2));
-        Assert.That(result, Does.Contain(command1));
-        Assert.That(result, Does.Contain(command2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(2));
+            Assert.That(result, Does.Contain(command1));
+            Assert.That(result, Does.Contain(command2));
+        }
     }
 
     [Test]
@@ -221,8 +224,11 @@ public class CommandExecutorTest
             async () => await _commandExecutor.TryExecuteCommandAsync(commandName, _context));
 
         // Assert
-        Assert.That(exception, Is.SameAs(expectedException));
-        Assert.That(_commandExecutor.RunningCommands, Is.Empty);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(exception, Is.SameAs(expectedException));
+            Assert.That(_commandExecutor.RunningCommands, Is.Empty);
+        }
     }
 
     [Test]

@@ -46,10 +46,13 @@ public class LeaderboardCommandTest
     {
         var command = new LeaderboardCommand(_dbContextFactory, _templatesManager);
 
-        Assert.That(command, Is.Not.Null);
-        Assert.That(command.Name, Is.EqualTo("classement"));
-        Assert.That(command.RequiredRank, Is.EqualTo(Rank.Voiced));
-        Assert.That(command.HelpMessageKey, Is.EqualTo("leaderboard_help"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(command, Is.Not.Null);
+            Assert.That(command.Name, Is.EqualTo("classement"));
+            Assert.That(command.RequiredRank, Is.EqualTo(Rank.Voiced));
+            Assert.That(command.HelpMessageKey, Is.EqualTo("leaderboard_help"));
+        }
     }
 
     [Test]

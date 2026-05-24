@@ -43,13 +43,13 @@ public class RpsGameTest
     {
         var (success, messageKey, args) = await _game.Join("Player1");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(success, Is.True);
             Assert.That(messageKey, Is.EqualTo("rps_join_success"));
             Assert.That(_game.Players, Has.Count.EqualTo(1));
             Assert.That(_game.Players[0], Is.EqualTo("Player1"));
-        });
+        }
     }
 
     [Test]
@@ -88,12 +88,12 @@ public class RpsGameTest
 
         var (success, messageKey, _) = await _game.Join("Player3");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(success, Is.False);
             Assert.That(messageKey, Is.EqualTo("rps_game_full"));
             Assert.That(_game.Players, Has.Count.EqualTo(2));
-        });
+        }
     }
 
     [Test]
@@ -103,12 +103,12 @@ public class RpsGameTest
 
         var (success, messageKey, _) = await _game.Join("Player1");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(success, Is.False);
             Assert.That(messageKey, Is.EqualTo("rps_already_joined"));
             Assert.That(_game.Players, Has.Count.EqualTo(1));
-        });
+        }
     }
 
     [Test]
@@ -118,11 +118,11 @@ public class RpsGameTest
 
         var (success, messageKey, _) = await _game.Join("PLAYER1");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(success, Is.False);
             Assert.That(messageKey, Is.EqualTo("rps_already_joined"));
-        });
+        }
     }
 
     [Test]

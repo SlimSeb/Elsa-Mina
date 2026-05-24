@@ -77,9 +77,12 @@ public class EditBadgeCommandTest
 
         await using var assertCtx = new BotDbContext(options);
         var badge = await assertCtx.Badges.FindAsync("badge1", "room1");
-        Assert.That(badge.Name, Is.EqualTo("New Name"));
-        Assert.That(badge.Image, Is.EqualTo("https://img.test/new.png"));
-        Assert.That(badge.IsTrophy, Is.True); // unchanged - not provided in 3-part format
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(badge.Name, Is.EqualTo("New Name"));
+            Assert.That(badge.Image, Is.EqualTo("https://img.test/new.png"));
+            Assert.That(badge.IsTrophy, Is.True); // unchanged - not provided in 3-part format
+        }
         context.Received().ReplyLocalizedMessage("badge_edit_success", "badge1");
     }
 
@@ -108,10 +111,13 @@ public class EditBadgeCommandTest
         await using var assertCtx = new BotDbContext(options);
         var room2Badge = await assertCtx.Badges.FindAsync("badge1", "room2");
         var room1Badge = await assertCtx.Badges.FindAsync("badge1", "room1");
-        Assert.That(room2Badge.Name, Is.EqualTo("New Name"));
-        Assert.That(room2Badge.Image, Is.EqualTo("https://img.test/new.png"));
-        Assert.That(room1Badge.Name, Is.EqualTo("Room1 Name"));
-        Assert.That(room1Badge.Image, Is.EqualTo("room1.png"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(room2Badge.Name, Is.EqualTo("New Name"));
+            Assert.That(room2Badge.Image, Is.EqualTo("https://img.test/new.png"));
+            Assert.That(room1Badge.Name, Is.EqualTo("Room1 Name"));
+            Assert.That(room1Badge.Image, Is.EqualTo("room1.png"));
+        }
     }
 
     [Test]

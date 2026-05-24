@@ -79,11 +79,11 @@ public class PlayTimeUpdateServiceTest
         await using var assertContext = new BotDbContext(_dbContextOptions);
         var roomUser = await assertContext.RoomUsers.SingleOrDefaultAsync(u => u.Id == userId && u.RoomId == roomId);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(roomUser, Is.Not.Null);
             Assert.That(roomUser.PlayTime, Is.EqualTo(TimeSpan.FromMinutes(10)));
-        });
+        }
     }
 
     [Test]

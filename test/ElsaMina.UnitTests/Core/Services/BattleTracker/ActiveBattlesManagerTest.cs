@@ -39,13 +39,13 @@ public class ActiveBattlesManagerTest
         // Assert
         _client.Received(1).Send("|/cmd roomlist gen9ou,none,prefix");
         Assert.That(result, Has.Count.EqualTo(2));
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.First().RoomId, Is.EqualTo("battle-gen9ou-2544193713"));
             Assert.That(result.First().Player1, Is.EqualTo("shiyedesu"));
             Assert.That(result.First().Player2, Is.EqualTo("servantofthejudge"));
             Assert.That(result.First().MinElo, Is.EqualTo(1273));
-        });
+        }
     }
 
     [Test]

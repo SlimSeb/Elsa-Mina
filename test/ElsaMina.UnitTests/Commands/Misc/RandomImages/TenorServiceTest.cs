@@ -95,10 +95,13 @@ public class TenorServiceTest
 
         var result = await _tenorService.GetRandomMediaAsync("cats", "gif");
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Url, Is.EqualTo("https://media.tenor.com/a.gif"));
-        Assert.That(result.Width, Is.EqualTo(200));
-        Assert.That(result.Height, Is.EqualTo(100));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Url, Is.EqualTo("https://media.tenor.com/a.gif"));
+            Assert.That(result.Width, Is.EqualTo(200));
+            Assert.That(result.Height, Is.EqualTo(100));
+        }
     }
 
     [Test]
@@ -172,7 +175,10 @@ public class TenorServiceTest
 
         var result = await _tenorService.GetMultipleMediaAsync("cats", "gif", 4);
 
-        Assert.That(result, Has.Count.EqualTo(1));
-        Assert.That(result[0].Url, Is.EqualTo("https://media.tenor.com/a.gif"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result[0].Url, Is.EqualTo("https://media.tenor.com/a.gif"));
+        }
     }
 }

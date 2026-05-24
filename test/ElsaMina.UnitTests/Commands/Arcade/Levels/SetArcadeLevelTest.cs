@@ -48,12 +48,15 @@ public class SetArcadeLevelCommandTests
         var command = new SetArcadeLevelCommand(_dbContextFactory);
 
         // Assert
-        Assert.That(command, Is.Not.Null);
-        Assert.That(command.Name, Is.EqualTo("addpalier"));
-        Assert.That(command.Aliases, Is.EquivalentTo(new[] { "setpalier" }));
-        Assert.That(command.RequiredRank, Is.EqualTo(Rank.Driver));
-        Assert.That(command.RoomRestriction, Is.EqualTo(new[] { "arcade", "botdevelopment" }));
-        Assert.That(command.HelpMessageKey, Is.EqualTo("arcade_level_help"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(command, Is.Not.Null);
+            Assert.That(command.Name, Is.EqualTo("addpalier"));
+            Assert.That(command.Aliases, Is.EquivalentTo(new[] { "setpalier" }));
+            Assert.That(command.RequiredRank, Is.EqualTo(Rank.Driver));
+            Assert.That(command.RoomRestriction, Is.EqualTo(new[] { "arcade", "botdevelopment" }));
+            Assert.That(command.HelpMessageKey, Is.EqualTo("arcade_level_help"));
+        }
     }
 
     [Test]
@@ -159,9 +162,12 @@ public class SetArcadeLevelCommandTests
         using (var assertContext = new BotDbContext(_dbOptions))
         {
             var addedLevel = await assertContext.ArcadeLevels.FindAsync("newuser");
-            Assert.That(addedLevel, Is.Not.Null);
-            Assert.That(addedLevel.Id, Is.EqualTo("newuser"));
-            Assert.That(addedLevel.Level, Is.EqualTo(10));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(addedLevel, Is.Not.Null);
+                Assert.That(addedLevel.Id, Is.EqualTo("newuser"));
+                Assert.That(addedLevel.Level, Is.EqualTo(10));
+            }
         }
 
         _context.Received(1).ReplyLocalizedMessage("arcade_level_add", "newuser", 10);
@@ -189,8 +195,11 @@ public class SetArcadeLevelCommandTests
         using (var assertContext = new BotDbContext(_dbOptions))
         {
             var updatedLevel = await assertContext.ArcadeLevels.FindAsync("existinguser");
-            Assert.That(updatedLevel, Is.Not.Null);
-            Assert.That(updatedLevel.Level, Is.EqualTo(20));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(updatedLevel, Is.Not.Null);
+                Assert.That(updatedLevel.Level, Is.EqualTo(20));
+            }
         }
 
         _context.Received(1).ReplyLocalizedMessage("arcade_level_update", "existinguser", 20);
@@ -210,8 +219,11 @@ public class SetArcadeLevelCommandTests
         using (var assertContext = new BotDbContext(_dbOptions))
         {
             var addedLevel = await assertContext.ArcadeLevels.FindAsync("testuser123");
-            Assert.That(addedLevel, Is.Not.Null);
-            Assert.That(addedLevel.Level, Is.EqualTo(15));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(addedLevel, Is.Not.Null);
+                Assert.That(addedLevel.Level, Is.EqualTo(15));
+            }
         }
 
         _context.Received(1).ReplyLocalizedMessage("arcade_level_add", "testuser123", 15);
@@ -348,8 +360,11 @@ public class SetArcadeLevelCommandTests
         using (var assertContext = new BotDbContext(_dbOptions))
         {
             var addedLevel = await assertContext.ArcadeLevels.FindAsync("user1");
-            Assert.That(addedLevel, Is.Not.Null);
-            Assert.That(addedLevel.Level, Is.EqualTo(10));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(addedLevel, Is.Not.Null);
+                Assert.That(addedLevel.Level, Is.EqualTo(10));
+            }
         }
 
         _context.Received(1).ReplyLocalizedMessage("arcade_level_add", "user1", 10);
@@ -381,9 +396,12 @@ public class SetArcadeLevelCommandTests
             var updatedUser2 = await assertContext.ArcadeLevels.FindAsync("user2");
             var updatedUser3 = await assertContext.ArcadeLevels.FindAsync("user3");
 
-            Assert.That(updatedUser1.Level, Is.EqualTo(5));
-            Assert.That(updatedUser2.Level, Is.EqualTo(25));
-            Assert.That(updatedUser3.Level, Is.EqualTo(15));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(updatedUser1.Level, Is.EqualTo(5));
+                Assert.That(updatedUser2.Level, Is.EqualTo(25));
+                Assert.That(updatedUser3.Level, Is.EqualTo(15));
+            }
         }
     }
 

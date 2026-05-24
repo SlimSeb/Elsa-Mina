@@ -103,7 +103,10 @@ public class LadderHistoryManagerTest
         ]);
 
         // Assert
-        Assert.That(previousForOtherPrefix, Is.Empty);
-        Assert.That(previousForSamePrefix["alice"], Is.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(previousForOtherPrefix, Is.Empty);
+            Assert.That(previousForSamePrefix["alice"], Is.EqualTo(2));
+        }
     }
 }

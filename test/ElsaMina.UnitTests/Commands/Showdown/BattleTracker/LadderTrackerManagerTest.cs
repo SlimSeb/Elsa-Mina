@@ -137,8 +137,11 @@ public class LadderTrackerManagerTest
         await Task.Delay(TimeSpan.FromMilliseconds(80));
 
         // Assert
-        Assert.That(pollCountAfterStop, Is.GreaterThan(0));
-        Assert.That(pollCount, Is.LessThanOrEqualTo(pollCountAfterStop + 1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pollCountAfterStop, Is.GreaterThan(0));
+            Assert.That(pollCount, Is.LessThanOrEqualTo(pollCountAfterStop + 1));
+        }
     }
 
     [Test]
@@ -168,9 +171,12 @@ public class LadderTrackerManagerTest
         await Task.Delay(TimeSpan.FromMilliseconds(80));
 
         // Assert
-        Assert.That(pollCountAfterFirstUnsubscribe, Is.GreaterThan(0));
-        Assert.That(pollCountWithOneRoomLeft, Is.GreaterThan(pollCountAfterFirstUnsubscribe));
-        Assert.That(pollCount, Is.LessThanOrEqualTo(pollCountAfterFinalUnsubscribe + 1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pollCountAfterFirstUnsubscribe, Is.GreaterThan(0));
+            Assert.That(pollCountWithOneRoomLeft, Is.GreaterThan(pollCountAfterFirstUnsubscribe));
+            Assert.That(pollCount, Is.LessThanOrEqualTo(pollCountAfterFinalUnsubscribe + 1));
+        }
     }
 
     private static ActiveBattleDto BuildBattle(string roomId, string player1, string player2, int elo)

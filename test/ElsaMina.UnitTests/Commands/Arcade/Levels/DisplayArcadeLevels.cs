@@ -54,12 +54,15 @@ public class DisplayArcadeLevelsCommandTests
         var command = new DisplayArcadeLevelsCommand(_templatesManager, _dbContextFactory);
 
         // Assert
-        Assert.That(command, Is.Not.Null);
-        Assert.That(command.Name, Is.EqualTo("displaypaliers"));
-        Assert.That(command.Aliases, Is.EquivalentTo(new[] { "displaypalier", "paliers", "arcadelevels" }));
-        Assert.That(command.RequiredRank, Is.EqualTo(Rank.Regular));
-        Assert.That(command.RoomRestriction, Is.EqualTo(new[] { "arcade", "botdevelopment" }));
-        Assert.That(command.HelpMessageKey, Is.EqualTo("display_paliers_help"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(command, Is.Not.Null);
+            Assert.That(command.Name, Is.EqualTo("displaypaliers"));
+            Assert.That(command.Aliases, Is.EquivalentTo(new[] { "displaypalier", "paliers", "arcadelevels" }));
+            Assert.That(command.RequiredRank, Is.EqualTo(Rank.Regular));
+            Assert.That(command.RoomRestriction, Is.EqualTo(new[] { "arcade", "botdevelopment" }));
+            Assert.That(command.HelpMessageKey, Is.EqualTo("display_paliers_help"));
+        }
     }
 
     [Test]

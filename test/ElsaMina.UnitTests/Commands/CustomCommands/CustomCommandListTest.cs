@@ -49,9 +49,12 @@ public class CustomCommandListTest
     {
         var command = new CustomCommandList(_dbContextFactory, _templatesManager);
 
-        Assert.That(command, Is.Not.Null);
-        Assert.That(command.Name, Is.EqualTo("custom-command-list"));
-        Assert.That(command.RequiredRank, Is.EqualTo(Rank.Voiced));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(command, Is.Not.Null);
+            Assert.That(command.Name, Is.EqualTo("custom-command-list"));
+            Assert.That(command.RequiredRank, Is.EqualTo(Rank.Voiced));
+        }
     }
 
     [Test]

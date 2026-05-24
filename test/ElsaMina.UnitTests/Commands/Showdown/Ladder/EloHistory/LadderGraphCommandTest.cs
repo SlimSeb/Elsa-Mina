@@ -256,12 +256,12 @@ public class LadderGraphCommandTest
     [Test]
     public void Test_RequiredRank_And_HelpMessageKey_ShouldMatchContract()
     {
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Regular));
             Assert.That(_command.HelpMessageKey, Is.EqualTo("ladder_graph_help"));
             Assert.That(_command.IsAllowedInPrivateMessage, Is.True);
-        });
+        }
     }
 
     private async Task SeedSnapshotsAsync(string format, string userId, int count)

@@ -60,9 +60,12 @@ public class StreakServiceTest
         // Assert
         await using var db = new BotDbContext(options);
         var roomUser = await db.RoomUsers.FindAsync("alice", "testroom");
-        Assert.That(roomUser.CurrentStreak, Is.EqualTo(1));
-        Assert.That(roomUser.LongestStreak, Is.EqualTo(1));
-        Assert.That(roomUser.LastActivityDate, Is.EqualTo(today));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(roomUser.CurrentStreak, Is.EqualTo(1));
+            Assert.That(roomUser.LongestStreak, Is.EqualTo(1));
+            Assert.That(roomUser.LastActivityDate, Is.EqualTo(today));
+        }
     }
 
     [Test]
@@ -85,9 +88,12 @@ public class StreakServiceTest
         // Assert
         await using var db = new BotDbContext(options);
         var roomUser = await db.RoomUsers.FindAsync("alice", "testroom");
-        Assert.That(roomUser.CurrentStreak, Is.EqualTo(4));
-        Assert.That(roomUser.LongestStreak, Is.EqualTo(5));
-        Assert.That(roomUser.LastActivityDate, Is.EqualTo(today));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(roomUser.CurrentStreak, Is.EqualTo(4));
+            Assert.That(roomUser.LongestStreak, Is.EqualTo(5));
+            Assert.That(roomUser.LastActivityDate, Is.EqualTo(today));
+        }
     }
 
     [Test]
@@ -110,8 +116,11 @@ public class StreakServiceTest
         // Assert
         await using var db = new BotDbContext(options);
         var roomUser = await db.RoomUsers.FindAsync("alice", "testroom");
-        Assert.That(roomUser.CurrentStreak, Is.EqualTo(6));
-        Assert.That(roomUser.LongestStreak, Is.EqualTo(6));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(roomUser.CurrentStreak, Is.EqualTo(6));
+            Assert.That(roomUser.LongestStreak, Is.EqualTo(6));
+        }
     }
 
     [Test]
@@ -134,9 +143,12 @@ public class StreakServiceTest
         // Assert
         await using var db = new BotDbContext(options);
         var roomUser = await db.RoomUsers.FindAsync("alice", "testroom");
-        Assert.That(roomUser.CurrentStreak, Is.EqualTo(1));
-        Assert.That(roomUser.LongestStreak, Is.EqualTo(10));
-        Assert.That(roomUser.LastActivityDate, Is.EqualTo(today));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(roomUser.CurrentStreak, Is.EqualTo(1));
+            Assert.That(roomUser.LongestStreak, Is.EqualTo(10));
+            Assert.That(roomUser.LastActivityDate, Is.EqualTo(today));
+        }
     }
 
     [Test]
@@ -184,8 +196,11 @@ public class StreakServiceTest
         var (current, longest) = await service.GetStreakAsync("nobody", "testroom");
 
         // Assert
-        Assert.That(current, Is.EqualTo(0));
-        Assert.That(longest, Is.EqualTo(0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(current, Is.EqualTo(0));
+            Assert.That(longest, Is.EqualTo(0));
+        }
     }
 
     [Test]
@@ -204,7 +219,10 @@ public class StreakServiceTest
         var (current, longest) = await service.GetStreakAsync("alice", "testroom");
 
         // Assert
-        Assert.That(current, Is.EqualTo(7));
-        Assert.That(longest, Is.EqualTo(12));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(current, Is.EqualTo(7));
+            Assert.That(longest, Is.EqualTo(12));
+        }
     }
 }

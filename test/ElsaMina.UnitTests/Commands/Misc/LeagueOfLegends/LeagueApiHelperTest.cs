@@ -24,9 +24,12 @@ public class LeagueApiHelperTest
     {
         var result = LeagueApiHelper.TryParseInput("Player#EUW");
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Value.RiotId, Is.EqualTo("Player#EUW"));
-        Assert.That(result.Value.Platform, Is.EqualTo("euw1"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Value.RiotId, Is.EqualTo("Player#EUW"));
+            Assert.That(result.Value.Platform, Is.EqualTo("euw1"));
+        }
     }
 
     [Test]
@@ -34,9 +37,12 @@ public class LeagueApiHelperTest
     {
         var result = LeagueApiHelper.TryParseInput("Player#NA, na1");
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Value.RiotId, Is.EqualTo("Player#NA"));
-        Assert.That(result.Value.Platform, Is.EqualTo("na1"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Value.RiotId, Is.EqualTo("Player#NA"));
+            Assert.That(result.Value.Platform, Is.EqualTo("na1"));
+        }
     }
 
     [Test]
@@ -44,9 +50,12 @@ public class LeagueApiHelperTest
     {
         var result = LeagueApiHelper.TryParseInput("  Player#EUW  ,  kr  ");
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Value.RiotId, Is.EqualTo("Player#EUW"));
-        Assert.That(result.Value.Platform, Is.EqualTo("kr"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Value.RiotId, Is.EqualTo("Player#EUW"));
+            Assert.That(result.Value.Platform, Is.EqualTo("kr"));
+        }
     }
 
     // --- GetRouting ---
@@ -74,8 +83,11 @@ public class LeagueApiHelperTest
     [Test]
     public void Test_GetRouting_ShouldBeCaseInsensitive()
     {
-        Assert.That(LeagueApiHelper.GetRouting("EUW1"), Is.EqualTo("europe"));
-        Assert.That(LeagueApiHelper.GetRouting("NA1"), Is.EqualTo("americas"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(LeagueApiHelper.GetRouting("EUW1"), Is.EqualTo("europe"));
+            Assert.That(LeagueApiHelper.GetRouting("NA1"), Is.EqualTo("americas"));
+        }
     }
 
     [Test]
@@ -91,8 +103,11 @@ public class LeagueApiHelperTest
     {
         var (gameName, tagLine) = LeagueApiHelper.SplitRiotId("Player#EUW");
 
-        Assert.That(gameName, Is.EqualTo("Player"));
-        Assert.That(tagLine, Is.EqualTo("EUW"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(gameName, Is.EqualTo("Player"));
+            Assert.That(tagLine, Is.EqualTo("EUW"));
+        }
     }
 
     [Test]
@@ -100,8 +115,11 @@ public class LeagueApiHelperTest
     {
         var (gameName, tagLine) = LeagueApiHelper.SplitRiotId("Cool Player#NA1");
 
-        Assert.That(gameName, Is.EqualTo("Cool Player"));
-        Assert.That(tagLine, Is.EqualTo("NA1"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(gameName, Is.EqualTo("Cool Player"));
+            Assert.That(tagLine, Is.EqualTo("NA1"));
+        }
     }
 
     // --- BuildHeaders ---

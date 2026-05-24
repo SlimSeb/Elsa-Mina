@@ -87,8 +87,11 @@ public class ArcadeRemoveCommandTest
 
         _command.RunAsync(_context);
 
-        Assert.That(state.Participants, Does.Not.Contain("someuser"));
-        Assert.That(state.BannedUsers, Contains.Item("someuser"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(state.Participants, Does.Not.Contain("someuser"));
+            Assert.That(state.BannedUsers, Contains.Item("someuser"));
+        }
         _context.Received(1).ReplyLocalizedMessage("arcade_remove_success", "someuser");
     }
 

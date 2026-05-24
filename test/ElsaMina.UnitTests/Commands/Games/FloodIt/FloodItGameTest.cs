@@ -103,11 +103,11 @@ public class FloodItGameTest
     {
         await _game.StartNewRound();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Grid, Is.Not.Null);
             Assert.That(_game.IsClaimed, Is.Not.Null);
-        });
+        }
     }
 
     [Test]
@@ -132,8 +132,11 @@ public class FloodItGameTest
     {
         await _game.StartNewRound();
 
-        Assert.That(_game.Level, Is.EqualTo(1));
-        Assert.That(_game.TotalStars, Is.EqualTo(0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Level, Is.EqualTo(1));
+            Assert.That(_game.TotalStars, Is.EqualTo(0));
+        }
     }
 
     [Test]
@@ -153,8 +156,11 @@ public class FloodItGameTest
 
         await _game.StartNewRound();
 
-        Assert.That(_game.Level, Is.EqualTo(4));
-        Assert.That(_game.TotalStars, Is.EqualTo(7));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Level, Is.EqualTo(4));
+            Assert.That(_game.TotalStars, Is.EqualTo(7));
+        }
     }
 
     [Test]
@@ -261,11 +267,11 @@ public class FloodItGameTest
 
         await _game.FloodFill(_mockUser, 1);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.IsRoundActive, Is.False);
             Assert.That(_game.IsEnded, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -331,11 +337,11 @@ public class FloodItGameTest
             }
         }
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.IsRoundActive, Is.False);
             Assert.That(_game.IsEnded, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -431,9 +437,12 @@ public class FloodItGameTest
 
         await using var db = new BotDbContext(_dbOptions);
         var record = await db.FloodItScores.FindAsync("testplayer");
-        Assert.That(record, Is.Not.Null);
-        Assert.That(record.Level, Is.EqualTo(2));
-        Assert.That(record.TotalStars, Is.GreaterThan(0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record, Is.Not.Null);
+            Assert.That(record.Level, Is.EqualTo(2));
+            Assert.That(record.TotalStars, Is.GreaterThan(0));
+        }
     }
 
     [Test]
@@ -466,8 +475,11 @@ public class FloodItGameTest
 
         await using var verifyDb = new BotDbContext(_dbOptions);
         var record = await verifyDb.FloodItScores.FindAsync("testplayer");
-        Assert.That(record, Is.Not.Null);
-        Assert.That(record.Level, Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record, Is.Not.Null);
+            Assert.That(record.Level, Is.EqualTo(1));
+        }
     }
 
     [Test]
@@ -563,8 +575,11 @@ public class FloodItGameTest
 
         await using var verifyDb = new BotDbContext(_dbOptions);
         var record = await verifyDb.FloodItScores.FindAsync("testplayer");
-        Assert.That(record, Is.Not.Null);
-        Assert.That(record.Level, Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record, Is.Not.Null);
+            Assert.That(record.Level, Is.EqualTo(1));
+        }
     }
 
     [Test]

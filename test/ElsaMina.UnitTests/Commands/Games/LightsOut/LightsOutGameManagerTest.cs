@@ -39,8 +39,11 @@ public class LightsOutGameManagerTest
         var game = Substitute.For<ILightsOutGame>();
         _sut.RegisterGame("room1", "user1", game);
 
-        Assert.That(_sut.GetGame("room1", "user2"), Is.Null);
-        Assert.That(_sut.GetGame("room2", "user1"), Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_sut.GetGame("room1", "user2"), Is.Null);
+            Assert.That(_sut.GetGame("room2", "user1"), Is.Null);
+        }
     }
 
     [Test]
@@ -64,8 +67,11 @@ public class LightsOutGameManagerTest
         _sut.RegisterGame("room1", "user1", game1);
         _sut.RegisterGame("room1", "user2", game2);
 
-        Assert.That(_sut.GetGame("room1", "user1"), Is.SameAs(game1));
-        Assert.That(_sut.GetGame("room1", "user2"), Is.SameAs(game2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_sut.GetGame("room1", "user1"), Is.SameAs(game1));
+            Assert.That(_sut.GetGame("room1", "user2"), Is.SameAs(game2));
+        }
     }
 
     [Test]

@@ -129,14 +129,14 @@ public class TourEndHandlerTest
 
         await using var dbContext = new BotDbContext(_dbOptions);
         var record = await dbContext.TournamentRecords.FindAsync(["pujolly", "arcade"]);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(record.WinsCount, Is.EqualTo(1));
             Assert.That(record.RunnerUpCount, Is.EqualTo(0));
             Assert.That(record.ThirdPlaceCount, Is.EqualTo(0));
             Assert.That(record.WonGames, Is.EqualTo(3));
             Assert.That(record.PlayedGames, Is.EqualTo(3));
-        });
+        }
     }
 
     [Test]
@@ -149,14 +149,14 @@ public class TourEndHandlerTest
 
         await using var dbContext = new BotDbContext(_dbOptions);
         var record = await dbContext.TournamentRecords.FindAsync(["emon123", "arcade"]);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(record.WinsCount, Is.EqualTo(0));
             Assert.That(record.RunnerUpCount, Is.EqualTo(1));
             Assert.That(record.ThirdPlaceCount, Is.EqualTo(0));
             Assert.That(record.WonGames, Is.EqualTo(3));
             Assert.That(record.PlayedGames, Is.EqualTo(4));
-        });
+        }
     }
 
     [Test]
@@ -170,7 +170,7 @@ public class TourEndHandlerTest
         await using var dbContext = new BotDbContext(_dbOptions);
         var reegychodon = await dbContext.TournamentRecords.FindAsync(["reegychodon64", "arcade"]);
         var bloodyjae = await dbContext.TournamentRecords.FindAsync(["bloodyjae", "arcade"]);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(reegychodon.ThirdPlaceCount, Is.EqualTo(1));
             Assert.That(reegychodon.WonGames, Is.EqualTo(1));
@@ -178,7 +178,7 @@ public class TourEndHandlerTest
             Assert.That(bloodyjae.ThirdPlaceCount, Is.EqualTo(1));
             Assert.That(bloodyjae.WonGames, Is.EqualTo(1));
             Assert.That(bloodyjae.PlayedGames, Is.EqualTo(2));
-        });
+        }
     }
 
     [Test]
@@ -191,14 +191,14 @@ public class TourEndHandlerTest
 
         await using var dbContext = new BotDbContext(_dbOptions);
         var record = await dbContext.TournamentRecords.FindAsync(["drafeukun", "arcade"]);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(record.WinsCount, Is.EqualTo(0));
             Assert.That(record.RunnerUpCount, Is.EqualTo(0));
             Assert.That(record.ThirdPlaceCount, Is.EqualTo(0));
             Assert.That(record.WonGames, Is.EqualTo(0));
             Assert.That(record.PlayedGames, Is.EqualTo(1));
-        });
+        }
     }
 
     [Test]
@@ -213,12 +213,12 @@ public class TourEndHandlerTest
         foreach (var userId in firstRoundLosers)
         {
             var record = await dbContext.TournamentRecords.FindAsync([userId, "arcade"]);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(record.WinsCount, Is.EqualTo(0), $"WinsCount for {userId}");
                 Assert.That(record.RunnerUpCount, Is.EqualTo(0), $"RunnerUpCount for {userId}");
                 Assert.That(record.ThirdPlaceCount, Is.EqualTo(0), $"ThirdPlaceCount for {userId}");
-            });
+            }
         }
     }
 
@@ -247,13 +247,13 @@ public class TourEndHandlerTest
 
         await using var dbContext = new BotDbContext(_dbOptions);
         var record = await dbContext.TournamentRecords.FindAsync(["pujolly", "arcade"]);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(record.TournamentsEnteredCount, Is.EqualTo(6));
             Assert.That(record.WinsCount, Is.EqualTo(3));
             Assert.That(record.WonGames, Is.EqualTo(11));
             Assert.That(record.PlayedGames, Is.EqualTo(12));
-        });
+        }
     }
 
     [Test]

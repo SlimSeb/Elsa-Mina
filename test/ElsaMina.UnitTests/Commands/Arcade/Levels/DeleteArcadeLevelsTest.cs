@@ -47,12 +47,15 @@ public class DeleteArcadeLevelCommandTests
         var command = new DeleteArcadeLevelCommand(_dbContextFactory);
 
         // Assert
-        Assert.That(command, Is.Not.Null);
-        Assert.That(command.Name, Is.EqualTo("deletepalier"));
-        Assert.That(command.Aliases, Is.EquivalentTo(new[] { "removepalier", "removelevel" }));
-        Assert.That(command.RequiredRank, Is.EqualTo(Rank.Driver));
-        Assert.That(command.RoomRestriction, Is.EqualTo(new[] { "arcade", "botdevelopment" }));
-        Assert.That(command.HelpMessageKey, Is.EqualTo("arcade_level_delete_help"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(command, Is.Not.Null);
+            Assert.That(command.Name, Is.EqualTo("deletepalier"));
+            Assert.That(command.Aliases, Is.EquivalentTo(new[] { "removepalier", "removelevel" }));
+            Assert.That(command.RequiredRank, Is.EqualTo(Rank.Driver));
+            Assert.That(command.RoomRestriction, Is.EqualTo(new[] { "arcade", "botdevelopment" }));
+            Assert.That(command.HelpMessageKey, Is.EqualTo("arcade_level_delete_help"));
+        }
     }
 
     [Test]
@@ -286,9 +289,12 @@ public class DeleteArcadeLevelCommandTests
             var stillExistsUser1 = await assertContext.ArcadeLevels.FindAsync("user1");
             var stillExistsUser3 = await assertContext.ArcadeLevels.FindAsync("user3");
             
-            Assert.That(deletedUser, Is.Null);
-            Assert.That(stillExistsUser1, Is.Not.Null);
-            Assert.That(stillExistsUser3, Is.Not.Null);
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(deletedUser, Is.Null);
+                Assert.That(stillExistsUser1, Is.Not.Null);
+                Assert.That(stillExistsUser3, Is.Not.Null);
+            }
         }
         
         _context.Received(1).ReplyLocalizedMessage("arcade_level_delete_success");

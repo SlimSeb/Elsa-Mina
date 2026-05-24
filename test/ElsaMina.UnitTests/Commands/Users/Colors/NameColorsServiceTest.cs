@@ -51,8 +51,11 @@ public class NameColorsServiceTest
 
         await _service.LoadAsync();
 
-        Assert.That(_service.GetColor("user1"), Is.EqualTo("#ff0000"));
-        Assert.That(_service.GetColor("user2"), Is.EqualTo("#00ff00"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_service.GetColor("user1"), Is.EqualTo("#ff0000"));
+            Assert.That(_service.GetColor("user2"), Is.EqualTo("#00ff00"));
+        }
     }
 
     [Test]
@@ -70,8 +73,11 @@ public class NameColorsServiceTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var entry = await assertContext.NameColors.FindAsync("user1");
-        Assert.That(entry, Is.Not.Null);
-        Assert.That(entry.Color, Is.EqualTo("#abc123"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(entry, Is.Not.Null);
+            Assert.That(entry.Color, Is.EqualTo("#abc123"));
+        }
     }
 
     [Test]

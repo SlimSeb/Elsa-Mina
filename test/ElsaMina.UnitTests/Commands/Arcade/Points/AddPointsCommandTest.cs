@@ -46,10 +46,13 @@ public class AddPointsCommandTest
     {
         var command = new AddPointsCommand(_dbContextFactory, _templatesManager);
 
-        Assert.That(command, Is.Not.Null);
-        Assert.That(command.Name, Is.EqualTo("addp"));
-        Assert.That(command.RequiredRank, Is.EqualTo(Rank.Voiced));
-        Assert.That(command.HelpMessageKey, Is.EqualTo("add_points_help"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(command, Is.Not.Null);
+            Assert.That(command.Name, Is.EqualTo("addp"));
+            Assert.That(command.RequiredRank, Is.EqualTo(Rank.Voiced));
+            Assert.That(command.HelpMessageKey, Is.EqualTo("add_points_help"));
+        }
     }
 
     [Test]
@@ -85,9 +88,12 @@ public class AddPointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var addedUser = await assertContext.UserPoints.FindAsync("newuser");
-        Assert.That(addedUser, Is.Not.Null);
-        Assert.That(addedUser.Id, Is.EqualTo("newuser"));
-        Assert.That(addedUser.Points, Is.EqualTo(10.5));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(addedUser, Is.Not.Null);
+            Assert.That(addedUser.Id, Is.EqualTo("newuser"));
+            Assert.That(addedUser.Points, Is.EqualTo(10.5));
+        }
     }
 
     [Test]
@@ -107,8 +113,11 @@ public class AddPointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var updatedUser = await assertContext.UserPoints.FindAsync("existinguser");
-        Assert.That(updatedUser, Is.Not.Null);
-        Assert.That(updatedUser.Points, Is.EqualTo(8.5));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(updatedUser, Is.Not.Null);
+            Assert.That(updatedUser.Points, Is.EqualTo(8.5));
+        }
     }
 
     [Test]
@@ -132,8 +141,11 @@ public class AddPointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var addedUser = await assertContext.UserPoints.FindAsync("testuser123");
-        Assert.That(addedUser, Is.Not.Null);
-        Assert.That(addedUser.Points, Is.EqualTo(5.0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(addedUser, Is.Not.Null);
+            Assert.That(addedUser.Points, Is.EqualTo(5.0));
+        }
     }
 
     [Test]
@@ -195,8 +207,11 @@ public class AddPointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var addedUser = await assertContext.UserPoints.FindAsync("user1");
-        Assert.That(addedUser, Is.Not.Null);
-        Assert.That(addedUser.Points, Is.EqualTo(10.0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(addedUser, Is.Not.Null);
+            Assert.That(addedUser.Points, Is.EqualTo(10.0));
+        }
     }
 
     [Test]

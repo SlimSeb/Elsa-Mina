@@ -10,8 +10,11 @@ public class LightsOutConstantsTest
     {
         var (gridSize, presses) = LightsOutConstants.GetLevelConfig(1);
 
-        Assert.That(gridSize, Is.EqualTo(5));
-        Assert.That(presses, Is.EqualTo(3));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(gridSize, Is.EqualTo(5));
+            Assert.That(presses, Is.EqualTo(3));
+        }
     }
 
     [Test]
@@ -20,8 +23,11 @@ public class LightsOutConstantsTest
         var (gridSize, presses) = LightsOutConstants.GetLevelConfig(100);
 
         var (expectedGridSize, expectedPresses) = LightsOutConstants.LEVEL_CONFIGURATIONS[^1];
-        Assert.That(gridSize, Is.EqualTo(expectedGridSize));
-        Assert.That(presses, Is.EqualTo(expectedPresses));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(gridSize, Is.EqualTo(expectedGridSize));
+            Assert.That(presses, Is.EqualTo(expectedPresses));
+        }
     }
 
     [Test]
@@ -29,8 +35,11 @@ public class LightsOutConstantsTest
     {
         var (gridSize, presses) = LightsOutConstants.GetLevelConfig(0);
 
-        Assert.That(gridSize, Is.EqualTo(5));
-        Assert.That(presses, Is.EqualTo(3));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(gridSize, Is.EqualTo(5));
+            Assert.That(presses, Is.EqualTo(3));
+        }
     }
 
     [Test]
@@ -38,8 +47,11 @@ public class LightsOutConstantsTest
     {
         var (gridSize, presses) = LightsOutConstants.GetLevelConfig(15);
 
-        Assert.That(gridSize, Is.EqualTo(8));
-        Assert.That(presses, Is.EqualTo(22));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(gridSize, Is.EqualTo(8));
+            Assert.That(presses, Is.EqualTo(22));
+        }
     }
 
     [Test]

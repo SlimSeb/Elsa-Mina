@@ -93,9 +93,12 @@ public class RandomCustomCommandTest
 
         await _command.RunAsync(_context);
 
-        Assert.That(capturedList, Is.Not.Null);
-        Assert.That(capturedList.Count(), Is.EqualTo(2));
-        Assert.That(capturedList.All(c => c.RoomId == "testroom"), Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedList, Is.Not.Null);
+            Assert.That(capturedList.Count(), Is.EqualTo(2));
+            Assert.That(capturedList.All(c => c.RoomId == "testroom"), Is.True);
+        }
     }
 
     [Test]

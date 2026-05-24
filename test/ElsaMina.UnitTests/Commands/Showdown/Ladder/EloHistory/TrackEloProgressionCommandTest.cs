@@ -101,10 +101,10 @@ public class TrackEloProgressionCommandTest
     [Test]
     public void Test_RequiredRank_And_HelpMessageKey_ShouldMatchContract()
     {
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Voiced));
             Assert.That(_command.HelpMessageKey, Is.EqualTo("track_elo_progression_help"));
-        });
+        }
     }
 }

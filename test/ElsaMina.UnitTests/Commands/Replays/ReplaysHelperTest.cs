@@ -40,12 +40,12 @@ public class ReplaysHelperTest
         var teams = ReplaysHelper.GetTeamsFromLog(replayLog);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(teams, Has.Count.EqualTo(1));
             Assert.That(teams.ContainsKey("p1"), Is.True);
             Assert.That(teams["p1"][0], Is.EqualTo("Pikachu"));
-        });
+        }
     }
 
     [Test]
@@ -58,7 +58,7 @@ public class ReplaysHelperTest
         var teams = ReplaysHelper.GetTeamsFromLog(replayLog);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(teams, Has.Count.EqualTo(2));
             Assert.That(teams["p1"], Has.Count.EqualTo(2));
@@ -66,7 +66,7 @@ public class ReplaysHelperTest
             Assert.That(teams["p1"][0], Is.EqualTo("Pikachu"));
             Assert.That(teams["p1"][1], Is.EqualTo("Charizard"));
             Assert.That(teams["p2"][0], Is.EqualTo("Bulbasaur"));
-        });
+        }
     }
 
     [Test]
@@ -79,13 +79,13 @@ public class ReplaysHelperTest
         var teams = ReplaysHelper.GetTeamsFromLog(replayLog);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(teams, Has.Count.EqualTo(1));
             Assert.That(teams["p1"], Has.Count.EqualTo(2));
             Assert.That(teams["p1"][0], Is.EqualTo("Pikachu"));
             Assert.That(teams["p1"][1], Is.EqualTo("Charizard"));
-        });
+        }
     }
 
     [Test]
@@ -98,12 +98,12 @@ public class ReplaysHelperTest
         var teams = ReplaysHelper.GetTeamsFromLog(replayLog);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(teams, Has.Count.EqualTo(2));
             Assert.That(teams["p1"][0], Is.EqualTo("Pikachu"));
             Assert.That(teams["p1"][1], Is.EqualTo("Eevee"));
             Assert.That(teams["p2"][0], Is.EqualTo("Charmander"));
-        });
+        }
     }
 }

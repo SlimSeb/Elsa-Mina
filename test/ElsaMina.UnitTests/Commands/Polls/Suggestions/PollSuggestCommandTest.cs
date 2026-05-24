@@ -132,11 +132,14 @@ public class PollSuggestCommandTest
         await _command.RunAsync(_context);
 
         var saved = await GetFirstSuggestionAsync();
-        Assert.That(saved, Is.Not.Null);
-        Assert.That(saved.RoomId, Is.EqualTo("testroom"));
-        Assert.That(saved.UserId, Is.EqualTo("testuser"));
-        Assert.That(saved.UserName, Is.EqualTo("TestUser"));
-        Assert.That(saved.Content, Is.EqualTo("My poll suggestion"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(saved, Is.Not.Null);
+            Assert.That(saved.RoomId, Is.EqualTo("testroom"));
+            Assert.That(saved.UserId, Is.EqualTo("testuser"));
+            Assert.That(saved.UserName, Is.EqualTo("TestUser"));
+            Assert.That(saved.Content, Is.EqualTo("My poll suggestion"));
+        }
     }
 
     [Test]
@@ -147,8 +150,11 @@ public class PollSuggestCommandTest
         await _command.RunAsync(_context);
 
         var saved = await GetFirstSuggestionAsync();
-        Assert.That(saved, Is.Not.Null);
-        Assert.That(saved.Content, Is.EqualTo("My poll suggestion"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(saved, Is.Not.Null);
+            Assert.That(saved.Content, Is.EqualTo("My poll suggestion"));
+        }
     }
 
     [Test]

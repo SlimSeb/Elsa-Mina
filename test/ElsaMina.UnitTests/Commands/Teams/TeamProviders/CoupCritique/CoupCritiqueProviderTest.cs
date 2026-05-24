@@ -73,14 +73,14 @@ public class CoupCritiqueProviderTest
         var result = await _provider.GetTeamExport(teamLink);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Title, Is.EqualTo(expectedTeamData.Team.Name));
             Assert.That(result.Description, Is.EqualTo(expectedTeamData.Team.Description));
             Assert.That(result.TeamExport, Is.EqualTo(expectedTeamData.Team.Export));
             Assert.That(result.Author, Is.EqualTo(expectedTeamData.Team.User.UserName));
-        });
+        }
     }
 
     [Test]

@@ -56,12 +56,12 @@ public class PollEndHandlerTests
 
         Assert.That(savedPolls, Is.Not.Empty);
         var savedPoll = savedPolls.First();
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(savedPoll.RoomId, Is.EqualTo(TestRoomId));
             Assert.That(savedPoll.Content, Is.EqualTo(expectedContent));
             Assert.That(savedPoll.EndedAt, Is.EqualTo(_expectedTime));
-        });
+        }
     }
 
     [Test]
@@ -80,12 +80,12 @@ public class PollEndHandlerTests
 
         Assert.That(savedPolls, Is.Not.Empty);
         var savedPoll = savedPolls.First();
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(savedPoll.RoomId, Is.EqualTo(TestRoomId));
             Assert.That(savedPoll.Content, Is.EqualTo(expectedContent));
             Assert.That(savedPoll.EndedAt, Is.EqualTo(_expectedTime));
-        });
+        }
     }
 
     [Test]

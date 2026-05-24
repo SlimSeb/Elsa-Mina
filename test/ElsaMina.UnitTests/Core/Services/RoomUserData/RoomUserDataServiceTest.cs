@@ -63,8 +63,11 @@ public class RoomUserDataServiceTest
         var result = await _service.GetOrCreateRoomSpecificUserDataAsync(roomId, userId);
 
         // Assert
-        Assert.That(result.Id, Is.EqualTo(userId));
-        Assert.That(result.RoomId, Is.EqualTo(roomId));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Id, Is.EqualTo(userId));
+            Assert.That(result.RoomId, Is.EqualTo(roomId));
+        }
     }
 
     [Test]
@@ -78,8 +81,11 @@ public class RoomUserDataServiceTest
         var result = await _service.GetOrCreateRoomSpecificUserDataAsync(roomId, userId);
 
         // Assert
-        Assert.That(result.Id, Is.EqualTo(userId));
-        Assert.That(result.RoomId, Is.EqualTo(roomId));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Id, Is.EqualTo(userId));
+            Assert.That(result.RoomId, Is.EqualTo(roomId));
+        }
 
         var dbUser = await _db.RoomUsers.FindAsync(userId, roomId);
         Assert.That(dbUser, Is.Not.Null);
@@ -101,12 +107,12 @@ public class RoomUserDataServiceTest
         await _service.InitializeJoinPhrasesAsync();
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_service.JoinPhrases.Count, Is.EqualTo(2));
             Assert.That(_service.JoinPhrases[Tuple.Create("user1", "room1")], Is.EqualTo("Hello"));
             Assert.That(_service.JoinPhrases[Tuple.Create("user2", "room2")], Is.EqualTo("Welcome"));
-        });
+        }
     }
 
     [Test]
@@ -122,8 +128,11 @@ public class RoomUserDataServiceTest
 
         // Assert
         var badge = await _db.BadgeHoldings.FindAsync(badgeId, userId, roomId);
-        Assert.That(badge, Is.Not.Null);
-        Assert.That(badge.BadgeId, Is.EqualTo(badgeId));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(badge, Is.Not.Null);
+            Assert.That(badge.BadgeId, Is.EqualTo(badgeId));
+        }
     }
 
     [Test]
@@ -250,7 +259,10 @@ public class RoomUserDataServiceTest
         // Assert
         await using var dbContext = new BotDbContext(_options);
         var dbUser = await dbContext.RoomUsers.FindAsync(userId, roomId);
-        Assert.That(dbUser.JoinPhrase, Is.EqualTo(joinPhrase));
-        Assert.That(_service.JoinPhrases[Tuple.Create(userId, roomId)], Is.EqualTo(joinPhrase));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(dbUser.JoinPhrase, Is.EqualTo(joinPhrase));
+            Assert.That(_service.JoinPhrases[Tuple.Create(userId, roomId)], Is.EqualTo(joinPhrase));
+        }
     }
 }

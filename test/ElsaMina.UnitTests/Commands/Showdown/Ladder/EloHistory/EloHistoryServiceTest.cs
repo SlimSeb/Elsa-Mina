@@ -104,12 +104,12 @@ public class EloHistoryServiceTest
         var snapshots = await dbContext.LadderEloSnapshots.ToListAsync();
         Assert.That(snapshots, Has.Count.GreaterThanOrEqualTo(1));
         var snapshot = snapshots.First();
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(snapshot.UserId, Is.EqualTo("alice"));
             Assert.That(snapshot.Format, Is.EqualTo("gen9ou"));
             Assert.That(snapshot.Elo, Is.EqualTo(1524));
-        });
+        }
     }
 
     [Test]

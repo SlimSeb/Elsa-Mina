@@ -20,11 +20,11 @@ public class CommandTest
     public void Test_Constructor_ShouldInitializePropertiesFromAttribute()
     {
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_testCommand.Name, Is.EqualTo("test-command"));
             Assert.That(_testCommand.Aliases, Is.EquivalentTo(new List<string> { "alias1", "alias2" }));
-        });
+        }
     }
 
     [NamedCommand("test-command", "alias1", "alias2")]

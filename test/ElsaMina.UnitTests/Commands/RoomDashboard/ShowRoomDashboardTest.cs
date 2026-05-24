@@ -159,12 +159,15 @@ public class ShowRoomDashboardTest
 
         await _command.RunAsync(_context);
 
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.Command, Does.StartWith("/w MyBot,!rc testroom,"));
-        Assert.That(capturedViewModel.BotName, Is.EqualTo("MyBot"));
-        Assert.That(capturedViewModel.Trigger, Is.EqualTo("!"));
-        Assert.That(capturedViewModel.RoomId, Is.EqualTo("testroom"));
-        Assert.That(capturedViewModel.RoomName, Is.EqualTo("Test Room"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.Command, Does.StartWith("/w MyBot,!rc testroom,"));
+            Assert.That(capturedViewModel.BotName, Is.EqualTo("MyBot"));
+            Assert.That(capturedViewModel.Trigger, Is.EqualTo("!"));
+            Assert.That(capturedViewModel.RoomId, Is.EqualTo("testroom"));
+            Assert.That(capturedViewModel.RoomName, Is.EqualTo("Test Room"));
+        }
     }
 
     [Test]
@@ -191,10 +194,16 @@ public class ShowRoomDashboardTest
 
         await _command.RunAsync(_context);
 
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.RoomParameterLines, Has.Exactly(1).Items);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.RoomParameterLines, Has.Exactly(1).Items);
+        }
         var line = capturedViewModel.RoomParameterLines.First();
-        Assert.That(line.RoomParameterDefinition, Is.EqualTo(paramDef));
-        Assert.That(line.CurrentValue, Is.EqualTo("en-US"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(line.RoomParameterDefinition, Is.EqualTo(paramDef));
+            Assert.That(line.CurrentValue, Is.EqualTo("en-US"));
+        }
     }
 }

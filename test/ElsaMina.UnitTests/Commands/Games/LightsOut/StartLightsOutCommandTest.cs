@@ -184,8 +184,11 @@ public class StartLightsOutCommandTest
 
         await _sut.RunAsync(_context);
 
-        Assert.That(existingGame.Owner, Is.SameAs(sender));
-        Assert.That(existingGame.Context, Is.SameAs(_context));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(existingGame.Owner, Is.SameAs(sender));
+            Assert.That(existingGame.Context, Is.SameAs(_context));
+        }
     }
 
     // --- Private message path ---
@@ -228,8 +231,11 @@ public class StartLightsOutCommandTest
 
         _dependencyContainerService.Received(1).Resolve<LightsOutGame>();
         _gameManager.Received(1).RegisterGame("room1", "user1", _game);
-        Assert.That(_game.IsPrivateMode, Is.True);
-        Assert.That(_game.TargetRoomId, Is.EqualTo("room1"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.IsPrivateMode, Is.True);
+            Assert.That(_game.TargetRoomId, Is.EqualTo("room1"));
+        }
     }
 
     [Test]

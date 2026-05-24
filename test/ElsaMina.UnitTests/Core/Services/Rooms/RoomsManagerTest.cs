@@ -40,8 +40,11 @@ public class RoomsManagerTest
         await _sut.InitializeRoomAsync(roomId, lines);
 
         // Assert
-        Assert.That(_sut.HasRoom(roomId), Is.True);
-        Assert.That(_sut.GetRoom(roomId), Is.SameAs(room));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_sut.HasRoom(roomId), Is.True);
+            Assert.That(_sut.GetRoom(roomId), Is.SameAs(room));
+        }
         await _roomFactory.Received(1).CreateRoomAsync(roomId, Arg.Any<string[]>(), Arg.Any<CancellationToken>());
     }
 
@@ -134,7 +137,10 @@ public class RoomsManagerTest
         _sut.Clear();
 
         // Assert
-        Assert.That(_sut.HasRoom("room1"), Is.False);
-        Assert.That(_sut.HasRoom("room2"), Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_sut.HasRoom("room1"), Is.False);
+            Assert.That(_sut.HasRoom("room2"), Is.False);
+        }
     }
 }

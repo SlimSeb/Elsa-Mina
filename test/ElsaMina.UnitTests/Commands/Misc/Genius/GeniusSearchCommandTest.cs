@@ -219,8 +219,11 @@ public class GeniusSearchCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.Title, Is.EqualTo("Bohemian Rhapsody"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.Title, Is.EqualTo("Bohemian Rhapsody"));
+        }
     }
 
     // Thumbnail dimensions
@@ -242,9 +245,12 @@ public class GeniusSearchCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.ThumbnailWidth, Is.EqualTo(115));
-        Assert.That(capturedViewModel.ThumbnailHeight, Is.EqualTo(115));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.ThumbnailWidth, Is.EqualTo(115));
+            Assert.That(capturedViewModel.ThumbnailHeight, Is.EqualTo(115));
+        }
     }
 
     [Test]
@@ -264,9 +270,12 @@ public class GeniusSearchCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.ThumbnailWidth, Is.LessThanOrEqualTo(115));
-        Assert.That(capturedViewModel.ThumbnailHeight, Is.LessThanOrEqualTo(115));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.ThumbnailWidth, Is.LessThanOrEqualTo(115));
+            Assert.That(capturedViewModel.ThumbnailHeight, Is.LessThanOrEqualTo(115));
+        }
     }
 
     [Test]
@@ -286,9 +295,12 @@ public class GeniusSearchCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.ThumbnailWidth, Is.EqualTo(80));
-        Assert.That(capturedViewModel.ThumbnailHeight, Is.EqualTo(80));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.ThumbnailWidth, Is.EqualTo(80));
+            Assert.That(capturedViewModel.ThumbnailHeight, Is.EqualTo(80));
+        }
     }
 
     // Release date
@@ -310,9 +322,12 @@ public class GeniusSearchCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.ReleaseDate, Is.Not.Empty);
-        Assert.That(capturedViewModel.ReleaseDate, Does.Contain("1975"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.ReleaseDate, Is.Not.Empty);
+            Assert.That(capturedViewModel.ReleaseDate, Does.Contain("1975"));
+        }
     }
 
     [Test]
@@ -331,8 +346,11 @@ public class GeniusSearchCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.ReleaseDate, Is.Empty);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.ReleaseDate, Is.Empty);
+        }
     }
 
     [Test]
@@ -352,8 +370,11 @@ public class GeniusSearchCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.ReleaseDate, Is.Empty);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.ReleaseDate, Is.Empty);
+        }
     }
 
     // View model fields
@@ -379,12 +400,15 @@ public class GeniusSearchCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.Title, Is.EqualTo("Stairway to Heaven"));
-        Assert.That(capturedViewModel.ArtistName, Is.EqualTo("Led Zeppelin"));
-        Assert.That(capturedViewModel.ThumbnailUrl, Is.EqualTo("https://img.example.com/led.jpg"));
-        Assert.That(capturedViewModel.LyricsUrl, Is.EqualTo("https://genius.com/led-zeppelin-stairway"));
-        Assert.That(capturedViewModel.PageViews, Is.EqualTo(5_000_000));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.Title, Is.EqualTo("Stairway to Heaven"));
+            Assert.That(capturedViewModel.ArtistName, Is.EqualTo("Led Zeppelin"));
+            Assert.That(capturedViewModel.ThumbnailUrl, Is.EqualTo("https://img.example.com/led.jpg"));
+            Assert.That(capturedViewModel.LyricsUrl, Is.EqualTo("https://genius.com/led-zeppelin-stairway"));
+            Assert.That(capturedViewModel.PageViews, Is.EqualTo(5_000_000));
+        }
     }
 
     // Template rendering and reply

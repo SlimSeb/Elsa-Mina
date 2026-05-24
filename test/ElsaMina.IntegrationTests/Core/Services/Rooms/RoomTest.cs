@@ -75,14 +75,14 @@ public class RoomTest
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var persistedRoom = await dbContext.RoomInfo.SingleAsync(x => x.Id == ROOM_ID);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(room, Is.Not.Null);
             Assert.That(room.Name, Is.EqualTo("Français"));
             Assert.That(room.Users.ContainsKey("earth"), Is.True);
             Assert.That(room.Users.ContainsKey("mec"), Is.True);
             Assert.That(persistedRoom.Title, Is.EqualTo("Français"));
-        });
+        }
     }
 
     [Test]
@@ -102,11 +102,11 @@ public class RoomTest
         var reloadedRoom = _roomsManager.GetRoom(ROOM_ID);
         var reloadedLocale = await reloadedRoom.GetParameterValueAsync(Parameter.Locale);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(reloadedLocale, Is.EqualTo("en-US"));
             Assert.That(reloadedRoom.Culture.Name, Is.EqualTo("en-US"));
-        });
+        }
     }
 
     [Test]
@@ -119,11 +119,11 @@ public class RoomTest
         _roomsManager.RenameUserInRoom(ROOM_ID, "+NewUser", "@RenamedUser");
         _roomsManager.RemoveUserFromRoom(ROOM_ID, "@RenamedUser");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(room.Users.ContainsKey("newuser"), Is.False);
             Assert.That(room.Users.ContainsKey("renameduser"), Is.False);
-        });
+        }
     }
 
     [Test]
@@ -138,11 +138,11 @@ public class RoomTest
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var roomUser = await dbContext.RoomUsers.SingleAsync(x => x.Id == "earth" && x.RoomId == ROOM_ID);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(roomUser.PlayTime, Is.EqualTo(TimeSpan.FromMinutes(5)));
             Assert.That(room.PendingPlayTimeUpdates.ContainsKey("earth"), Is.False);
-        });
+        }
 
         await _userSaveQueue.Received(1).AcquireLockAsync(Arg.Any<CancellationToken>());
         _userSaveQueue.Received(1).ReleaseLock();

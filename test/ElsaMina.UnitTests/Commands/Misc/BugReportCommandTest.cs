@@ -23,10 +23,13 @@ public class BugReportCommandTest
     [Test]
     public void Test_Constructor_ShouldInitializeCommand_WhenCalled()
     {
-        Assert.That(_command.Name, Is.EqualTo("bugreport"));
-        Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Regular));
-        Assert.That(_command.IsAllowedInPrivateMessage, Is.True);
-        Assert.That(_command.HelpMessageKey, Is.EqualTo("bugreport_help"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_command.Name, Is.EqualTo("bugreport"));
+            Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Regular));
+            Assert.That(_command.IsAllowedInPrivateMessage, Is.True);
+            Assert.That(_command.HelpMessageKey, Is.EqualTo("bugreport_help"));
+        }
     }
 
     [Test]

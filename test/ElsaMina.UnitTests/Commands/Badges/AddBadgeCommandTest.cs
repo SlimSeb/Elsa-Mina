@@ -143,14 +143,14 @@ public class AddBadgeCommandTest
         await using var db = new BotDbContext(_options);
         var badge = db.Badges.Single();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(badge.Name, Is.EqualTo("NewBadge"));
             Assert.That(badge.Image, Is.EqualTo("http://image.url"));
             Assert.That(badge.Id, Is.EqualTo("newbadge"));
             Assert.That(badge.IsTrophy, Is.False);
             Assert.That(badge.RoomId, Is.EqualTo("room1"));
-        });
+        }
 
         _context.Received(1).ReplyLocalizedMessage("badge_add_success_message");
     }
@@ -229,11 +229,11 @@ public class AddBadgeCommandTest
         await using var db = new BotDbContext(_options);
         var badge = db.Badges.Single();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(badge.Name, Is.EqualTo("Badge Name"));
             Assert.That(badge.Image, Is.EqualTo("http://image.url"));
-        });
+        }
     }
 
     [Test]
@@ -310,11 +310,11 @@ public class AddBadgeCommandTest
         // Assert
         await using var db = new BotDbContext(_options);
         var badge = db.Badges.Single();
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(badge.Id, Is.EqualTo("testbadge"));
             Assert.That(badge.RoomId, Is.EqualTo("room1"));
-        });
+        }
     }
 
     [Test]
@@ -349,11 +349,11 @@ public class AddBadgeCommandTest
         // Assert
         await using var db = new BotDbContext(_options);
         var badge = db.Badges.Single();
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(badge.Name, Is.EqualTo("Cool Badge!"));
             Assert.That(badge.Id, Is.EqualTo("coolbadge"));
-        });
+        }
     }
 
     [Test]

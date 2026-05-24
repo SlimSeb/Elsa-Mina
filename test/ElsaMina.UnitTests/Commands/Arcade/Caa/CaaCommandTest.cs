@@ -41,9 +41,12 @@ public class CaaCommandTest
     [Test]
     public void Test_Constructor_ShouldInitializeCommand_WhenCalled()
     {
-        Assert.That(_command.Name, Is.EqualTo("caa"));
-        Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Voiced));
-        Assert.That(_command.IsAllowedInPrivateMessage, Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_command.Name, Is.EqualTo("caa"));
+            Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Voiced));
+            Assert.That(_command.IsAllowedInPrivateMessage, Is.True);
+        }
     }
 
     [Test]

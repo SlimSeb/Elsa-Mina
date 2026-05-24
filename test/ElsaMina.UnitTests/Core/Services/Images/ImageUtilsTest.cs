@@ -17,11 +17,11 @@ public class ImageUtilsTest
         var (newWidth, newHeight) = ImageUtils.ResizeWithSameAspectRatio(width, height, maxWidth, maxHeight);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(newWidth, Is.EqualTo(400));
             Assert.That(newHeight, Is.EqualTo(300));
-        });
+        }
     }
 
     [Test]
@@ -37,11 +37,11 @@ public class ImageUtilsTest
         var (newWidth, newHeight) = ImageUtils.ResizeWithSameAspectRatio(width, height, maxWidth, maxHeight);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(newWidth, Is.EqualTo(800));
             Assert.That(newHeight, Is.EqualTo(400));
-        });
+        }
     }
 
     [Test]
@@ -57,11 +57,11 @@ public class ImageUtilsTest
         var (newWidth, newHeight) = ImageUtils.ResizeWithSameAspectRatio(width, height, maxWidth, maxHeight);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(newWidth, Is.EqualTo(400));
             Assert.That(newHeight, Is.EqualTo(800));
-        });
+        }
     }
 
     [Test]
@@ -77,10 +77,10 @@ public class ImageUtilsTest
         var (newWidth, newHeight) = ImageUtils.ResizeWithSameAspectRatio(width, height, maxWidth, maxHeight);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(newWidth, Is.EqualTo(800));
             Assert.That(newHeight, Is.EqualTo(600));
-        });
+        }
     }
 }

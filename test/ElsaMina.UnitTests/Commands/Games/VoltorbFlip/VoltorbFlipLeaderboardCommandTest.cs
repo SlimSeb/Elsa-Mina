@@ -44,10 +44,13 @@ public class VoltorbFlipLeaderboardCommandTest
     [Test]
     public void Test_Constructor_ShouldInitializeCommand_WhenCalled()
     {
-        Assert.That(_command, Is.Not.Null);
-        Assert.That(_command.Name, Is.EqualTo("vfleaderboard"));
-        Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Regular));
-        Assert.That(_command.HelpMessageKey, Is.EqualTo("voltorbflip_leaderboard_help"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_command, Is.Not.Null);
+            Assert.That(_command.Name, Is.EqualTo("vfleaderboard"));
+            Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Regular));
+            Assert.That(_command.HelpMessageKey, Is.EqualTo("voltorbflip_leaderboard_help"));
+        }
     }
 
     [Test]

@@ -20,10 +20,10 @@ public class PokepediaSearchCommandTest
     [Test]
     public void Test_Constructor_ShouldSetProperties()
     {
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Regular));
             Assert.That(_command.IsAllowedInPrivateMessage, Is.True);
-        });
+        }
     }
 }

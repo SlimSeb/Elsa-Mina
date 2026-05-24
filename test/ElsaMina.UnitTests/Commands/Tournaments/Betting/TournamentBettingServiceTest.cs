@@ -320,9 +320,12 @@ public class TournamentBettingServiceTest
 
         await using var dbContext = new BotDbContext(_dbOptions);
         var record = await dbContext.BetRecords.FindAsync(["bettor1", "room1"]);
-        Assert.That(record, Is.Not.Null);
-        Assert.That(record.CorrectBetsCount, Is.EqualTo(1));
-        Assert.That(record.TotalBetsCount, Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record, Is.Not.Null);
+            Assert.That(record.CorrectBetsCount, Is.EqualTo(1));
+            Assert.That(record.TotalBetsCount, Is.EqualTo(1));
+        }
     }
 
     [Test]
@@ -339,9 +342,12 @@ public class TournamentBettingServiceTest
 
         await using var dbContext = new BotDbContext(_dbOptions);
         var record = await dbContext.BetRecords.FindAsync(["bettor1", "room1"]);
-        Assert.That(record, Is.Not.Null);
-        Assert.That(record.CorrectBetsCount, Is.EqualTo(0));
-        Assert.That(record.TotalBetsCount, Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record, Is.Not.Null);
+            Assert.That(record.CorrectBetsCount, Is.EqualTo(0));
+            Assert.That(record.TotalBetsCount, Is.EqualTo(1));
+        }
     }
 
     [Test]
@@ -380,8 +386,11 @@ public class TournamentBettingServiceTest
 
         await using var dbContext = new BotDbContext(_dbOptions);
         var record = await dbContext.BetRecords.FindAsync(["bettor1", "room1"]);
-        Assert.That(record.CorrectBetsCount, Is.EqualTo(2));
-        Assert.That(record.TotalBetsCount, Is.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record.CorrectBetsCount, Is.EqualTo(2));
+            Assert.That(record.TotalBetsCount, Is.EqualTo(2));
+        }
     }
 
     // ── ReturnBetsAsync ────────────────────────────────────────────────────

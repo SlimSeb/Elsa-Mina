@@ -58,8 +58,11 @@ public class ShowdownSinkTest
 
         _sink.Emit(MakeLogEvent(LogEventLevel.Warning, "something went wrong"));
 
-        Assert.That(sentRoomId, Is.EqualTo("botdev"));
-        Assert.That(sentMessage, Does.Contain("something went wrong"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(sentRoomId, Is.EqualTo("botdev"));
+            Assert.That(sentMessage, Does.Contain("something went wrong"));
+        }
     }
 
     [Test]
@@ -83,7 +86,10 @@ public class ShowdownSinkTest
 
         _sink.Emit(MakeLogEvent(LogEventLevel.Warning, new string('x', 1000)));
 
-        Assert.That(sentMessage.Length, Is.LessThanOrEqualTo(303));
-        Assert.That(sentMessage, Does.EndWith("..."));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(sentMessage.Length, Is.LessThanOrEqualTo(303));
+            Assert.That(sentMessage, Does.EndWith("..."));
+        }
     }
 }

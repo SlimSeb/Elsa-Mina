@@ -46,11 +46,11 @@ public class ConnectFourRatingServiceTest
         var winnerRating = await dbContext.ConnectFourRatings.FindAsync("winner");
         var loserRating = await dbContext.ConnectFourRatings.FindAsync("loser");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(winnerRating, Is.Not.Null);
             Assert.That(loserRating, Is.Not.Null);
-        });
+        }
     }
 
     [Test]
@@ -63,11 +63,11 @@ public class ConnectFourRatingServiceTest
         var winnerRating = await dbContext.ConnectFourRatings.FindAsync("winner");
         var loserRating = await dbContext.ConnectFourRatings.FindAsync("loser");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(winnerRating.Rating, Is.EqualTo(expectedWinner));
             Assert.That(loserRating.Rating, Is.EqualTo(expectedLoser));
-        });
+        }
     }
 
     [Test]
@@ -87,11 +87,11 @@ public class ConnectFourRatingServiceTest
         var winnerRating = await dbContext.ConnectFourRatings.FindAsync("winner");
         var loserRating = await dbContext.ConnectFourRatings.FindAsync("loser");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(winnerRating.Rating, Is.EqualTo(expectedWinner));
             Assert.That(loserRating.Rating, Is.EqualTo(expectedLoser));
-        });
+        }
     }
 
     [Test]
@@ -110,13 +110,13 @@ public class ConnectFourRatingServiceTest
         var winnerRating = await dbContext.ConnectFourRatings.FindAsync("winner");
         var loserRating = await dbContext.ConnectFourRatings.FindAsync("loser");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(winnerRating.Wins, Is.EqualTo(3));
             Assert.That(winnerRating.Losses, Is.EqualTo(1));
             Assert.That(loserRating.Losses, Is.EqualTo(3));
             Assert.That(loserRating.Wins, Is.EqualTo(1));
-        });
+        }
     }
 
     [Test]
@@ -126,7 +126,7 @@ public class ConnectFourRatingServiceTest
 
         var (winnerChange, loserChange) = await _sut.UpdateRatingsOnWinAsync(_mockWinner, _mockLoser);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(winnerChange.OldRating, Is.EqualTo(EloHelper.DEFAULT_RATING));
             Assert.That(winnerChange.NewRating, Is.EqualTo(expectedWinner));
@@ -134,7 +134,7 @@ public class ConnectFourRatingServiceTest
             Assert.That(loserChange.OldRating, Is.EqualTo(EloHelper.DEFAULT_RATING));
             Assert.That(loserChange.NewRating, Is.EqualTo(expectedLoser));
             Assert.That(loserChange.Delta, Is.EqualTo(expectedLoser - EloHelper.DEFAULT_RATING));
-        });
+        }
     }
 
     #endregion
@@ -150,11 +150,11 @@ public class ConnectFourRatingServiceTest
         var rating1 = await dbContext.ConnectFourRatings.FindAsync("winner");
         var rating2 = await dbContext.ConnectFourRatings.FindAsync("loser");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(rating1, Is.Not.Null);
             Assert.That(rating2, Is.Not.Null);
-        });
+        }
     }
 
     [Test]
@@ -173,11 +173,11 @@ public class ConnectFourRatingServiceTest
         var rating1 = await dbContext.ConnectFourRatings.FindAsync("winner");
         var rating2 = await dbContext.ConnectFourRatings.FindAsync("loser");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(rating1.Draws, Is.EqualTo(2));
             Assert.That(rating2.Draws, Is.EqualTo(3));
-        });
+        }
     }
 
     [Test]
@@ -187,7 +187,7 @@ public class ConnectFourRatingServiceTest
 
         var (change1, change2) = await _sut.UpdateRatingsOnDrawAsync(_mockWinner, _mockLoser);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(change1.OldRating, Is.EqualTo(EloHelper.DEFAULT_RATING));
             Assert.That(change1.NewRating, Is.EqualTo(expectedRating1));
@@ -195,7 +195,7 @@ public class ConnectFourRatingServiceTest
             Assert.That(change2.OldRating, Is.EqualTo(EloHelper.DEFAULT_RATING));
             Assert.That(change2.NewRating, Is.EqualTo(expectedRating2));
             Assert.That(change2.Delta, Is.EqualTo(expectedRating2 - EloHelper.DEFAULT_RATING));
-        });
+        }
     }
 
     [Test]
@@ -214,13 +214,13 @@ public class ConnectFourRatingServiceTest
         var rating1 = await dbContext.ConnectFourRatings.FindAsync("winner");
         var rating2 = await dbContext.ConnectFourRatings.FindAsync("loser");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(rating1.Wins, Is.EqualTo(3));
             Assert.That(rating1.Losses, Is.EqualTo(2));
             Assert.That(rating2.Wins, Is.EqualTo(1));
             Assert.That(rating2.Losses, Is.EqualTo(4));
-        });
+        }
     }
 
     #endregion

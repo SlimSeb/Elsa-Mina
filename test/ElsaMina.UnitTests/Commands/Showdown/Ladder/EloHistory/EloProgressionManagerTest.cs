@@ -102,11 +102,11 @@ public class EloProgressionManagerTest
 
         var stored = await ReadAllFromDbAsync();
         Assert.That(stored, Has.Count.EqualTo(1));
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(stored[0].Format, Is.EqualTo("gen9ou"));
             Assert.That(stored[0].UserId, Is.EqualTo("alice"));
-        });
+        }
     }
 
     [Test]
@@ -135,13 +135,13 @@ public class EloProgressionManagerTest
         var first = await _manager.TrackUserAsync("gen9ou", "alice");
         var second = await _manager.TrackUserAsync("gen8ou", "alice");
 
-        Assert.Multiple(async () =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(first, Is.True);
             Assert.That(second, Is.True);
             Assert.That(_manager.GetAllTrackedUsers(), Has.Count.EqualTo(2));
             Assert.That(await ReadAllFromDbAsync(), Has.Count.EqualTo(2));
-        });
+        }
     }
 
     // UntrackUserAsync
@@ -198,14 +198,14 @@ public class EloProgressionManagerTest
 
         await _manager.UntrackUserAsync("gen9ou", "alice");
 
-        Assert.Multiple(async () =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_manager.GetAllTrackedUsers(),
                 Is.EquivalentTo(new[] { new EloTrackedUser("gen8ou", "alice") }));
             var stored = await ReadAllFromDbAsync();
             Assert.That(stored, Has.Count.EqualTo(1));
             Assert.That(stored[0].Format, Is.EqualTo("gen8ou"));
-        });
+        }
     }
 
     // GetAllTrackedUsers with multiple entries

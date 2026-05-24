@@ -165,8 +165,11 @@ public class ResourcesServiceTest
         var frResult = sut.GetString("greet", new CultureInfo("fr-FR"));
 
         // Assert
-        Assert.That(enResult, Is.EqualTo("Hello"));
-        Assert.That(frResult, Is.EqualTo("Bonjour"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(enResult, Is.EqualTo("Hello"));
+            Assert.That(frResult, Is.EqualTo("Bonjour"));
+        }
     }
 
     [Test]
@@ -184,8 +187,11 @@ public class ResourcesServiceTest
         var supported = sut.SupportedCultures.Select(c => c.Name).ToHashSet();
 
         // Assert
-        Assert.That(supported, Does.Contain("en-US"));
-        Assert.That(supported, Does.Contain("fr-FR"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(supported, Does.Contain("en-US"));
+            Assert.That(supported, Does.Contain("fr-FR"));
+        }
     }
 
     [Test]
@@ -200,8 +206,11 @@ public class ResourcesServiceTest
         var supported = sut.SupportedCultures.Select(c => c.Name).ToHashSet();
 
         // Assert
-        Assert.That(supported, Does.Contain("en-US"));
-        Assert.That(supported, Does.Contain("fr-FR"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(supported, Does.Contain("en-US"));
+            Assert.That(supported, Does.Contain("fr-FR"));
+        }
     }
 
     [Test]

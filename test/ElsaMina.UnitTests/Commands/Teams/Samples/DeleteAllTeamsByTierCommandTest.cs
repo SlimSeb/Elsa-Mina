@@ -128,9 +128,12 @@ public class DeleteAllTeamsByTierCommandTest
 
         // Assert
         await using var verifyContext = new BotDbContext(_dbContextOptions);
-        Assert.That(verifyContext.Teams.Any(t => t.Id == "team1"), Is.True);
-        Assert.That(verifyContext.RoomTeams.Any(rt => rt.TeamId == "team1" && rt.RoomId == OTHER_ROOM_ID), Is.True);
-        Assert.That(verifyContext.RoomTeams.Any(rt => rt.TeamId == "team1" && rt.RoomId == ROOM_ID), Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(verifyContext.Teams.Any(t => t.Id == "team1"), Is.True);
+            Assert.That(verifyContext.RoomTeams.Any(rt => rt.TeamId == "team1" && rt.RoomId == OTHER_ROOM_ID), Is.True);
+            Assert.That(verifyContext.RoomTeams.Any(rt => rt.TeamId == "team1" && rt.RoomId == ROOM_ID), Is.False);
+        }
     }
 
     [Test]

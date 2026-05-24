@@ -186,8 +186,11 @@ public class ShipCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(scores, Has.Count.EqualTo(2));
-        Assert.That(scores[0], Is.EqualTo(scores[1]));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(scores, Has.Count.EqualTo(2));
+            Assert.That(scores[0], Is.EqualTo(scores[1]));
+        }
     }
 
     [Test]

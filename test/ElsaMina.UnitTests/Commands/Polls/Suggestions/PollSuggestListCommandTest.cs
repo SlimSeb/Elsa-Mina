@@ -99,8 +99,11 @@ public class PollSuggestListCommandTest
 
         await _command.RunAsync(_context);
 
-        Assert.That(capturedHtml, Does.Contain("Best poll ever"));
-        Assert.That(capturedHtml, Does.Contain("User1"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedHtml, Does.Contain("Best poll ever"));
+            Assert.That(capturedHtml, Does.Contain("User1"));
+        }
     }
 
     [Test]

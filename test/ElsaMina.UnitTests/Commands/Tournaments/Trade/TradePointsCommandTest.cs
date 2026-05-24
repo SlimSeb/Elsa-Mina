@@ -198,8 +198,11 @@ public class TradePointsCommandTest
         var aliceRecord = await assertContext.TournamentRecords.FindAsync(["alice", "arcade"]);
         var bobRecord = await assertContext.TournamentRecords.FindAsync(["bob", "arcade"]);
 
-        Assert.That(aliceRecord.WinsCount, Is.EqualTo(7));
-        Assert.That(bobRecord.WinsCount, Is.EqualTo(5));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(aliceRecord.WinsCount, Is.EqualTo(7));
+            Assert.That(bobRecord.WinsCount, Is.EqualTo(5));
+        }
     }
 
     [Test]
@@ -224,8 +227,11 @@ public class TradePointsCommandTest
         await using var assertContext = new BotDbContext(_dbOptions);
         var bobRecord = await assertContext.TournamentRecords.FindAsync(["bob", "arcade"]);
 
-        Assert.That(bobRecord, Is.Not.Null);
-        Assert.That(bobRecord.WinsCount, Is.EqualTo(4));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(bobRecord, Is.Not.Null);
+            Assert.That(bobRecord.WinsCount, Is.EqualTo(4));
+        }
     }
 
     [Test]

@@ -40,7 +40,7 @@ public class ShowdownTeamsUtilsTest
         // Assert
         Assert.That(result, Has.Count.EqualTo(1));
         var pokemonSet = result.First();
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(pokemonSet.Species, Is.EqualTo("Pikachu"));
             Assert.That(pokemonSet.Item, Is.EqualTo("Light Ball"));
@@ -49,7 +49,7 @@ public class ShowdownTeamsUtilsTest
             Assert.That(pokemonSet.EffortValues["atk"], Is.EqualTo(252));
             Assert.That(pokemonSet.EffortValues["spe"], Is.EqualTo(252));
             Assert.That(pokemonSet.Moves, Is.EquivalentTo(new List<string> { "Volt Tackle", "Iron Tail" }));
-        });
+        }
     }
 
     [Test]
@@ -129,7 +129,7 @@ public class ShowdownTeamsUtilsTest
 
         // Assert
         var expectedMoves = new[] { "Flare Blitz", "Dragon Claw" };
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Has.Count.EqualTo(2));
             Assert.That(result[0].Species, Is.EqualTo("Pikachu"));
@@ -138,6 +138,6 @@ public class ShowdownTeamsUtilsTest
             Assert.That(result[1].Ability, Is.EqualTo("Blaze"));
             Assert.That(result[1].Nature, Is.EqualTo("Adamant"));
             Assert.That(result[1].Moves, Is.EquivalentTo(expectedMoves));
-        });
+        }
     }
 }

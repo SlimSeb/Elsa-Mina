@@ -115,7 +115,7 @@ public class ContextFactoryTest
         var result = _contextFactory.TryBuildContextFromReceivedMessage(parts, "lobby");
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.TypeOf<RoomContext>());
             var rc = (RoomContext)result;
@@ -123,7 +123,7 @@ public class ContextFactoryTest
             Assert.That(rc.Target, Is.EqualTo("world"));
             Assert.That(rc.Message, Is.EqualTo("!hello world"));
             Assert.That(rc.Timestamp, Is.EqualTo(expectedDateTime));
-        });
+        }
     }
 
     [Test]
@@ -143,8 +143,11 @@ public class ContextFactoryTest
 
         // Assert
         var rc = (RoomContext)result;
-        Assert.That(rc.Command, Is.EqualTo("ping"));
-        Assert.That(rc.Target, Is.EqualTo(string.Empty));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(rc.Command, Is.EqualTo("ping"));
+            Assert.That(rc.Target, Is.EqualTo(string.Empty));
+        }
     }
 
     [Test]
@@ -163,9 +166,12 @@ public class ContextFactoryTest
         var result = _contextFactory.TryBuildContextFromReceivedMessage(parts, "main");
 
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Command, Is.Null);
-        Assert.That(result.Target, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Command, Is.Null);
+            Assert.That(result.Target, Is.Null);
+        }
     }
 
     [Test]
@@ -182,13 +188,13 @@ public class ContextFactoryTest
         var result = _contextFactory.TryBuildContextFromReceivedMessage(parts);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.TypeOf<PmContext>());
             var pm = (PmContext)result;
             Assert.That(pm.Command, Is.EqualTo("test"));
             Assert.That(pm.Target, Is.EqualTo("abc"));
-        });
+        }
     }
 
     [Test]
@@ -206,11 +212,11 @@ public class ContextFactoryTest
 
         // Assert
         var pm = (PmContext)result;
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(pm.Command, Is.EqualTo("poke"));
             Assert.That(pm.Target, Is.EqualTo(string.Empty));
-        });
+        }
     }
 
     [Test]
@@ -227,12 +233,12 @@ public class ContextFactoryTest
         var result = _contextFactory.TryBuildContextFromReceivedMessage(parts);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Command, Is.Null);
             Assert.That(result.Target, Is.Null);
-        });
+        }
     }
 
     [Test]
@@ -249,12 +255,12 @@ public class ContextFactoryTest
         var result = _contextFactory.TryBuildContextFromReceivedMessage(parts);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Command, Is.Null);
             Assert.That(result.Target, Is.Null);
-        });
+        }
     }
 
     [Test]
@@ -272,8 +278,11 @@ public class ContextFactoryTest
 
         // Assert
         var pm = (PmContext)result;
-        Assert.That(pm.Command, Is.EqualTo("ping"));
-        Assert.That(pm.Target, Is.EqualTo("target"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pm.Command, Is.EqualTo("ping"));
+            Assert.That(pm.Target, Is.EqualTo("target"));
+        }
     }
 
     [Test]
@@ -291,7 +300,10 @@ public class ContextFactoryTest
 
         // Assert
         var pm = (PmContext)result;
-        Assert.That(pm.Command, Is.EqualTo("cmd"));
-        Assert.That(pm.Target, Is.EqualTo("    arg1   "));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pm.Command, Is.EqualTo("cmd"));
+            Assert.That(pm.Target, Is.EqualTo("    arg1   "));
+        }
     }
 }

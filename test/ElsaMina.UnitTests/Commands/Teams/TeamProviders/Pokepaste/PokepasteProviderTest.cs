@@ -69,14 +69,14 @@ public class PokepasteProviderTests
         var result = await _provider.GetTeamExport(teamLink);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Title, Is.EqualTo(expectedPokepasteTeam.Title));
             Assert.That(result.Description, Is.EqualTo(expectedPokepasteTeam.Notes));
             Assert.That(result.Author, Is.EqualTo(expectedPokepasteTeam.Author));
             Assert.That(result.TeamExport, Is.EqualTo(expectedPokepasteTeam.Paste));
-        });
+        }
     }
 
     [Test]

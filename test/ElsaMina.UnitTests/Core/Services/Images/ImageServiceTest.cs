@@ -34,11 +34,11 @@ public class ImageServiceTest
         var (width, height) = await _imageService.GetRemoteImageDimensions("http://example.com/image.png");
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(width, Is.EqualTo(100));
             Assert.That(height, Is.EqualTo(200));
-        });
+        }
     }
 
     [Test]
@@ -51,10 +51,10 @@ public class ImageServiceTest
         var (width, height) = await _imageService.GetRemoteImageDimensions("http://example.com/image.png");
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(width, Is.EqualTo(-1));
             Assert.That(height, Is.EqualTo(-1));
-        });
+        }
     }
 }

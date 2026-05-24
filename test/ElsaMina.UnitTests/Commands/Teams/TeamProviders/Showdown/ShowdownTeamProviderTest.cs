@@ -103,14 +103,14 @@ public class ShowdownTeamProviderTest
 
         var result = await _provider.GetTeamExport(teamLink);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Author, Is.EqualTo("panure"));
             Assert.That(result.Title, Is.EqualTo("Untitled 21"));
             Assert.That(result.Description, Is.EqualTo(string.Empty));
             Assert.That(result.TeamExport, Is.Not.Null.And.Not.Empty);
-        });
+        }
     }
 
     [Test]

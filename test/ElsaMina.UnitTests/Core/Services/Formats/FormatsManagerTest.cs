@@ -22,8 +22,11 @@ public class FormatsManagerTest
         _formatsManager.ParseFormats(message.Split("|"));
 
         // Assert
-        Assert.That(_formatsManager.Formats, Is.Not.Empty);
-        Assert.That(_formatsManager.Formats.Count(), Is.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_formatsManager.Formats, Is.Not.Empty);
+            Assert.That(_formatsManager.Formats.Count(), Is.EqualTo(2));
+        }
     }
 
     [Test]

@@ -52,8 +52,11 @@ public class TourConfigServiceTest
 
         var result = await _sut.GetTourConfigsForRoomAsync("room1");
 
-        Assert.That(result, Has.Count.EqualTo(1));
-        Assert.That(result[0].Id, Is.EqualTo("tour1"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(1));
+            Assert.That(result[0].Id, Is.EqualTo("tour1"));
+        }
     }
 
     [Test]
@@ -70,8 +73,11 @@ public class TourConfigServiceTest
 
         var result = await _sut.GetTourConfigsForRoomAsync("room1");
 
-        Assert.That(result[0].Id, Is.EqualTo("atour"));
-        Assert.That(result[1].Id, Is.EqualTo("ztour"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result[0].Id, Is.EqualTo("atour"));
+            Assert.That(result[1].Id, Is.EqualTo("ztour"));
+        }
     }
 
     [Test]
@@ -97,9 +103,12 @@ public class TourConfigServiceTest
 
         var result = await _sut.GetTourConfigAsync("outils", "room1");
 
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.Id, Is.EqualTo("outils"));
-        Assert.That(result.TourName, Is.EqualTo("OU Tour"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Id, Is.EqualTo("outils"));
+            Assert.That(result.TourName, Is.EqualTo("OU Tour"));
+        }
     }
 
     [Test]
@@ -132,9 +141,12 @@ public class TourConfigServiceTest
 
         using var assertCtx = new BotDbContext(_dbOptions);
         var saved = await assertCtx.TourConfigs.FindAsync("newtour", "room1");
-        Assert.That(saved, Is.Not.Null);
-        Assert.That(saved.Tier, Is.EqualTo("OU"));
-        Assert.That(saved.TourName, Is.EqualTo("New Tour"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(saved, Is.Not.Null);
+            Assert.That(saved.Tier, Is.EqualTo("OU"));
+            Assert.That(saved.TourName, Is.EqualTo("New Tour"));
+        }
     }
 
     [Test]
@@ -160,11 +172,14 @@ public class TourConfigServiceTest
 
         using var assertCtx = new BotDbContext(_dbOptions);
         var saved = await assertCtx.TourConfigs.FindAsync("tour1", "room1");
-        Assert.That(saved.Tier, Is.EqualTo("UU"));
-        Assert.That(saved.Format, Is.EqualTo("roundrobin"));
-        Assert.That(saved.Autostart, Is.EqualTo(20));
-        Assert.That(saved.TourName, Is.EqualTo("New Name"));
-        Assert.That(saved.AutoDq, Is.EqualTo(3));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(saved.Tier, Is.EqualTo("UU"));
+            Assert.That(saved.Format, Is.EqualTo("roundrobin"));
+            Assert.That(saved.Autostart, Is.EqualTo(20));
+            Assert.That(saved.TourName, Is.EqualTo("New Name"));
+            Assert.That(saved.AutoDq, Is.EqualTo(3));
+        }
     }
 
     [Test]

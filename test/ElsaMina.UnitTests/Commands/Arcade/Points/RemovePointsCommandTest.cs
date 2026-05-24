@@ -46,10 +46,13 @@ public class RemovePointsCommandTest
     {
         var command = new RemovePointsCommand(_dbContextFactory, _templatesManager);
 
-        Assert.That(command, Is.Not.Null);
-        Assert.That(command.Name, Is.EqualTo("removepoints"));
-        Assert.That(command.RequiredRank, Is.EqualTo(Rank.Voiced));
-        Assert.That(command.HelpMessageKey, Is.EqualTo("remove_points_help"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(command, Is.Not.Null);
+            Assert.That(command.Name, Is.EqualTo("removepoints"));
+            Assert.That(command.RequiredRank, Is.EqualTo(Rank.Voiced));
+            Assert.That(command.HelpMessageKey, Is.EqualTo("remove_points_help"));
+        }
     }
 
     [Test]
@@ -104,8 +107,11 @@ public class RemovePointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var updatedUser = await assertContext.UserPoints.FindAsync("existinguser");
-        Assert.That(updatedUser, Is.Not.Null);
-        Assert.That(updatedUser.Points, Is.EqualTo(7.0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(updatedUser, Is.Not.Null);
+            Assert.That(updatedUser.Points, Is.EqualTo(7.0));
+        }
     }
 
     [Test]

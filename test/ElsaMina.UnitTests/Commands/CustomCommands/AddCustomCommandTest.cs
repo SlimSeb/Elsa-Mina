@@ -61,10 +61,13 @@ public class AddCustomCommandTests
         var command = new AddCustomCommand(_configuration, _clockService, _dbContextFactory);
 
         // Assert
-        Assert.That(command, Is.Not.Null);
-        Assert.That(command.Name, Is.EqualTo("add-custom-command"));
-        Assert.That(command.Aliases, Is.EquivalentTo(new[] { "add-custom", "add-command", "addcommand" }));
-        Assert.That(command.RequiredRank, Is.EqualTo(Rank.Driver));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(command, Is.Not.Null);
+            Assert.That(command.Name, Is.EqualTo("add-custom-command"));
+            Assert.That(command.Aliases, Is.EquivalentTo(new[] { "add-custom", "add-command", "addcommand" }));
+            Assert.That(command.RequiredRank, Is.EqualTo(Rank.Driver));
+        }
     }
 
     [Test]
@@ -219,12 +222,15 @@ public class AddCustomCommandTests
         using (var assertContext = new BotDbContext(_dbOptions))
         {
             var addedCommand = await assertContext.AddedCommands.FindAsync("hello", "lobby");
-            Assert.That(addedCommand, Is.Not.Null);
-            Assert.That(addedCommand.Id, Is.EqualTo("hello"));
-            Assert.That(addedCommand.RoomId, Is.EqualTo("lobby"));
-            Assert.That(addedCommand.Content, Is.EqualTo("Hello world!"));
-            Assert.That(addedCommand.Author, Is.EqualTo("alice"));
-            Assert.That(addedCommand.CreationDate, Is.EqualTo(expectedDate));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(addedCommand, Is.Not.Null);
+                Assert.That(addedCommand.Id, Is.EqualTo("hello"));
+                Assert.That(addedCommand.RoomId, Is.EqualTo("lobby"));
+                Assert.That(addedCommand.Content, Is.EqualTo("Hello world!"));
+                Assert.That(addedCommand.Author, Is.EqualTo("alice"));
+                Assert.That(addedCommand.CreationDate, Is.EqualTo(expectedDate));
+            }
         }
 
         _context.Received(1).ReplyLocalizedMessage("addcommand_success", "hello");
@@ -243,8 +249,11 @@ public class AddCustomCommandTests
         using (var assertContext = new BotDbContext(_dbOptions))
         {
             var addedCommand = await assertContext.AddedCommands.FindAsync("hello", "testroom");
-            Assert.That(addedCommand, Is.Not.Null);
-            Assert.That(addedCommand.Id, Is.EqualTo("hello"));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(addedCommand, Is.Not.Null);
+                Assert.That(addedCommand.Id, Is.EqualTo("hello"));
+            }
         }
     }
 
@@ -278,8 +287,11 @@ public class AddCustomCommandTests
         using (var assertContext = new BotDbContext(_dbOptions))
         {
             var addedCommand = await assertContext.AddedCommands.FindAsync("hello", "testroom");
-            Assert.That(addedCommand, Is.Not.Null);
-            Assert.That(addedCommand.Id, Is.EqualTo("hello"));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(addedCommand, Is.Not.Null);
+                Assert.That(addedCommand.Id, Is.EqualTo("hello"));
+            }
         }
     }
 
@@ -332,10 +344,13 @@ public class AddCustomCommandTests
             var commandRoom1 = await assertContext.AddedCommands.FindAsync("test", "room1");
             var commandRoom2 = await assertContext.AddedCommands.FindAsync("test", "room2");
 
-            Assert.That(commandRoom1, Is.Not.Null);
-            Assert.That(commandRoom2, Is.Not.Null);
-            Assert.That(commandRoom1.Content, Is.EqualTo("content1"));
-            Assert.That(commandRoom2.Content, Is.EqualTo("content2"));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(commandRoom1, Is.Not.Null);
+                Assert.That(commandRoom2, Is.Not.Null);
+                Assert.That(commandRoom1.Content, Is.EqualTo("content1"));
+                Assert.That(commandRoom2.Content, Is.EqualTo("content2"));
+            }
         }
 
         _context.Received(1).ReplyLocalizedMessage("addcommand_success", "test");
@@ -375,8 +390,11 @@ public class AddCustomCommandTests
         using (var assertContext = new BotDbContext(_dbOptions))
         {
             var addedCommand = await assertContext.AddedCommands.FindAsync("test", "testroom");
-            Assert.That(addedCommand, Is.Not.Null);
-            Assert.That(addedCommand.Content.Length, Is.EqualTo(300));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(addedCommand, Is.Not.Null);
+                Assert.That(addedCommand.Content.Length, Is.EqualTo(300));
+            }
         }
 
         _context.DidNotReceive().ReplyLocalizedMessage("addcommand_content_too_long");

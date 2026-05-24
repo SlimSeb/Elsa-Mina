@@ -33,9 +33,12 @@ public class ChatLogHelpersTest
 
         var result = ChatLogHelpers.TryParseLine(line, out var username, out var message);
 
-        Assert.That(result, Is.True);
-        Assert.That(username, Is.EqualTo("someuser"));
-        Assert.That(message, Is.EqualTo("hello world"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(username, Is.EqualTo("someuser"));
+            Assert.That(message, Is.EqualTo("hello world"));
+        }
     }
 
     [Test]
@@ -45,9 +48,12 @@ public class ChatLogHelpersTest
 
         var result = ChatLogHelpers.TryParseLine(line, out var username, out var message);
 
-        Assert.That(result, Is.True);
-        Assert.That(username, Is.EqualTo("someuser"));
-        Assert.That(message, Is.EqualTo("hello: world"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(username, Is.EqualTo("someuser"));
+            Assert.That(message, Is.EqualTo("hello: world"));
+        }
     }
 
     [Test]
@@ -57,9 +63,12 @@ public class ChatLogHelpersTest
 
         var result = ChatLogHelpers.TryParseLine(line, out var username, out var message);
 
-        Assert.That(result, Is.True);
-        Assert.That(username, Is.EqualTo("+someuser"));
-        Assert.That(message, Is.EqualTo("hello"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(username, Is.EqualTo("+someuser"));
+            Assert.That(message, Is.EqualTo("hello"));
+        }
     }
 
     [Test]

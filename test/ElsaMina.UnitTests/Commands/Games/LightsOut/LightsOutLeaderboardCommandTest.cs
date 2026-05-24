@@ -103,8 +103,11 @@ public class LightsOutLeaderboardCommandTest
 
         Assert.That(capturedViewModel, Is.Not.Null);
         var entries = capturedViewModel.Leaderboard;
-        Assert.That(entries[0].UserId, Is.EqualTo("c").Or.EqualTo("d")); // level 5, 25 stars, 6 moves
-        Assert.That(entries[^1].UserId, Is.EqualTo("a")); // lowest level
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(entries[0].UserId, Is.EqualTo("c").Or.EqualTo("d")); // level 5, 25 stars, 6 moves
+            Assert.That(entries[^1].UserId, Is.EqualTo("a")); // lowest level
+        }
     }
 
     [Test]

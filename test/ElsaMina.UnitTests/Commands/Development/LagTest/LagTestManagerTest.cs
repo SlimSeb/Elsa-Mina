@@ -75,8 +75,11 @@ public class LagTestManagerTest
         var result = await secondTask;
 
         // Assert
-        Assert.That(result.TotalMilliseconds, Is.EqualTo(200).Within(1));
-        Assert.That(firstTask.IsCanceled, Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.TotalMilliseconds, Is.EqualTo(200).Within(1));
+            Assert.That(firstTask.IsCanceled, Is.True);
+        }
     }
 
     [Test]
@@ -111,7 +114,10 @@ public class LagTestManagerTest
         var resultB = await taskB;
 
         // Assert
-        Assert.That(resultA.TotalMilliseconds, Is.EqualTo(100).Within(1));
-        Assert.That(resultB.TotalMilliseconds, Is.EqualTo(200).Within(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(resultA.TotalMilliseconds, Is.EqualTo(100).Within(1));
+            Assert.That(resultB.TotalMilliseconds, Is.EqualTo(200).Within(1));
+        }
     }
 }

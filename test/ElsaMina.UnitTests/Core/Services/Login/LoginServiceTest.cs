@@ -54,8 +54,11 @@ public class LoginServiceTest
         var result = await _loginService.Login(CHALLSTR);
 
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result.CurrentUser.UserId, Is.EqualTo(USER_ID));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.CurrentUser.UserId, Is.EqualTo(USER_ID));
+        }
     }
 
     [Test]

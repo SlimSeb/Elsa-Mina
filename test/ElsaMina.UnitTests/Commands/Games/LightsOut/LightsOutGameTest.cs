@@ -106,8 +106,11 @@ public class LightsOutGameTest
     {
         await _game.StartNewRound();
 
-        Assert.That(_game.Level, Is.EqualTo(1));
-        Assert.That(_game.GridSize, Is.EqualTo(5));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Level, Is.EqualTo(1));
+            Assert.That(_game.GridSize, Is.EqualTo(5));
+        }
     }
 
     [Test]
@@ -124,8 +127,11 @@ public class LightsOutGameTest
 
         await _game.StartNewRound();
 
-        Assert.That(_game.Level, Is.EqualTo(5));
-        Assert.That(_game.TotalStars, Is.EqualTo(20));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Level, Is.EqualTo(5));
+            Assert.That(_game.TotalStars, Is.EqualTo(20));
+        }
     }
 
     [Test]
@@ -247,14 +253,14 @@ public class LightsOutGameTest
         int center = _game.GridSize / 2;
         await _game.ToggleCell(_owner, center, center);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Grid[center, center], Is.True);
             Assert.That(_game.Grid[center - 1, center], Is.True);
             Assert.That(_game.Grid[center + 1, center], Is.True);
             Assert.That(_game.Grid[center, center - 1], Is.True);
             Assert.That(_game.Grid[center, center + 1], Is.True);
-        });
+        }
     }
 
     [Test]
@@ -293,8 +299,11 @@ public class LightsOutGameTest
 
         await _game.ToggleCell(_owner, 0, 0);
 
-        Assert.That(_game.IsRoundActive, Is.False);
-        Assert.That(_game.IsEnded, Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.IsRoundActive, Is.False);
+            Assert.That(_game.IsEnded, Is.True);
+        }
     }
 
     [Test]
@@ -466,8 +475,11 @@ public class LightsOutGameTest
 
         await using var db = new BotDbContext(_dbOptions);
         var record = await db.LightsOutScores.FindAsync("testplayer");
-        Assert.That(record, Is.Not.Null);
-        Assert.That(record.UserId, Is.EqualTo("testplayer"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record, Is.Not.Null);
+            Assert.That(record.UserId, Is.EqualTo("testplayer"));
+        }
     }
 
     [Test]

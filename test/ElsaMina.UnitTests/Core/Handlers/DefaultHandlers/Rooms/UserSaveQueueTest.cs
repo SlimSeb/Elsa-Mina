@@ -50,7 +50,7 @@ public class UserSaveQueueTests
         var users = await LoadUsersAsync();
 
         Assert.That(users, Has.Count.EqualTo(2));
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(users.Select(u => u.UserId),
                 Is.EquivalentTo((string[]) ["auser", "buser"]));
@@ -60,7 +60,7 @@ public class UserSaveQueueTests
             Assert.That(users.Single(u => u.UserId == "buser").LastSeenAction, Is.EqualTo(UserAction.Leaving));
             Assert.That(users.Single(u => u.UserId == "buser").LastSeenRoomId, Is.EqualTo("room2"));
             Assert.That(users.Single(u => u.UserId == "buser").LastOnline, Is.EqualTo(secondSeen));
-        });
+        }
     }
 
     [Test]
@@ -84,14 +84,14 @@ public class UserSaveQueueTests
         var user = await db.Users.FindAsync("user1");
 
         Assert.That(user, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(user!.UserId, Is.EqualTo("user1"));
             Assert.That(user.UserName, Is.EqualTo("User 1"));
             Assert.That(user.LastOnline, Is.EqualTo(_clockService.CurrentUtcDateTimeOffset));
             Assert.That(user.LastSeenRoomId, Is.EqualTo("room-a"));
             Assert.That(user.LastSeenAction, Is.EqualTo(UserAction.Chatting));
-        });
+        }
     }
 
     [Test]

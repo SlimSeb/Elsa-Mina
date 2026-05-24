@@ -99,11 +99,11 @@ public class VoltorbFlipGameTest
 
         await _game.StartNewRound(); // starts a new session
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.IsStarted, Is.True);
             Assert.That(_game.IsEnded, Is.False);
-        });
+        }
     }
 
     [Test]
@@ -119,7 +119,7 @@ public class VoltorbFlipGameTest
     {
         await _game.StartNewRound();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.TileValues, Is.Not.Null);
             Assert.That(_game.IsRevealed, Is.Not.Null);
@@ -127,7 +127,7 @@ public class VoltorbFlipGameTest
             Assert.That(_game.ColSums, Is.Not.Null);
             Assert.That(_game.RowVoltorbs, Is.Not.Null);
             Assert.That(_game.ColVoltorbs, Is.Not.Null);
-        });
+        }
     }
 
     [Test]
@@ -168,8 +168,11 @@ public class VoltorbFlipGameTest
 
         await _game.StartNewRound();
 
-        Assert.That(_game.Level, Is.EqualTo(5));
-        Assert.That(_game.TotalCoins, Is.EqualTo(100));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Level, Is.EqualTo(5));
+            Assert.That(_game.TotalCoins, Is.EqualTo(100));
+        }
     }
 
     [Test]
@@ -177,8 +180,11 @@ public class VoltorbFlipGameTest
     {
         await _game.StartNewRound();
 
-        Assert.That(_game.Level, Is.EqualTo(1));
-        Assert.That(_game.TotalCoins, Is.EqualTo(0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Level, Is.EqualTo(1));
+            Assert.That(_game.TotalCoins, Is.EqualTo(0));
+        }
     }
 
     #endregion
@@ -191,11 +197,11 @@ public class VoltorbFlipGameTest
         // Row 0: Voltorb(0) + 2 + 1 + 1 + 1 = 5; rows 1-4: 5 ones = 5
         await _game.StartNewRound();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.RowSums[0], Is.EqualTo(5));
             Assert.That(_game.RowSums[1], Is.EqualTo(5));
-        });
+        }
     }
 
     [Test]
@@ -204,12 +210,12 @@ public class VoltorbFlipGameTest
         // Row 0 has the Voltorb at [0,0]; all other rows have none
         await _game.StartNewRound();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.RowVoltorbs[0], Is.EqualTo(1));
             Assert.That(_game.RowVoltorbs[1], Is.EqualTo(0));
             Assert.That(_game.RowVoltorbs[2], Is.EqualTo(0));
-        });
+        }
     }
 
     [Test]
@@ -218,12 +224,12 @@ public class VoltorbFlipGameTest
         // Col 0: Voltorb + 4 ones = 4; col 1: 2 + 4 ones = 6; cols 2-4: 5 ones = 5
         await _game.StartNewRound();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.ColSums[0], Is.EqualTo(4));
             Assert.That(_game.ColSums[1], Is.EqualTo(6));
             Assert.That(_game.ColSums[2], Is.EqualTo(5));
-        });
+        }
     }
 
     [Test]
@@ -232,11 +238,11 @@ public class VoltorbFlipGameTest
         // Voltorb is at [0,0] so only col 0 has a Voltorb
         await _game.StartNewRound();
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.ColVoltorbs[0], Is.EqualTo(1));
             Assert.That(_game.ColVoltorbs[1], Is.EqualTo(0));
-        });
+        }
     }
 
     #endregion
@@ -314,11 +320,11 @@ public class VoltorbFlipGameTest
 
         await _game.FlipTile(_mockUser, 0, 0); // Voltorb at [0,0]
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.IsRoundActive, Is.False);
             Assert.That(_game.IsEnded, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -404,11 +410,11 @@ public class VoltorbFlipGameTest
 
         await _game.FlipTile(_mockUser, 0, 1); // Only 2x tile
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.IsRoundActive, Is.False);
             Assert.That(_game.IsEnded, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -452,8 +458,11 @@ public class VoltorbFlipGameTest
 
         await using var db = new BotDbContext(_dbOptions);
         var record = await db.VoltorbFlipLevels.FindAsync("testplayer");
-        Assert.That(record, Is.Not.Null);
-        Assert.That(record.Level, Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record, Is.Not.Null);
+            Assert.That(record.Level, Is.EqualTo(1));
+        }
     }
 
     [Test]
@@ -465,10 +474,13 @@ public class VoltorbFlipGameTest
 
         await using var db = new BotDbContext(_dbOptions);
         var record = await db.VoltorbFlipLevels.FindAsync("testplayer");
-        Assert.That(record, Is.Not.Null);
-        Assert.That(record.Level, Is.EqualTo(2));
-        Assert.That(record.MaxLevel, Is.EqualTo(2));
-        Assert.That(record.Coins, Is.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record, Is.Not.Null);
+            Assert.That(record.Level, Is.EqualTo(2));
+            Assert.That(record.MaxLevel, Is.EqualTo(2));
+            Assert.That(record.Coins, Is.EqualTo(2));
+        }
     }
 
     [Test]
@@ -484,8 +496,11 @@ public class VoltorbFlipGameTest
 
         await using var db = new BotDbContext(_dbOptions);
         var record = await db.VoltorbFlipLevels.FindAsync("testplayer");
-        Assert.That(record.Level, Is.EqualTo(1));
-        Assert.That(record.MaxLevel, Is.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record.Level, Is.EqualTo(1));
+            Assert.That(record.MaxLevel, Is.EqualTo(2));
+        }
     }
 
     [Test]
@@ -511,8 +526,11 @@ public class VoltorbFlipGameTest
     [Test]
     public async Task Test_SetMarkerType_ShouldHaveNoActiveMarker_BeforeRoundStarts()
     {
-        Assert.That(_game.ActiveMarkerType, Is.EqualTo(VoltorbFlipMarkerType.None));
-        Assert.That(_game.IsMarkingMode, Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.ActiveMarkerType, Is.EqualTo(VoltorbFlipMarkerType.None));
+            Assert.That(_game.IsMarkingMode, Is.False);
+        }
     }
 
     [Test]
@@ -522,8 +540,11 @@ public class VoltorbFlipGameTest
 
         await _game.SetMarkerType(_mockUser, VoltorbFlipMarkerType.Voltorb);
 
-        Assert.That(_game.IsMarkingMode, Is.True);
-        Assert.That(_game.ActiveMarkerType, Is.EqualTo(VoltorbFlipMarkerType.Voltorb));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.IsMarkingMode, Is.True);
+            Assert.That(_game.ActiveMarkerType, Is.EqualTo(VoltorbFlipMarkerType.Voltorb));
+        }
     }
 
     [Test]
@@ -534,8 +555,11 @@ public class VoltorbFlipGameTest
         await _game.SetMarkerType(_mockUser, VoltorbFlipMarkerType.Voltorb);
         await _game.SetMarkerType(_mockUser, VoltorbFlipMarkerType.Voltorb);
 
-        Assert.That(_game.IsMarkingMode, Is.False);
-        Assert.That(_game.ActiveMarkerType, Is.EqualTo(VoltorbFlipMarkerType.None));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.IsMarkingMode, Is.False);
+            Assert.That(_game.ActiveMarkerType, Is.EqualTo(VoltorbFlipMarkerType.None));
+        }
     }
 
     [Test]
@@ -597,8 +621,11 @@ public class VoltorbFlipGameTest
 
         await _game.FlipTile(_mockUser, 0, 2);
 
-        Assert.That(_game.Markers[0, 2], Is.EqualTo(VoltorbFlipMarkerType.Voltorb));
-        Assert.That(_game.IsRevealed[0, 2], Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Markers[0, 2], Is.EqualTo(VoltorbFlipMarkerType.Voltorb));
+            Assert.That(_game.IsRevealed[0, 2], Is.False);
+        }
     }
 
     [Test]
@@ -681,8 +708,11 @@ public class VoltorbFlipGameTest
 
         await _game.StartNewRound();
 
-        Assert.That(_game.IsMarkingMode, Is.False);
-        Assert.That(_game.Markers[0, 2], Is.EqualTo(VoltorbFlipMarkerType.None));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.IsMarkingMode, Is.False);
+            Assert.That(_game.Markers[0, 2], Is.EqualTo(VoltorbFlipMarkerType.None));
+        }
     }
 
     #endregion
@@ -716,11 +746,11 @@ public class VoltorbFlipGameTest
 
         await _game.QuitRound(_mockUser);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.IsRoundActive, Is.False);
             Assert.That(_game.IsEnded, Is.True);
-        });
+        }
     }
 
     [Test]
@@ -778,8 +808,11 @@ public class VoltorbFlipGameTest
 
         await using var db = new BotDbContext(_dbOptions);
         var record = await db.VoltorbFlipLevels.FindAsync("testplayer");
-        Assert.That(record, Is.Not.Null);
-        Assert.That(record.Level, Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(record, Is.Not.Null);
+            Assert.That(record.Level, Is.EqualTo(1));
+        }
     }
 
     #endregion

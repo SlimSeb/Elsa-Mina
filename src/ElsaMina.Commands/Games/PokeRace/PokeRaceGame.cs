@@ -62,11 +62,15 @@ public class PokeRaceGame : Game, IPokeRaceGame
         string pokemonName)
     {
         if (IsStarted)
+        {
             return (false, "pokerace_race_already_started", []);
+        }
 
         var userId = userName.ToLowerAlphaNum();
-        if (_players.ContainsKey(userId))
-            return (false, "pokerace_join_already_chosen", [_players[userId].Pokemon]);
+        if (_players.TryGetValue(userId, out var value))
+        {
+            return (false, "pokerace_join_already_chosen", [value.Pokemon]);
+        }
 
         if (!PokeRaceConstants.RACE_POKEMON.ContainsKey(pokemonName))
         {
@@ -75,7 +79,9 @@ public class PokeRaceGame : Game, IPokeRaceGame
         }
 
         if (_players.Values.Any(player => player.Pokemon == pokemonName))
+        {
             return (false, "pokerace_join_pokemon_taken", [pokemonName]);
+        }
 
         _players[userId] = (userName, pokemonName);
         var html = await BuildLobbyHtmlAsync();
@@ -86,7 +92,9 @@ public class PokeRaceGame : Game, IPokeRaceGame
     public async Task StartRaceAsync()
     {
         if (IsStarted || _players.Count < PokeRaceConstants.MIN_PLAYERS)
+        {
             return;
+        }
 
         _autoStartTimer.Stop();
         OnStart();
@@ -143,7 +151,9 @@ public class PokeRaceGame : Game, IPokeRaceGame
     private async Task OnRaceUpdateAsync()
     {
         if (IsEnded)
+        {
             return;
+        }
 
         _turn++;
         var turnEvents = new List<string>();
@@ -161,7 +171,9 @@ public class PokeRaceGame : Game, IPokeRaceGame
         foreach (var pokemon in sortedByPosition)
         {
             if (_finished.Contains(pokemon))
+            {
                 continue;
+            }
 
             var baseMove = 1.0 + (PokeRaceConstants.RACE_POKEMON[pokemon].Speed - 100.0) / 200.0;
             var randomFactor = _randomService.NextDouble() * (1.8 - 0.7) + 0.7;
@@ -187,7 +199,9 @@ public class PokeRaceGame : Game, IPokeRaceGame
         {
             _allEvents.AddRange(turnEvents.Select(eventText => $"Tour {_turn}: {eventText}"));
             if (_allEvents.Count > PokeRaceConstants.MAX_RECENT_EVENTS)
+            {
                 _allEvents.RemoveRange(0, _allEvents.Count - PokeRaceConstants.MAX_RECENT_EVENTS);
+            }
         }
 
         if (_finished.Count == _positions.Count)

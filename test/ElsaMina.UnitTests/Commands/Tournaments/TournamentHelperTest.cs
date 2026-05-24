@@ -15,7 +15,7 @@ public class TournamentHelperTest
         var results = TournamentHelper.ParseTourResults(resultJson);
 
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(results.Format, Is.EqualTo("Random Inverse Party #2"));
             Assert.That(results.Winner, Is.EqualTo("pujolly"));
@@ -31,6 +31,6 @@ public class TournamentHelperTest
             Assert.That(results.WinsCount["naiike"], Is.EqualTo(0));
             Assert.That(results.WinsCount["bloodyjae"], Is.EqualTo(1));
             Assert.That(results.WinsCount["lerucestlarue"], Is.EqualTo(0));
-        });
+        }
     }
 }

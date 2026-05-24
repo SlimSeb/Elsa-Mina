@@ -119,9 +119,12 @@ public class BanPollCommandTest
         await _command.RunAsync(_context);
 
         var ban = await GetFirstBanAsync();
-        Assert.That(ban, Is.Not.Null);
-        Assert.That(ban.UserId, Is.EqualTo("baduser"));
-        Assert.That(ban.RoomId, Is.EqualTo("testroom"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ban, Is.Not.Null);
+            Assert.That(ban.UserId, Is.EqualTo("baduser"));
+            Assert.That(ban.RoomId, Is.EqualTo("testroom"));
+        }
     }
 
     [Test]
@@ -152,8 +155,11 @@ public class BanPollCommandTest
         await _command.RunAsync(_context);
 
         var ban = await GetFirstBanAsync();
-        Assert.That(ban, Is.Not.Null);
-        Assert.That(ban.UserId, Is.EqualTo("baduser"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ban, Is.Not.Null);
+            Assert.That(ban.UserId, Is.EqualTo("baduser"));
+        }
     }
 
     [Test]

@@ -102,10 +102,10 @@ public class ToggleLadderTrackerCommandTest
     public void Test_HelpMessageKey_AndRequiredRank_ShouldMatchCommandContract()
     {
         // Assert
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(_command.HelpMessageKey, Is.EqualTo("toggletracking_help_message"));
             Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Voiced));
-        });
+        }
     }
 }

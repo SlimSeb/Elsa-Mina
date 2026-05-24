@@ -114,7 +114,10 @@ public class EditShopCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.That(capturedViewModel.Culture, Is.EqualTo(culture));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedViewModel, Is.Not.Null);
+            Assert.That(capturedViewModel.Culture, Is.EqualTo(culture));
+        }
     }
 }

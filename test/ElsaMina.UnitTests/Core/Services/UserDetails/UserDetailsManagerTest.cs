@@ -32,14 +32,14 @@ public class  UserDetailsManagerTest
         
         // Act
         var result = await task;
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             // Assert
             Assert.That(result.Name, Is.EqualTo("Panur"));
             Assert.That(result.Avatar, Is.EqualTo("sightseerf"));
             Assert.That(result.Group, Is.EqualTo("+"));
             Assert.That(result.AutoConfirmed, Is.True);
-        });
+        }
     }
 
     [Test]
