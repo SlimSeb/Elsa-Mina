@@ -440,6 +440,117 @@ public class ProfileServiceTest
 
     #endregion
 
+    #region Online / LastSeen
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetIsOnlineToTrue_WhenUserDetailsHasRooms()
+    {
+        // Arrange
+        _userDetailsManager.GetUserDetailsAsync("alice", Arg.Any<CancellationToken>())
+            .Returns(new UserDetailsDto { Rooms = new Dictionary<string, UserDetailsRoomDto>() });
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm => vm.IsOnline));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetIsOnlineToFalse_WhenUserDetailsIsNull()
+    {
+        // Arrange
+        _userDetailsManager.GetUserDetailsAsync("alice", Arg.Any<CancellationToken>())
+            .Returns((UserDetailsDto)null);
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm => !vm.IsOnline));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetIsOnlineToFalse_WhenUserDetailsHasNullRooms()
+    {
+        // Arrange
+        _userDetailsManager.GetUserDetailsAsync("alice", Arg.Any<CancellationToken>())
+            .Returns(new UserDetailsDto { Rooms = null });
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm => !vm.IsOnline));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetLastSeenDate_WhenSavedUserHasLastOnline()
+    {
+        // Arrange
+        var lastOnline = new DateTimeOffset(2026, 1, 15, 10, 0, 0, TimeSpan.Zero);
+        _dbContext.Users.Add(new SavedUser
+        {
+            UserId = "alice",
+            UserName = "Alice",
+            LastOnline = lastOnline,
+            LastSeenAction = UserAction.Chatting,
+            LastSeenRoomId = "room1"
+        });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm => vm.LastSeenDate.HasValue));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetLastSeenDateToNull_WhenNoSavedUserExists()
+    {
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm => !vm.LastSeenDate.HasValue));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetLastSeenAction_WhenSavedUserHasLastSeenAction()
+    {
+        // Arrange
+        _dbContext.Users.Add(new SavedUser
+        {
+            UserId = "alice",
+            UserName = "Alice",
+            LastOnline = DateTimeOffset.UtcNow,
+            LastSeenAction = UserAction.Leaving,
+            LastSeenRoomId = "room1"
+        });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm => vm.LastSeenAction == UserAction.Leaving));
+    }
+
+    #endregion
+
     #region GetAvatar
 
     [Test]

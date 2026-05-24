@@ -35,6 +35,12 @@
     <data name="rank_owner" xml:space="preserve">
         <value>Room Owner</value>
     </data>
+    <data name="rank_administrator" xml:space="preserve">
+        <value>Administrator</value>
+    </data>
+    <data name="rank_leader" xml:space="preserve">
+        <value>Leader</value>
+    </data>
     <data name="rank_prizewinner" xml:space="preserve">
         <value>Prize Winner</value>
     </data>

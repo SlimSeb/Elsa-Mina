@@ -9,6 +9,8 @@
 
     var rankNameKey = Model.UserRoomRank switch
     {
+        '~' => "rank_administrator",
+        '&' => "rank_leader",
         '#' => "rank_owner",
         '*' => "rank_bot",
         '@' => "rank_mod",
@@ -55,22 +57,19 @@
                 </span>
                 @if (!string.IsNullOrEmpty(Model.ProfileEmoji))
                 {
-                    <span style="font-size:1.1em;margin-left:3px;">@Raw(Model.ProfileEmoji)</span>
+                    <span style="font-size:1.1em;">@Raw(Model.ProfileEmoji)</span>
                 }
                 @if (!string.IsNullOrEmpty(rankNameKey))
                 {
-                    <span style="color:#a0a0c0;margin-left:4px;font-size:10px;">(@GetString(rankNameKey))</span>
+                    <span style="color:#a0a0c0;font-size:10px;">(@GetString(rankNameKey))</span>
+                }
+                @if (Model.IsOnline)
+                {
+                    <span style="color:#4caf50;">&#9679;</span>
                 }
             </div>
 
-            @if (Model.IsOnline)
-            {
-                <div style="margin-bottom:2px;">
-                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_online")</span>
-                    <span style="color:#4caf50;">&#9679;</span>
-                </div>
-            }
-            else if (Model.LastSeenDate.HasValue && Model.LastSeenAction.HasValue)
+            @if (!Model.IsOnline && Model.LastSeenDate.HasValue && Model.LastSeenAction.HasValue)
             {
                 var actionKey = Model.LastSeenAction.Value switch
                 {

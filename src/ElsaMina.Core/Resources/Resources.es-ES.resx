@@ -26,6 +26,12 @@
     <data name="rank_owner" xml:space="preserve">
         <value>Administrador</value>
     </data>
+    <data name="rank_administrator" xml:space="preserve">
+        <value>Administrador</value>
+    </data>
+    <data name="rank_leader" xml:space="preserve">
+        <value>Líder</value>
+    </data>
     <data name="rank_bot" xml:space="preserve">
         <value>Bot</value>
     </data>

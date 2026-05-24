@@ -48,11 +48,73 @@ public class  UserDetailsManagerTest
         // Arrange
         // TODO : revoir ce test
         _systemService.SleepAsync(Arg.Any<TimeSpan>()).Returns(Task.Delay(TimeSpan.FromSeconds(1)));
-        
+
         // Act
         var result = await _userDetailsManager.GetUserDetailsAsync("speks");
-        
+
         // Assert
         Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public async Task Test_GetUserDetailsAsync_ShouldSendCorrectCommand_ToClient()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource();
+        _systemService.SleepAsync(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>()).Returns(tcs.Task);
+        var task = _userDetailsManager.GetUserDetailsAsync("panur");
+        _userDetailsManager.HandleReceivedUserDetails("""{"userid":"panur","name":"Panur"}""");
+
+        // Act
+        await task;
+
+        // Assert
+        _client.Received(1).Send("|/cmd userdetails panur");
+    }
+
+    [Test]
+    public async Task Test_HandleReceivedUserDetails_ShouldSetRoomsToNull_WhenPayloadContainsRoomsFalse()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource();
+        _systemService.SleepAsync(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>()).Returns(tcs.Task);
+        var task = _userDetailsManager.GetUserDetailsAsync("panur");
+        _userDetailsManager.HandleReceivedUserDetails("""{"userid":"panur","name":"Panur","rooms":false}""");
+
+        // Act
+        var result = await task;
+
+        // Assert
+        Assert.That(result.Rooms, Is.Null);
+    }
+
+    [Test]
+    public async Task Test_HandleReceivedUserDetails_ShouldSetRoomsToNonNull_WhenPayloadContainsRoomData()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource();
+        _systemService.SleepAsync(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>()).Returns(tcs.Task);
+        var task = _userDetailsManager.GetUserDetailsAsync("panur");
+        _userDetailsManager.HandleReceivedUserDetails("""{"userid":"panur","name":"Panur","rooms":{" lobby":{},"franais":{}}}""");
+
+        // Act
+        var result = await task;
+
+        // Assert
+        Assert.That(result.Rooms, Is.Not.Null);
+    }
+
+    [Test]
+    public void Test_HandleReceivedUserDetails_ShouldNotThrow_WhenJsonIsMalformed()
+    {
+        // Act & Assert
+        Assert.DoesNotThrow(() => _userDetailsManager.HandleReceivedUserDetails("not valid json {{"));
+    }
+
+    [Test]
+    public void Test_HandleReceivedUserDetails_ShouldNotThrow_WhenMessageIsEmpty()
+    {
+        // Act & Assert
+        Assert.DoesNotThrow(() => _userDetailsManager.HandleReceivedUserDetails(string.Empty));
     }
 }

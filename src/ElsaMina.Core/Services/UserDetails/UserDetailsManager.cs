@@ -34,12 +34,12 @@ public class UserDetailsManager : IUserDetailsManager
 
         try
         {
-            message = message.Replace("\"rooms\":false", "\"rooms\":{}")
-                             .Replace("\"rooms\": false", "\"rooms\":{}");
+            message = message.Replace("\"rooms\":false", "")
+                             .Replace("\"rooms\": false", "");
 
             dto = JsonConvert.DeserializeObject<UserDetailsDto>(message);
         }
-        catch (JsonSerializationException ex)
+        catch (JsonException ex)
         {
             Log.Error(ex, "Error while deserializing userdata json");
         }

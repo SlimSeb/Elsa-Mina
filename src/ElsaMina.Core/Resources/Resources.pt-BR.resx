@@ -30,6 +30,12 @@
     <data name="rank_owner" xml:space="preserve">
         <value>Dono da Sala</value>
     </data>
+    <data name="rank_administrator" xml:space="preserve">
+        <value>Administrador</value>
+    </data>
+    <data name="rank_leader" xml:space="preserve">
+        <value>Líder</value>
+    </data>
     <data name="rank_prizewinner" xml:space="preserve">
         <value>Vencedor de Torneio</value>
     </data>

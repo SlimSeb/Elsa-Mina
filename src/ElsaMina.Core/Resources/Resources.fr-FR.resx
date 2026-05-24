@@ -19,7 +19,13 @@
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
     <data name="rank_owner" xml:space="preserve">
+        <value>Propriétaire du salon</value>
+    </data>
+    <data name="rank_administrator" xml:space="preserve">
         <value>Administrateur</value>
+    </data>
+    <data name="rank_leader" xml:space="preserve">
+        <value>Leader</value>
     </data>
     <data name="rank_bot" xml:space="preserve">
         <value>Bot</value>
