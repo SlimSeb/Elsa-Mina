@@ -57,7 +57,7 @@ public class TenorSearchCommand : Command
         var now = _clockService.CurrentUtcDateTimeOffset;
         var (roomRemaining, userRemaining) =
             _cooldownService.GetRemainingCooldowns(context.RoomId, context.Sender.UserId, now);
-        if (!context.IsSenderWhitelisted && roomRemaining > TimeSpan.Zero || userRemaining > TimeSpan.Zero)
+        if (!context.IsSenderWhitelisted && (roomRemaining > TimeSpan.Zero || userRemaining > TimeSpan.Zero))
         {
             if (roomRemaining >= userRemaining)
             {
