@@ -62,7 +62,7 @@ public class ConnectFourRatingService : IConnectFourRatingService
         return (change1, change2);
     }
 
-    private async Task<ConnectFourRating> GetOrCreateRatingAsync(BotDbContext dbContext, string userId,
+    private static async Task<ConnectFourRating> GetOrCreateRatingAsync(BotDbContext dbContext, string userId,
         CancellationToken cancellationToken)
     {
         var rating = await dbContext.ConnectFourRatings

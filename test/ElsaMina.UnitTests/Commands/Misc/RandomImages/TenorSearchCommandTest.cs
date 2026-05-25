@@ -19,6 +19,7 @@ public class TenorSearchCommandTest
     private ITemplatesManager _templatesManager;
     private IClockService _clockService;
     private IArcadeEventsService _eventsService;
+    private ITenorCooldownService _cooldownService;
     private IRoom _room;
     private TenorSearchCommand _command;
 
@@ -30,6 +31,7 @@ public class TenorSearchCommandTest
         _templatesManager = Substitute.For<ITemplatesManager>();
         _eventsService = Substitute.For<IArcadeEventsService>();
         _clockService = Substitute.For<IClockService>();
+        _cooldownService = Substitute.For<ITenorCooldownService>();
         _room = Substitute.For<IRoom>();
 
         _configuration.Trigger.Returns("-");
@@ -37,9 +39,12 @@ public class TenorSearchCommandTest
         _room.GetParameterValueAsync(Parameter.TenorGifEnabled, Arg.Any<CancellationToken>())
             .Returns("true");
         _clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
+        _eventsService.AreGamesMuted(Arg.Any<string>()).Returns(false);
+        _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
+            .Returns((TimeSpan.Zero, TimeSpan.Zero));
 
         _command = new TenorSearchCommand(_tenorService, _configuration, _templatesManager, _clockService,
-            _eventsService);
+            _eventsService, _cooldownService);
     }
 
     private IContext MakeContext(string target, string roomId = null, string userId = null)
@@ -64,79 +69,9 @@ public class TenorSearchCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReplyErrorMessage_WhenArcadeGamesAreMuted()
+    public void Test_IsAllowedInPrivateMessage_ShouldBeFalse()
     {
-        var roomId = Guid.NewGuid().ToString();
-        var now = DateTimeOffset.UtcNow;
-        _clockService.CurrentUtcDateTimeOffset.Returns(now);
-        _eventsService.AreGamesMuted(roomId).Returns(true);
-        var firstContext = MakeContext("cats", roomId, Guid.NewGuid().ToString());
-        
-        await _command.RunAsync(firstContext);
-        
-        firstContext.Received(1).ReplyLocalizedMessage("tenorgif_muted_for_events");
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldNotSendGif_WhenRoomIsOnCooldown()
-    {
-        var roomId = Guid.NewGuid().ToString();
-        var now = DateTimeOffset.UtcNow;
-        _clockService.CurrentUtcDateTimeOffset.Returns(now);
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
-            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
-
-        var firstContext = MakeContext("cats", roomId, Guid.NewGuid().ToString());
-        await _command.RunAsync(firstContext);
-        firstContext.Received(1).SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
-
-        var secondContext = MakeContext("dogs", roomId, Guid.NewGuid().ToString());
-        await _command.RunAsync(secondContext);
-
-        secondContext.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldNotSendGif_WhenUserIsOnCooldown()
-    {
-        var userId = Guid.NewGuid().ToString();
-        var now = DateTimeOffset.UtcNow;
-        _clockService.CurrentUtcDateTimeOffset.Returns(now);
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
-            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
-
-        var firstContext = MakeContext("cats", Guid.NewGuid().ToString(), userId);
-        await _command.RunAsync(firstContext);
-        firstContext.Received(1).SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
-
-        _clockService.CurrentUtcDateTimeOffset.Returns(now.AddMinutes(5));
-        var secondContext = MakeContext("dogs", Guid.NewGuid().ToString(), userId);
-        await _command.RunAsync(secondContext);
-
-        secondContext.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldSendGif_WhenBothCooldownsHaveExpired()
-    {
-        var roomId = Guid.NewGuid().ToString();
-        var userId = Guid.NewGuid().ToString();
-        var start = DateTimeOffset.UtcNow;
-        _clockService.CurrentUtcDateTimeOffset.Returns(start);
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
-            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
-
-        var firstContext = MakeContext("cats", roomId, userId);
-        await _command.RunAsync(firstContext);
-
-        _clockService.CurrentUtcDateTimeOffset.Returns(start.AddHours(1));
-        var secondContext = MakeContext("dogs", roomId, userId);
-        await _command.RunAsync(secondContext);
-
-        secondContext.Received(1).SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+        Assert.That(_command.IsAllowedInPrivateMessage, Is.False);
     }
 
     [Test]
@@ -154,9 +89,57 @@ public class TenorSearchCommandTest
     }
 
     [Test]
-    public void Test_IsAllowedInPrivateMessage_ShouldBeFalse()
+    public async Task Test_RunAsync_ShouldReplyErrorMessage_WhenArcadeGamesAreMuted()
     {
-        Assert.That(_command.IsAllowedInPrivateMessage, Is.False);
+        _eventsService.AreGamesMuted(Arg.Any<string>()).Returns(true);
+        var context = MakeContext("cats");
+
+        await _command.RunAsync(context);
+
+        context.Received(1).ReplyLocalizedMessage("tenorgif_muted_for_events");
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldSendRoomCooldownMessageAndNotSendGif_WhenRoomCooldownIsLonger()
+    {
+        var roomRemaining = TimeSpan.FromSeconds(60);
+        var userRemaining = TimeSpan.FromSeconds(10);
+        _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
+            .Returns((roomRemaining, userRemaining));
+        var context = MakeContext("cats");
+
+        await _command.RunAsync(context);
+
+        context.Received(1).ReplyLocalizedMessage("tenorsearch_room_cooldown", Arg.Any<object[]>());
+        context.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldSendUserCooldownMessageAndNotSendGif_WhenUserCooldownIsLonger()
+    {
+        var roomRemaining = TimeSpan.FromSeconds(10);
+        var userRemaining = TimeSpan.FromMinutes(14);
+        _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
+            .Returns((roomRemaining, userRemaining));
+        var context = MakeContext("cats");
+
+        await _command.RunAsync(context);
+
+        context.Received(1).ReplyLocalizedMessage("tenorsearch_user_cooldown", Arg.Any<object[]>());
+        context.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldShowRoomCooldownMessage_WhenBothAreEqual()
+    {
+        var remaining = TimeSpan.FromSeconds(30);
+        _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
+            .Returns((remaining, remaining));
+        var context = MakeContext("cats");
+
+        await _command.RunAsync(context);
+
+        context.Received(1).ReplyLocalizedMessage("tenorsearch_room_cooldown", Arg.Any<object[]>());
     }
 
     [Test]
@@ -183,6 +166,19 @@ public class TenorSearchCommandTest
 
         context.Received(1).ReplyLocalizedMessage("random_image_error");
         context.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldNotSetCooldown_WhenTenorReturnsNoResults()
+    {
+        var context = MakeContext("cats");
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        await _command.RunAsync(context);
+
+        _cooldownService.DidNotReceiveWithAnyArgs().SetCooldown(default, default, default);
     }
 
     [Test]
@@ -233,5 +229,26 @@ public class TenorSearchCommandTest
                 vm.Gifs[0].OriginalWidth == 400 &&
                 vm.Gifs[0].OriginalHeight == 200 &&
                 vm.Trigger == "-"));
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldSetCooldown_AfterGifIsSent()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var roomId = Guid.NewGuid().ToString();
+        var userId = Guid.NewGuid().ToString();
+        _clockService.CurrentUtcDateTimeOffset.Returns(now);
+        var context = MakeContext("cats", roomId, userId);
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
+
+        await _command.RunAsync(context);
+
+        Received.InOrder(() =>
+        {
+            context.SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+            _cooldownService.SetCooldown(roomId, userId, now);
+        });
     }
 }

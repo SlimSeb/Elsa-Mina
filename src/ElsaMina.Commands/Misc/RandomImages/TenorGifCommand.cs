@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Clock;
@@ -15,21 +14,21 @@ namespace ElsaMina.Commands.Misc.RandomImages;
 public class TenorGifCommand : Command
 {
     private const string TENOR_CDN_HOST = "media.tenor.com";
-    private static readonly ConcurrentDictionary<string, DateTimeOffset> ROOM_COOLDOWNS = new();
-    private static readonly ConcurrentDictionary<string, DateTimeOffset> USER_COOLDOWNS = new();
 
     private readonly IImageService _imageService;
     private readonly ITemplatesManager _templatesManager;
     private readonly IClockService _clockService;
     private readonly IArcadeEventsService _eventsService;
+    private readonly ITenorCooldownService _cooldownService;
 
     public TenorGifCommand(IImageService imageService, ITemplatesManager templatesManager, IClockService clockService,
-        IArcadeEventsService eventsService)
+        IArcadeEventsService eventsService, ITenorCooldownService cooldownService)
     {
         _imageService = imageService;
         _templatesManager = templatesManager;
         _clockService = clockService;
         _eventsService = eventsService;
+        _cooldownService = cooldownService;
     }
 
     public override Rank RequiredRank => Rank.Regular;
@@ -51,31 +50,24 @@ public class TenorGifCommand : Command
         }
 
         var now = _clockService.CurrentUtcDateTimeOffset;
-        if (ROOM_COOLDOWNS.TryGetValue(context.RoomId, out var lastRoomUse))
+        var (roomRemaining, userRemaining) =
+            _cooldownService.GetRemainingCooldowns(context.RoomId, context.Sender.UserId, now);
+        if (roomRemaining > TimeSpan.Zero || userRemaining > TimeSpan.Zero)
         {
-            var remaining = TenorConstants.PER_ROOM_COOLDOWN - (now - lastRoomUse);
-            if (remaining > TimeSpan.Zero)
+            string reply;
+            if (roomRemaining >= userRemaining)
             {
-                var reply = context.GetString("tenorgif_room_cooldown", remaining.Seconds);
-                context.Reply($"/pm {context.Sender.UserId}, {reply}");
-                return;
+                reply = context.GetString("tenorgif_room_cooldown", (int)roomRemaining.TotalSeconds);
             }
-        }
-
-        if (USER_COOLDOWNS.TryGetValue(context.Sender.UserId, out var lastUserUse))
-        {
-            var remaining = TenorConstants.PER_USER_COOLDOWN - (now - lastUserUse);
-            if (remaining > TimeSpan.Zero)
+            else
             {
-                var reply = context.GetString("tenorgif_user_cooldown",
-                    (int)remaining.TotalMinutes, remaining.Seconds);
-                context.Reply($"/pm {context.Sender.UserId}, {reply}");
-                return;
+                reply = context.GetString("tenorgif_user_cooldown",
+                    (int)userRemaining.TotalMinutes, userRemaining.Seconds);
             }
-        }
 
-        ROOM_COOLDOWNS[context.RoomId] = now;
-        USER_COOLDOWNS[context.Sender.UserId] = now;
+            context.Reply($"/pm {context.Sender.UserId}, {reply}");
+            return;
+        }
 
         var target = context.Target?.Trim();
         if (string.IsNullOrWhiteSpace(target))
@@ -133,5 +125,6 @@ public class TenorGifCommand : Command
             });
 
         context.ReplyHtml(template.RemoveNewlines());
+        _cooldownService.SetCooldown(context.RoomId, context.Sender.UserId, now);
     }
 }

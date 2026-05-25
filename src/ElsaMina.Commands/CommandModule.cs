@@ -454,6 +454,7 @@ public partial class CommandModule : Module
         builder.RegisterType<ArcadeEventsService>().As<IArcadeEventsService>().SingleInstance();
         builder.RegisterType<UnsplashService>().As<IUnsplashService>().SingleInstance();
         builder.RegisterType<TenorService>().As<ITenorService>().SingleInstance();
+        builder.RegisterType<TenorCooldownService>().As<ITenorCooldownService>().SingleInstance();
         builder.RegisterType<SpoonacularService>().As<ISpoonacularService>().SingleInstance();
     }
 

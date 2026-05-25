@@ -11,8 +11,8 @@ namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 [NamedCommand("lolhistory", Aliases = ["lolh", "lolgames"])]
 public class LeagueOfLegendsHistoryCommand : Command
 {
-    private static readonly IReadOnlyDictionary<int, string> QUEUE_NAMES =
-        new Dictionary<int, string>
+    private static readonly Dictionary<int, string> QUEUE_NAMES =
+        new()
         {
             [420] = "Solo",
             [440] = "Flex",

@@ -82,11 +82,19 @@ public class LeagueRankCommand : Command
 
             var lines = new List<string> { context.GetString("lolrank_header", gameName, tagLine) };
             if (soloEntry != null)
+            {
                 lines.Add(FormatEntry(context, "lolrank_solo", soloEntry));
+            }
+
             if (flexEntry != null)
+            {
                 lines.Add(FormatEntry(context, "lolrank_flex", flexEntry));
+            }
+
             if (soloEntry == null && flexEntry == null)
+            {
                 lines.Add(context.GetString("lolrank_unranked_queues"));
+            }
 
             context.Reply(string.Join(" | ", lines), rankAware: true);
         }
