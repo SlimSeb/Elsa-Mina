@@ -54,4 +54,22 @@
     <data name="lagtest_timeout" xml:space="preserve">
         <value>Lag test timed out.</value>
     </data>
+    <data name="featureswitch_enabled" xml:space="preserve">
+        <value>Feature '{0}' has been enabled for everyone.</value>
+    </data>
+    <data name="featureswitch_disabled" xml:space="preserve">
+        <value>Feature '{0}' has been disabled for non-whitelisted users.</value>
+    </data>
+    <data name="featureswitch_none_disabled" xml:space="preserve">
+        <value>No features are currently disabled.</value>
+    </data>
+    <data name="featureswitch_disabled_list" xml:space="preserve">
+        <value>Currently disabled features: {0}</value>
+    </data>
+    <data name="mayday_activated" xml:space="preserve">
+        <value>Mayday mode activated. The bot will now only respond to whitelisted users.</value>
+    </data>
+    <data name="mayday_deactivated" xml:space="preserve">
+        <value>Mayday mode deactivated. The bot is now responding to everyone.</value>
+    </data>
 </root>

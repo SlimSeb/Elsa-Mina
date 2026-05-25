@@ -2,6 +2,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.AddedCommands;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Telemetry;
@@ -14,6 +15,7 @@ public class CommandExecutorTest
     private IDependencyContainerService _dependencyContainerService;
     private IAddedCommandsManager _addedCommandsManager;
     private ITelemetryService _telemetryService;
+    private IFeatureSwitchService _featureSwitchService;
     private CommandExecutor _commandExecutor;
     private IContext _context;
 
@@ -23,9 +25,11 @@ public class CommandExecutorTest
         _dependencyContainerService = Substitute.For<IDependencyContainerService>();
         _addedCommandsManager = Substitute.For<IAddedCommandsManager>();
         _telemetryService = Substitute.For<ITelemetryService>();
+        _featureSwitchService = Substitute.For<IFeatureSwitchService>();
+        _featureSwitchService.IsFeatureEnabled(Arg.Any<string>()).Returns(true);
         _context = Substitute.For<IContext>();
         _commandExecutor = new CommandExecutor(_dependencyContainerService, _addedCommandsManager,
-            Enumerable.Empty<IDynamicCommandProvider>(), _telemetryService);
+            Enumerable.Empty<IDynamicCommandProvider>(), _telemetryService, _featureSwitchService);
     }
 
     [Test]
@@ -440,5 +444,115 @@ public class CommandExecutorTest
         // Assert
         await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, context, Arg.Any<CancellationToken>());
         _dependencyContainerService.DidNotReceive().ResolveNamed<ICommand>(commandName);
+    }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldNotRunCommand_WhenMaydayActiveAndSenderNotWhitelisted()
+    {
+        // Arrange
+        var commandName = "anyCommand";
+        _featureSwitchService.IsMaydayActive.Returns(true);
+        _context.IsSenderWhitelisted.Returns(false);
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+
+        // Assert
+        _dependencyContainerService.DidNotReceive().IsRegisteredWithName<ICommand>(Arg.Any<string>());
+        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(Arg.Any<string>(), Arg.Any<IContext>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldRunCommand_WhenMaydayActiveButSenderIsWhitelisted()
+    {
+        // Arrange
+        var commandName = "anyCommand";
+        var command = Substitute.For<ICommand>();
+        var runSignal = new TaskCompletionSource<bool>();
+        _featureSwitchService.IsMaydayActive.Returns(true);
+        _context.IsSenderWhitelisted.Returns(true);
+        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
+        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
+        command.IsAllowedInPrivateMessage.Returns(true);
+        command.When(x => x.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()))
+            .Do(_ => runSignal.TrySetResult(true));
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+
+        // Assert
+        await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldNotRunCommand_WhenFeatureSwitchDisabledAndSenderNotWhitelisted()
+    {
+        // Arrange
+        var commandName = "featureCommand";
+        var command = Substitute.For<ICommand>();
+        command.Category.Returns("SomeFeature");
+        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
+        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
+        _context.IsSenderWhitelisted.Returns(false);
+        _featureSwitchService.IsFeatureEnabled("SomeFeature").Returns(false);
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+
+        // Assert
+        await command.DidNotReceive().RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldRunCommand_WhenFeatureSwitchDisabledButSenderIsWhitelisted()
+    {
+        // Arrange
+        var commandName = "featureCommand";
+        var command = Substitute.For<ICommand>();
+        var runSignal = new TaskCompletionSource<bool>();
+        command.Category.Returns("SomeFeature");
+        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
+        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
+        _context.IsSenderWhitelisted.Returns(true);
+        _featureSwitchService.IsFeatureEnabled("SomeFeature").Returns(false);
+        command.IsAllowedInPrivateMessage.Returns(true);
+        command.When(x => x.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()))
+            .Do(_ => runSignal.TrySetResult(true));
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+
+        // Assert
+        await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldRunCommand_WhenFeatureSwitchEnabled()
+    {
+        // Arrange
+        var commandName = "featureCommand";
+        var command = Substitute.For<ICommand>();
+        var runSignal = new TaskCompletionSource<bool>();
+        command.Category.Returns("SomeFeature");
+        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
+        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
+        _context.IsSenderWhitelisted.Returns(false);
+        _featureSwitchService.IsFeatureEnabled("SomeFeature").Returns(true);
+        command.IsAllowedInPrivateMessage.Returns(true);
+        command.When(x => x.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()))
+            .Do(_ => runSignal.TrySetResult(true));
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+
+        // Assert
+        await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());
     }
 }

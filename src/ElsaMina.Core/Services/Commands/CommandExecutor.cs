@@ -3,6 +3,7 @@ using System.Diagnostics;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.AddedCommands;
 using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Core.Utils;
@@ -16,6 +17,7 @@ public class CommandExecutor : ICommandExecutor
     private readonly IAddedCommandsManager _addedCommandsManager;
     private readonly IEnumerable<IDynamicCommandProvider> _dynamicCommandProviders;
     private readonly ITelemetryService _telemetryService;
+    private readonly IFeatureSwitchService _featureSwitchService;
 
     private readonly ConcurrentDictionary<Guid, RunningCommand> _runningCommands = new();
 
@@ -23,12 +25,14 @@ public class CommandExecutor : ICommandExecutor
         IDependencyContainerService dependencyContainerService,
         IAddedCommandsManager addedCommandsManager,
         IEnumerable<IDynamicCommandProvider> dynamicCommandProviders,
-        ITelemetryService telemetryService)
+        ITelemetryService telemetryService,
+        IFeatureSwitchService featureSwitchService)
     {
         _dependencyContainerService = dependencyContainerService;
         _addedCommandsManager = addedCommandsManager;
         _dynamicCommandProviders = dynamicCommandProviders;
         _telemetryService = telemetryService;
+        _featureSwitchService = featureSwitchService;
     }
 
     #region Public API
@@ -45,6 +49,11 @@ public class CommandExecutor : ICommandExecutor
         IContext context,
         CancellationToken cancellationToken = default)
     {
+        if (_featureSwitchService.IsMaydayActive && !context.IsSenderWhitelisted)
+        {
+            return;
+        }
+
         if (_dependencyContainerService.IsRegisteredWithName<ICommand>(commandName))
         {
             Log.Information("Executing {0} as a normal command", commandName);
@@ -200,7 +209,7 @@ public class CommandExecutor : ICommandExecutor
             string.Join(", ", closestCommands));
     }
 
-    private static bool CanCommandBeRan(IContext context, ICommand command)
+    private bool CanCommandBeRan(IContext context, ICommand command)
     {
         if (command.IsPrivateMessageOnly && !context.IsPrivateMessage)
         {
@@ -214,6 +223,13 @@ public class CommandExecutor : ICommandExecutor
         }
 
         if (command.IsWhitelistOnly && !context.IsSenderWhitelisted)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(command.Category)
+            && !_featureSwitchService.IsFeatureEnabled(command.Category)
+            && !context.IsSenderWhitelisted)
         {
             return false;
         }

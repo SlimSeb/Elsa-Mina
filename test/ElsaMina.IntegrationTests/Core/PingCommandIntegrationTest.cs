@@ -12,6 +12,7 @@ using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Start;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
@@ -104,6 +105,7 @@ public class PingCommandIntegrationTest
         builder.RegisterInstance(telemetry).As<ITelemetryService>();
         builder.RegisterType<PmSendersManager>().As<IPmSendersManager>().SingleInstance();
         builder.RegisterType<ContextFactory>().As<IContextFactory>().SingleInstance();
+        builder.RegisterType<FeatureSwitchService>().As<IFeatureSwitchService>().SingleInstance();
         builder.RegisterType<CommandExecutor>().As<ICommandExecutor>().SingleInstance();
         builder.RegisterType<CommandExecutionProbe>().As<ICommandExecutionProbe>().SingleInstance();
         builder.RegisterHandler<ChatMessageCommandHandler>();

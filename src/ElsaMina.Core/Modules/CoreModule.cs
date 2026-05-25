@@ -24,6 +24,7 @@ using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.RoomUserData;
+using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Start;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
@@ -49,6 +50,7 @@ public class CoreModule : Module
                 new ResourceManager("ElsaMina.Core.Resources.Resources", Assembly.GetExecutingAssembly()))
             .As<ResourceManager>().SingleInstance();
 
+        builder.RegisterType<FeatureSwitchService>().As<IFeatureSwitchService>().SingleInstance();
         builder.RegisterType<TelemetryService>().As<ITelemetryService>().SingleInstance();
         builder.RegisterType<DependencyContainerService>().As<IDependencyContainerService>().SingleInstance();
         builder.RegisterType<HttpService>().As<IHttpService>().SingleInstance();

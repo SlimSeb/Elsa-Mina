@@ -54,4 +54,22 @@
     <data name="lagtest_timeout" xml:space="preserve">
         <value>Le test de latence a expiré.</value>
     </data>
+    <data name="featureswitch_enabled" xml:space="preserve">
+        <value>La fonctionnalité '{0}' a été activée pour tout le monde.</value>
+    </data>
+    <data name="featureswitch_disabled" xml:space="preserve">
+        <value>La fonctionnalité '{0}' a été désactivée pour les utilisateurs non whitelistés.</value>
+    </data>
+    <data name="featureswitch_none_disabled" xml:space="preserve">
+        <value>Aucune fonctionnalité n'est actuellement désactivée.</value>
+    </data>
+    <data name="featureswitch_disabled_list" xml:space="preserve">
+        <value>Fonctionnalités actuellement désactivées : {0}</value>
+    </data>
+    <data name="mayday_activated" xml:space="preserve">
+        <value>Mode mayday activé. Le bot ne répondra désormais qu'aux utilisateurs whitelistés.</value>
+    </data>
+    <data name="mayday_deactivated" xml:space="preserve">
+        <value>Mode mayday désactivé. Le bot répond à nouveau à tout le monde.</value>
+    </data>
 </root>

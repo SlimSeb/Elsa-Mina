@@ -162,6 +162,8 @@ public partial class CommandModule : Module
         builder.RegisterCommand<ShowRoomDashboard>();
         builder.RegisterCommand<RoomConfigCommand>();
         builder.RegisterCommand<KillCommand>();
+        builder.RegisterCommand<MaydayCommand>();
+        builder.RegisterCommand<FeatureSwitchCommand>();
         builder.RegisterCommand<StopConnectionCommand>();
         builder.RegisterCommand<DeleteCustomCommand>();
         builder.RegisterCommand<EditCustomCommand>();
