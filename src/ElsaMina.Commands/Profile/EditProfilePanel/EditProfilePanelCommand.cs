@@ -41,6 +41,7 @@ public class EditProfilePanelCommand : Command
             ["aurora"] = "linear-gradient(135deg, #44aa6673, #66ccaa73, #6699ff73, #bb66ff73)",
             ["candy"] = "linear-gradient(135deg, #ff88cc73, #cc88ff73, #8899ff73)",
             ["pastel"] = "linear-gradient(135deg, #55cdfc73, #f7a8b873, #ffffff73, #f7a8b873, #55cdfc73)",
+            ["wooden"] = "linear-gradient(135deg, #3b241673, #8b5a2b73, #c6864273, #f2c07873)",
         };
 
     public static readonly IReadOnlyDictionary<string, string> PROFILE_BORDER_COLORS =
@@ -68,6 +69,7 @@ public class EditProfilePanelCommand : Command
             ["aurora"] = "#5b8",
             ["candy"] = "#c8f",
             ["pastel"] = "#5cf",
+            ["wooden"] = "#a63",
         };
 
     public static string GetBorderColor(string backgroundColorValue) =>

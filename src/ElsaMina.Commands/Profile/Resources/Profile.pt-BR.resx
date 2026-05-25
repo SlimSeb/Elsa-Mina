@@ -261,4 +261,7 @@
     <data name="color_pastel" xml:space="preserve">
         <value>Pastel</value>
     </data>
+    <data name="color_wooden" xml:space="preserve">
+        <value>Madeira</value>
+    </data>
 </root>
