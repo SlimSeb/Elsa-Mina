@@ -230,25 +230,4 @@ public class TenorSearchCommandTest
                 vm.Gifs[0].OriginalHeight == 200 &&
                 vm.Trigger == "-"));
     }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldSetCooldown_AfterGifIsSent()
-    {
-        var now = DateTimeOffset.UtcNow;
-        var roomId = Guid.NewGuid().ToString();
-        var userId = Guid.NewGuid().ToString();
-        _clockService.CurrentUtcDateTimeOffset.Returns(now);
-        var context = MakeContext("cats", roomId, userId);
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
-            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
-
-        await _command.RunAsync(context);
-
-        Received.InOrder(() =>
-        {
-            context.SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
-            _cooldownService.SetCooldown(roomId, userId, now);
-        });
-    }
 }

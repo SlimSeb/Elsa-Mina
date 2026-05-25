@@ -66,7 +66,7 @@ public class AddTeamCommand : Command
             return;
         }
 
-        var sharedTeam = await teamLinkMatch.GetTeamExport();
+        var sharedTeam = await teamLinkMatch.GetTeamExport(cancellationToken);
         if (sharedTeam?.TeamExport == null)
         {
             context.ReplyLocalizedMessage("add_team_no_export_error");

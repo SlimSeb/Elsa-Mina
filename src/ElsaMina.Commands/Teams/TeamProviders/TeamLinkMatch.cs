@@ -11,13 +11,13 @@ public class TeamLinkMatch : ITeamLinkMatch
         _teamLink = teamLink;
     }
 
-    public async Task<SharedTeam> GetTeamExport()
+    public async Task<SharedTeam> GetTeamExport(CancellationToken cancellationToken = default)
     {
         if (_provider == null || _teamLink == null)
         {
             return null;
         }
 
-        return await _provider.GetTeamExport(_teamLink);
+        return await _provider.GetTeamExport(_teamLink, cancellationToken);
     }
 }

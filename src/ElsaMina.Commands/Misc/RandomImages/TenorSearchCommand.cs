@@ -110,6 +110,5 @@ public class TenorSearchCommand : Command
             });
 
         context.SendHtmlTo(context.Sender.UserId, template.RemoveNewlines());
-        _cooldownService.SetCooldown(context.RoomId, context.Sender.UserId, now);
     }
 }

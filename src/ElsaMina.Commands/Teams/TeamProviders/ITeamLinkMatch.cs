@@ -2,5 +2,5 @@
 
 public interface ITeamLinkMatch
 {
-    Task<SharedTeam> GetTeamExport();
+    Task<SharedTeam> GetTeamExport(CancellationToken cancellationToken = default);
 }
