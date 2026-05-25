@@ -30,14 +30,14 @@
         <td style="padding:8px 8px 8px 10px;vertical-align:top;width:48px;text-align:center;">
             <img
                 class="pixelated"
-                width="44"
-                height="44"
+                width="48"
+                height="48"
                 src="@Model.Avatar"
                 alt="@Model.UserName Avatar"
                 style="display:block;border-radius:3px;"/>
             @if (Model.Badges != null && Model.Badges.Any())
             {
-                <div style="margin-top:4px;">
+                <div style="margin-top:4px;text-align:center;">
                     @foreach (var badge in Model.Badges)
                     {
                         <span style="display:inline-block;margin:1px;">
