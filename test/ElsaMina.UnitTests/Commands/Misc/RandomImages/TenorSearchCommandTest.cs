@@ -117,14 +117,14 @@ public class TenorSearchCommandTest
     [Test]
     public async Task Test_RunAsync_ShouldBypassRoomCooldown_WhenSenderIsWhitelisted()
     {
+        var context = MakeContext("cats");
+        context.IsSenderWhitelisted.Returns(true);
         var roomRemaining = TimeSpan.FromSeconds(60);
         _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
             .Returns((roomRemaining, TimeSpan.Zero));
         _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
                 Arg.Any<CancellationToken>())
             .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
-        var context = MakeContext("cats");
-        context.IsSenderWhitelisted.Returns(true);
 
         await _command.RunAsync(context);
 
@@ -133,18 +133,26 @@ public class TenorSearchCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldEnforceUserCooldown_EvenWhenSenderIsWhitelisted()
+    public async Task Test_RunAsync_ShouldNotEnforceUserCooldown_WhenSenderIsWhitelisted()
     {
-        var userRemaining = TimeSpan.FromMinutes(5);
-        _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
-            .Returns((TimeSpan.Zero, userRemaining));
-        var context = MakeContext("cats");
+        const string userId = "user";
+        const string roomId = "room";
+        const string url = "https://media.tenor.com/a.gif";
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns([new TenorMediaInfo(url, 200, 100)]);
+
+        var now = DateTimeOffset.UtcNow;
+        _clockService.CurrentUtcDateTimeOffset.Returns(now);
+        _cooldownService.GetRemainingCooldowns(roomId, userId, now)
+            .Returns((TimeSpan.FromMilliseconds(1), TimeSpan.FromMinutes(5)));
+        var context = MakeContext("cats", roomId, userId);
         context.IsSenderWhitelisted.Returns(true);
 
         await _command.RunAsync(context);
 
-        context.Received(1).ReplyLocalizedMessage("tenorsearch_user_cooldown", Arg.Any<object[]>());
-        context.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+        context.DidNotReceive().ReplyLocalizedMessage("tenorsearch_user_cooldown", Arg.Any<object[]>());
+        context.Received(1).SendHtmlTo(userId, Arg.Any<string>(), Arg.Any<string>());
     }
 
     [Test]
