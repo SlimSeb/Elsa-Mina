@@ -391,6 +391,6 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        Assert.That(db.Badges.Count(), Is.EqualTo(0));
+        Assert.That(db.Badges.Count(), Is.Zero);
     }
 }

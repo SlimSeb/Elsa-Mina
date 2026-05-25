@@ -82,7 +82,7 @@ public class LightsOutGameTest
     {
         await _game.StartNewRound();
 
-        Assert.That(_game.MoveCount, Is.EqualTo(0));
+        Assert.That(_game.MoveCount, Is.Zero);
     }
 
     [Test]
@@ -90,7 +90,7 @@ public class LightsOutGameTest
     {
         await _game.StartNewRound();
 
-        Assert.That(_game.Stars, Is.EqualTo(0));
+        Assert.That(_game.Stars, Is.Zero);
     }
 
     [Test]
@@ -179,7 +179,7 @@ public class LightsOutGameTest
         // Round not started
         await _game.ToggleCell(_owner, 0, 0);
 
-        Assert.That(_game.MoveCount, Is.EqualTo(0));
+        Assert.That(_game.MoveCount, Is.Zero);
     }
 
     [Test]
@@ -191,7 +191,7 @@ public class LightsOutGameTest
 
         await _game.ToggleCell(otherUser, 0, 0);
 
-        Assert.That(_game.MoveCount, Is.EqualTo(0));
+        Assert.That(_game.MoveCount, Is.Zero);
     }
 
     [Test]
@@ -202,7 +202,7 @@ public class LightsOutGameTest
         await _game.ToggleCell(_owner, -1, 0);
         await _game.ToggleCell(_owner, _game.GridSize, 0);
 
-        Assert.That(_game.MoveCount, Is.EqualTo(0));
+        Assert.That(_game.MoveCount, Is.Zero);
     }
 
     [Test]
@@ -213,7 +213,7 @@ public class LightsOutGameTest
         await _game.ToggleCell(_owner, 0, -1);
         await _game.ToggleCell(_owner, 0, _game.GridSize);
 
-        Assert.That(_game.MoveCount, Is.EqualTo(0));
+        Assert.That(_game.MoveCount, Is.Zero);
     }
 
     [Test]

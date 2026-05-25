@@ -121,7 +121,7 @@ public class TwentyFortyEightGameTest
     {
         await _game.StartNewRound();
 
-        Assert.That(_game.Score, Is.EqualTo(0));
+        Assert.That(_game.Score, Is.Zero);
     }
 
     [Test]
@@ -131,8 +131,8 @@ public class TwentyFortyEightGameTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_game.BestScore, Is.EqualTo(0));
-            Assert.That(_game.Wins, Is.EqualTo(0));
+            Assert.That(_game.BestScore, Is.Zero);
+            Assert.That(_game.Wins, Is.Zero);
         }
     }
 

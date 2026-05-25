@@ -104,7 +104,7 @@ public class DeletePollSuggestCommandTest
 
         await _command.RunAsync(_context);
 
-        Assert.That(await CountSuggestionsAsync(), Is.EqualTo(0));
+        Assert.That(await CountSuggestionsAsync(), Is.Zero);
     }
 
     [Test]
@@ -126,6 +126,6 @@ public class DeletePollSuggestCommandTest
 
         await _command.RunAsync(_context);
 
-        Assert.That(await CountSuggestionsAsync(), Is.EqualTo(0));
+        Assert.That(await CountSuggestionsAsync(), Is.Zero);
     }
 }

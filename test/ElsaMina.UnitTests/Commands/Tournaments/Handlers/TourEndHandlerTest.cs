@@ -132,8 +132,8 @@ public class TourEndHandlerTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(record.WinsCount, Is.EqualTo(1));
-            Assert.That(record.RunnerUpCount, Is.EqualTo(0));
-            Assert.That(record.ThirdPlaceCount, Is.EqualTo(0));
+            Assert.That(record.RunnerUpCount, Is.Zero);
+            Assert.That(record.ThirdPlaceCount, Is.Zero);
             Assert.That(record.WonGames, Is.EqualTo(3));
             Assert.That(record.PlayedGames, Is.EqualTo(3));
         }
@@ -151,9 +151,9 @@ public class TourEndHandlerTest
         var record = await dbContext.TournamentRecords.FindAsync(["emon123", "arcade"]);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(record.WinsCount, Is.EqualTo(0));
+            Assert.That(record.WinsCount, Is.Zero);
             Assert.That(record.RunnerUpCount, Is.EqualTo(1));
-            Assert.That(record.ThirdPlaceCount, Is.EqualTo(0));
+            Assert.That(record.ThirdPlaceCount, Is.Zero);
             Assert.That(record.WonGames, Is.EqualTo(3));
             Assert.That(record.PlayedGames, Is.EqualTo(4));
         }
@@ -193,10 +193,10 @@ public class TourEndHandlerTest
         var record = await dbContext.TournamentRecords.FindAsync(["drafeukun", "arcade"]);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(record.WinsCount, Is.EqualTo(0));
-            Assert.That(record.RunnerUpCount, Is.EqualTo(0));
-            Assert.That(record.ThirdPlaceCount, Is.EqualTo(0));
-            Assert.That(record.WonGames, Is.EqualTo(0));
+            Assert.That(record.WinsCount, Is.Zero);
+            Assert.That(record.RunnerUpCount, Is.Zero);
+            Assert.That(record.ThirdPlaceCount, Is.Zero);
+            Assert.That(record.WonGames, Is.Zero);
             Assert.That(record.PlayedGames, Is.EqualTo(1));
         }
     }
@@ -215,9 +215,9 @@ public class TourEndHandlerTest
             var record = await dbContext.TournamentRecords.FindAsync([userId, "arcade"]);
             using (Assert.EnterMultipleScope())
             {
-                Assert.That(record.WinsCount, Is.EqualTo(0), $"WinsCount for {userId}");
-                Assert.That(record.RunnerUpCount, Is.EqualTo(0), $"RunnerUpCount for {userId}");
-                Assert.That(record.ThirdPlaceCount, Is.EqualTo(0), $"ThirdPlaceCount for {userId}");
+                Assert.That(record.WinsCount, Is.Zero, $"WinsCount for {userId}");
+                Assert.That(record.RunnerUpCount, Is.Zero, $"RunnerUpCount for {userId}");
+                Assert.That(record.ThirdPlaceCount, Is.Zero, $"ThirdPlaceCount for {userId}");
             }
         }
     }

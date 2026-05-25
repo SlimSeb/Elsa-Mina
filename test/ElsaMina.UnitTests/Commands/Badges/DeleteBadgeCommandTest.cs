@@ -109,7 +109,7 @@ public class DeleteBadgeCommandTest
 
         using (var verifyContext = new BotDbContext(_dbOptions))
         {
-            Assert.That(await verifyContext.Badges.CountAsync(), Is.EqualTo(0));
+            Assert.That(await verifyContext.Badges.CountAsync(), Is.Zero);
         }
     }
 

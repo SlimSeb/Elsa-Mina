@@ -42,7 +42,7 @@ public class StreakServiceTest
         await service.UpdateStreakAsync("unknownuser", "testroom", DateOnly.FromDateTime(DateTime.Today));
 
         // Assert - no exception and DB still empty
-        Assert.That(await db.RoomUsers.CountAsync(), Is.EqualTo(0));
+        Assert.That(await db.RoomUsers.CountAsync(), Is.Zero);
     }
 
     [Test]
@@ -180,7 +180,7 @@ public class StreakServiceTest
         await service.UpdateStreakAsync("alice", "testroom", today);
 
         // Assert - no DB access on second call
-        Assert.That(callCount, Is.EqualTo(0));
+        Assert.That(callCount, Is.Zero);
     }
 
     [Test]
@@ -198,8 +198,8 @@ public class StreakServiceTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(current, Is.EqualTo(0));
-            Assert.That(longest, Is.EqualTo(0));
+            Assert.That(current, Is.Zero);
+            Assert.That(longest, Is.Zero);
         }
     }
 

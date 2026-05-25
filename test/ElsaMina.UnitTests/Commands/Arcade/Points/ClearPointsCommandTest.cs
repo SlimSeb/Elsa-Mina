@@ -64,7 +64,7 @@ public class ClearPointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var remainingPoints = await assertContext.UserPoints.CountAsync();
-        Assert.That(remainingPoints, Is.EqualTo(0));
+        Assert.That(remainingPoints, Is.Zero);
     }
 
     [Test]
@@ -88,7 +88,7 @@ public class ClearPointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var remainingPoints = await assertContext.UserPoints.CountAsync();
-        Assert.That(remainingPoints, Is.EqualTo(0));
+        Assert.That(remainingPoints, Is.Zero);
 
         _context.Received(1).ReplyLocalizedMessage("clear_points_success");
     }
@@ -132,7 +132,7 @@ public class ClearPointsCommandTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(remainingPoints, Is.EqualTo(0));
+            Assert.That(remainingPoints, Is.Zero);
             Assert.That(remainingLevels, Is.EqualTo(1));
         }
     }
@@ -153,7 +153,7 @@ public class ClearPointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var remainingPoints = await assertContext.UserPoints.CountAsync();
-        Assert.That(remainingPoints, Is.EqualTo(0));
+        Assert.That(remainingPoints, Is.Zero);
     }
 
     [Test]
@@ -170,7 +170,7 @@ public class ClearPointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var remainingPoints = await assertContext.UserPoints.CountAsync();
-        Assert.That(remainingPoints, Is.EqualTo(0));
+        Assert.That(remainingPoints, Is.Zero);
     }
 
     [Test]
@@ -187,7 +187,7 @@ public class ClearPointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var remainingPoints = await assertContext.UserPoints.CountAsync();
-        Assert.That(remainingPoints, Is.EqualTo(0));
+        Assert.That(remainingPoints, Is.Zero);
     }
 
     [Test]
@@ -204,6 +204,6 @@ public class ClearPointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var remainingPoints = await assertContext.UserPoints.CountAsync();
-        Assert.That(remainingPoints, Is.EqualTo(0));
+        Assert.That(remainingPoints, Is.Zero);
     }
 }

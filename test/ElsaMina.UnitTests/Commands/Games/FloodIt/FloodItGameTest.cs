@@ -115,7 +115,7 @@ public class FloodItGameTest
     {
         await _game.StartNewRound();
 
-        Assert.That(_game.MoveCount, Is.EqualTo(0));
+        Assert.That(_game.MoveCount, Is.Zero);
     }
 
     [Test]
@@ -135,7 +135,7 @@ public class FloodItGameTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Level, Is.EqualTo(1));
-            Assert.That(_game.TotalStars, Is.EqualTo(0));
+            Assert.That(_game.TotalStars, Is.Zero);
         }
     }
 
@@ -219,7 +219,7 @@ public class FloodItGameTest
 
         await _game.FloodFill(otherUser, 1);
 
-        Assert.That(_game.MoveCount, Is.EqualTo(0));
+        Assert.That(_game.MoveCount, Is.Zero);
     }
 
     [Test]
@@ -231,7 +231,7 @@ public class FloodItGameTest
         await _game.FloodFill(_mockUser, -1);
         await _game.FloodFill(_mockUser, _game.ColorCount);
 
-        Assert.That(_game.MoveCount, Is.EqualTo(0));
+        Assert.That(_game.MoveCount, Is.Zero);
     }
 
     [Test]
@@ -243,7 +243,7 @@ public class FloodItGameTest
 
         await _game.FloodFill(_mockUser, currentColor);
 
-        Assert.That(_game.MoveCount, Is.EqualTo(0));
+        Assert.That(_game.MoveCount, Is.Zero);
     }
 
     [Test]

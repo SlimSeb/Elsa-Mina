@@ -122,7 +122,7 @@ public class UnbanPollCommandTest
 
         await _command.RunAsync(_context);
 
-        Assert.That(await CountBansAsync(), Is.EqualTo(0));
+        Assert.That(await CountBansAsync(), Is.Zero);
     }
 
     [Test]
@@ -155,6 +155,6 @@ public class UnbanPollCommandTest
 
         await _command.RunAsync(_context);
 
-        Assert.That(await CountBansAsync(), Is.EqualTo(0));
+        Assert.That(await CountBansAsync(), Is.Zero);
     }
 }

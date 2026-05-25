@@ -111,7 +111,7 @@ public class VoltorbFlipGameTest
     {
         await _game.StartNewRound();
 
-        Assert.That(_game.CurrentCoins, Is.EqualTo(0));
+        Assert.That(_game.CurrentCoins, Is.Zero);
     }
 
     [Test]
@@ -183,7 +183,7 @@ public class VoltorbFlipGameTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Level, Is.EqualTo(1));
-            Assert.That(_game.TotalCoins, Is.EqualTo(0));
+            Assert.That(_game.TotalCoins, Is.Zero);
         }
     }
 
@@ -213,8 +213,8 @@ public class VoltorbFlipGameTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.RowVoltorbs[0], Is.EqualTo(1));
-            Assert.That(_game.RowVoltorbs[1], Is.EqualTo(0));
-            Assert.That(_game.RowVoltorbs[2], Is.EqualTo(0));
+            Assert.That(_game.RowVoltorbs[1], Is.Zero);
+            Assert.That(_game.RowVoltorbs[2], Is.Zero);
         }
     }
 
@@ -241,7 +241,7 @@ public class VoltorbFlipGameTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.ColVoltorbs[0], Is.EqualTo(1));
-            Assert.That(_game.ColVoltorbs[1], Is.EqualTo(0));
+            Assert.That(_game.ColVoltorbs[1], Is.Zero);
         }
     }
 
@@ -277,7 +277,7 @@ public class VoltorbFlipGameTest
         await _game.FlipTile(_mockUser, -1, 0);
         await _game.FlipTile(_mockUser, VoltorbFlipConstants.GRID_SIZE, 0);
 
-        Assert.That(_game.CurrentCoins, Is.EqualTo(0));
+        Assert.That(_game.CurrentCoins, Is.Zero);
     }
 
     [Test]
@@ -288,7 +288,7 @@ public class VoltorbFlipGameTest
         await _game.FlipTile(_mockUser, 0, -1);
         await _game.FlipTile(_mockUser, 0, VoltorbFlipConstants.GRID_SIZE);
 
-        Assert.That(_game.CurrentCoins, Is.EqualTo(0));
+        Assert.That(_game.CurrentCoins, Is.Zero);
     }
 
     [Test]
@@ -695,7 +695,7 @@ public class VoltorbFlipGameTest
 
         await _game.FlipTile(_mockUser, 0, 2);
 
-        Assert.That(_game.CurrentCoins, Is.EqualTo(0));
+        Assert.That(_game.CurrentCoins, Is.Zero);
     }
 
     [Test]

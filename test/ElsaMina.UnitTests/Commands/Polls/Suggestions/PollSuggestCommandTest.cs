@@ -121,7 +121,7 @@ public class PollSuggestCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("pollsuggest_banned");
-        Assert.That(await CountSuggestionsAsync(), Is.EqualTo(0));
+        Assert.That(await CountSuggestionsAsync(), Is.Zero);
     }
 
     [Test]

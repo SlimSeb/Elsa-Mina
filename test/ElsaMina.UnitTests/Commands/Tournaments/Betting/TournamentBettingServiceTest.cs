@@ -195,7 +195,7 @@ public class TournamentBettingServiceTest
     {
         var count = await _service.CancelBetAsync("bettor1", "room1");
 
-        Assert.That(count, Is.EqualTo(0));
+        Assert.That(count, Is.Zero);
     }
 
     [Test]
@@ -205,7 +205,7 @@ public class TournamentBettingServiceTest
 
         var count = await _service.CancelBetAsync("bettor1", "room1");
 
-        Assert.That(count, Is.EqualTo(0));
+        Assert.That(count, Is.Zero);
     }
 
     [Test]
@@ -229,7 +229,7 @@ public class TournamentBettingServiceTest
 
         var count = await _service.CancelBetAsync("bettor1", "room1", "playerb");
 
-        Assert.That(count, Is.EqualTo(0));
+        Assert.That(count, Is.Zero);
     }
 
     [Test]
@@ -345,7 +345,7 @@ public class TournamentBettingServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(record, Is.Not.Null);
-            Assert.That(record.CorrectBetsCount, Is.EqualTo(0));
+            Assert.That(record.CorrectBetsCount, Is.Zero);
             Assert.That(record.TotalBetsCount, Is.EqualTo(1));
         }
     }

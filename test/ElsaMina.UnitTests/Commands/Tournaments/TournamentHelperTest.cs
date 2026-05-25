@@ -85,7 +85,7 @@ public class TournamentHelperTest
             Assert.That(results.WinsCount["chinchi"], Is.EqualTo(3));
             Assert.That(results.WinsCount["diptanshv"], Is.EqualTo(1));
             Assert.That(results.WinsCount["rult61sulfu"], Is.EqualTo(2));
-            Assert.That(results.WinsCount["animeshpokemon21"], Is.EqualTo(0));
+            Assert.That(results.WinsCount["animeshpokemon21"], Is.Zero);
         }
     }
 
@@ -109,13 +109,13 @@ public class TournamentHelperTest
             Assert.That(results.Players, Is.EquivalentTo(new List<string> { "Pujolly", "Emon123", "Drafeu-kun", "palapapop", "Reegychodon_64", "Dragonillis", "Naiike", "Bloody jae", "le ru c'est la rue"}));
             Assert.That(results.WinsCount["pujolly"], Is.EqualTo(3));
             Assert.That(results.WinsCount["emon123"], Is.EqualTo(3));
-            Assert.That(results.WinsCount["drafeukun"], Is.EqualTo(0));
-            Assert.That(results.WinsCount["palapapop"], Is.EqualTo(0));
+            Assert.That(results.WinsCount["drafeukun"], Is.Zero);
+            Assert.That(results.WinsCount["palapapop"], Is.Zero);
             Assert.That(results.WinsCount["reegychodon64"], Is.EqualTo(1));
-            Assert.That(results.WinsCount["dragonillis"], Is.EqualTo(0));
-            Assert.That(results.WinsCount["naiike"], Is.EqualTo(0));
+            Assert.That(results.WinsCount["dragonillis"], Is.Zero);
+            Assert.That(results.WinsCount["naiike"], Is.Zero);
             Assert.That(results.WinsCount["bloodyjae"], Is.EqualTo(1));
-            Assert.That(results.WinsCount["lerucestlarue"], Is.EqualTo(0));
+            Assert.That(results.WinsCount["lerucestlarue"], Is.Zero);
         }
     }
 }
