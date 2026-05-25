@@ -115,6 +115,39 @@ public class TenorSearchCommandTest
     }
 
     [Test]
+    public async Task Test_RunAsync_ShouldBypassRoomCooldown_WhenSenderIsWhitelisted()
+    {
+        var roomRemaining = TimeSpan.FromSeconds(60);
+        _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
+            .Returns((roomRemaining, TimeSpan.Zero));
+        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
+                Arg.Any<CancellationToken>())
+            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
+        var context = MakeContext("cats");
+        context.IsSenderWhitelisted.Returns(true);
+
+        await _command.RunAsync(context);
+
+        context.DidNotReceive().ReplyLocalizedMessage("tenorsearch_room_cooldown", Arg.Any<object[]>());
+        context.Received(1).SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldEnforceUserCooldown_EvenWhenSenderIsWhitelisted()
+    {
+        var userRemaining = TimeSpan.FromMinutes(5);
+        _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
+            .Returns((TimeSpan.Zero, userRemaining));
+        var context = MakeContext("cats");
+        context.IsSenderWhitelisted.Returns(true);
+
+        await _command.RunAsync(context);
+
+        context.Received(1).ReplyLocalizedMessage("tenorsearch_user_cooldown", Arg.Any<object[]>());
+        context.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
     public async Task Test_RunAsync_ShouldSendUserCooldownMessageAndNotSendGif_WhenUserCooldownIsLonger()
     {
         var roomRemaining = TimeSpan.FromSeconds(10);

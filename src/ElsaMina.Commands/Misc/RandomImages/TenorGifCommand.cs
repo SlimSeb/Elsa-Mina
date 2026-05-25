@@ -52,7 +52,7 @@ public class TenorGifCommand : Command
         var now = _clockService.CurrentUtcDateTimeOffset;
         var (roomRemaining, userRemaining) =
             _cooldownService.GetRemainingCooldowns(context.RoomId, context.Sender.UserId, now);
-        if (roomRemaining > TimeSpan.Zero || userRemaining > TimeSpan.Zero)
+        if (!context.IsSenderWhitelisted && roomRemaining > TimeSpan.Zero || userRemaining > TimeSpan.Zero)
         {
             string reply;
             if (roomRemaining >= userRemaining)

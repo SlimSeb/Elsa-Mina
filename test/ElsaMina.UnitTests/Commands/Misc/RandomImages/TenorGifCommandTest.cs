@@ -108,6 +108,37 @@ public class TenorGifCommandTest
     }
 
     [Test]
+    public async Task Test_RunAsync_ShouldBypassRoomCooldown_WhenSenderIsWhitelisted()
+    {
+        var roomRemaining = TimeSpan.FromSeconds(60);
+        _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
+            .Returns((roomRemaining, TimeSpan.Zero));
+        var context = MakeContext("https://media.tenor.com/a.gif|200|100");
+        context.IsSenderWhitelisted.Returns(true);
+
+        await _command.RunAsync(context);
+
+        context.DidNotReceive().Reply(Arg.Is<string>(msg => msg.Contains("cooldown")), rankAware: Arg.Any<bool>());
+        context.Received(1).ReplyHtml(Arg.Any<string>(), rankAware: false);
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldEnforceUserCooldown_EvenWhenSenderIsWhitelisted()
+    {
+        var userRemaining = TimeSpan.FromMinutes(5);
+        _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
+            .Returns((TimeSpan.Zero, userRemaining));
+        var context = MakeContext("https://media.tenor.com/a.gif|200|100");
+        context.IsSenderWhitelisted.Returns(true);
+        context.GetString("tenorgif_user_cooldown", Arg.Any<object[]>()).Returns("user on cooldown");
+
+        await _command.RunAsync(context);
+
+        context.Received(1).Reply(Arg.Is<string>(msg => msg.Contains("user on cooldown")), rankAware: Arg.Any<bool>());
+        context.DidNotReceive().ReplyHtml(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>());
+    }
+
+    [Test]
     public async Task Test_RunAsync_ShouldSendCooldownMessageAndNotSendGif_WhenUserCooldownIsLonger()
     {
         var roomRemaining = TimeSpan.FromSeconds(10);
