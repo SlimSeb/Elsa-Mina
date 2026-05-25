@@ -555,4 +555,60 @@ public class CommandExecutorTest
         // Assert
         await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());
     }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldNotSuggestHiddenCommand_WhenAutoCorrectEnabled()
+    {
+        // Arrange
+        var commandName = "hep";
+        var room = Substitute.For<IRoom>();
+        var hiddenCommand = Substitute.For<ICommand>();
+        hiddenCommand.Name.Returns("help");
+        hiddenCommand.Aliases.Returns(Array.Empty<string>());
+        hiddenCommand.IsHidden.Returns(true);
+        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
+        _dependencyContainerService.GetAllNamedRegistrations<ICommand>().Returns([hiddenCommand]);
+        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
+        _context.IsPrivateMessage.Returns(false);
+        _context.Room.Returns(room);
+        room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
+            .Returns("true");
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+
+        // Assert
+        _context.DidNotReceive()
+            .ReplyLocalizedMessage("command_autocorrect_suggestion", Arg.Any<object[]>());
+    }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldOnlySuggestVisibleCommands_WhenAutoCorrectEnabled()
+    {
+        // Arrange
+        var commandName = "hep";
+        var room = Substitute.For<IRoom>();
+        var visibleCommand = Substitute.For<ICommand>();
+        visibleCommand.Name.Returns("help");
+        visibleCommand.Aliases.Returns(Array.Empty<string>());
+        visibleCommand.IsHidden.Returns(false);
+        var hiddenCommand = Substitute.For<ICommand>();
+        hiddenCommand.Name.Returns("heap");
+        hiddenCommand.Aliases.Returns(Array.Empty<string>());
+        hiddenCommand.IsHidden.Returns(true);
+        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
+        _dependencyContainerService.GetAllNamedRegistrations<ICommand>().Returns([visibleCommand, hiddenCommand]);
+        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
+        _context.IsPrivateMessage.Returns(false);
+        _context.Room.Returns(room);
+        room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
+            .Returns("true");
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+
+        // Assert
+        _context.Received(1)
+            .ReplyLocalizedMessage("command_autocorrect_suggestion", commandName, "help");
+    }
 }
