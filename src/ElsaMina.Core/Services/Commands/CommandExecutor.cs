@@ -194,6 +194,7 @@ public class CommandExecutor : ICommandExecutor
         };
 
         var closestCommands = GetAllCommands()
+            .Where(command => !command.IsHidden)
             .SelectMany(command => (string[])[..command.Aliases, command.Name])
             .Where(possible => possible.LevenshteinDistance(commandName) <= maxLevenshteinDistance)
             .ToArray();

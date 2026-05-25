@@ -29,7 +29,7 @@ public class CommandExecutorTest
         _featureSwitchService.IsFeatureEnabled(Arg.Any<string>()).Returns(true);
         _context = Substitute.For<IContext>();
         _commandExecutor = new CommandExecutor(_dependencyContainerService, _addedCommandsManager,
-            Enumerable.Empty<IDynamicCommandProvider>(), _telemetryService, _featureSwitchService);
+            [], _telemetryService, _featureSwitchService);
     }
 
     [Test]
