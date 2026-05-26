@@ -1,6 +1,12 @@
 @using ElsaMina.Core.Services.Templates
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Tournaments.Betting.BettingAnnouncementViewModel>
 
+@{
+    var half = (Model.Players.Length + 1) / 2;
+    var leftPlayers = Model.Players.Take(half).ToList();
+    var rightPlayers = Model.Players.Skip(half).ToList();
+}
+
 <div style="border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; border-radius: 8px; padding: 8px; display: inline-block">
     <b style="display: block; margin-bottom: 4px; border-bottom: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; padding-bottom: 4px">
         @GetString("betting_announcement_title")
@@ -18,26 +24,57 @@
         </i>
     }
     <table>
-        @foreach (var player in Model.Players)
-        {
-            var bettors = Model.BetsByPlayer != null && Model.BetsByPlayer.TryGetValue(player, out var list) ? list : [];
-            <tr>
-                <td style="padding: 2px 12px 2px 2px">
-                    <span class="username" data-name="@player">@player</span>
-                </td>
-                @if (Model.IsBettingOpen)
-                {
-                    <td style="padding: 2px 8px 2px 0">
-                        <button class="button" name="send" value="/pm @Model.BotName, @(Model.Trigger)bet @Model.RoomId @player">@GetString("betting_announcement_bet_button")</button>
-                    </td>
-                }
-                <td style="font-size: 0.85em; color: gray; padding: 2px 0">
-                    @if (bettors.Count > 0)
+        <tr>
+            <td style="vertical-align: top; padding-right: 16px">
+                <table>
+                    @foreach (var player in leftPlayers)
                     {
-                        @string.Join(", ", bettors.Select(b => b))
+                        var bettors = Model.BetsByPlayer != null && Model.BetsByPlayer.TryGetValue(player, out var list) ? list : [];
+                        <tr>
+                            <td style="padding: 2px 12px 2px 2px">
+                                <span class="username" data-name="@player">@player</span>
+                            </td>
+                            @if (Model.IsBettingOpen)
+                            {
+                                <td style="padding: 2px 8px 2px 0">
+                                    <button class="button" name="send" value="/pm @Model.BotName, @(Model.Trigger)bet @Model.RoomId @player">@GetString("betting_announcement_bet_button")</button>
+                                </td>
+                            }
+                            <td style="font-size: 0.85em; color: gray; padding: 2px 0">
+                                @if (bettors.Count > 0)
+                                {
+                                    @string.Join(", ", bettors.Select(b => b))
+                                }
+                            </td>
+                        </tr>
                     }
-                </td>
-            </tr>
-        }
+                </table>
+            </td>
+            <td style="vertical-align: top">
+                <table>
+                    @foreach (var player in rightPlayers)
+                    {
+                        var bettors = Model.BetsByPlayer != null && Model.BetsByPlayer.TryGetValue(player, out var list) ? list : [];
+                        <tr>
+                            <td style="padding: 2px 12px 2px 2px">
+                                <span class="username" data-name="@player">@player</span>
+                            </td>
+                            @if (Model.IsBettingOpen)
+                            {
+                                <td style="padding: 2px 8px 2px 0">
+                                    <button class="button" name="send" value="/pm @Model.BotName, @(Model.Trigger)bet @Model.RoomId @player">@GetString("betting_announcement_bet_button")</button>
+                                </td>
+                            }
+                            <td style="font-size: 0.85em; color: gray; padding: 2px 0">
+                                @if (bettors.Count > 0)
+                                {
+                                    @string.Join(", ", bettors.Select(b => b))
+                                }
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </td>
+        </tr>
     </table>
 </div>

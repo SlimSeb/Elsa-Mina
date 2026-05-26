@@ -1,5 +1,6 @@
 using ElsaMina.Commands.Games.GuessingGame;
 using ElsaMina.Commands.Profile;
+using ElsaMina.Commands.Tournaments.Betting;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Templates;
@@ -39,6 +40,28 @@ public class TemplatesDebugCommand : DevelopmentCommand
                     ["morsay"] = 12,
                     ["thylane"] = 7,
                     ["lionyx"] = 1
+                }
+            },
+            "Tournaments/Betting/BettingAnnouncement" => new BettingAnnouncementViewModel
+            {
+                Culture = context.Culture,
+                BotName = "ElsaMina",
+                Trigger = "-",
+                RoomId = "testroom",
+                IsBettingOpen = true,
+                SecondsToClose = 120,
+                Players =
+                [
+                    "speks", "morsay", "thylane", "lionyx", "awa", "piratilla", "flutes",
+                    "bluxio", "simioth", "nagham", "turtlek", "leafywind", "kazuki"
+                ],
+                BetsByPlayer = new Dictionary<string, IReadOnlyList<string>>
+                {
+                    ["speks"] = ["awa", "piratilla", "nagham"],
+                    ["morsay"] = ["thylane", "bluxio"],
+                    ["lionyx"] = ["simioth"],
+                    ["flutes"] = ["zozo", "shinzoabe"],
+                    ["turtlek"] = ["kazuki", "morsay", "leafywind", "cortexovitch", "concerto"]
                 }
             },
             _ => null
