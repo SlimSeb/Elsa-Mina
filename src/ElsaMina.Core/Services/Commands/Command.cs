@@ -21,7 +21,6 @@ public abstract class Command : ICommand
     public virtual string HelpMessageKey => string.Empty;
     public virtual bool IsHidden => false;
     public virtual IEnumerable<string> RoomRestriction => [];
-    public virtual string FeatureSwitch => string.Empty;
 
     protected void ReplyLocalizedHelpMessage(IContext context, bool rankAware = false)
     {

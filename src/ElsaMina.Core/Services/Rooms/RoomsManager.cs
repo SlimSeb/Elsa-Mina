@@ -9,13 +9,10 @@ public class RoomsManager : IRoomsManager
     private readonly IRoomFactory _roomFactory;
     private readonly ConcurrentDictionary<string, IRoom> _rooms = new();
 
-    public RoomsManager(IParametersDefinitionFactory parametersDefinitionFactory, IRoomFactory roomFactory)
+    public RoomsManager(IRoomFactory roomFactory)
     {
         _roomFactory = roomFactory;
-        ParametersDefinitions = parametersDefinitionFactory.GetParametersDefinitions();
     }
-
-    public IReadOnlyDictionary<Parameter, IParameterDefinition> ParametersDefinitions { get; }
 
     public IEnumerable<IRoom> Rooms => _rooms.Values;
 

@@ -16,6 +16,7 @@ public class ShowRoomDashboardTest
     private IConfiguration _configuration;
     private IRoomsManager _roomsManager;
     private ITemplatesManager _templatesManager;
+    private IParametersDefinitionFactory _parametersDefinitionFactory;
     private ShowRoomDashboard _command;
 
     [SetUp]
@@ -25,12 +26,13 @@ public class ShowRoomDashboardTest
         _configuration = Substitute.For<IConfiguration>();
         _roomsManager = Substitute.For<IRoomsManager>();
         _templatesManager = Substitute.For<ITemplatesManager>();
-        _command = new ShowRoomDashboard(_configuration, _roomsManager, _templatesManager);
+        _parametersDefinitionFactory = Substitute.For<IParametersDefinitionFactory>();
+        _command = new ShowRoomDashboard(_configuration, _roomsManager, _templatesManager, _parametersDefinitionFactory);
 
         _configuration.Name.Returns("ElsaBot");
         _configuration.Trigger.Returns("-");
         _context.Culture.Returns(CultureInfo.GetCultureInfo("en-US"));
-        _roomsManager.ParametersDefinitions.Returns(new Dictionary<Parameter, IParameterDefinition>());
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>());
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("rendered-html");
     }
 
@@ -181,7 +183,7 @@ public class ShowRoomDashboardTest
 
         var paramDef = Substitute.For<IParameterDefinition>();
         paramDef.Identifier.Returns("Locale");
-        _roomsManager.ParametersDefinitions.Returns(new Dictionary<Parameter, IParameterDefinition>
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
         {
             { Parameter.Locale, paramDef }
         });

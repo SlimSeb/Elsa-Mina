@@ -1,5 +1,4 @@
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.Rooms.Parameters;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Core.Services.Rooms;
@@ -7,22 +6,13 @@ namespace ElsaMina.UnitTests.Core.Services.Rooms;
 public class RoomsManagerTest
 {
     private RoomsManager _sut;
-    private IParametersDefinitionFactory _parametersDefinitionFactory;
     private IRoomFactory _roomFactory;
 
     [SetUp]
     public void Setup()
     {
-        _parametersDefinitionFactory = Substitute.For<IParametersDefinitionFactory>();
-        _parametersDefinitionFactory.GetParametersDefinitions().Returns(
-            new Dictionary<Parameter, IParameterDefinition>
-            {
-                { Parameter.Locale, Substitute.For<IParameterDefinition>() }
-            });
-
         _roomFactory = Substitute.For<IRoomFactory>();
-
-        _sut = new RoomsManager(_parametersDefinitionFactory, _roomFactory);
+        _sut = new RoomsManager(_roomFactory);
     }
 
     [Test]

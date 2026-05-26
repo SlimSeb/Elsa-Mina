@@ -1,7 +1,7 @@
-﻿using ElsaMina.Core;
-using ElsaMina.Core.Contexts;
+﻿using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.RoomDashboard;
@@ -10,10 +10,12 @@ namespace ElsaMina.Commands.RoomDashboard;
 public class RoomConfigCommand : Command
 {
     private readonly IRoomsManager _roomsManager;
+    private readonly IParametersDefinitionFactory _parametersDefinitionFactory;
 
-    public RoomConfigCommand(IRoomsManager roomsManager)
+    public RoomConfigCommand(IRoomsManager roomsManager, IParametersDefinitionFactory parametersDefinitionFactory)
     {
         _roomsManager = roomsManager;
+        _parametersDefinitionFactory = parametersDefinitionFactory;
     }
 
     public override bool IsWhitelistOnly => true; // todo : only authed used from room
@@ -32,6 +34,7 @@ public class RoomConfigCommand : Command
             return;
         }
 
+        var roomParameters = _parametersDefinitionFactory.GetParametersDefinitions();
         try
         {
             foreach (var pair in parts.Skip(1))
@@ -39,9 +42,9 @@ public class RoomConfigCommand : Command
                 var items = pair.Split('=');
                 var parameterId = items[0];
                 var value = items[1];
-                var (parameter, _) = _roomsManager
-                    .ParametersDefinitions
-                    .FirstOrDefault(kvp => kvp.Value.Identifier == parameterId);
+                var parameter = roomParameters
+                    .FirstOrDefault(kvp => kvp.Value.Identifier == parameterId)
+                    .Key;
                 await room.SetParameterValueAsync(parameter, value, cancellationToken);
             }
 

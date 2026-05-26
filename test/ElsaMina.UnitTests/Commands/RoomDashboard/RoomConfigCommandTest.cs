@@ -11,6 +11,7 @@ public class RoomConfigCommandTest
 {
     private IContext _context;
     private IRoomsManager _roomsManager;
+    private IParametersDefinitionFactory _parametersDefinitionFactory;
     private RoomConfigCommand _command;
 
     [SetUp]
@@ -18,9 +19,10 @@ public class RoomConfigCommandTest
     {
         _context = Substitute.For<IContext>();
         _roomsManager = Substitute.For<IRoomsManager>();
-        _command = new RoomConfigCommand(_roomsManager);
+        _parametersDefinitionFactory = Substitute.For<IParametersDefinitionFactory>();
+        _command = new RoomConfigCommand(_roomsManager, _parametersDefinitionFactory);
 
-        _roomsManager.ParametersDefinitions.Returns(new Dictionary<Parameter, IParameterDefinition>());
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>());
     }
 
     [Test]
@@ -67,7 +69,7 @@ public class RoomConfigCommandTest
 
         var paramDef = Substitute.For<IParameterDefinition>();
         paramDef.Identifier.Returns("Locale");
-        _roomsManager.ParametersDefinitions.Returns(new Dictionary<Parameter, IParameterDefinition>
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
         {
             { Parameter.Locale, paramDef }
         });
@@ -89,7 +91,7 @@ public class RoomConfigCommandTest
         localeDef.Identifier.Returns("Locale");
         var timeZoneDef = Substitute.For<IParameterDefinition>();
         timeZoneDef.Identifier.Returns("TimeZone");
-        _roomsManager.ParametersDefinitions.Returns(new Dictionary<Parameter, IParameterDefinition>
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
         {
             { Parameter.Locale, localeDef },
             { Parameter.TimeZone, timeZoneDef }
@@ -121,7 +123,7 @@ public class RoomConfigCommandTest
 
         var paramDef = Substitute.For<IParameterDefinition>();
         paramDef.Identifier.Returns("Locale");
-        _roomsManager.ParametersDefinitions.Returns(new Dictionary<Parameter, IParameterDefinition>
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
         {
             { Parameter.Locale, paramDef }
         });

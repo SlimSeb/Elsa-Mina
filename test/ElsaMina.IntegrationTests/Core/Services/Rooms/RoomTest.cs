@@ -53,7 +53,7 @@ public class RoomTest
         var roomFactory = new RoomFactory(configuration, parametersFactory, _dbContextFactory,
             dependencyContainerService);
 
-        _roomsManager = new RoomsManager(parametersFactory, roomFactory);
+        _roomsManager = new RoomsManager(roomFactory);
 
         _playTimeUpdateService = new PlayTimeUpdateService(configuration, _dbContextFactory, _userSaveQueue,
             _roomsManager);

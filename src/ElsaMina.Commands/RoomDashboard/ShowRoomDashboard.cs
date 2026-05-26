@@ -15,14 +15,17 @@ public class ShowRoomDashboard : Command
     private readonly IConfiguration _configuration;
     private readonly IRoomsManager _roomsManager;
     private readonly ITemplatesManager _templatesManager;
+    private readonly IParametersDefinitionFactory _parametersDefinitionFactory;
 
     public ShowRoomDashboard(IConfiguration configuration,
         IRoomsManager roomsManager,
-        ITemplatesManager templatesManager)
+        ITemplatesManager templatesManager,
+        IParametersDefinitionFactory parametersDefinitionFactory)
     {
         _configuration = configuration;
         _roomsManager = roomsManager;
         _templatesManager = templatesManager;
+        _parametersDefinitionFactory = parametersDefinitionFactory;
     }
 
     public override bool IsPrivateMessageOnly => true;
@@ -57,12 +60,12 @@ public class ShowRoomDashboard : Command
         configurationCommandBuilder.Append("rc ");
         configurationCommandBuilder.Append(roomId);
         configurationCommandBuilder.Append(',');
-        configurationCommandBuilder.AppendJoin(',', _roomsManager
-            .ParametersDefinitions
+        var roomParameters = _parametersDefinitionFactory.GetParametersDefinitions();
+        configurationCommandBuilder.AppendJoin(',', roomParameters
             .Values
             .Select(parameter => $"{parameter.Identifier}={{{parameter.Identifier}}}"));
 
-        var roomParameterLines = await Task.WhenAll(_roomsManager.ParametersDefinitions
+        var roomParameterLines = await Task.WhenAll(roomParameters
             .Select(async kvp => new RoomParameterLineModel
             {
                 Culture = context.Culture,
