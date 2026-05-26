@@ -2,8 +2,6 @@ using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Images;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace ElsaMina.UnitTests.Core.Services.Images;
 
@@ -23,12 +21,11 @@ public class ImageServiceTest
     public async Task Test_GetRemoteImageDimensions_ShouldReturnCorrectDimensions_WhenImageLoadsSuccessfully()
     {
         // Arrange
-        var image = new Image<Rgba32>(100, 200);
-        var memoryStream = new MemoryStream();
-        await image.SaveAsPngAsync(memoryStream);
-        memoryStream.Seek(0, SeekOrigin.Begin);
+        var assembly = typeof(ImageServiceTest).Assembly;
+        var stream = assembly.GetManifestResourceStream(
+            "ElsaMina.UnitTests.Core.Services.Images.die.png")!;
 
-        _httpService.GetStreamAsync(Arg.Any<string>()).Returns(memoryStream);
+        _httpService.GetStreamAsync(Arg.Any<string>()).Returns(stream);
 
         // Act
         var (width, height) = await _imageService.GetRemoteImageDimensions("http://example.com/image.png");
@@ -36,8 +33,8 @@ public class ImageServiceTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(width, Is.EqualTo(100));
-            Assert.That(height, Is.EqualTo(200));
+            Assert.That(width, Is.EqualTo(800));
+            Assert.That(height, Is.EqualTo(600));
         }
     }
 

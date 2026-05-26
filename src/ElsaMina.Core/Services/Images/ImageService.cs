@@ -1,11 +1,14 @@
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Logging;
-using SixLabors.ImageSharp;
+using Lusamine.ImageIdentifier;
 
 namespace ElsaMina.Core.Services.Images;
 
 public class ImageService : IImageService
 {
+    private static readonly ImageIdentifier IMAGE_IDENTIFIER = new();
+    private static readonly (int, int) FALLBACK_VALUE = (-1, -1);
+
     private readonly IHttpService _httpService;
 
     public ImageService(IHttpService httpService)
@@ -19,13 +22,15 @@ public class ImageService : IImageService
         try
         {
             var stream = await _httpService.GetStreamAsync(url, cancellationToken);
-            var image = await Image.IdentifyAsync(stream, cancellationToken);
-            return (image.Width, image.Height);
+            var imageInfo = IMAGE_IDENTIFIER.Identify(stream);
+            return imageInfo != null
+                ? (imageInfo.Width, imageInfo.Height)
+                : FALLBACK_VALUE;
         }
         catch (Exception exception)
         {
             Log.Error(exception, "Failed to load image");
-            return (-1, -1);
+            return FALLBACK_VALUE;
         }
     }
 }

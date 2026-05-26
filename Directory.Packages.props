@@ -14,6 +14,7 @@
     <PackageVersion Include="Grafana.OpenTelemetry" Version="1.7.0" />
     <PackageVersion Include="JetBrains.Annotations" Version="2025.2.4" />
     <PackageVersion Include="Lusamine.GTranslate" Version="1.1.0" />
+    <PackageVersion Include="Lusamine.ImageIdentifier" Version="1.0.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="5.3.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.8" />
@@ -35,7 +36,6 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="Serilog.Sinks.Grafana.Loki" Version="8.3.2" />
-    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageVersion Include="Websocket.Client" Version="5.4.0" />
     <PackageVersion Include="Lusamine.DamageCalc" Version="1.1.1" />
   </ItemGroup>

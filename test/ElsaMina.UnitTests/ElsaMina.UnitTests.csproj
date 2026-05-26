@@ -33,4 +33,8 @@
       <Folder Include="Commands\Games\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="Core\Services\Images\die.png" />
+    </ItemGroup>
+
 </Project>
