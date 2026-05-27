@@ -85,7 +85,7 @@
         <value>Keine Seite gefunden.</value>
     </data>
     <data name="wiki_error" xml:space="preserve">
-        <value>Beim Abrufen der Seite ist ein Fehler aufgetreten : {0}</value>
+        <value>Beim Abrufen der Seite ist ein Fehler aufgetreten</value>
     </data>
     <data name="wikipedia_help" xml:space="preserve">
         <value>Sucht auf Wikipedia nach einer Seite. Syntax: -wikipedia &lt;Suchbegriff&gt;</value>

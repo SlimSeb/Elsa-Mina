@@ -85,7 +85,7 @@
         <value>Aucune page n'a été trouvée.</value>
     </data>
     <data name="wiki_error" xml:space="preserve">
-        <value>Une erreur est survenue en cherchant la page : {0}</value>
+        <value>Une erreur est survenue en cherchant la page</value>
     </data>
     <data name="wikipedia_help" xml:space="preserve">
         <value>Recherche une page sur Wikipédia. Syntaxe : -wikipedia &lt;termes&gt;</value>

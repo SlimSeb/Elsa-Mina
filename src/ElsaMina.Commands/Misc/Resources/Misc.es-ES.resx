@@ -85,7 +85,7 @@
         <value>No se ha encontrado ninguna página.</value>
     </data>
     <data name="wiki_error" xml:space="preserve">
-        <value>Se ha producido un error al buscar la página: {0}</value>
+        <value>Se ha producido un error al buscar la página</value>
     </data>
     <data name="wikipedia_help" xml:space="preserve">
         <value>Busca una página en Wikipedia. Sintaxis: -wikipedia &lt;términos&gt;</value>

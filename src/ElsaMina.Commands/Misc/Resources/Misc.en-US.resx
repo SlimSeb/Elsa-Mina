@@ -85,7 +85,7 @@
         <value>No page could be found.</value>
     </data>
     <data name="wiki_error" xml:space="preserve">
-        <value>An error occurred while fetching page : {0}</value>
+        <value>An error occurred while fetching page</value>
     </data>
     <data name="wikipedia_help" xml:space="preserve">
         <value>Searches Wikipedia for a page. Syntax: -wikipedia &lt;terms&gt;</value>

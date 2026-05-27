@@ -1,10 +1,10 @@
 using System.Text.RegularExpressions;
-using System.Web;
 using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Images;
+using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Misc.Wiki;
 
@@ -56,7 +56,8 @@ public abstract class WikiMediaSearchCommand : Command
         }
         catch (Exception ex)
         {
-            context.ReplyRankAwareLocalizedMessage("wiki_error", ex.Message);
+            Log.Error(ex, "An error occurred while fetching Wiki");
+            context.ReplyRankAwareLocalizedMessage("wiki_error");
         }
     }
 
