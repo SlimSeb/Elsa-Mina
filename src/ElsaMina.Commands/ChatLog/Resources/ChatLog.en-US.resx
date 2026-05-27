@@ -49,4 +49,13 @@
     <data name="topusers_title" xml:space="preserve">
         <value>Top users {0}</value>
     </data>
+    <data name="markov_help" xml:space="preserve">
+        <value>Syntax: markov [user] - generates a random sentence from this month's logs, optionally imitating a user.</value>
+    </data>
+    <data name="markov_no_logs" xml:space="preserve">
+        <value>No logs found for the current month.</value>
+    </data>
+    <data name="markov_not_enough_data" xml:space="preserve">
+        <value>Not enough messages to generate a sentence.</value>
+    </data>
 </root>

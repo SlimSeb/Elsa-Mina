@@ -37,9 +37,9 @@ public class CheckConnectionHandlerTest
         await _handler.HandleReceivedMessageAsync(message);
 
         // Assert
-        _client.Received(1).Send("|/join botdev");
-        _client.Received(1).Send("|/join franais");
-        _client.DidNotReceive().Send("|/join lobby");
+        await _client.Received(1).SendAsync("|/join botdev", Arg.Any<CancellationToken>());
+        await _client.Received(1).SendAsync("|/join franais", Arg.Any<CancellationToken>());
+        await _client.DidNotReceive().SendAsync("|/join lobby", Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -55,7 +55,7 @@ public class CheckConnectionHandlerTest
         await _handler.HandleReceivedMessageAsync(message);
 
         // Assert
-        _client.DidNotReceive().Send(Arg.Any<string>());
+        await _client.DidNotReceive().SendAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -74,6 +74,6 @@ public class CheckConnectionHandlerTest
         await _handler.HandleReceivedMessageAsync(message);
         
         // Assert
-        _client.Received(expectedCalls).Send($"|/avatar {avatar}");
+        await _client.Received(expectedCalls).SendAsync($"|/avatar {avatar}", Arg.Any<CancellationToken>());
     }
 }

@@ -46,14 +46,14 @@ public class CheckConnectionHandler : Handler
                     continue;
                 }
 
-                _client.Send($"|/join {roomIdToJoin}");
+                await _client.SendAsync($"|/join {roomIdToJoin}", cancellationToken);
                 await _systemService.SleepAsync(ROOM_JOIN_DELAY, cancellationToken);
             }
 
             var avatar = _configuration.Avatar;
             if (!string.IsNullOrEmpty(avatar))
             {
-                _client.Send($"|/avatar {avatar}");
+                await _client.SendAsync($"|/avatar {avatar}", cancellationToken);
             }
         }
     }

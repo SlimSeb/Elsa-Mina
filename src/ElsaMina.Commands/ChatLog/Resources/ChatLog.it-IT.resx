@@ -49,4 +49,13 @@
     <data name="topusers_title" xml:space="preserve">
         <value>Utenti più attivi {0}</value>
     </data>
+    <data name="markov_help" xml:space="preserve">
+        <value>Sintassi: markov [utente] - genera una frase casuale dai log del mese, imitando eventualmente un utente.</value>
+    </data>
+    <data name="markov_no_logs" xml:space="preserve">
+        <value>Nessun log trovato per il mese corrente.</value>
+    </data>
+    <data name="markov_not_enough_data" xml:space="preserve">
+        <value>Messaggi insufficienti per generare una frase.</value>
+    </data>
 </root>

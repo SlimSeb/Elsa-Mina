@@ -49,4 +49,13 @@
     <data name="topusers_title" xml:space="preserve">
         <value>Top-Nutzer {0}</value>
     </data>
+    <data name="markov_help" xml:space="preserve">
+        <value>Syntax: markov [Nutzer] - erzeugt einen zufälligen Satz aus den Logs des Monats, optional einen Nutzer imitierend.</value>
+    </data>
+    <data name="markov_no_logs" xml:space="preserve">
+        <value>Keine Logs für den aktuellen Monat gefunden.</value>
+    </data>
+    <data name="markov_not_enough_data" xml:space="preserve">
+        <value>Nicht genügend Nachrichten, um einen Satz zu erzeugen.</value>
+    </data>
 </root>

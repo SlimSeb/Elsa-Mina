@@ -116,6 +116,7 @@ public partial class CommandModule : Module
             {
                 continue;
             }
+
             Assembly satelliteAssembly;
             try
             {
@@ -125,6 +126,7 @@ public partial class CommandModule : Module
             {
                 continue;
             }
+
             foreach (var resourceName in satelliteAssembly.GetManifestResourceNames())
             {
                 var match = FEATURE_RESOURCE_PATTERN.Match(resourceName);
@@ -134,6 +136,7 @@ public partial class CommandModule : Module
                 }
             }
         }
+
         return seen.Select(item => new ResourceManager(item.BaseName, item.Assembly));
     }
 
@@ -312,6 +315,7 @@ public partial class CommandModule : Module
         builder.RegisterCommand<DayLineCountCommand>();
         builder.RegisterCommand<LinecountCommand>();
         builder.RegisterCommand<TopUsersCommand>();
+        builder.RegisterCommand<MarkovCommand>();
 
         RegisterRandomImagesCommands(builder);
         RegisterTournamentCommands(builder);
@@ -339,6 +343,8 @@ public partial class CommandModule : Module
         builder.RegisterHandler<TourEndHandler>();
         builder.RegisterHandler<StaffIntroChangeHandler>();
         builder.RegisterHandler<StaffIntroContentHandler>();
+        builder.RegisterHandler<ChatLogHandler>();
+        builder.RegisterHandler<HelpHandler>();
 
         builder.RegisterCommand<AddWatchlistCommand>();
         builder.RegisterCommand<RemoveWatchlistCommand>();
@@ -446,7 +452,7 @@ public partial class CommandModule : Module
         {
             e.Instance.Start();
         }).AutoActivate();
-        builder.RegisterHandler<ChatLogHandler>();
+
         builder.RegisterCommand<LadderGraphCommand>();
         builder.RegisterCommand<TrackEloProgressionCommand>();
         builder.RegisterCommand<UntrackEloProgressionCommand>();

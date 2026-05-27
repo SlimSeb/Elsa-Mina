@@ -26,6 +26,6 @@ public class LoginHandler : Handler
         var nonce = string.Join("|", parts[2..]);
         var response = await _loginService.Login(nonce, cancellationToken);
         Log.Information("Logged in as {0}", response.CurrentUser.Username);
-        _client.Send($"|/trn {response.CurrentUser.Username},0,{response.Assertion}");
+        await _client.SendAsync($"|/trn {response.CurrentUser.Username},0,{response.Assertion}", cancellationToken);
     }
 }

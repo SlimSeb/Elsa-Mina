@@ -30,7 +30,7 @@ public class LoginHandlerTest
 
         // Assert
         await _loginService.DidNotReceive().Login(Arg.Any<string>(), Arg.Any<CancellationToken>());
-        _client.DidNotReceive().Send(Arg.Any<string>());
+        await _client.DidNotReceive().SendAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -53,6 +53,6 @@ public class LoginHandlerTest
         await _handler.HandleReceivedMessageAsync(message);
 
         // Assert
-        _client.Received(1).Send("|/trn LeBot,0,assertion");
+        await _client.Received(1).SendAsync("|/trn LeBot,0,assertion", Arg.Any<CancellationToken>());
     }
 }

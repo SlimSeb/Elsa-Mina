@@ -375,4 +375,7 @@
     <data name="tenorsearch_send" xml:space="preserve">
         <value>Send</value>
     </data>
+    <data name="help_handler_greeting" xml:space="preserve">
+        <value>Hi! I'm {0}, a bot made by Panure. Type {1}allcommands to see everything I can do, or browse my source code at {2}</value>
+    </data>
 </root>
