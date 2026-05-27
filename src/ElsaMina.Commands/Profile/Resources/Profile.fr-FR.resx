@@ -85,7 +85,7 @@
         <value>En ligne</value>
     </data>
     <data name="profile_last_seen" xml:space="preserve">
-        <value>Dernière connexion</value>
+        <value>Dernière activité</value>
     </data>
     <data name="profile_register_date" xml:space="preserve">
         <value>Inscrit le</value>
