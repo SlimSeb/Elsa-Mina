@@ -13,6 +13,9 @@ public class TournamentBettingHandlerTest
     private const string USERS_JSON =
         """{"bracketData":{"type":"tree","rootNode":null,"users":["PlayerA","PlayerB"]}}""";
 
+    private const string DUPLICATE_USERS_JSON =
+        """{"bracketData":{"type":"tree","rootNode":null,"users":["PlayerA","player a","PlayerB"]}}""";
+
     private const string STARTED_JSON =
         """{"isStarted":true}""";
 
@@ -48,7 +51,7 @@ public class TournamentBettingHandlerTest
     {
         await _handler.HandleReceivedMessageAsync(["", "tournament", "update", USERS_JSON], null);
 
-        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<string[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<TournamentPlayer[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -56,7 +59,7 @@ public class TournamentBettingHandlerTest
     {
         await _handler.HandleReceivedMessageAsync(["", "tournament"], "room1");
 
-        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<string[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<TournamentPlayer[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     // ── update ─────────────────────────────────────────────────────────────
@@ -68,7 +71,7 @@ public class TournamentBettingHandlerTest
         await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room1");
 
         await _bettingService.Received(1).AnnounceBetsAsync(
-            Arg.Is<string[]>(p => p.Contains("PlayerA") && p.Contains("PlayerB")),
+            Arg.Is<TournamentPlayer[]>(p => p.Any(player => player.UserName == "PlayerA") && p.Any(player => player.UserName == "PlayerB")),
             "room1", Arg.Any<CancellationToken>());
     }
 
@@ -81,7 +84,21 @@ public class TournamentBettingHandlerTest
         await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room1");
 
         await _bettingService.Received(1).AnnounceBetsAsync(
-            Arg.Is<string[]>(p => p.Contains("PlayerA") && p.Contains("PlayerB")),
+            Arg.Is<TournamentPlayer[]>(p => p.Any(player => player.UserName == "PlayerA") && p.Any(player => player.UserName == "PlayerB")),
+            "room1", Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_HandleReceivedMessageAsync_ShouldDeduplicatePlayers_ByNormalizedUserId()
+    {
+        await _handler.HandleReceivedMessageAsync(["", "tournament", "update", DUPLICATE_USERS_JSON], "room1");
+        await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room1");
+
+        await _bettingService.Received(1).AnnounceBetsAsync(
+            Arg.Is<TournamentPlayer[]>(p =>
+                p.Length == 2 &&
+                p.Count(player => player.UserId == "playera") == 1 &&
+                p.Any(player => player.UserId == "playerb")),
             "room1", Arg.Any<CancellationToken>());
     }
 
@@ -91,7 +108,7 @@ public class TournamentBettingHandlerTest
         await _handler.HandleReceivedMessageAsync(["", "tournament", "update"], "room1");
         await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room1");
 
-        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<string[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<TournamentPlayer[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     // ── start ──────────────────────────────────────────────────────────────
@@ -103,7 +120,7 @@ public class TournamentBettingHandlerTest
 
         await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room1");
 
-        await _bettingService.Received(1).AnnounceBetsAsync(Arg.Any<string[]>(), "room1", Arg.Any<CancellationToken>());
+        await _bettingService.Received(1).AnnounceBetsAsync(Arg.Any<TournamentPlayer[]>(), "room1", Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -111,7 +128,7 @@ public class TournamentBettingHandlerTest
     {
         await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room1");
 
-        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<string[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<TournamentPlayer[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -123,7 +140,7 @@ public class TournamentBettingHandlerTest
         // A second start must not announce again
         await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room1");
 
-        await _bettingService.Received(1).AnnounceBetsAsync(Arg.Any<string[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _bettingService.Received(1).AnnounceBetsAsync(Arg.Any<TournamentPlayer[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -133,7 +150,7 @@ public class TournamentBettingHandlerTest
 
         await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room2");
 
-        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<string[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<TournamentPlayer[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -145,7 +162,7 @@ public class TournamentBettingHandlerTest
         await _handler.HandleReceivedMessageAsync(["", "tournament", "update", USERS_JSON], "room1");
         await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room1");
 
-        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<string[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<TournamentPlayer[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -156,7 +173,7 @@ public class TournamentBettingHandlerTest
         await _handler.HandleReceivedMessageAsync(["", "tournament", "update", USERS_JSON], "room1");
         await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room1");
 
-        await _bettingService.Received(1).AnnounceBetsAsync(Arg.Any<string[]>(), "room1", Arg.Any<CancellationToken>());
+        await _bettingService.Received(1).AnnounceBetsAsync(Arg.Any<TournamentPlayer[]>(), "room1", Arg.Any<CancellationToken>());
     }
 
     // ── end ────────────────────────────────────────────────────────────────
@@ -215,6 +232,6 @@ public class TournamentBettingHandlerTest
         await _handler.HandleReceivedMessageAsync(["", "tournament", "forceend"], "room1");
         await _handler.HandleReceivedMessageAsync(["", "tournament", "start"], "room1");
 
-        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<string[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await _bettingService.DidNotReceive().AnnounceBetsAsync(Arg.Any<TournamentPlayer[]>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 }

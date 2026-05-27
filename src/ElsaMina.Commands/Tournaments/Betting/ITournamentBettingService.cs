@@ -1,8 +1,10 @@
+using ElsaMina.Commands.Tournaments.Handlers;
+
 namespace ElsaMina.Commands.Tournaments.Betting;
 
 public interface ITournamentBettingService
 {
-    Task AnnounceBetsAsync(string[] players, string roomId, CancellationToken cancellationToken = default);
+    Task AnnounceBetsAsync(TournamentPlayer[] players, string roomId, CancellationToken cancellationToken = default);
     Task<BetPlacementError> PlaceBetAsync(string bettorId, string targetPlayerId, string roomId,
         CancellationToken cancellationToken = default);
     Task<int> CancelBetAsync(string bettorId, string roomId, string targetPlayerId = null, CancellationToken cancellationToken = default);

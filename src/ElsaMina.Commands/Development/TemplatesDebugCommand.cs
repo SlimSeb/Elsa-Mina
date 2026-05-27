@@ -1,6 +1,7 @@
 using ElsaMina.Commands.Games.GuessingGame;
 using ElsaMina.Commands.Profile;
 using ElsaMina.Commands.Tournaments.Betting;
+using ElsaMina.Commands.Tournaments.Handlers;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Templates;
@@ -51,10 +52,10 @@ public class TemplatesDebugCommand : DevelopmentCommand
                 IsBettingOpen = true,
                 SecondsToClose = 120,
                 Players =
-                [
+                ((string[])[
                     "speks", "morsay", "thylane", "lionyx", "awa", "piratilla", "flutes",
                     "bluxio", "simioth", "nagham", "turtlek", "leafywind", "kazuki"
-                ],
+                ]).Select(p => new TournamentPlayer(p, p)).ToArray(),
                 BetsByPlayer = new Dictionary<string, IReadOnlyList<string>>
                 {
                     ["speks"] = ["awa", "piratilla", "nagham"],

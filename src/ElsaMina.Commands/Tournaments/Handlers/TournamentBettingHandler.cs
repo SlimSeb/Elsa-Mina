@@ -11,7 +11,7 @@ namespace ElsaMina.Commands.Tournaments.Handlers;
 
 public class TournamentBettingHandler : Handler
 {
-    private readonly ConcurrentDictionary<string, string[]> _pendingPlayers = new();
+    private readonly ConcurrentDictionary<string, TournamentPlayer[]> _pendingPlayers = new();
     private readonly ITournamentBettingService _tournamentBettingService;
     private readonly IRoomsManager _roomsManager;
 
@@ -35,16 +35,20 @@ public class TournamentBettingHandler : Handler
         {
             var update = JsonConvert.DeserializeObject<TournamentUpdate>(parts[3]);
             var incomingUsers = update?.BracketData?.Users;
-            if (!incomingUsers.IsNullOrEmpty())
+            if (incomingUsers != null && incomingUsers.Length > 0)
             {
-                _pendingPlayers[roomId] = incomingUsers;
+                _pendingPlayers[roomId] = incomingUsers
+                    .Select(username => new TournamentPlayer(username.ToLowerAlphaNum(), username))
+                    .DistinctBy(player => player.UserId)
+                    .ToArray();
             }
         }
         else if (parts[2] == "start")
         {
             var room = _roomsManager.GetRoom(roomId);
             var isBettingEnabled = room == null ||
-                (await room.GetParameterValueAsync(Parameter.TournamentBettingEnabled, cancellationToken)).ToBoolean();
+                                   (await room.GetParameterValueAsync(Parameter.TournamentBettingEnabled,
+                                       cancellationToken)).ToBoolean();
             if (!isBettingEnabled)
             {
                 _pendingPlayers.Remove(roomId, out _);

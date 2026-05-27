@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Globalization;
+using ElsaMina.Commands.Tournaments.Handlers;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
@@ -21,7 +22,7 @@ public class TournamentBettingService : ITournamentBettingService
     private const int BETTING_WINDOW_SECONDS = 60;
     private const string HTML_ID_PREFIX = "betting-";
 
-    private readonly ConcurrentDictionary<string, string[]> _activePlayers = new();
+    private readonly ConcurrentDictionary<string, TournamentPlayer[]> _activePlayers = new();
     private readonly ConcurrentDictionary<string, List<ActiveBet>> _activeBets = new();
     private readonly ConcurrentDictionary<string, DateTimeOffset> _closingTimes = new();
     private readonly CultureInfo _defaultCulture;
@@ -51,10 +52,10 @@ public class TournamentBettingService : ITournamentBettingService
         _defaultCulture = new CultureInfo(configuration.DefaultLocaleCode);
     }
 
-    public async Task AnnounceBetsAsync(string[] players, string roomId,
+    public async Task AnnounceBetsAsync(TournamentPlayer[] players, string roomId,
         CancellationToken cancellationToken = default)
     {
-        _activePlayers[roomId] = players.Select(p => p.ToLowerAlphaNum()).ToHashSet().ToArray();
+        _activePlayers[roomId] = players;
         _activeBets[roomId] = [];
         _closingTimes[roomId] = _clockService.CurrentUtcDateTimeOffset.AddSeconds(BETTING_WINDOW_SECONDS);
 
@@ -70,12 +71,13 @@ public class TournamentBettingService : ITournamentBettingService
             return BetPlacementError.NoBettingSession;
         }
 
-        if (_closingTimes.TryGetValue(roomId, out var closingTime) && _clockService.CurrentUtcDateTimeOffset > closingTime)
+        if (_closingTimes.TryGetValue(roomId, out var closingTime) &&
+            _clockService.CurrentUtcDateTimeOffset > closingTime)
         {
             return BetPlacementError.BettingClosed;
         }
 
-        if (!players.Contains(targetPlayerId))
+        if (players.All(p => p.UserId != targetPlayerId))
         {
             return BetPlacementError.InvalidPlayer;
         }
@@ -200,9 +202,9 @@ public class TournamentBettingService : ITournamentBettingService
         var bets = _activeBets.TryGetValue(roomId, out var b) ? b : [];
 
         var betsByPlayer = players.ToDictionary(
-            player => player,
-            player => (IReadOnlyList<string>)bets
-                .Where(bet => bet.TargetPlayerId == player)
+            player => player.UserId,
+            IReadOnlyList<string> (player) => bets
+                .Where(bet => bet.TargetPlayerId == player.UserId)
                 .Select(bet => bet.BettorId)
                 .ToList());
 

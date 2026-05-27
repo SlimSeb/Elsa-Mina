@@ -37,7 +37,8 @@ public abstract class CryptoPriceCommand : Command
             var coinValues = result.Data[CoinId];
             var eur = coinValues["eur"];
             var usd = coinValues["usd"];
-            context.Reply($"1 {DisplayName} = {eur.ToString(PriceFormat)}€ = {usd.ToString(PriceFormat)}$",
+            context.Reply(
+                $"1 {DisplayName} = {eur.ToString(PriceFormat, context.Culture)}€ = {usd.ToString(PriceFormat, context.Culture)}$",
                 rankAware: true);
         }
         catch (Exception ex)

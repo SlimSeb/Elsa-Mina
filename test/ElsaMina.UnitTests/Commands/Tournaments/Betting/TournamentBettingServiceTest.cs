@@ -1,5 +1,6 @@
 using System.Globalization;
 using ElsaMina.Commands.Tournaments.Betting;
+using ElsaMina.Commands.Tournaments.Handlers;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
@@ -7,6 +8,7 @@ using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
+using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
@@ -68,12 +70,15 @@ public class TournamentBettingServiceTest
         await dbContext.Database.EnsureDeletedAsync();
     }
 
+    private static TournamentPlayer[] Players(params string[] names) =>
+        names.Select(name => new TournamentPlayer(name.ToLowerAlphaNum(), name)).ToArray();
+
     // ── AnnounceBetsAsync ──────────────────────────────────────────────────
 
     [Test]
     public async Task Test_AnnounceBetsAsync_ShouldSendHtmlToRoom()
     {
-        await _service.AnnounceBetsAsync(["PlayerA", "PlayerB"], "room1");
+        await _service.AnnounceBetsAsync(Players("PlayerA", "PlayerB"), "room1");
 
         _bot.Received(1).Say("room1", Arg.Is<string>(s => s.StartsWith("/adduhtml betting-room1,")));
     }
@@ -81,17 +86,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_AnnounceBetsAsync_ShouldOpenBettingSession_SoPlaceBetSucceeds()
     {
-        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
-
-        var result = await _service.PlaceBetAsync("bettor1", "playera", "room1");
-
-        Assert.That(result, Is.EqualTo(BetPlacementError.Success));
-    }
-
-    [Test]
-    public async Task Test_AnnounceBetsAsync_ShouldNormalizePlayers_ToLowerAlphaNum()
-    {
-        await _service.AnnounceBetsAsync(["Player A!"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
 
         var result = await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
@@ -111,7 +106,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_PlaceBetAsync_ShouldReturnInvalidPlayer_WhenPlayerNotInTournament()
     {
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
 
         var result = await _service.PlaceBetAsync("bettor1", "nobody", "room1");
 
@@ -121,7 +116,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_PlaceBetAsync_ShouldReturnSuccess_WhenBetIsValid()
     {
-        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
 
         var result = await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
@@ -131,7 +126,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_PlaceBetAsync_ShouldReturnAlreadyBet_WhenBettorAlreadyHasABet()
     {
-        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
         var result = await _service.PlaceBetAsync("bettor1", "playerb", "room1");
@@ -142,7 +137,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_PlaceBetAsync_ShouldReturnSuccess_WhenDifferentBettorsTargetSamePlayer()
     {
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
         var result = await _service.PlaceBetAsync("bettor2", "playera", "room1");
@@ -155,7 +150,7 @@ public class TournamentBettingServiceTest
     {
         var now = DateTimeOffset.UtcNow;
         _clockService.CurrentUtcDateTimeOffset.Returns(now);
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
 
         _clockService.CurrentUtcDateTimeOffset.Returns(now.AddSeconds(61));
 
@@ -169,7 +164,7 @@ public class TournamentBettingServiceTest
     {
         var now = DateTimeOffset.UtcNow;
         _clockService.CurrentUtcDateTimeOffset.Returns(now);
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
 
         _clockService.CurrentUtcDateTimeOffset.Returns(now.AddSeconds(59));
 
@@ -181,7 +176,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_PlaceBetAsync_ShouldBeIsolatedByRoom()
     {
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
 
         var result = await _service.PlaceBetAsync("bettor1", "playera", "room2");
 
@@ -201,7 +196,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_CancelBetAsync_ShouldReturnZero_WhenNoBetExists()
     {
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
 
         var count = await _service.CancelBetAsync("bettor1", "room1");
 
@@ -211,7 +206,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_CancelBetAsync_ShouldReturnOne_AndAllowNewBet_AfterCancellation()
     {
-        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
         var count = await _service.CancelBetAsync("bettor1", "room1");
@@ -224,7 +219,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_CancelBetAsync_ShouldReturnZero_WhenSpecifiedPlayerDoesNotMatchBet()
     {
-        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
         var count = await _service.CancelBetAsync("bettor1", "room1", "playerb");
@@ -235,7 +230,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_CancelBetAsync_ShouldNotAffectOtherBettors()
     {
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
         await _service.PlaceBetAsync("bettor2", "playera", "room1");
 
@@ -258,7 +253,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_ResolveBetsAsync_ShouldAnnounceCorrectGuessers_WhenSomeGuessedRight()
     {
-        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
         await _service.PlaceBetAsync("bettor2", "playerb", "room1");
 
@@ -270,7 +265,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_ResolveBetsAsync_ShouldAnnounceNobodyCorrect_WhenNoCorrectBets()
     {
-        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
         await _service.PlaceBetAsync("bettor1", "playerb", "room1");
 
         await _service.ResolveBetsAsync("playera", "room1");
@@ -286,7 +281,7 @@ public class TournamentBettingServiceTest
         room.Culture.Returns(culture);
         _roomsManager.GetRoom("room1").Returns(room);
 
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
         await _service.ResolveBetsAsync("playera", "room1");
@@ -297,7 +292,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_ResolveBetsAsync_ShouldCleanUp_SoFurtherBetsAreRejected()
     {
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
         await _service.ResolveBetsAsync("playera", "room1");
@@ -313,7 +308,7 @@ public class TournamentBettingServiceTest
         seedContext.RoomUsers.Add(new RoomUser { Id = "bettor1", RoomId = "room1" });
         await seedContext.SaveChangesAsync();
 
-        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
         await _service.ResolveBetsAsync("playera", "room1");
@@ -335,7 +330,7 @@ public class TournamentBettingServiceTest
         seedContext.RoomUsers.Add(new RoomUser { Id = "bettor1", RoomId = "room1" });
         await seedContext.SaveChangesAsync();
 
-        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
         await _service.PlaceBetAsync("bettor1", "playerb", "room1");
 
         await _service.ResolveBetsAsync("playera", "room1");
@@ -358,7 +353,7 @@ public class TournamentBettingServiceTest
         seedContext.RoomUsers.Add(new RoomUser { Id = "bettor2", RoomId = "room1" });
         await seedContext.SaveChangesAsync();
 
-        await _service.AnnounceBetsAsync(["playerA", "playerB"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
         await _service.PlaceBetAsync("bettor2", "playerb", "room1");
 
@@ -376,11 +371,11 @@ public class TournamentBettingServiceTest
         seedContext.RoomUsers.Add(new RoomUser { Id = "bettor1", RoomId = "room1" });
         await seedContext.SaveChangesAsync();
 
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
         await _service.ResolveBetsAsync("playera", "room1");
 
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
         await _service.ResolveBetsAsync("playera", "room1");
 
@@ -398,7 +393,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_ReturnBetsAsync_ShouldCleanUp_SoFurtherBetsAreRejected()
     {
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
         await _service.ReturnBetsAsync("room1");
@@ -410,7 +405,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_ReturnBetsAsync_ShouldNotSayAnything()
     {
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
         _bot.ClearReceivedCalls();
 
         await _service.ReturnBetsAsync("room1");
@@ -421,7 +416,7 @@ public class TournamentBettingServiceTest
     [Test]
     public async Task Test_ReturnBetsAsync_ShouldNotSaveBetRecords()
     {
-        await _service.AnnounceBetsAsync(["playerA"], "room1");
+        await _service.AnnounceBetsAsync(Players("playerA"), "room1");
         await _service.PlaceBetAsync("bettor1", "playera", "room1");
 
         await _service.ReturnBetsAsync("room1");

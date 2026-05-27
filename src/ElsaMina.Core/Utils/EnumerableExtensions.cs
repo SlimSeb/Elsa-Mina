@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace ElsaMina.Core.Utils;
 
 public static class EnumerableExtensions

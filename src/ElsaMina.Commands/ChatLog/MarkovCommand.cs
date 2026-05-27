@@ -110,7 +110,7 @@ public class MarkovCommand : Command
 
     private string GenerateSentence(IReadOnlyList<string> messages)
     {
-        var transitions = new Dictionary<(string, string), List<string>>();
+        var transitions = new Dictionary<string, List<string>>();
         foreach (var message in messages)
         {
             var words = message.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -119,24 +119,24 @@ public class MarkovCommand : Command
                 continue;
             }
 
-            var tokens = new List<string> { StartToken, StartToken };
+            var tokens = new List<string> { StartToken };
             tokens.AddRange(words);
             tokens.Add(EndToken);
 
-            for (var i = 0; i < tokens.Count - 2; i++)
+            for (var i = 0; i < tokens.Count - 1; i++)
             {
-                var key = (tokens[i], tokens[i + 1]);
+                var key = tokens[i];
                 if (!transitions.TryGetValue(key, out var nextWords))
                 {
                     nextWords = [];
                     transitions[key] = nextWords;
                 }
 
-                nextWords.Add(tokens[i + 2]);
+                nextWords.Add(tokens[i + 1]);
             }
         }
 
-        var current = (StartToken, StartToken);
+        var current = StartToken;
         var result = new List<string>();
         while (result.Count < MaxWords && transitions.TryGetValue(current, out var candidates))
         {
@@ -147,7 +147,7 @@ public class MarkovCommand : Command
             }
 
             result.Add(next);
-            current = (current.Item2, next);
+            current = next;
         }
 
         return string.Join(' ', result);
