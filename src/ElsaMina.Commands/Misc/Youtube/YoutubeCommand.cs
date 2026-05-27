@@ -54,8 +54,8 @@ public class YoutubeCommand : Command
         };
         try
         {
-            var response = await _httpService.GetAsync<YouTubeSearchResponse>(YOUTUBE_API_URL, queryParams,
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<YouTubeSearchResponse>(
+                HttpRequest.Get(YOUTUBE_API_URL).WithQueryParameters(queryParams), cancellationToken);
             var results = response.Data;
             if (results?.Items == null || results.Items.Count == 0)
             {

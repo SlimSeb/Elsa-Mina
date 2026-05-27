@@ -36,8 +36,8 @@ public partial class CustomColorsManager : ICustomColorsManager
     {
         try
         {
-            var response = await _httpService.GetAsync<Dictionary<string, string>>(CUSTOM_COLORS_JSON_URL,
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<Dictionary<string, string>>(
+                HttpRequest.Get(CUSTOM_COLORS_JSON_URL), cancellationToken);
             foreach (var kvp in response.Data)
             {
                 result.TryAdd(kvp.Key, kvp.Value);
@@ -53,8 +53,8 @@ public partial class CustomColorsManager : ICustomColorsManager
     {
         try
         {
-            var response = await _httpService.GetAsync<string>(CUSTOM_COLORS_JS_URL,
-                isRaw: true, cancellationToken: cancellationToken);
+            var response = await _httpService.SendForStringAsync(
+                HttpRequest.Get(CUSTOM_COLORS_JS_URL), cancellationToken);
             foreach (var kvp in ParseCustomColors(response.Data))
             {
                 result.TryAdd(kvp.Key, kvp.Value);

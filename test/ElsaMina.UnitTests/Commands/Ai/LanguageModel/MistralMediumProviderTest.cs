@@ -1,6 +1,7 @@
 using ElsaMina.Commands.Ai.LanguageModel.Mistral;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
+using Newtonsoft.Json;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Ai.LanguageModel;
@@ -8,6 +9,10 @@ namespace ElsaMina.UnitTests.Commands.Ai.LanguageModel;
 [TestFixture]
 public class MistralMediumProviderTest
 {
+    private static MistralRequestDto ReadRequestBody(HttpRequest request) =>
+        JsonConvert.DeserializeObject<MistralRequestDto>(
+            request.Body.CreateContent().ReadAsStringAsync().GetAwaiter().GetResult());
+
     private IHttpService _httpService;
     private IConfiguration _configuration;
     private MistralMediumProvider _languageModelProvider;
@@ -32,7 +37,7 @@ public class MistralMediumProviderTest
         // Assert
         Assert.That(result, Is.Null);
         await _httpService.DidNotReceiveWithAnyArgs()
-            .PostJsonAsync<MistralRequestDto, MistralResponseDto>(default, default, default, default);
+            .SendAsync<MistralResponseDto>(default, default);
     }
 
     [Test]
@@ -60,11 +65,9 @@ public class MistralMediumProviderTest
         };
 
         _httpService
-            .PostJsonAsync<MistralRequestDto, MistralResponseDto>(
-                Arg.Any<string>(),
-                Arg.Any<MistralRequestDto>(),
-                headers: Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+            .SendAsync<MistralResponseDto>(
+                Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<MistralResponseDto> { Data = mistralResponse });
 
         // Act
@@ -72,11 +75,12 @@ public class MistralMediumProviderTest
 
         // Assert
         Assert.That(result, Is.EqualTo(expectedResponse));
-        await _httpService.Received(1).PostJsonAsync<MistralRequestDto, MistralResponseDto>(
-            Arg.Is<string>(url => url == "https://api.mistral.ai/v1/chat/completions"),
-            Arg.Is<MistralRequestDto>(dto => dto.Messages[0].Content == prompt),
-            headers: Arg.Is<IDictionary<string, string>>(headers => headers["Authorization"] == $"Bearer {apiKey}"),
-            cancellationToken: Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<MistralResponseDto>(
+            Arg.Is<HttpRequest>(request =>
+                request.Uri == "https://api.mistral.ai/v1/chat/completions" &&
+                ReadRequestBody(request).Messages[0].Content == prompt &&
+                request.Headers["Authorization"] == $"Bearer {apiKey}"),
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -86,11 +90,9 @@ public class MistralMediumProviderTest
         _configuration.MistralApiKey.Returns("test-api-key");
 
         _httpService
-            .PostJsonAsync<MistralRequestDto, MistralResponseDto>(
-                Arg.Any<string>(),
-                Arg.Any<MistralRequestDto>(),
-                headers: Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+            .SendAsync<MistralResponseDto>(
+                Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns((HttpResponse<MistralResponseDto>)null);
 
         // Act
@@ -109,11 +111,9 @@ public class MistralMediumProviderTest
         var mistralResponse = new MistralResponseDto { Choices = null };
 
         _httpService
-            .PostJsonAsync<MistralRequestDto, MistralResponseDto>(
-                Arg.Any<string>(),
-                Arg.Any<MistralRequestDto>(),
-                headers: Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+            .SendAsync<MistralResponseDto>(
+                Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<MistralResponseDto> { Data = mistralResponse });
 
         // Act

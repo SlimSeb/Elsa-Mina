@@ -50,8 +50,7 @@ public class WikiMediaSearchCommandTest
             }
         };
         _mockHttpService
-            .GetAsync<WikipediaApiSearchResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<WikipediaApiSearchResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<WikipediaApiSearchResponse> { Data = response });
     }
 
@@ -65,8 +64,7 @@ public class WikiMediaSearchCommandTest
             }
         };
         _mockHttpService
-            .GetAsync<PokepediaParseResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<PokepediaParseResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<PokepediaParseResponse> { Data = response });
     }
 
@@ -77,8 +75,7 @@ public class WikiMediaSearchCommandTest
             : new Dictionary<string, WikiExtractPage> { { "1", new WikiExtractPage { Thumbnail = thumbnail } } };
         var response = new WikipediaExtractResponse { Query = new QueryWithExtract { Pages = pages } };
         _mockHttpService
-            .GetAsync<WikipediaExtractResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<WikipediaExtractResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<WikipediaExtractResponse> { Data = response });
     }
 
@@ -153,8 +150,7 @@ public class WikiMediaSearchCommandTest
         // Arrange
         var context = MakeContext();
         _mockHttpService
-            .GetAsync<WikipediaApiSearchResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<WikipediaApiSearchResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<WikipediaApiSearchResponse>
             {
                 Data = new WikipediaApiSearchResponse { Query = new QueryPages { Pages = new Dictionary<string, WikiPage>() } }
@@ -183,8 +179,7 @@ public class WikiMediaSearchCommandTest
             }
         };
         _mockHttpService
-            .GetAsync<WikipediaApiSearchResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<WikipediaApiSearchResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<WikipediaApiSearchResponse> { Data = response });
 
         // Act
@@ -218,15 +213,14 @@ public class WikiMediaSearchCommandTest
         // Arrange
         var context = MakeContext();
         _mockHttpService
-            .GetAsync<WikipediaApiSearchResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<WikipediaApiSearchResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Throws(new Exception("network failure"));
 
         // Act
         await _command.RunAsync(context);
 
         // Assert
-        context.Received(1).ReplyRankAwareLocalizedMessage("wiki_error", "network failure");
+        context.Received(1).ReplyRankAwareLocalizedMessage("wiki_error");
     }
 
     // --- Wikitext parsing (tested through RunAsync) ---

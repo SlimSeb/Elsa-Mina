@@ -46,7 +46,7 @@ public class YoutubeVideoOnLinkHandlerTest
 
         // Assert
         await _httpService.DidNotReceiveWithAnyArgs()
-            .GetAsync<YouTubeVideoListResponse>(default, default);
+            .SendAsync<YouTubeVideoListResponse>(default, default);
     }
 
     [Test]
@@ -64,7 +64,7 @@ public class YoutubeVideoOnLinkHandlerTest
 
         // Assert
         await _httpService.DidNotReceiveWithAnyArgs()
-            .GetAsync<YouTubeVideoListResponse>(default, default);
+            .SendAsync<YouTubeVideoListResponse>(default, default);
     }
 
     [Test]
@@ -83,7 +83,7 @@ public class YoutubeVideoOnLinkHandlerTest
 
         // Assert
         await _httpService.DidNotReceiveWithAnyArgs()
-            .GetAsync<YouTubeVideoListResponse>(default, default);
+            .SendAsync<YouTubeVideoListResponse>(default, default);
     }
 
     [Test]
@@ -102,7 +102,7 @@ public class YoutubeVideoOnLinkHandlerTest
 
         // Assert
         await _httpService.DidNotReceiveWithAnyArgs()
-            .GetAsync<YouTubeVideoListResponse>(default, default);
+            .SendAsync<YouTubeVideoListResponse>(default, default);
     }
 
     [Test]
@@ -113,7 +113,7 @@ public class YoutubeVideoOnLinkHandlerTest
             .Returns("true");
         _context.Message.Returns("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         _configuration.YoutubeApiKey.Returns("fakeApiKey");
-        _httpService.GetAsync<YouTubeVideoListResponse>(Arg.Any<string>(), Arg.Any<Dictionary<string, string>>())
+        _httpService.SendAsync<YouTubeVideoListResponse>(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<YouTubeVideoListResponse> { Data = new YouTubeVideoListResponse { Items = [] } });
 
         // Act
@@ -136,7 +136,7 @@ public class YoutubeVideoOnLinkHandlerTest
             .Returns("true");
         _context.Message.Returns(url);
         _configuration.YoutubeApiKey.Returns("fakeApiKey");
-        _httpService.GetAsync<YouTubeVideoListResponse>(Arg.Any<string>(), Arg.Any<Dictionary<string, string>>())
+        _httpService.SendAsync<YouTubeVideoListResponse>(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<YouTubeVideoListResponse>
             {
                 Data = new YouTubeVideoListResponse
@@ -178,7 +178,7 @@ public class YoutubeVideoOnLinkHandlerTest
             .Returns("true");
         _context.Message.Returns("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         _configuration.YoutubeApiKey.Returns("fakeApiKey");
-        _httpService.GetAsync<YouTubeVideoListResponse>(Arg.Any<string>(), Arg.Any<Dictionary<string, string>>())
+        _httpService.SendAsync<YouTubeVideoListResponse>(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<YouTubeVideoListResponse>
             {
                 Data = new YouTubeVideoListResponse
@@ -231,7 +231,7 @@ public class YoutubeVideoOnLinkHandlerTest
             .Returns("true");
         _context.Message.Returns("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         _configuration.YoutubeApiKey.Returns("fakeApiKey");
-        _httpService.GetAsync<YouTubeVideoListResponse>(Arg.Any<string>(), Arg.Any<Dictionary<string, string>>())
+        _httpService.SendAsync<YouTubeVideoListResponse>(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<YouTubeVideoListResponse>
             {
                 Data = new YouTubeVideoListResponse
@@ -277,7 +277,7 @@ public class YoutubeVideoOnLinkHandlerTest
             .Returns("true");
         _context.Message.Returns("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         _configuration.YoutubeApiKey.Returns("fakeApiKey");
-        _httpService.GetAsync<YouTubeVideoListResponse>(Arg.Any<string>(), Arg.Any<Dictionary<string, string>>())
+        _httpService.SendAsync<YouTubeVideoListResponse>(Arg.Any<HttpRequest>())
             .Throws(new Exception("Network error"));
 
         // Act

@@ -28,8 +28,8 @@ public class PokepasteProvider : ITeamProvider
         try
         {
             var response =
-                await _httpService.GetAsync<PokepasteTeam>(teamLink.Trim() + "/json",
-                    cancellationToken: cancellationToken);
+                await _httpService.SendAsync<PokepasteTeam>(
+                    HttpRequest.Get(teamLink.Trim() + "/json"), cancellationToken);
             var pokepasteTeam = response.Data;
             return new SharedTeam
             {

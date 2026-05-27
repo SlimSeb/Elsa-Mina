@@ -17,7 +17,7 @@ public class SmogonUsageDataProvider : ISmogonUsageDataProvider
         CancellationToken cancellationToken = default)
     {
         var url = string.Format(USAGE_DATA_URL, month, format, playerLevel);
-        var response = await _httpService.GetAsync<SmogonUsageDataDto>(url, cancellationToken: cancellationToken);
+        var response = await _httpService.SendAsync<SmogonUsageDataDto>(HttpRequest.Get(url), cancellationToken);
         return response.Data;
     }
 }

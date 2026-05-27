@@ -33,7 +33,7 @@ public class LadderCommandTest
     public async Task Test_RunAsync_ShouldReplyWithNoPlayersMessage_WhenResponseIsNull()
     {
         // Arrange
-        _httpService.GetAsync<LadderDto>(Arg.Any<string>()).ReturnsNull();
+        _httpService.SendAsync<LadderDto>(Arg.Any<HttpRequest>()).ReturnsNull();
         _context.Target.Returns("gen8ou");
 
         // Act
@@ -48,7 +48,7 @@ public class LadderCommandTest
     {
         // Arrange
         var httpResponse = new HttpResponse<LadderDto> { Data = new LadderDto { TopList = null, Format = "gen8ou" } };
-        _httpService.GetAsync<LadderDto>(Arg.Any<string>()).Returns(httpResponse);
+        _httpService.SendAsync<LadderDto>(Arg.Any<HttpRequest>()).Returns(httpResponse);
         _context.Target.Returns("gen8ou");
 
         // Act
@@ -67,7 +67,7 @@ public class LadderCommandTest
             Data = new LadderDto
                 { TopList = new List<LadderPlayerDto> { new() { Username = "player1" } }, Format = "gen8ou" }
         };
-        _httpService.GetAsync<LadderDto>(Arg.Any<string>()).Returns(httpResponse);
+        _httpService.SendAsync<LadderDto>(Arg.Any<HttpRequest>()).Returns(httpResponse);
         _context.Target.Returns("gen8ou,xyz");
 
         // Act
@@ -84,7 +84,7 @@ public class LadderCommandTest
         var player = new LadderPlayerDto { Username = "player1" };
         var httpResponse = new HttpResponse<LadderDto>
             { Data = new LadderDto { TopList = new List<LadderPlayerDto> { player }, Format = "gen8ou" } };
-        _httpService.GetAsync<LadderDto>(Arg.Any<string>()).Returns(httpResponse);
+        _httpService.SendAsync<LadderDto>(Arg.Any<HttpRequest>()).Returns(httpResponse);
         _formatsManager.GetCleanFormat("gen8ou").Returns("[Gen 8] OU");
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<LadderTableViewModel>())
             .Returns(Task.FromResult("formatted_html"));
@@ -103,7 +103,7 @@ public class LadderCommandTest
     public async Task Test_RunAsync_ShouldReplyWithErrorMessage_WhenExceptionOccurs()
     {
         // Arrange
-        _httpService.GetAsync<LadderDto>(Arg.Any<string>())
+        _httpService.SendAsync<LadderDto>(Arg.Any<HttpRequest>())
             .Throws(new Exception("API failure"));
         _context.Target.Returns("gen8ou");
 
@@ -144,7 +144,7 @@ public class LadderCommandTest
             }
         };
 
-        _httpService.GetAsync<LadderDto>(Arg.Any<string>())
+        _httpService.SendAsync<LadderDto>(Arg.Any<HttpRequest>())
             .Returns(firstResponse, secondResponse);
         _formatsManager.GetCleanFormat("gen8ou").Returns("[Gen 8] OU");
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<LadderTableViewModel>())
@@ -193,7 +193,7 @@ public class LadderCommandTest
             }
         };
 
-        _httpService.GetAsync<LadderDto>(Arg.Any<string>())
+        _httpService.SendAsync<LadderDto>(Arg.Any<HttpRequest>())
             .Returns(firstResponse, secondResponse);
         _formatsManager.GetCleanFormat("gen8ou").Returns("[Gen 8] OU");
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<LadderTableViewModel>())
@@ -243,7 +243,7 @@ public class LadderCommandTest
             }
         };
 
-        _httpService.GetAsync<LadderDto>(Arg.Any<string>())
+        _httpService.SendAsync<LadderDto>(Arg.Any<HttpRequest>())
             .Returns(firstResponse, secondResponse);
         _formatsManager.GetCleanFormat("gen8ou").Returns("[Gen 8] OU");
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<LadderTableViewModel>())

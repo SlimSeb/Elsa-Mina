@@ -35,16 +35,14 @@ public class LeagueOfLegendsHistoryCommandTest
     private void SetupAccountResponse(string puuid)
     {
         _httpService
-            .GetAsync<RiotAccountDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<RiotAccountDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<RiotAccountDto> { Data = new RiotAccountDto { Puuid = puuid } });
     }
 
     private void SetupMatchIdsResponse(List<string> matchIds)
     {
         _httpService
-            .GetAsync<List<string>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<List<string>>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<List<string>> { Data = matchIds });
     }
 
@@ -52,8 +50,7 @@ public class LeagueOfLegendsHistoryCommandTest
         int kills = 5, int deaths = 2, int assists = 8, int queueId = 420, int gameDuration = 1500)
     {
         _httpService
-            .GetAsync<MatchDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<MatchDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<MatchDto>
             {
                 Data = new MatchDto
@@ -144,8 +141,7 @@ public class LeagueOfLegendsHistoryCommandTest
     public async Task Test_RunAsync_ShouldReplyWithPlayerNotFound_WhenAccountApiReturnsNullPuuid()
     {
         _httpService
-            .GetAsync<RiotAccountDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<RiotAccountDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<RiotAccountDto> { Data = new RiotAccountDto { Puuid = null } });
         var context = MakeContext("Player#EUW");
 
@@ -189,10 +185,9 @@ public class LeagueOfLegendsHistoryCommandTest
 
         await _command.RunAsync(context);
 
-        await _httpService.Received(1).GetAsync<List<string>>(
-            Arg.Is<string>(url => url.Contains("asia.api.riotgames.com")),
-            Arg.Any<IDictionary<string, string>>(), Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<List<string>>(
+            Arg.Is<HttpRequest>(request => request.Uri.Contains("asia.api.riotgames.com")),
+            Arg.Any<CancellationToken>());
     }
 
     // --- Match details ---
@@ -208,9 +203,8 @@ public class LeagueOfLegendsHistoryCommandTest
 
         await _command.RunAsync(context);
 
-        await _httpService.Received(3).GetAsync<MatchDto>(
-            Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(), Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await _httpService.Received(3).SendAsync<MatchDto>(
+            Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -277,8 +271,7 @@ public class LeagueOfLegendsHistoryCommandTest
         SetupAccountResponse(puuid);
         SetupMatchIdsResponse(["EUW1_001"]);
         _httpService
-            .GetAsync<MatchDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<MatchDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<MatchDto>
             {
                 Data = new MatchDto
@@ -330,8 +323,7 @@ public class LeagueOfLegendsHistoryCommandTest
     public async Task Test_RunAsync_ShouldReplyWithError_WhenHttpThrows()
     {
         _httpService
-            .GetAsync<RiotAccountDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<RiotAccountDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Throws(new Exception("network failure"));
         var context = MakeContext("Player#EUW");
 

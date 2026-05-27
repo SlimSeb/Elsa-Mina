@@ -56,7 +56,7 @@ public class ReplaysHandler : ChatMessageHandler
         try
         {
             Log.Information("Fetching replay info from : {0}", replayLink);
-            var response = await _httpService.GetAsync<ReplayDto>(replayLink, cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<ReplayDto>(HttpRequest.Get(replayLink), cancellationToken);
             var replayInfo = response.Data;
             var teams = ReplaysHelper.GetTeamsFromLog(replayInfo.Log);
 

@@ -58,8 +58,8 @@ public class GeniusSearchCommand : Command
 
         try
         {
-            var response = await _httpService.GetAsync<GeniusSearchResult>(GENIUS_API_URL, parameters,
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<GeniusSearchResult>(
+                HttpRequest.Get(GENIUS_API_URL).WithQueryParameters(parameters), cancellationToken);
 
             var mostViewedHit = response.Data.Response.Hits
                 .Where(hit => hit.Type == SONG_TYPE)

@@ -25,7 +25,7 @@ public class ImageServiceTest
         var stream = assembly.GetManifestResourceStream(
             "ElsaMina.UnitTests.Core.Services.Images.die.png")!;
 
-        _httpService.GetStreamAsync(Arg.Any<string>()).Returns(stream);
+        _httpService.SendForStreamAsync(Arg.Any<HttpRequest>()).Returns(stream);
 
         // Act
         var (width, height) = await _imageService.GetRemoteImageDimensions("http://example.com/image.png");
@@ -42,7 +42,7 @@ public class ImageServiceTest
     public async Task Test_GetRemoteImageDimensions_ShouldReturnMinusOneDimensions_WhenImageFailsToLoad()
     {
         // Arrange
-        _httpService.GetStreamAsync(Arg.Any<string>()).Throws(new Exception("Image load failed"));
+        _httpService.SendForStreamAsync(Arg.Any<HttpRequest>()).Throws(new Exception("Image load failed"));
 
         // Act
         var (width, height) = await _imageService.GetRemoteImageDimensions("http://example.com/image.png");

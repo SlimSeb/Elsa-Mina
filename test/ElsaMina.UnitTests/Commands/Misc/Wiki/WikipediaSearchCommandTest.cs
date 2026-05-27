@@ -61,9 +61,9 @@ public class WikipediaSearchCommandTest
                 }
             }
         };
-        _mockHttpService.GetAsync<WikipediaApiSearchResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(), Arg.Any<IDictionary<string, string>>(), false, isRaw: false, Arg.Any<CancellationToken>())
+        _mockHttpService.SendAsync<WikipediaApiSearchResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<WikipediaApiSearchResponse> { Data = searchResponse });
-        _mockHttpService.GetAsync<WikipediaExtractResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(), Arg.Any<IDictionary<string, string>>(), false, isRaw: false, Arg.Any<CancellationToken>())
+        _mockHttpService.SendAsync<WikipediaExtractResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<WikipediaExtractResponse> { Data = extractResponse });
 
         // Act
@@ -87,7 +87,7 @@ public class WikipediaSearchCommandTest
                 Pages = new Dictionary<string, WikiPage>()
             }
         };
-        _mockHttpService.GetAsync<WikipediaApiSearchResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(), Arg.Any<IDictionary<string, string>>(), false, isRaw: true, Arg.Any<CancellationToken>())
+        _mockHttpService.SendAsync<WikipediaApiSearchResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<WikipediaApiSearchResponse> { Data = searchResponse });
 
         // Act
@@ -104,7 +104,7 @@ public class WikipediaSearchCommandTest
         var context = Substitute.For<IContext>();
         context.Culture.Returns(new CultureInfo("fr-FR"));
         context.Target.Returns("Test");
-        _mockHttpService.GetAsync<WikipediaApiSearchResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(), Arg.Any<IDictionary<string, string>>(), false, isRaw: false, Arg.Any<CancellationToken>())
+        _mockHttpService.SendAsync<WikipediaApiSearchResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Throws(new Exception("Error"));
 
         // Act

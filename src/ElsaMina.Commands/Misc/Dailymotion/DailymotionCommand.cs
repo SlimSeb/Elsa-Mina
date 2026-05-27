@@ -48,8 +48,8 @@ public class DailymotionCommand : Command
         try
         {
             var result =
-                await _httpService.GetAsync<VideoListResponse>(BASE_API_URI, queryParams,
-                    cancellationToken: cancellationToken);
+                await _httpService.SendAsync<VideoListResponse>(
+                    HttpRequest.Get(BASE_API_URI).WithQueryParameters(queryParams), cancellationToken);
             if (result.StatusCode != HttpStatusCode.OK || result.Data == null || result.Data.List.Count == 0)
             {
                 context.ReplyLocalizedMessage("dailymotion_no_video_found");

@@ -74,12 +74,8 @@ public class GeniusSearchCommandTest
 
     private void SetupHttpResponse(IHttpResponse<GeniusSearchResult> response)
     {
-        _httpService.GetAsync<GeniusSearchResult>(
-                Arg.Any<string>(),
-                Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<bool>(),
-                Arg.Any<bool>(),
+        _httpService.SendAsync<GeniusSearchResult>(
+                Arg.Any<HttpRequest>(),
                 Arg.Any<CancellationToken>())
             .Returns(response);
     }
@@ -112,9 +108,7 @@ public class GeniusSearchCommandTest
 
         // Assert
         await _httpService.DidNotReceive()
-            .GetAsync<GeniusSearchResult>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-                Arg.Any<CancellationToken>());
+            .SendAsync<GeniusSearchResult>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
         _context.DidNotReceive().ReplyHtml(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>());
     }
 
@@ -130,9 +124,7 @@ public class GeniusSearchCommandTest
 
         // Assert
         await _httpService.DidNotReceive()
-            .GetAsync<GeniusSearchResult>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-                Arg.Any<CancellationToken>());
+            .SendAsync<GeniusSearchResult>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
     }
 
     // Target guard
@@ -149,9 +141,7 @@ public class GeniusSearchCommandTest
         // Assert
         _context.Received(1).Reply(Arg.Any<string>(), rankAware: Arg.Any<bool>());
         await _httpService.DidNotReceive()
-            .GetAsync<GeniusSearchResult>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-                Arg.Any<CancellationToken>());
+            .SendAsync<GeniusSearchResult>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -449,10 +439,8 @@ public class GeniusSearchCommandTest
     {
         // Arrange
         _context.Target.Returns("song");
-        _httpService.GetAsync<GeniusSearchResult>(
-                Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-                Arg.Any<CancellationToken>())
+        _httpService.SendAsync<GeniusSearchResult>(
+                Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new HttpRequestException("Network error"));
 
         // Act & Assert - exception must not propagate

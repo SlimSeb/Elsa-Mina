@@ -43,8 +43,8 @@ public class PairingsCommand : Command
             var urlParts = context.Target.Split('/');
             var pasteId = urlParts[^1];
             var host = urlParts[^2];
-            var response = await _httpService.GetAsync<string>($"https://{host}/raw/{pasteId}", 
-                isRaw: true, cancellationToken: cancellationToken);
+            var response = await _httpService.SendForStringAsync(
+                HttpRequest.Get($"https://{host}/raw/{pasteId}"), cancellationToken);
             playerNames = response.Data.Split('\n').ToList();
         }
         else

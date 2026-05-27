@@ -37,9 +37,9 @@ public class LoginService : ILoginService
             try
             {
                 Log.Information("Logging in...");
-                var response = await _httpService.PostUrlEncodedFormAsync<LoginResponseDto>(
-                    LOGIN_URL, form, removeFirstCharacterFromResponse: true,
-                    cancellationToken: cancellationToken);
+                var response = await _httpService.SendAsync<LoginResponseDto>(
+                    HttpRequest.Post(LOGIN_URL).WithFormBody(form).SkippingFirstResponseCharacter(),
+                    cancellationToken);
 
                 if (response.Data?.CurrentUser != null && expectedUserId == response.Data.CurrentUser.UserId)
                 {

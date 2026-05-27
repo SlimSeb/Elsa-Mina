@@ -80,13 +80,11 @@ public class UrlPreviewHandler : ChatMessageHandler
 
         try
         {
-            var response = await _httpService.GetAsync<string>(url, isRaw: true,
-                headers: new Dictionary<string, string>
-                {
-                    ["Accept"] = "text/html",
-                    ["User-Agent"] = "Mozilla/5.0 (compatible; bot)"
-                },
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendForStringAsync(
+                HttpRequest.Get(url)
+                    .WithHeader("Accept", "text/html")
+                    .WithHeader("User-Agent", "Mozilla/5.0 (compatible; bot)"),
+                cancellationToken);
 
             if (response.StatusCode != HttpStatusCode.OK || string.IsNullOrWhiteSpace(response.Data))
             {

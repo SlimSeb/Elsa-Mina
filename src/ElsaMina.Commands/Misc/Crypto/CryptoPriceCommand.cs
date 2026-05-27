@@ -32,8 +32,8 @@ public abstract class CryptoPriceCommand : Command
         {
             var url = string.Format(COINGECKO_API_URL, CoinId);
             var result =
-                await _httpService.GetAsync<IDictionary<string, IDictionary<string, double>>>(url,
-                    cancellationToken: cancellationToken);
+                await _httpService.SendAsync<IDictionary<string, IDictionary<string, double>>>(
+                    HttpRequest.Get(url), cancellationToken);
             var coinValues = result.Data[CoinId];
             var eur = coinValues["eur"];
             var usd = coinValues["usd"];

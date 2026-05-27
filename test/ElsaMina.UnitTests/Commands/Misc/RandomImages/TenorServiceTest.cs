@@ -53,8 +53,8 @@ public class TenorServiceTest
     [Test]
     public async Task Test_GetRandomMediaAsync_ShouldReturnNull_WhenHttpThrows()
     {
-        _httpService.GetAsync<TenorResponseDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<TenorResponseDto>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Throws(new Exception("network error"));
 
         var result = await _tenorService.GetRandomMediaAsync("cats", "gif");
@@ -65,8 +65,8 @@ public class TenorServiceTest
     [Test]
     public async Task Test_GetRandomMediaAsync_ShouldReturnNull_WhenResultsAreEmpty()
     {
-        _httpService.GetAsync<TenorResponseDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<TenorResponseDto>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<TenorResponseDto> { Data = new TenorResponseDto { Results = [] } });
 
         var result = await _tenorService.GetRandomMediaAsync("cats", "gif");
@@ -77,8 +77,8 @@ public class TenorServiceTest
     [Test]
     public async Task Test_GetRandomMediaAsync_ShouldReturnNull_WhenFormatNotPresent()
     {
-        _httpService.GetAsync<TenorResponseDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<TenorResponseDto>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(MakeResponse(("https://media.tenor.com/a.gif", 200, 100)));
 
         var result = await _tenorService.GetRandomMediaAsync("cats", "mp4");
@@ -89,8 +89,8 @@ public class TenorServiceTest
     [Test]
     public async Task Test_GetRandomMediaAsync_ShouldReturnMediaInfo_WhenResultsAreValid()
     {
-        _httpService.GetAsync<TenorResponseDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<TenorResponseDto>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(MakeResponse(("https://media.tenor.com/a.gif", 200, 100)));
 
         var result = await _tenorService.GetRandomMediaAsync("cats", "gif");
@@ -117,8 +117,8 @@ public class TenorServiceTest
     [Test]
     public async Task Test_GetMultipleMediaAsync_ShouldReturnEmptyList_WhenHttpThrows()
     {
-        _httpService.GetAsync<TenorResponseDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<TenorResponseDto>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Throws(new Exception("network error"));
 
         var result = await _tenorService.GetMultipleMediaAsync("cats", "gif", 4);
@@ -129,8 +129,8 @@ public class TenorServiceTest
     [Test]
     public async Task Test_GetMultipleMediaAsync_ShouldReturnUpToCountResults()
     {
-        _httpService.GetAsync<TenorResponseDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<TenorResponseDto>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(MakeResponse(
                 ("https://media.tenor.com/a.gif", 200, 100),
                 ("https://media.tenor.com/b.gif", 300, 150),
@@ -150,8 +150,8 @@ public class TenorServiceTest
     [Test]
     public async Task Test_GetMultipleMediaAsync_ShouldReturnAllAvailable_WhenFewerThanCount()
     {
-        _httpService.GetAsync<TenorResponseDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<TenorResponseDto>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(MakeResponse(
                 ("https://media.tenor.com/a.gif", 200, 100),
                 ("https://media.tenor.com/b.gif", 300, 150)));
@@ -169,8 +169,8 @@ public class TenorServiceTest
             new() { MediaFormats = new Dictionary<string, TenorMediaDto> { ["gif"] = new() { Url = "https://media.tenor.com/a.gif", Dims = [200, 100] } } },
             new() { MediaFormats = new Dictionary<string, TenorMediaDto> { ["mp4"] = new() { Url = "https://media.tenor.com/b.mp4", Dims = [300, 150] } } }
         };
-        _httpService.GetAsync<TenorResponseDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<TenorResponseDto>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<TenorResponseDto> { Data = new TenorResponseDto { Results = results } });
 
         var result = await _tenorService.GetMultipleMediaAsync("cats", "gif", 4);

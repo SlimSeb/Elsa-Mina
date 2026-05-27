@@ -37,8 +37,8 @@ public class SpoonacularService : ISpoonacularService
             queryParams["tags"] = tag;
         }
 
-        var response = await _httpService.GetAsync<SpoonacularRandomResponse>(RANDOM_RECIPE_URL, queryParams,
-            cancellationToken: cancellationToken);
+        var response = await _httpService.SendAsync<SpoonacularRandomResponse>(
+            HttpRequest.Get(RANDOM_RECIPE_URL).WithQueryParameters(queryParams), cancellationToken);
         var recipe = response.Data?.Recipes?.FirstOrDefault();
         if (recipe == null)
         {
@@ -64,8 +64,8 @@ public class SpoonacularService : ISpoonacularService
             ["number"] = "1"
         };
 
-        var response = await _httpService.GetAsync<SpoonacularSearchResponse>(SEARCH_RECIPE_URL, queryParams,
-            cancellationToken: cancellationToken);
+        var response = await _httpService.SendAsync<SpoonacularSearchResponse>(
+            HttpRequest.Get(SEARCH_RECIPE_URL).WithQueryParameters(queryParams), cancellationToken);
         var recipe = response.Data?.Results?.FirstOrDefault();
         if (recipe == null)
         {
@@ -113,8 +113,8 @@ public class SpoonacularService : ISpoonacularService
         var queryParams = new Dictionary<string, string> { ["apiKey"] = apiKey };
 
         var response =
-            await _httpService.GetAsync<SpoonacularIngredientResponse>(url, queryParams,
-                cancellationToken: cancellationToken);
+            await _httpService.SendAsync<SpoonacularIngredientResponse>(
+                HttpRequest.Get(url).WithQueryParameters(queryParams), cancellationToken);
         var ingredients = response.Data?.Ingredients;
         if (ingredients == null || ingredients.Count == 0)
         {
@@ -133,8 +133,8 @@ public class SpoonacularService : ISpoonacularService
         var queryParams = new Dictionary<string, string> { ["apiKey"] = apiKey };
 
         var response =
-            await _httpService.GetAsync<List<SpoonacularAnalyzedInstruction>>(url, queryParams,
-                cancellationToken: cancellationToken);
+            await _httpService.SendAsync<List<SpoonacularAnalyzedInstruction>>(
+                HttpRequest.Get(url).WithQueryParameters(queryParams), cancellationToken);
         var steps = response.Data?.FirstOrDefault()?.Steps;
         if (steps == null || steps.Count == 0)
         {

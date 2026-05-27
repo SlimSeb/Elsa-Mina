@@ -34,7 +34,7 @@ public class ShowAvatarCommand : Command
         var avatarUrl = string.Format(AVATAR_URL_TEMPLATE, avatarName);
         try
         {
-            await _httpService.GetAsync<string>(avatarUrl, isRaw: true, cancellationToken: cancellationToken);
+            await _httpService.SendForStringAsync(HttpRequest.Get(avatarUrl), cancellationToken);
             context.Reply($"!show {avatarUrl}", rankAware: true);
         }
         catch (HttpException)

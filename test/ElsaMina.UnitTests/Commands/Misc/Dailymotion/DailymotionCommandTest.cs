@@ -69,8 +69,8 @@ public class DailymotionCommandTests
             StatusCode = HttpStatusCode.OK
         };
 
-        _httpService.GetAsync<VideoListResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<VideoListResponse>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(httpResult);
 
         // Act
@@ -102,8 +102,8 @@ public class DailymotionCommandTests
             StatusCode = HttpStatusCode.OK
         };
 
-        _httpService.GetAsync<VideoListResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<VideoListResponse>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(httpResult);
 
         // Act
@@ -121,8 +121,8 @@ public class DailymotionCommandTests
         _context.Target.Returns("anything");
         var exception = new HttpException(HttpStatusCode.InternalServerError, "");
 
-        _httpService.GetAsync<VideoListResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<VideoListResponse>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Throws(exception);
 
         // Act

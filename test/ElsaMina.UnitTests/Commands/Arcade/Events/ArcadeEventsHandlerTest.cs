@@ -3,6 +3,7 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
+using Newtonsoft.Json;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -10,6 +11,11 @@ namespace ElsaMina.UnitTests.Commands.Arcade.Events;
 
 public class ArcadeEventsHandlerTests
 {
+    private static ArcadeEventWebhookBody ReadWebhookBody(HttpRequest request) =>
+        JsonConvert.DeserializeObject<ArcadeEventWebhookBody>(
+            request.Body.CreateContent().ReadAsStringAsync().GetAwaiter().GetResult());
+
+
     private const string EVENT_START_MESSAGE =
         """<div class="broadcast-blue"><b>The "TestEvent" roomevent has started!</b></div>""";
     private const string INFOBOX_MESSAGE =
@@ -31,9 +37,7 @@ public class ArcadeEventsHandlerTests
         var httpResponse = Substitute.For<IHttpResponse<object>>();
         httpResponse.StatusCode.Returns(HttpStatusCode.NoContent);
         _httpService
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(
-                Arg.Any<string>(), Arg.Any<ArcadeEventWebhookBody>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+            .SendAsync<object>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(httpResponse));
 
         _configuration.ArcadeWebhookUrl.Returns("http://webhook.url");
@@ -52,7 +56,7 @@ public class ArcadeEventsHandlerTests
 
         _bot.DidNotReceiveWithAnyArgs().Say(default, default);
         await _httpService.DidNotReceiveWithAnyArgs()
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(default, default);
+            .SendAsync<object>(default, default);
     }
 
     [Test]
@@ -64,7 +68,7 @@ public class ArcadeEventsHandlerTests
 
         _bot.DidNotReceiveWithAnyArgs().Say(default, default);
         await _httpService.DidNotReceiveWithAnyArgs()
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(default, default);
+            .SendAsync<object>(default, default);
     }
 
     [Test]
@@ -76,7 +80,7 @@ public class ArcadeEventsHandlerTests
 
         _bot.DidNotReceiveWithAnyArgs().Say(default, default);
         await _httpService.DidNotReceiveWithAnyArgs()
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(default, default);
+            .SendAsync<object>(default, default);
     }
 
     [Test]
@@ -97,7 +101,7 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
 
         await _httpService.DidNotReceiveWithAnyArgs()
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(default, default);
+            .SendAsync<object>(default, default);
     }
 
     [Test]
@@ -109,18 +113,18 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(startParts, "arcade");
         await _handler.HandleReceivedMessageAsync(infoboxParts, "arcade");
 
-        await _httpService.Received(1).PostJsonAsync<ArcadeEventWebhookBody, object>(
-            "http://webhook.url",
-            Arg.Is<ArcadeEventWebhookBody>(body =>
-                body.Username == "Elsa Mina" &&
-                body.AvatarUrl == "https://play.pokemonshowdown.com/sprites/trainers/lusamine.png" &&
-                body.Content == string.Empty &&
-                body.Embeds.Count == 1 &&
-                body.Embeds[0].Title == "Event Notification" &&
-                body.Embeds[0].Color == 3066993 &&
-                body.Embeds[0].Description.Contains("TestEvent") &&
-                body.Embeds[0].Description.Contains("Some description")),
-            cancellationToken: Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<object>(
+            Arg.Is<HttpRequest>(request =>
+                request.Uri == "http://webhook.url" &&
+                ReadWebhookBody(request).Username == "Elsa Mina" &&
+                ReadWebhookBody(request).AvatarUrl == "https://play.pokemonshowdown.com/sprites/trainers/lusamine.png" &&
+                ReadWebhookBody(request).Content == string.Empty &&
+                ReadWebhookBody(request).Embeds.Count == 1 &&
+                ReadWebhookBody(request).Embeds[0].Title == "Event Notification" &&
+                ReadWebhookBody(request).Embeds[0].Color == 3066993 &&
+                ReadWebhookBody(request).Embeds[0].Description.Contains("TestEvent") &&
+                ReadWebhookBody(request).Embeds[0].Description.Contains("Some description")),
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -131,7 +135,7 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(infoboxParts, "arcade");
 
         await _httpService.DidNotReceiveWithAnyArgs()
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(default, default);
+            .SendAsync<object>(default, default);
     }
 
     [Test]
@@ -147,13 +151,12 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(startParts, "arcade");
         await _handler.HandleReceivedMessageAsync(infoboxParts, "arcade");
 
-        await _httpService.Received(1).PostJsonAsync<ArcadeEventWebhookBody, object>(
-            Arg.Any<string>(),
-            Arg.Is<ArcadeEventWebhookBody>(body =>
-                body.Embeds[0].Description.Contains("Some bold and italic text") &&
-                !body.Embeds[0].Description.Contains("<b>") &&
-                !body.Embeds[0].Description.Contains("<i>")),
-            cancellationToken: Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<object>(
+            Arg.Is<HttpRequest>(request =>
+                ReadWebhookBody(request).Embeds[0].Description.Contains("Some bold and italic text") &&
+                !ReadWebhookBody(request).Embeds[0].Description.Contains("<b>") &&
+                !ReadWebhookBody(request).Embeds[0].Description.Contains("<i>")),
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -166,7 +169,7 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(infoboxParts, "arcade");
 
         await _httpService.DidNotReceiveWithAnyArgs()
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(default, default);
+            .SendAsync<object>(default, default);
     }
 
     [Test]
@@ -180,7 +183,7 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(infoboxParts, "arcade");
 
         await _httpService.DidNotReceiveWithAnyArgs()
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(default, default);
+            .SendAsync<object>(default, default);
     }
 
     [Test]
@@ -190,9 +193,7 @@ public class ArcadeEventsHandlerTests
         var infoboxParts = new[] { "", "raw", INFOBOX_MESSAGE };
 
         _httpService
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(
-                Arg.Any<string>(), Arg.Any<ArcadeEventWebhookBody>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+            .SendAsync<object>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new HttpRequestException("Network error"));
 
         await _handler.HandleReceivedMessageAsync(startParts, "arcade");
@@ -209,9 +210,8 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(infoboxParts, "arcade");
         await _handler.HandleReceivedMessageAsync(infoboxParts, "arcade");
 
-        await _httpService.Received(1).PostJsonAsync<ArcadeEventWebhookBody, object>(
-            Arg.Any<string>(), Arg.Any<ArcadeEventWebhookBody>(),
-            cancellationToken: Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<object>(
+            Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -255,7 +255,7 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
 
         await _httpService.DidNotReceiveWithAnyArgs()
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(default, default);
+            .SendAsync<object>(default, default);
     }
 
     [Test]
@@ -275,12 +275,12 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(startParts, "arcade");
         await _handler.HandleReceivedMessageAsync(infoboxParts, "arcade");
 
-        await _httpService.Received(1).PostJsonAsync<ArcadeEventWebhookBody, object>(
-            "http://webhook.url",
-            Arg.Is<ArcadeEventWebhookBody>(body =>
-                body.Embeds[0].Description.Contains("Catch&Evolve #1 TEST") &&
-                body.Embeds[0].Description.Contains("Catch a Pokémon and evolve it!")),
-            cancellationToken: Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<object>(
+            Arg.Is<HttpRequest>(request =>
+                request.Uri == "http://webhook.url" &&
+                ReadWebhookBody(request).Embeds[0].Description.Contains("Catch&Evolve #1 TEST") &&
+                ReadWebhookBody(request).Embeds[0].Description.Contains("Catch a Pokémon and evolve it!")),
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -313,7 +313,7 @@ public class ArcadeEventsHandlerTests
 
         _bot.DidNotReceiveWithAnyArgs().Say(default, default);
         await _httpService.DidNotReceiveWithAnyArgs()
-            .PostJsonAsync<ArcadeEventWebhookBody, object>(default, default);
+            .SendAsync<object>(default, default);
     }
 
     [Test]
@@ -336,11 +336,11 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(startParts, "arcade");
         await _handler.HandleReceivedMessageAsync(infoboxParts, "arcade");
 
-        await _httpService.Received(1).PostJsonAsync<ArcadeEventWebhookBody, object>(
-            "http://webhook.url",
-            Arg.Is<ArcadeEventWebhookBody>(body =>
-                body.Embeds[0].Description.Contains("Catch&Evolve #1")),
-            cancellationToken: Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<object>(
+            Arg.Is<HttpRequest>(request =>
+                request.Uri == "http://webhook.url" &&
+                ReadWebhookBody(request).Embeds[0].Description.Contains("Catch&Evolve #1")),
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -360,12 +360,11 @@ public class ArcadeEventsHandlerTests
         await _handler.HandleReceivedMessageAsync(startParts, "arcade");
         await _handler.HandleReceivedMessageAsync(infoboxParts, "arcade");
 
-        await _httpService.Received(1).PostJsonAsync<ArcadeEventWebhookBody, object>(
-            Arg.Any<string>(),
-            Arg.Is<ArcadeEventWebhookBody>(body =>
-                body.Embeds[0].Description.Contains("Current Gen") &&
-                !body.Embeds[0].Description.Contains("<b>") &&
-                !body.Embeds[0].Description.Contains("<code>")),
-            cancellationToken: Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<object>(
+            Arg.Is<HttpRequest>(request =>
+                ReadWebhookBody(request).Embeds[0].Description.Contains("Current Gen") &&
+                !ReadWebhookBody(request).Embeds[0].Description.Contains("<b>") &&
+                !ReadWebhookBody(request).Embeds[0].Description.Contains("<code>")),
+            Arg.Any<CancellationToken>());
     }
 }

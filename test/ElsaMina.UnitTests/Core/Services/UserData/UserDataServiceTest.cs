@@ -24,7 +24,7 @@ public class UserDataServiceTest
     {
         // Arrange
         const string userName = "testUser";
-        _httpService.GetAsync<UserDataDto>(Arg.Any<string>()).Throws<Exception>();
+        _httpService.SendAsync<UserDataDto>(Arg.Any<HttpRequest>()).Throws<Exception>();
 
         // Act
         var result = await _userDataService.GetUserData(userName);
@@ -38,7 +38,7 @@ public class UserDataServiceTest
     {
         // Arrange
         const string userName = "testUser";
-        _httpService.GetAsync<UserDataDto>(Arg.Any<string>()).ReturnsNull();
+        _httpService.SendAsync<UserDataDto>(Arg.Any<HttpRequest>()).ReturnsNull();
 
         // Act
         var result = await _userDataService.GetRegisterDateAsync(userName);
@@ -53,7 +53,7 @@ public class UserDataServiceTest
         // Arrange
         const string userName = "testUser";
         var userData = new UserDataDto { RegisterTime = 1625760000 };
-        _httpService.GetAsync<UserDataDto>(Arg.Any<string>()).Returns(new HttpResponse<UserDataDto>
+        _httpService.SendAsync<UserDataDto>(Arg.Any<HttpRequest>()).Returns(new HttpResponse<UserDataDto>
         {
             Data = userData,
             StatusCode = HttpStatusCode.OK

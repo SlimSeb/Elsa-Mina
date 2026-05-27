@@ -34,8 +34,8 @@ public class UnsplashService : IUnsplashService
 
         try
         {
-            var response = await _httpService.GetAsync<UnsplashPhotoDto>(UNSPLASH_RANDOM_URL, queryParams,
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<UnsplashPhotoDto>(
+                HttpRequest.Get(UNSPLASH_RANDOM_URL).WithQueryParameters(queryParams), cancellationToken);
             return response.Data?.Urls?.Regular;
         }
         catch (Exception ex)

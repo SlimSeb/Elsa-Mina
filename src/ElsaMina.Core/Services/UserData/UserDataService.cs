@@ -28,7 +28,7 @@ public class UserDataService : IUserDataService
         var uri = string.Format(USER_DATA_URL, userId);
         try
         {
-            var response = await _httpService.GetAsync<UserDataDto>(uri, cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<UserDataDto>(HttpRequest.Get(uri), cancellationToken);
             var userData = response.Data;
             _userDataCache[userId] = userData;
             return userData;

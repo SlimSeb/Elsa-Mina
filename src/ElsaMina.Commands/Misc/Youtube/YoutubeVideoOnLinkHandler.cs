@@ -78,8 +78,8 @@ public class YoutubeVideoOnLinkHandler : ChatMessageHandler
                 ["key"] = apiKey
             };
 
-            var response = await _httpService.GetAsync<YouTubeVideoListResponse>(YOUTUBE_VIDEOS_API_URL, queryParams,
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<YouTubeVideoListResponse>(
+                HttpRequest.Get(YOUTUBE_VIDEOS_API_URL).WithQueryParameters(queryParams), cancellationToken);
             var data = response.Data;
 
             if (data?.Items == null || data.Items.Count == 0)

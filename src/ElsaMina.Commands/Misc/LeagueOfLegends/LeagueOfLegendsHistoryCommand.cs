@@ -78,9 +78,12 @@ public class LeagueOfLegendsHistoryCommand : Command
 
             var matchIdsUrl =
                 $"https://{routing}.api.riotgames.com/lol/match/v5/matches/by-puuid/{Uri.EscapeDataString(puuid)}/ids";
-            var matchIdsResponse = await _httpService.GetAsync<List<string>>(matchIdsUrl,
-                new Dictionary<string, string> { ["start"] = "0", ["count"] = HISTORY_COUNT.ToString() },
-                headers: headers, cancellationToken: cancellationToken);
+            var matchIdsResponse = await _httpService.SendAsync<List<string>>(
+                HttpRequest.Get(matchIdsUrl)
+                    .WithQueryParameter("start", "0")
+                    .WithQueryParameter("count", HISTORY_COUNT.ToString())
+                    .WithHeaders(headers),
+                cancellationToken);
             var matchIds = matchIdsResponse.Data;
 
             if (matchIds == null || matchIds.Count == 0)
@@ -93,8 +96,8 @@ public class LeagueOfLegendsHistoryCommand : Command
             {
                 var matchUrl =
                     $"https://{routing}.api.riotgames.com/lol/match/v5/matches/{Uri.EscapeDataString(matchId)}";
-                return _httpService.GetAsync<MatchDto>(matchUrl, headers: headers,
-                    cancellationToken: cancellationToken);
+                return _httpService.SendAsync<MatchDto>(
+                    HttpRequest.Get(matchUrl).WithHeaders(headers), cancellationToken);
             });
             var matchResponses = await Task.WhenAll(matchTasks);
 

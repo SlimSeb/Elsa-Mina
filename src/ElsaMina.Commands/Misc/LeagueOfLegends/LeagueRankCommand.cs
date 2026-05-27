@@ -67,8 +67,8 @@ public class LeagueRankCommand : Command
 
             var entriesUrl =
                 $"https://{platform}.api.riotgames.com/lol/league/v4/entries/by-puuid/{Uri.EscapeDataString(puuid)}";
-            var entriesResponse = await _httpService.GetAsync<List<LeagueEntryDto>>(entriesUrl, headers: headers,
-                cancellationToken: cancellationToken);
+            var entriesResponse = await _httpService.SendAsync<List<LeagueEntryDto>>(
+                HttpRequest.Get(entriesUrl).WithHeaders(headers), cancellationToken);
             var entries = entriesResponse.Data;
 
             if (entries == null || entries.Count == 0)

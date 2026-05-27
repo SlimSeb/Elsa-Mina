@@ -49,8 +49,8 @@ public class DogecoinCommandTest
                 }
             }
         };
-        _httpService.GetAsync<IDictionary<string, IDictionary<string, double>>>(Arg.Any<string>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<IDictionary<string, IDictionary<string, double>>>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Returns(mockResponse);
 
         // Act
@@ -64,8 +64,8 @@ public class DogecoinCommandTest
     public async Task Test_RunAsync_ShouldReplyWithError_WhenApiCallFails()
     {
         // Arrange
-        _httpService.GetAsync<IDictionary<string, IDictionary<string, double>>>(Arg.Any<string>(),
-                cancellationToken: Arg.Any<CancellationToken>())
+        _httpService.SendAsync<IDictionary<string, IDictionary<string, double>>>(Arg.Any<HttpRequest>(),
+                Arg.Any<CancellationToken>())
             .Throws(new Exception("API error"));
 
         // Act

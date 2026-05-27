@@ -31,19 +31,15 @@ public class ShowdownRanksProviderTest
         var mockResponse = Substitute.For<IHttpResponse<IEnumerable<RankingDataDto>>>();
         mockResponse.Data.Returns([]);
         _httpService
-            .GetAsync<IEnumerable<RankingDataDto>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-                Arg.Any<CancellationToken>())
+            .SendAsync<IEnumerable<RankingDataDto>>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(mockResponse);
 
         await _provider.GetRankingDataAsync("testuser");
 
-        await _httpService.Received(1).GetAsync<IEnumerable<RankingDataDto>>(
-            string.Format(RANK_RESOURCE_URL, "testuser"),
-            Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<IDictionary<string, string>>(),
-            true,
-            Arg.Any<bool>(),
+        await _httpService.Received(1).SendAsync<IEnumerable<RankingDataDto>>(
+            Arg.Is<HttpRequest>(request =>
+                request.Uri == string.Format(RANK_RESOURCE_URL, "testuser") &&
+                request.SkipFirstResponseCharacter),
             Arg.Any<CancellationToken>());
     }
 
@@ -58,9 +54,7 @@ public class ShowdownRanksProviderTest
         var mockResponse = Substitute.For<IHttpResponse<IEnumerable<RankingDataDto>>>();
         mockResponse.Data.Returns(expectedRankings);
         _httpService
-            .GetAsync<IEnumerable<RankingDataDto>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-                Arg.Any<CancellationToken>())
+            .SendAsync<IEnumerable<RankingDataDto>>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(mockResponse);
 
         var result = await _provider.GetRankingDataAsync("testuser");
@@ -74,20 +68,14 @@ public class ShowdownRanksProviderTest
         var mockResponse = Substitute.For<IHttpResponse<IEnumerable<RankingDataDto>>>();
         mockResponse.Data.Returns([]);
         _httpService
-            .GetAsync<IEnumerable<RankingDataDto>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-                Arg.Any<CancellationToken>())
+            .SendAsync<IEnumerable<RankingDataDto>>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(mockResponse);
         using var cts = new CancellationTokenSource();
 
         await _provider.GetRankingDataAsync("testuser", cts.Token);
 
-        await _httpService.Received(1).GetAsync<IEnumerable<RankingDataDto>>(
-            Arg.Any<string>(),
-            Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<bool>(),
-            Arg.Any<bool>(),
+        await _httpService.Received(1).SendAsync<IEnumerable<RankingDataDto>>(
+            Arg.Any<HttpRequest>(),
             cts.Token);
     }
 
@@ -100,9 +88,7 @@ public class ShowdownRanksProviderTest
 
         var callCount = 0;
         _httpService
-            .GetAsync<IEnumerable<RankingDataDto>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-                Arg.Any<CancellationToken>())
+            .SendAsync<IEnumerable<RankingDataDto>>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(_ =>
             {
                 callCount++;
@@ -119,10 +105,8 @@ public class ShowdownRanksProviderTest
 
         // Assert
         Assert.That(result, Is.Not.Empty);
-        await _httpService.Received(2).GetAsync<IEnumerable<RankingDataDto>>(
-            Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-            Arg.Any<CancellationToken>());
+        await _httpService.Received(2).SendAsync<IEnumerable<RankingDataDto>>(
+            Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -130,18 +114,14 @@ public class ShowdownRanksProviderTest
     {
         // Arrange
         _httpService
-            .GetAsync<IEnumerable<RankingDataDto>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-                Arg.Any<CancellationToken>())
+            .SendAsync<IEnumerable<RankingDataDto>>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns<Task<IHttpResponse<IEnumerable<RankingDataDto>>>>(_ =>
                 throw new HttpRequestException("always fails"));
 
         // Act & Assert
         Assert.ThrowsAsync<HttpRequestException>(() => _provider.GetRankingDataAsync("testuser"));
-        await _httpService.Received(3).GetAsync<IEnumerable<RankingDataDto>>(
-            Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-            Arg.Any<CancellationToken>());
+        await _httpService.Received(3).SendAsync<IEnumerable<RankingDataDto>>(
+            Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -150,18 +130,14 @@ public class ShowdownRanksProviderTest
         // Arrange
         using var cts = new CancellationTokenSource();
         _httpService
-            .GetAsync<IEnumerable<RankingDataDto>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-                Arg.Any<CancellationToken>())
+            .SendAsync<IEnumerable<RankingDataDto>>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns<Task<IHttpResponse<IEnumerable<RankingDataDto>>>>(_ =>
                 throw new OperationCanceledException());
 
         // Act & Assert
         Assert.ThrowsAsync<OperationCanceledException>(() =>
             _provider.GetRankingDataAsync("testuser", cts.Token));
-        await _httpService.Received(1).GetAsync<IEnumerable<RankingDataDto>>(
-            Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(),
-            Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<IEnumerable<RankingDataDto>>(
+            Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
     }
 }

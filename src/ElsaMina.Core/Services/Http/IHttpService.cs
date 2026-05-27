@@ -1,25 +1,22 @@
 namespace ElsaMina.Core.Services.Http;
 
-public interface IHttpService // TODO : refactor this shit
+public interface IHttpService
 {
-    public Task<IHttpResponse<TResponse>> PostJsonAsync<TRequest, TResponse>(string uri, TRequest dto,
-        bool removeFirstCharacterFromResponse = false, IDictionary<string, string> headers = null,
-        bool isRaw = false,
+    /// <summary>
+    /// Envoie la requête et désérialise le corps JSON de la réponse en <typeparamref name="TResponse"/>.
+    /// </summary>
+    Task<IHttpResponse<TResponse>> SendAsync<TResponse>(HttpRequest request,
         CancellationToken cancellationToken = default);
 
-    public Task<Stream> DownloadContentWithPostAsync<TRequest>(string uri, TRequest dto, IDictionary<string, string> headers = null,
+    /// <summary>
+    /// Envoie la requête et renvoie le corps de la réponse en texte brut, sans désérialisation.
+    /// </summary>
+    Task<IHttpResponse<string>> SendForStringAsync(HttpRequest request,
         CancellationToken cancellationToken = default);
 
-    public Task<IHttpResponse<TResponse>> PostUrlEncodedFormAsync<TResponse>(string uri,
-        IDictionary<string, string> form,
-        bool removeFirstCharacterFromResponse = false, bool isRaw = false,
+    /// <summary>
+    /// Envoie la requête et renvoie le corps de la réponse sous forme de flux (par exemple pour un téléchargement binaire).
+    /// </summary>
+    Task<Stream> SendForStreamAsync(HttpRequest request,
         CancellationToken cancellationToken = default);
-
-    public Task<IHttpResponse<TResponse>> GetAsync<TResponse>(string uri,
-        IDictionary<string, string> queryParams = null,
-        IDictionary<string, string> headers = null, bool removeFirstCharacterFromResponse = false,
-        bool isRaw = false,
-        CancellationToken cancellationToken = default);
-
-    Task<Stream> GetStreamAsync(string uri, CancellationToken cancellationToken = default);
 }

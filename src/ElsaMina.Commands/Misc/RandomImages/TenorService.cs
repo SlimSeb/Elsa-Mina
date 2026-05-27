@@ -70,8 +70,8 @@ public class TenorService : ITenorService
 
         try
         {
-            var response = await _httpService.GetAsync<TenorResponseDto>(TENOR_SEARCH_URL, queryParams,
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<TenorResponseDto>(
+                HttpRequest.Get(TENOR_SEARCH_URL).WithQueryParameters(queryParams), cancellationToken);
             return response.Data?.Results;
         }
         catch (Exception ex)

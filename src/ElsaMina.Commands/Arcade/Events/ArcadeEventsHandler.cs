@@ -128,8 +128,8 @@ public class ArcadeEventsHandler : Handler
                 ]
             };
 
-            var response = await _httpService.PostJsonAsync<ArcadeEventWebhookBody, object>(webhookUrl, body,
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<object>(
+                HttpRequest.Post(webhookUrl).WithJsonBody(body), cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
             {

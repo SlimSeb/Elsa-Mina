@@ -57,8 +57,8 @@ public static class LeagueApiHelper
     {
         var url =
             $"https://{routing}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{Uri.EscapeDataString(gameName)}/{Uri.EscapeDataString(tagLine)}";
-        var response = await httpService.GetAsync<RiotAccountDto>(url, headers: headers,
-            cancellationToken: cancellationToken);
+        var response = await httpService.SendAsync<RiotAccountDto>(
+            HttpRequest.Get(url).WithHeaders(headers), cancellationToken);
         var puuid = response.Data?.Puuid;
         return string.IsNullOrEmpty(puuid) ? null : puuid;
     }

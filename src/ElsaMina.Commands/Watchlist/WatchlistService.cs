@@ -131,8 +131,8 @@ public class WatchlistService : IWatchlistService
 
         try
         {
-            await _httpService.PostJsonAsync<object, object>(webhookUrl, payload,
-                cancellationToken: cancellationToken);
+            await _httpService.SendAsync<object>(
+                HttpRequest.Post(webhookUrl).WithJsonBody(payload), cancellationToken);
         }
         catch (Exception ex)
         {

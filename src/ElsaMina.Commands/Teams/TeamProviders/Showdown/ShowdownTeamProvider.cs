@@ -40,8 +40,8 @@ public class ShowdownTeamProvider : ITeamProvider
             var url = password != null
                 ? string.Format(SHOWDOWN_TEAM_API_URL_WITH_PASSWORD, teamId, password)
                 : string.Format(SHOWDOWN_TEAM_API_URL, teamId);
-            var result = await _httpService.GetAsync<ShowdownTeamDto>(url, cancellationToken: cancellationToken,
-                removeFirstCharacterFromResponse: true);
+            var result = await _httpService.SendAsync<ShowdownTeamDto>(
+                HttpRequest.Get(url).SkippingFirstResponseCharacter(), cancellationToken);
             return new SharedTeam
             {
                 Author = result.Data.OwnerId,

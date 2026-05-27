@@ -51,8 +51,9 @@ public class ShowdownTeamProviderTest
 
         await _provider.GetTeamExport(teamLink);
 
-        await _httpServiceMock.Received(1).GetAsync<ShowdownTeamDto>(expectedUrl,
-            removeFirstCharacterFromResponse: true, cancellationToken: Arg.Any<CancellationToken>());
+        await _httpServiceMock.Received(1).SendAsync<ShowdownTeamDto>(
+            Arg.Is<HttpRequest>(request => request.Uri == expectedUrl && request.SkipFirstResponseCharacter),
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -64,8 +65,9 @@ public class ShowdownTeamProviderTest
 
         await _provider.GetTeamExport(teamLink);
 
-        await _httpServiceMock.Received(1).GetAsync<ShowdownTeamDto>(expectedUrl,
-            removeFirstCharacterFromResponse: true, cancellationToken: Arg.Any<CancellationToken>());
+        await _httpServiceMock.Received(1).SendAsync<ShowdownTeamDto>(
+            Arg.Is<HttpRequest>(request => request.Uri == expectedUrl && request.SkipFirstResponseCharacter),
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -77,8 +79,9 @@ public class ShowdownTeamProviderTest
 
         await _provider.GetTeamExport(teamLink);
 
-        await _httpServiceMock.Received(1).GetAsync<ShowdownTeamDto>(expectedUrl,
-            removeFirstCharacterFromResponse: true, cancellationToken: Arg.Any<CancellationToken>());
+        await _httpServiceMock.Received(1).SendAsync<ShowdownTeamDto>(
+            Arg.Is<HttpRequest>(request => request.Uri == expectedUrl && request.SkipFirstResponseCharacter),
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -90,8 +93,9 @@ public class ShowdownTeamProviderTest
 
         await _provider.GetTeamExport(teamLink);
 
-        await _httpServiceMock.Received(1).GetAsync<ShowdownTeamDto>(expectedUrl,
-            removeFirstCharacterFromResponse: true, cancellationToken: Arg.Any<CancellationToken>());
+        await _httpServiceMock.Received(1).SendAsync<ShowdownTeamDto>(
+            Arg.Is<HttpRequest>(request => request.Uri == expectedUrl && request.SkipFirstResponseCharacter),
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -119,8 +123,9 @@ public class ShowdownTeamProviderTest
         var teamLink = "https://psim.us/t/1718380";
         var expectedUrl = "https://teams.pokemonshowdown.com/api/getteam?teamid=1718380&full=1";
         _httpServiceMock
-            .GetAsync<ShowdownTeamDto>(expectedUrl, removeFirstCharacterFromResponse: true,
-                cancellationToken: Arg.Any<CancellationToken>())
+            .SendAsync<ShowdownTeamDto>(
+                Arg.Is<HttpRequest>(request => request.Uri == expectedUrl && request.SkipFirstResponseCharacter),
+                Arg.Any<CancellationToken>())
             .ThrowsAsync(new Exception("Network error"));
 
         var result = await _provider.GetTeamExport(teamLink);
@@ -131,8 +136,9 @@ public class ShowdownTeamProviderTest
     private void SetUpHttpMock(string url, string ownerId, string title, string packedTeam)
     {
         _httpServiceMock
-            .GetAsync<ShowdownTeamDto>(url, removeFirstCharacterFromResponse: true,
-                cancellationToken: Arg.Any<CancellationToken>())
+            .SendAsync<ShowdownTeamDto>(
+                Arg.Is<HttpRequest>(request => request.Uri == url && request.SkipFirstResponseCharacter),
+                Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<ShowdownTeamDto>
             {
                 StatusCode = HttpStatusCode.OK,

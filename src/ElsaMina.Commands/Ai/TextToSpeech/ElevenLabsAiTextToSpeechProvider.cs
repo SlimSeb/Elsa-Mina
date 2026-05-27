@@ -57,11 +57,9 @@ public class ElevenLabsAiTextToSpeechProvider : IAiTextToSpeechProvider
             _ => FEMALE_VOICE_ID
         };
 
-        var stream = await _httpService.DownloadContentWithPostAsync(
-            string.Format(ELEVEN_LABS_TTS_API_URL, voiceId),
-            dto,
-            headers: headers,
-            cancellationToken: cancellationToken);
+        var stream = await _httpService.SendForStreamAsync(
+            HttpRequest.Post(string.Format(ELEVEN_LABS_TTS_API_URL, voiceId)).WithJsonBody(dto).WithHeaders(headers),
+            cancellationToken);
 
         if (stream == null)
         {

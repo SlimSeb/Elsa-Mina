@@ -34,7 +34,7 @@ public class DexManagerTest
     {
         // Arrange
         var expected = new Pokemon[] { new() { Name = new Name { English = "Bulbasaur" } } };
-        _httpService.GetAsync<Pokemon[]>(Arg.Any<string>())
+        _httpService.SendAsync<Pokemon[]>(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<Pokemon[]> { Data = expected });
 
         // Act
@@ -48,7 +48,7 @@ public class DexManagerTest
     public async Task Test_LoadDexAsync_ShouldNotThrow_WhenHttpFails()
     {
         // Arrange
-        _httpService.GetAsync<Pokemon[]>(Arg.Any<string>())
+        _httpService.SendAsync<Pokemon[]>(Arg.Any<HttpRequest>())
             .Throws(new Exception("Network error"));
 
         // Act & Assert
@@ -59,7 +59,7 @@ public class DexManagerTest
     public async Task Test_LoadDexAsync_ShouldLeavePokedexEmpty_WhenHttpFails()
     {
         // Arrange
-        _httpService.GetAsync<Pokemon[]>(Arg.Any<string>())
+        _httpService.SendAsync<Pokemon[]>(Arg.Any<HttpRequest>())
             .Throws(new Exception("Network error"));
 
         // Act

@@ -55,7 +55,7 @@ public class UrlPreviewHandlerTest
         await _handler.HandleMessageAsync(_context);
 
         // Assert
-        await _httpService.DidNotReceiveWithAnyArgs().GetAsync<string>(default);
+        await _httpService.DidNotReceiveWithAnyArgs().SendForStringAsync(default);
     }
 
     [Test]
@@ -71,7 +71,7 @@ public class UrlPreviewHandlerTest
         await _handler.HandleMessageAsync(_context);
 
         // Assert
-        await _httpService.DidNotReceiveWithAnyArgs().GetAsync<string>(default);
+        await _httpService.DidNotReceiveWithAnyArgs().SendForStringAsync(default);
     }
 
     [Test]
@@ -84,7 +84,7 @@ public class UrlPreviewHandlerTest
         await _handler.HandleMessageAsync(_context);
 
         // Assert
-        await _httpService.DidNotReceiveWithAnyArgs().GetAsync<string>(default);
+        await _httpService.DidNotReceiveWithAnyArgs().SendForStringAsync(default);
     }
 
     [Test]
@@ -97,7 +97,7 @@ public class UrlPreviewHandlerTest
         await _handler.HandleMessageAsync(_context);
 
         // Assert
-        await _httpService.DidNotReceiveWithAnyArgs().GetAsync<string>(default);
+        await _httpService.DidNotReceiveWithAnyArgs().SendForStringAsync(default);
     }
 
     [Test]
@@ -110,7 +110,7 @@ public class UrlPreviewHandlerTest
         await _handler.HandleMessageAsync(_context);
 
         // Assert
-        await _httpService.DidNotReceiveWithAnyArgs().GetAsync<string>(default);
+        await _httpService.DidNotReceiveWithAnyArgs().SendForStringAsync(default);
     }
 
     [Test]
@@ -123,7 +123,7 @@ public class UrlPreviewHandlerTest
         await _handler.HandleMessageAsync(_context);
 
         // Assert
-        await _httpService.DidNotReceiveWithAnyArgs().GetAsync<string>(default);
+        await _httpService.DidNotReceiveWithAnyArgs().SendForStringAsync(default);
     }
 
     [Test]
@@ -131,8 +131,7 @@ public class UrlPreviewHandlerTest
     {
         // Arrange
         _context.Message.Returns("https://example.com");
-        _httpService.GetAsync<string>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>())
+        _httpService.SendForStringAsync(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<string> { StatusCode = HttpStatusCode.NotFound, Data = null });
 
         // Act
@@ -147,8 +146,7 @@ public class UrlPreviewHandlerTest
     {
         // Arrange
         _context.Message.Returns("https://example.com");
-        _httpService.GetAsync<string>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>())
+        _httpService.SendForStringAsync(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<string>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -167,8 +165,7 @@ public class UrlPreviewHandlerTest
     {
         // Arrange
         _context.Message.Returns("https://example.com");
-        _httpService.GetAsync<string>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>())
+        _httpService.SendForStringAsync(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<string>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -203,8 +200,7 @@ public class UrlPreviewHandlerTest
     {
         // Arrange
         _context.Message.Returns("Check out https://example.com");
-        _httpService.GetAsync<string>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>())
+        _httpService.SendForStringAsync(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<string>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -227,8 +223,7 @@ public class UrlPreviewHandlerTest
     {
         // Arrange
         _context.Message.Returns("https://example.com");
-        _httpService.GetAsync<string>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>())
+        _httpService.SendForStringAsync(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<string>
             {
                 StatusCode = HttpStatusCode.OK,
@@ -258,8 +253,7 @@ public class UrlPreviewHandlerTest
     {
         // Arrange
         _context.Message.Returns("https://example.com");
-        _httpService.GetAsync<string>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>())
+        _httpService.SendForStringAsync(Arg.Any<HttpRequest>())
             .Throws(new Exception("Network error"));
 
         // Act
@@ -274,8 +268,7 @@ public class UrlPreviewHandlerTest
     {
         // Arrange
         _context.Message.Returns("Check this out: https://example.com/page.");
-        _httpService.GetAsync<string>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>())
+        _httpService.SendForStringAsync(Arg.Any<HttpRequest>())
             .Returns(new HttpResponse<string>
             {
                 StatusCode = HttpStatusCode.OK,

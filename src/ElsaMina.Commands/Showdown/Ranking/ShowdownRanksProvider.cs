@@ -42,10 +42,9 @@ public class ShowdownRanksProvider : IShowdownRanksProvider
 
             try
             {
-                var result = await _httpService.GetAsync<IEnumerable<RankingDataDto>>(
-                    string.Format(RANK_RESOURCE_URL, userId),
-                    removeFirstCharacterFromResponse: true,
-                    cancellationToken: cancellationToken);
+                var result = await _httpService.SendAsync<IEnumerable<RankingDataDto>>(
+                    HttpRequest.Get(string.Format(RANK_RESOURCE_URL, userId)).SkippingFirstResponseCharacter(),
+                    cancellationToken);
                 return result.Data;
             }
             catch (OperationCanceledException)

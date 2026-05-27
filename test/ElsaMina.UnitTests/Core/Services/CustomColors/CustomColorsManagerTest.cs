@@ -34,9 +34,11 @@ public class CustomColorsManagerTest
     public async Task Test_FetchCustomColorsAsync_ShouldMergeBothSources_WhenBothSucceed()
     {
         var jsonColors = new Dictionary<string, string> { { "jsonuser", "#FF5733" } };
-        _httpService.GetAsync<Dictionary<string, string>>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JSON_URL))
+        _httpService.SendAsync<Dictionary<string, string>>(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JSON_URL))
             .Returns(JsonResponse(jsonColors));
-        _httpService.GetAsync<string>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JS_URL), isRaw: true)
+        _httpService.SendForStringAsync(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JS_URL))
             .Returns(JsResponse(VALID_JS));
 
         await _customColorsManager.FetchCustomColorsAsync();
@@ -59,9 +61,11 @@ public class CustomColorsManagerTest
               'shareduser': 'js-value'
             };
             """;
-        _httpService.GetAsync<Dictionary<string, string>>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JSON_URL))
+        _httpService.SendAsync<Dictionary<string, string>>(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JSON_URL))
             .Returns(JsonResponse(jsonColors));
-        _httpService.GetAsync<string>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JS_URL), isRaw: true)
+        _httpService.SendForStringAsync(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JS_URL))
             .Returns(JsResponse(js));
 
         await _customColorsManager.FetchCustomColorsAsync();
@@ -72,9 +76,11 @@ public class CustomColorsManagerTest
     [Test]
     public async Task Test_FetchCustomColorsAsync_ShouldStillFetchJs_WhenJsonFails()
     {
-        _httpService.GetAsync<Dictionary<string, string>>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JSON_URL))
+        _httpService.SendAsync<Dictionary<string, string>>(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JSON_URL))
             .Throws(new Exception("Network error"));
-        _httpService.GetAsync<string>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JS_URL), isRaw: true)
+        _httpService.SendForStringAsync(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JS_URL))
             .Returns(JsResponse(VALID_JS));
 
         await _customColorsManager.FetchCustomColorsAsync();
@@ -90,9 +96,11 @@ public class CustomColorsManagerTest
     public async Task Test_FetchCustomColorsAsync_ShouldStillFetchJson_WhenJsFails()
     {
         var jsonColors = new Dictionary<string, string> { { "jsonuser", "#FF5733" } };
-        _httpService.GetAsync<Dictionary<string, string>>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JSON_URL))
+        _httpService.SendAsync<Dictionary<string, string>>(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JSON_URL))
             .Returns(JsonResponse(jsonColors));
-        _httpService.GetAsync<string>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JS_URL), isRaw: true)
+        _httpService.SendForStringAsync(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JS_URL))
             .Throws(new Exception("Network error"));
 
         await _customColorsManager.FetchCustomColorsAsync();
@@ -107,9 +115,11 @@ public class CustomColorsManagerTest
     [Test]
     public async Task Test_FetchCustomColorsAsync_ShouldLeaveEmptyMapping_WhenBothSourcesFail()
     {
-        _httpService.GetAsync<Dictionary<string, string>>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JSON_URL))
+        _httpService.SendAsync<Dictionary<string, string>>(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JSON_URL))
             .Throws(new Exception("Network error"));
-        _httpService.GetAsync<string>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JS_URL), isRaw: true)
+        _httpService.SendForStringAsync(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JS_URL))
             .Throws(new Exception("Network error"));
 
         await _customColorsManager.FetchCustomColorsAsync();
@@ -120,9 +130,11 @@ public class CustomColorsManagerTest
     [Test]
     public void Test_FetchCustomColorsAsync_ShouldNotThrow_WhenBothSourcesFail()
     {
-        _httpService.GetAsync<Dictionary<string, string>>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JSON_URL))
+        _httpService.SendAsync<Dictionary<string, string>>(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JSON_URL))
             .Throws(new Exception("Network error"));
-        _httpService.GetAsync<string>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JS_URL), isRaw: true)
+        _httpService.SendForStringAsync(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JS_URL))
             .Throws(new Exception("Network error"));
 
         Assert.DoesNotThrowAsync(async () => await _customColorsManager.FetchCustomColorsAsync());
@@ -131,9 +143,11 @@ public class CustomColorsManagerTest
     [Test]
     public async Task Test_FetchCustomColorsAsync_ShouldLeaveEmptyJsEntries_WhenJsBlockIsAbsent()
     {
-        _httpService.GetAsync<Dictionary<string, string>>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JSON_URL))
+        _httpService.SendAsync<Dictionary<string, string>>(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JSON_URL))
             .Throws(new Exception("Network error"));
-        _httpService.GetAsync<string>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JS_URL), isRaw: true)
+        _httpService.SendForStringAsync(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JS_URL))
             .Returns(JsResponse("var x = 1;"));
 
         await _customColorsManager.FetchCustomColorsAsync();
@@ -152,9 +166,11 @@ public class CustomColorsManagerTest
               'user2': 'color2'
             };
             """;
-        _httpService.GetAsync<Dictionary<string, string>>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JSON_URL))
+        _httpService.SendAsync<Dictionary<string, string>>(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JSON_URL))
             .Throws(new Exception("Network error"));
-        _httpService.GetAsync<string>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JS_URL), isRaw: true)
+        _httpService.SendForStringAsync(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JS_URL))
             .Returns(JsResponse(jsWithComments));
 
         await _customColorsManager.FetchCustomColorsAsync();
@@ -177,9 +193,11 @@ public class CustomColorsManagerTest
               'user1': 'second'
             };
             """;
-        _httpService.GetAsync<Dictionary<string, string>>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JSON_URL))
+        _httpService.SendAsync<Dictionary<string, string>>(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JSON_URL))
             .Throws(new Exception("Network error"));
-        _httpService.GetAsync<string>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JS_URL), isRaw: true)
+        _httpService.SendForStringAsync(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JS_URL))
             .Returns(JsResponse(jsWithDuplicates));
 
         await _customColorsManager.FetchCustomColorsAsync();
@@ -191,9 +209,11 @@ public class CustomColorsManagerTest
     public async Task Test_FetchCustomColorsAsync_ShouldHandleEmptyStringValues_WhenJsonHasEmptyValues()
     {
         var jsonColors = new Dictionary<string, string> { { "user1", "" }, { "user2", "color2" } };
-        _httpService.GetAsync<Dictionary<string, string>>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JSON_URL))
+        _httpService.SendAsync<Dictionary<string, string>>(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JSON_URL))
             .Returns(JsonResponse(jsonColors));
-        _httpService.GetAsync<string>(Arg.Is(CustomColorsManager.CUSTOM_COLORS_JS_URL), isRaw: true)
+        _httpService.SendForStringAsync(
+                Arg.Is<HttpRequest>(request => request.Uri == CustomColorsManager.CUSTOM_COLORS_JS_URL))
             .Throws(new Exception("Network error"));
 
         await _customColorsManager.FetchCustomColorsAsync();

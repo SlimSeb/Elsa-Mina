@@ -28,8 +28,8 @@ public class FactsCommand : Command
         var language = context.Command == "factde" ? "de" : "en";
         try
         {
-            var response = await _httpService.GetAsync<FactDto>(string.Format(FACTS_URL, language),
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<FactDto>(
+                HttpRequest.Get(string.Format(FACTS_URL, language)), cancellationToken);
             context.Reply($"**Fact**: {response.Data.Text}", rankAware: true);
         }
         catch (Exception ex)

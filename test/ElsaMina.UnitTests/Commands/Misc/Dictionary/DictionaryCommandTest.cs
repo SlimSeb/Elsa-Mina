@@ -60,7 +60,7 @@ public class DictionaryCommandTest
         // Assert
         _context.Received(1).GetString(_command.HelpMessageKey);
         await _httpService.DidNotReceive()
-            .GetAsync<DictionaryApiResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>());
+            .SendAsync<DictionaryApiResponse>(Arg.Any<HttpRequest>());
     }
 
     [TestCase(null)]
@@ -76,7 +76,7 @@ public class DictionaryCommandTest
 
         // Assert
         await _httpService.DidNotReceive()
-            .GetAsync<DictionaryApiResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>());
+            .SendAsync<DictionaryApiResponse>(Arg.Any<HttpRequest>());
     }
 
     [Test]
@@ -86,8 +86,7 @@ public class DictionaryCommandTest
         _context.Target.Returns("president");
         _configuration.DictionaryApiKey.Returns("api-key");
         _httpService
-            .GetAsync<DictionaryApiResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<DictionaryApiResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(MakeEntryResponse("president", "one who presides over a meeting or assembly"));
 
         // Act
@@ -105,8 +104,7 @@ public class DictionaryCommandTest
         _context.Target.Returns("presidnet");
         _configuration.DictionaryApiKey.Returns("api-key");
         _httpService
-            .GetAsync<DictionaryApiResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<DictionaryApiResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(MakeSuggestionsResponse("president", "precedent", "resident"));
 
         // Act
@@ -124,8 +122,7 @@ public class DictionaryCommandTest
         _context.Target.Returns("xyzzy");
         _configuration.DictionaryApiKey.Returns("api-key");
         _httpService
-            .GetAsync<DictionaryApiResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<DictionaryApiResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(MakeEmptyResponse());
 
         // Act
@@ -142,8 +139,7 @@ public class DictionaryCommandTest
         _context.Target.Returns("president");
         _configuration.DictionaryApiKey.Returns("api-key");
         _httpService
-            .GetAsync<DictionaryApiResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<DictionaryApiResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(MakeEntryResponse("president"));
 
         // Act
@@ -160,8 +156,7 @@ public class DictionaryCommandTest
         _context.Target.Returns("president");
         _configuration.DictionaryApiKey.Returns("api-key");
         _httpService
-            .GetAsync<DictionaryApiResponse>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<DictionaryApiResponse>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Throws(new Exception("Network error"));
 
         // Act

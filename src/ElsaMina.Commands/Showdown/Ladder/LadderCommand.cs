@@ -43,8 +43,8 @@ public class LadderCommand : Command
             var parts = context.Target.Split(",");
             var tier = parts[0].ToLowerAlphaNum();
             var prefix = parts.Length > 1 ? parts[1].Trim().ToLower() : string.Empty;
-            var response = await _httpService.GetAsync<LadderDto>(string.Format(LADDER_RESOURCE_URL, tier),
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<LadderDto>(
+                HttpRequest.Get(string.Format(LADDER_RESOURCE_URL, tier)), cancellationToken);
             var hasPrefix = !string.IsNullOrWhiteSpace(prefix);
 
             if (response?.Data?.TopList == null)

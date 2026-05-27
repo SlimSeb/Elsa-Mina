@@ -67,7 +67,8 @@ public class CoupCritiqueProviderTest
             Data = expectedTeamData
         };
 
-        _httpService.GetAsync<CoupCritiqueResponse>(apiUrl).Returns(expectedResponse);
+        _httpService.SendAsync<CoupCritiqueResponse>(Arg.Is<HttpRequest>(request => request.Uri == apiUrl))
+            .Returns(expectedResponse);
 
         // Act
         var result = await _provider.GetTeamExport(teamLink);
@@ -91,7 +92,7 @@ public class CoupCritiqueProviderTest
         const string teamId = "12345";
         const string apiUrl = $"https://www.coupcritique.fr/api/teams/{teamId}";
         _httpService
-            .GetAsync<CoupCritiqueResponse>(apiUrl)
+            .SendAsync<CoupCritiqueResponse>(Arg.Is<HttpRequest>(request => request.Uri == apiUrl))
             .Returns<Task<IHttpResponse<CoupCritiqueResponse>>>(_ => throw new Exception("Network error"));
 
         // Act

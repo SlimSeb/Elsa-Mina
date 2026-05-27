@@ -31,6 +31,9 @@ public class LoginServiceTest
         _loginService = new LoginService(_httpService, _configuration, _systemService);
     }
 
+    private static string ReadBody(HttpRequest request) =>
+        request.Body.CreateContent().ReadAsStringAsync().GetAwaiter().GetResult();
+
     private static IHttpResponse<LoginResponseDto> MakeSuccessResponse() =>
         new HttpResponse<LoginResponseDto>
         {
@@ -46,8 +49,7 @@ public class LoginServiceTest
     {
         // Arrange
         _httpService
-            .PostUrlEncodedFormAsync<LoginResponseDto>(Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(),
-                Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<LoginResponseDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(MakeSuccessResponse());
 
         // Act
@@ -66,22 +68,21 @@ public class LoginServiceTest
     {
         // Arrange
         _httpService
-            .PostUrlEncodedFormAsync<LoginResponseDto>(Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(),
-                Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<LoginResponseDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(MakeSuccessResponse());
 
         // Act
         await _loginService.Login(CHALLSTR);
 
         // Assert
-        await _httpService.Received().PostUrlEncodedFormAsync<LoginResponseDto>(
-            Arg.Is(LoginService.LOGIN_URL),
-            Arg.Is<Dictionary<string, string>>(form =>
-                form["challstr"] == CHALLSTR &&
-                form["name"] == USERNAME &&
-                form["pass"] == "password" &&
-                form["act"] == "login"),
-            Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await _httpService.Received().SendAsync<LoginResponseDto>(
+            Arg.Is<HttpRequest>(request =>
+                request.Uri == LoginService.LOGIN_URL &&
+                ReadBody(request).Contains($"challstr={CHALLSTR}") &&
+                ReadBody(request).Contains($"name={USERNAME}") &&
+                ReadBody(request).Contains("pass=password") &&
+                ReadBody(request).Contains("act=login")),
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -89,8 +90,7 @@ public class LoginServiceTest
     {
         // Arrange
         _httpService
-            .PostUrlEncodedFormAsync<LoginResponseDto>(Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(),
-                Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<LoginResponseDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(
                 _ => throw new HttpException(HttpStatusCode.InternalServerError, "Server Error"),
                 _ => MakeSuccessResponse());
@@ -100,9 +100,8 @@ public class LoginServiceTest
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        await _httpService.Received(2).PostUrlEncodedFormAsync<LoginResponseDto>(
-            Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(),
-            Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await _httpService.Received(2).SendAsync<LoginResponseDto>(
+            Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
         await _systemService.Received(1).SleepAsync(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
     }
 
@@ -111,8 +110,7 @@ public class LoginServiceTest
     {
         // Arrange
         _httpService
-            .PostUrlEncodedFormAsync<LoginResponseDto>(Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(),
-                Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<LoginResponseDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(
                 _ => throw new Exception("Timeout"),
                 _ => MakeSuccessResponse());
@@ -122,9 +120,8 @@ public class LoginServiceTest
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        await _httpService.Received(2).PostUrlEncodedFormAsync<LoginResponseDto>(
-            Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(),
-            Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await _httpService.Received(2).SendAsync<LoginResponseDto>(
+            Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
         await _systemService.Received(1).SleepAsync(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
     }
 
@@ -140,8 +137,7 @@ public class LoginServiceTest
             }
         };
         _httpService
-            .PostUrlEncodedFormAsync<LoginResponseDto>(Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(),
-                Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<LoginResponseDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(mismatchResponse, MakeSuccessResponse());
 
         // Act
@@ -149,9 +145,8 @@ public class LoginServiceTest
 
         // Assert
         Assert.That(result.CurrentUser.UserId, Is.EqualTo(USER_ID));
-        await _httpService.Received(2).PostUrlEncodedFormAsync<LoginResponseDto>(
-            Arg.Any<string>(), Arg.Any<Dictionary<string, string>>(),
-            Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await _httpService.Received(2).SendAsync<LoginResponseDto>(
+            Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>());
         await _systemService.Received(1).SleepAsync(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
     }
 }

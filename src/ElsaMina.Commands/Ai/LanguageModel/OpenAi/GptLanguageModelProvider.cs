@@ -49,11 +49,9 @@ public abstract class GptLanguageModelProvider : ILanguageModelProvider
         };
 
         Log.Information("Making request to OpenAI's GPT with prompt: {0}", prompt);
-        var response = await _httpService.PostJsonAsync<GptRequestDto, GptResponseDto>(
-            OPENAI_CONVERSATIONS_URL,
-            dto,
-            headers: headers,
-            cancellationToken: cancellationToken);
+        var response = await _httpService.SendAsync<GptResponseDto>(
+            HttpRequest.Post(OPENAI_CONVERSATIONS_URL).WithJsonBody(dto).WithHeaders(headers),
+            cancellationToken);
 
         var assistantMessage = response?.Data?.Items?
             .LastOrDefault(item => string.Equals(item.Role, ASSISTANT_ROLE, StringComparison.OrdinalIgnoreCase));
@@ -115,11 +113,9 @@ public abstract class GptLanguageModelProvider : ILanguageModelProvider
             Messages = items
         };
 
-        var response = await _httpService.PostJsonAsync<GptRequestDto, GptResponseDto>(
-            OPENAI_CONVERSATIONS_URL,
-            dto,
-            headers: headers,
-            cancellationToken: cancellationToken);
+        var response = await _httpService.SendAsync<GptResponseDto>(
+            HttpRequest.Post(OPENAI_CONVERSATIONS_URL).WithJsonBody(dto).WithHeaders(headers),
+            cancellationToken);
 
         var assistantMessage = response?.Data?.Items?
             .LastOrDefault(item => string.Equals(item.Role, ASSISTANT_ROLE, StringComparison.OrdinalIgnoreCase));

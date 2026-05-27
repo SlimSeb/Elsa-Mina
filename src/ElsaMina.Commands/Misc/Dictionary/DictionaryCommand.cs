@@ -46,9 +46,8 @@ public class DictionaryCommand : Command
         var url = string.Format(DICTIONARY_API_URL, Uri.EscapeDataString(word));
         try
         {
-            var response = await _httpService.GetAsync<DictionaryApiResponse>(url,
-                queryParams: new Dictionary<string, string> { ["key"] = apiKey },
-                cancellationToken: cancellationToken);
+            var response = await _httpService.SendAsync<DictionaryApiResponse>(
+                HttpRequest.Get(url).WithQueryParameter("key", apiKey), cancellationToken);
             var data = response.Data;
 
             if (data.IsEmpty)

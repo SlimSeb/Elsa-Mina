@@ -39,7 +39,7 @@ public class FactsCommandTest
                 Text = "Bananas are berries, but strawberries are not!"
             }
         };
-        _httpService.GetAsync<FactDto>(Arg.Any<string>()).Returns(mockResponse);
+        _httpService.SendAsync<FactDto>(Arg.Any<HttpRequest>()).Returns(mockResponse);
         _context.Command.Returns("fact");
 
         // Act
@@ -60,7 +60,7 @@ public class FactsCommandTest
                 Text = "Die Banane ist eine Beere, die Erdbeere jedoch nicht."
             }
         };
-        _httpService.GetAsync<FactDto>(Arg.Any<string>()).Returns(mockResponse);
+        _httpService.SendAsync<FactDto>(Arg.Any<HttpRequest>()).Returns(mockResponse);
         _context.Command.Returns("factde");
 
         // Act
@@ -74,7 +74,7 @@ public class FactsCommandTest
     public async Task Test_RunAsync_ShouldReplyWithError_WhenApiCallFails()
     {
         // Arrange
-        _httpService.GetAsync<FactDto>(Arg.Any<string>())
+        _httpService.SendAsync<FactDto>(Arg.Any<HttpRequest>())
             .Throws(new Exception("API error"));
 
         // Act

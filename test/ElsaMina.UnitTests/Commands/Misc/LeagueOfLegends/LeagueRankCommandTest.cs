@@ -35,16 +35,14 @@ public class LeagueRankCommandTest
     private void SetupAccountResponse(string puuid)
     {
         _httpService
-            .GetAsync<RiotAccountDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<RiotAccountDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<RiotAccountDto> { Data = new RiotAccountDto { Puuid = puuid } });
     }
 
     private void SetupEntriesResponse(List<LeagueEntryDto> entries)
     {
         _httpService
-            .GetAsync<List<LeagueEntryDto>>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<List<LeagueEntryDto>>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<List<LeagueEntryDto>> { Data = entries });
     }
 
@@ -111,8 +109,7 @@ public class LeagueRankCommandTest
     public async Task Test_RunAsync_ShouldReplyWithPlayerNotFound_WhenAccountApiReturnsNullPuuid()
     {
         _httpService
-            .GetAsync<RiotAccountDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<RiotAccountDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<RiotAccountDto> { Data = new RiotAccountDto { Puuid = null } });
         var context = MakeContext("Player#EUW");
 
@@ -130,10 +127,9 @@ public class LeagueRankCommandTest
 
         await _command.RunAsync(context);
 
-        await _httpService.Received(1).GetAsync<RiotAccountDto>(
-            Arg.Is<string>(url => url.Contains("americas.api.riotgames.com")),
-            Arg.Any<IDictionary<string, string>>(), Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<RiotAccountDto>(
+            Arg.Is<HttpRequest>(request => request.Uri.Contains("americas.api.riotgames.com")),
+            Arg.Any<CancellationToken>());
     }
 
     // --- Entries ---
@@ -266,10 +262,9 @@ public class LeagueRankCommandTest
 
         await _command.RunAsync(context);
 
-        await _httpService.Received(1).GetAsync<List<LeagueEntryDto>>(
-            Arg.Is<string>(url => url.Contains("euw1.api.riotgames.com")),
-            Arg.Any<IDictionary<string, string>>(), Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>());
+        await _httpService.Received(1).SendAsync<List<LeagueEntryDto>>(
+            Arg.Is<HttpRequest>(request => request.Uri.Contains("euw1.api.riotgames.com")),
+            Arg.Any<CancellationToken>());
     }
 
     // --- Error handling ---
@@ -278,8 +273,7 @@ public class LeagueRankCommandTest
     public async Task Test_RunAsync_ShouldReplyWithError_WhenHttpThrows()
     {
         _httpService
-            .GetAsync<RiotAccountDto>(Arg.Any<string>(), Arg.Any<IDictionary<string, string>>(),
-                Arg.Any<IDictionary<string, string>>(), Arg.Any<bool>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .SendAsync<RiotAccountDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
             .Throws(new Exception("network failure"));
         var context = MakeContext("Player#EUW");
 

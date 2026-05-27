@@ -77,12 +77,8 @@ public class PairingsCommandTest
     {
         // Arrange
         _context.Target.Returns("https://pastebin.com/abc123");
-        _httpService.GetAsync<string>(
-            Arg.Any<string>(),
-            Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<bool>(),
-            true,
+        _httpService.SendForStringAsync(
+            Arg.Any<HttpRequest>(),
             Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<string> { Data = "Player1\nPlayer2\nPlayer3\nPlayer4" });
         var players = new List<string> { "Player1", "Player2", "Player3", "Player4" };
@@ -104,12 +100,8 @@ public class PairingsCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        await _httpService.Received(1).GetAsync<string>(
-            Arg.Is<string>(s => s.StartsWith("https://pastebin.com/raw/")), 
-            Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<bool>(),
-            true, 
+        await _httpService.Received(1).SendForStringAsync(
+            Arg.Is<HttpRequest>(request => request.Uri.StartsWith("https://pastebin.com/raw/")),
             Arg.Any<CancellationToken>());
         _randomService.Received(1).ShuffleInPlace(Arg.Any<List<string>>());
         _context.Received(1).ReplyHtml(Arg.Is<string>(s => 
@@ -187,12 +179,8 @@ public class PairingsCommandTest
     {
         // Arrange
         _context.Target.Returns("https://pastebin.com/abc123");
-        _httpService.GetAsync<string>(
-            Arg.Any<string>(),
-            Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<IDictionary<string, string>>(),
-            Arg.Any<bool>(),
-            true,
+        _httpService.SendForStringAsync(
+            Arg.Any<HttpRequest>(),
             Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<string> { Data = "" });
 

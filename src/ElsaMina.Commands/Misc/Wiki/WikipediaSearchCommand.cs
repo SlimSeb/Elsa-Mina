@@ -78,9 +78,9 @@ public class WikipediaSearchCommand : Command
             ["piprop"] = "thumbnail",
             ["pithumbsize"] = "200"
         };
-        var pageDataResponse = await _httpService.GetAsync<WikipediaExtractResponse>(
-            string.Format(WIKIPEDIA_API_URL, languageCode), queryParams: queryParameters,
-            cancellationToken: cancellationToken);
+        var pageDataResponse = await _httpService.SendAsync<WikipediaExtractResponse>(
+            HttpRequest.Get(string.Format(WIKIPEDIA_API_URL, languageCode)).WithQueryParameters(queryParameters),
+            cancellationToken);
         var pageData = pageDataResponse.Data?.Query?.Pages?.Values.FirstOrDefault();
         return pageData;
     }
@@ -97,9 +97,9 @@ public class WikipediaSearchCommand : Command
             ["format"] = "json"
         };
 
-        var listQueryResponse = await _httpService.GetAsync<WikipediaApiSearchResponse>(
-            string.Format(WIKIPEDIA_API_URL, languageCode), queryParams: queryParameters,
-            cancellationToken: cancellationToken);
+        var listQueryResponse = await _httpService.SendAsync<WikipediaApiSearchResponse>(
+            HttpRequest.Get(string.Format(WIKIPEDIA_API_URL, languageCode)).WithQueryParameters(queryParameters),
+            cancellationToken);
         var pages = listQueryResponse.Data?.Query?.Pages;
         if (pages == null || pages.Count == 0)
         {

@@ -71,8 +71,8 @@ public abstract class WikiMediaSearchCommand : Command
             ["prop"] = "pageprops",
             ["format"] = "json"
         };
-        var response = await _httpService.GetAsync<WikipediaApiSearchResponse>(
-            ApiUrl, queryParams: queryParameters, cancellationToken: cancellationToken);
+        var response = await _httpService.SendAsync<WikipediaApiSearchResponse>(
+            HttpRequest.Get(ApiUrl).WithQueryParameters(queryParameters), cancellationToken);
         var pages = response.Data?.Query?.Pages;
         if (pages == null || pages.Count == 0)
         {
@@ -106,8 +106,8 @@ public abstract class WikiMediaSearchCommand : Command
             ["pageid"] = pageId.ToString(),
             ["prop"] = "wikitext"
         };
-        var response = await _httpService.GetAsync<PokepediaParseResponse>(
-            ApiUrl, queryParams: queryParameters, cancellationToken: cancellationToken);
+        var response = await _httpService.SendAsync<PokepediaParseResponse>(
+            HttpRequest.Get(ApiUrl).WithQueryParameters(queryParameters), cancellationToken);
         return response.Data?.Parse?.Wikitext?.Content ?? string.Empty;
     }
 
@@ -122,8 +122,8 @@ public abstract class WikiMediaSearchCommand : Command
             ["piprop"] = "thumbnail",
             ["pithumbsize"] = "200"
         };
-        var response = await _httpService.GetAsync<WikipediaExtractResponse>(
-            ApiUrl, queryParams: queryParameters, cancellationToken: cancellationToken);
+        var response = await _httpService.SendAsync<WikipediaExtractResponse>(
+            HttpRequest.Get(ApiUrl).WithQueryParameters(queryParameters), cancellationToken);
         return response.Data?.Query?.Pages?.Values.FirstOrDefault()?.Thumbnail;
     }
 

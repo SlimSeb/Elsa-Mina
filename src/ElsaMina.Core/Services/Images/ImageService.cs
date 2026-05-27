@@ -21,7 +21,7 @@ public class ImageService : IImageService
     {
         try
         {
-            var stream = await _httpService.GetStreamAsync(url, cancellationToken);
+            var stream = await _httpService.SendForStreamAsync(HttpRequest.Get(url), cancellationToken);
             var imageInfo = IMAGE_IDENTIFIER.Identify(stream);
             return imageInfo != null
                 ? (imageInfo.Width, imageInfo.Height)

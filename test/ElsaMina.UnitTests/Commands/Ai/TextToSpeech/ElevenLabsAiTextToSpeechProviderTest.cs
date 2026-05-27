@@ -3,12 +3,17 @@ using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.FileSharing;
+using Newtonsoft.Json;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Ai.TextToSpeech;
 
 public class ElevenLabsAiTextToSpeechProviderTest
 {
+    private static ElevenLabsRequestDto ReadRequestBody(HttpRequest request) =>
+        JsonConvert.DeserializeObject<ElevenLabsRequestDto>(
+            request.Body.CreateContent().ReadAsStringAsync().GetAwaiter().GetResult());
+
     private IConfiguration _mockConfiguration;
     private IHttpService _mockHttpService;
     private IFileSharingService _mockFileSharingService;
@@ -45,10 +50,8 @@ public class ElevenLabsAiTextToSpeechProviderTest
         // Arrange
         var mockStream = new MemoryStream();
         _mockConfiguration.ElevenLabsApiKey.Returns("valid-api-key");
-        _mockHttpService.DownloadContentWithPostAsync(
-            Arg.Any<string>(),
-            Arg.Any<object>(),
-            Arg.Any<Dictionary<string, string>>(),
+        _mockHttpService.SendForStreamAsync(
+            Arg.Any<HttpRequest>(),
             Arg.Any<CancellationToken>()).Returns(mockStream);
         _mockFileSharingService.CreateFileAsync(
             Arg.Any<Stream>(),
@@ -70,10 +73,8 @@ public class ElevenLabsAiTextToSpeechProviderTest
         // Arrange
         var mockStream = new MemoryStream();
         _mockConfiguration.ElevenLabsApiKey.Returns("valid-api-key");
-        _mockHttpService.DownloadContentWithPostAsync(
-            Arg.Any<string>(),
-            Arg.Any<object>(),
-            Arg.Any<Dictionary<string, string>>(),
+        _mockHttpService.SendForStreamAsync(
+            Arg.Any<HttpRequest>(),
             Arg.Any<CancellationToken>()).Returns(mockStream);
         _mockFileSharingService.CreateFileAsync(
             Arg.Any<Stream>(),
@@ -88,10 +89,12 @@ public class ElevenLabsAiTextToSpeechProviderTest
         await _provider.GetTextToSpeechAudioUrlAsync(text, VoiceType.Male, cancellationToken);
 
         // Assert
-        await _mockHttpService.Received(1).DownloadContentWithPostAsync(
-            "https://api.elevenlabs.io/v1/text-to-speech/Qrl71rx6Yg8RvyPYRGCQ",
-            Arg.Is<ElevenLabsRequestDto>(dto => dto.Text == text && dto.ModelId == "eleven_multilingual_v2"),
-            Arg.Is<Dictionary<string, string>>(headers => headers["xi-api-key"] == "valid-api-key"),
+        await _mockHttpService.Received(1).SendForStreamAsync(
+            Arg.Is<HttpRequest>(request =>
+                request.Uri == "https://api.elevenlabs.io/v1/text-to-speech/Qrl71rx6Yg8RvyPYRGCQ" &&
+                ReadRequestBody(request).Text == text &&
+                ReadRequestBody(request).ModelId == "eleven_multilingual_v2" &&
+                request.Headers["xi-api-key"] == "valid-api-key"),
             cancellationToken);
     }
 }

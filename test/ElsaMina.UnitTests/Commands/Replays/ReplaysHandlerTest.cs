@@ -45,7 +45,7 @@ public class ReplaysHandlerTest
         await _replaysHandler.HandleMessageAsync(_context);
 
         // Assert
-        await _httpService.DidNotReceiveWithAnyArgs().GetAsync<ReplayDto>(default);
+        await _httpService.DidNotReceiveWithAnyArgs().SendAsync<ReplayDto>(default);
     }
 
     [Test]
@@ -60,7 +60,7 @@ public class ReplaysHandlerTest
         await _replaysHandler.HandleMessageAsync(_context);
 
         // Assert
-        await _httpService.DidNotReceiveWithAnyArgs().GetAsync<ReplayDto>(default);
+        await _httpService.DidNotReceiveWithAnyArgs().SendAsync<ReplayDto>(default);
     }
 
     [Test]
@@ -81,7 +81,7 @@ public class ReplaysHandlerTest
             Log = "sample-log-data"
         };
 
-        _httpService.GetAsync<ReplayDto>(replayUrl + ".json")
+        _httpService.SendAsync<ReplayDto>(Arg.Is<HttpRequest>(request => request.Uri == replayUrl + ".json"))
             .Returns(new HttpResponse<ReplayDto> { Data = replayData });
         _templatesManager.GetTemplateAsync("Replays/ReplayPreview", Arg.Any<ReplayPreviewViewModel>())
             .Returns("sample-html-template");
@@ -90,7 +90,8 @@ public class ReplaysHandlerTest
         await _replaysHandler.HandleMessageAsync(_context);
 
         // Assert
-        await _httpService.Received(1).GetAsync<ReplayDto>(replayUrl + ".json");
+        await _httpService.Received(1).SendAsync<ReplayDto>(
+            Arg.Is<HttpRequest>(request => request.Uri == replayUrl + ".json"));
         _context.Received(1).ReplyHtml("sample-html-template");
     }
 
@@ -103,7 +104,7 @@ public class ReplaysHandlerTest
             .Returns("true");
         _context.Message.Returns(replayUrl);
 
-        _httpService.GetAsync<ReplayDto>(replayUrl + ".json").Throws(new Exception("Request failed"));
+        _httpService.SendAsync<ReplayDto>(Arg.Is<HttpRequest>(request => request.Uri == replayUrl + ".json")).Throws(new Exception("Request failed"));
 
         // Act
         await _replaysHandler.HandleMessageAsync(_context);
@@ -134,7 +135,7 @@ public class ReplaysHandlerTest
         };
         var expectedDate = TimeZoneInfo.ConvertTime(DateTimeOffset.FromUnixTimeSeconds(replayData.UploadTime), customTimeZone);
 
-        _httpService.GetAsync<ReplayDto>(replayUrl + ".json")
+        _httpService.SendAsync<ReplayDto>(Arg.Is<HttpRequest>(request => request.Uri == replayUrl + ".json"))
             .Returns(new HttpResponse<ReplayDto> { Data = replayData });
         _templatesManager.GetTemplateAsync("Replays/ReplayPreview", Arg.Any<ReplayPreviewViewModel>())
             .Returns("sample-html-template");

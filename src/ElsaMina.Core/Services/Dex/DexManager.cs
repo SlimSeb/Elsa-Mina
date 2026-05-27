@@ -23,7 +23,7 @@ public class DexManager : IDexManager
     {
         try
         {
-            Pokedex = (await _httpService.GetAsync<Pokemon[]>(DEX_URL, cancellationToken: cancellationToken)).Data;
+            Pokedex = (await _httpService.SendAsync<Pokemon[]>(HttpRequest.Get(DEX_URL), cancellationToken)).Data;
             Moves = await ReadJsonFileAsync<Dictionary<string, MoveData>>("moves.json", cancellationToken);
             Log.Information("Dex: loaded {0} Pokémon entries and {1} moves", Pokedex.Length, Moves.Count);
         }
