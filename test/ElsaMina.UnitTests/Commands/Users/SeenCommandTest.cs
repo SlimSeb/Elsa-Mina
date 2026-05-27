@@ -34,6 +34,18 @@ public class SeenCommandTest
     }
 
     [Test]
+    public async Task Test_IsWhiteListOnly_ShouldBeTrue()
+    {
+        // Arrange & Act
+        var options = CreateOptions();
+        await using var db = new BotDbContext(options);
+        var command = new SeenCommand(CreateFactoryReturning(db));
+        
+        // Assert
+        Assert.That(command.IsWhitelistOnly, Is.True);
+    }
+
+    [Test]
     public async Task RunAsync_ShouldReplyHelp_WhenTargetIsMissing()
     {
         // Arrange

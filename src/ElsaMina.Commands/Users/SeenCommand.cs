@@ -1,6 +1,5 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
@@ -19,7 +18,7 @@ public class SeenCommand : Command
     }
 
     public override bool IsAllowedInPrivateMessage => true;
-    public override Rank RequiredRank => Rank.Regular;
+    public override bool IsWhitelistOnly => true;
 
     public override string HelpMessageKey => "seen_command_help";
 
