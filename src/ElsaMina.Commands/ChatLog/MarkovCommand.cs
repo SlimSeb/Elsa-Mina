@@ -31,7 +31,7 @@ public class MarkovCommand : Command
         _randomService = randomService;
     }
 
-    public override Rank RequiredRank => Rank.Voiced;
+    public override Rank RequiredRank => Rank.Admin;
     public override string HelpMessageKey => "markov_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
