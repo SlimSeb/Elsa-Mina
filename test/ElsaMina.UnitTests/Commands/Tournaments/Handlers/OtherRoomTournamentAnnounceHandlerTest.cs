@@ -28,7 +28,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
         _resourcesService = Substitute.For<IResourcesService>();
         _roomsManager = Substitute.For<IRoomsManager>();
 
-        _configuration.TourAnnounces.Returns(new Dictionary<string, IEnumerable<string>>());
+        _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>());
         _configuration.DefaultLocaleCode.Returns("en-US");
         _formatsManager.GetCleanFormat(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>());
         _resourcesService.GetString(Arg.Any<string>(), Arg.Any<CultureInfo>()).Returns("Tournament announced: {0} in {1}");
@@ -70,7 +70,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldDoNothing_WhenTourAnnouncesIsEmpty()
     {
-        _configuration.TourAnnounces.Returns(new Dictionary<string, IEnumerable<string>>());
+        _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>());
         var parts = new[] { "", "tournament", "create", "gen9ou" };
 
         await _handler.HandleReceivedMessageAsync(parts, "sourceroom");
@@ -81,7 +81,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldDoNothing_WhenRoomIdDoesNotMatchBroadcastingRoom()
     {
-        _configuration.TourAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
+        _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
             { "broadcastroom", new[] { "receivingroom" } }
         });
@@ -95,7 +95,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldSayToReceivingRoom_WhenRoomIdMatchesBroadcastingRoom()
     {
-        _configuration.TourAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
+        _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
             { "broadcastroom", new[] { "receivingroom" } }
         });
@@ -109,7 +109,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldSayToAllReceivingRooms_WhenMultipleReceivingRoomsConfigured()
     {
-        _configuration.TourAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
+        _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
             { "broadcastroom", new[] { "room1", "room2", "room3" } }
         });
@@ -125,7 +125,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldCallGetCleanFormat_WithFormatFromParts()
     {
-        _configuration.TourAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
+        _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
             { "broadcastroom", new[] { "receivingroom" } }
         });
@@ -143,7 +143,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
         var room = Substitute.For<IRoom>();
         room.Culture.Returns(roomCulture);
         _roomsManager.GetRoom("receivingroom").Returns(room);
-        _configuration.TourAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
+        _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
             { "broadcastroom", new[] { "receivingroom" } }
         });
@@ -159,7 +159,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     {
         _roomsManager.GetRoom("receivingroom").Returns((IRoom)null);
         _configuration.DefaultLocaleCode.Returns("en-US");
-        _configuration.TourAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
+        _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
             { "broadcastroom", new[] { "receivingroom" } }
         });
@@ -177,7 +177,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
         _formatsManager.GetCleanFormat("gen9ou").Returns("[Gen 9] OU");
         _resourcesService.GetString("tour_announce_message", Arg.Any<CultureInfo>())
             .Returns("A tournament in {0} was announced in {1}!");
-        _configuration.TourAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
+        _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
             { "broadcastroom", new[] { "receivingroom" } }
         });
@@ -192,7 +192,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldOnlySendToMatchingBroadcastRoom_WhenMultipleBroadcastRoomsConfigured()
     {
-        _configuration.TourAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
+        _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
             { "room-a", new[] { "receiver-a" } },
             { "room-b", new[] { "receiver-b" } }

@@ -28,6 +28,7 @@ using ElsaMina.Commands.Development;
 using ElsaMina.Commands.Development.Commands;
 using ElsaMina.Commands.Development.HandlerDashboard;
 using ElsaMina.Commands.Development.LagTest;
+using ElsaMina.Commands.Games;
 using ElsaMina.Commands.Games.Blackjack;
 using ElsaMina.Commands.Games.ConnectFour;
 using ElsaMina.Commands.Games.FloodIt;
@@ -348,6 +349,7 @@ public partial class CommandModule : Module
         builder.RegisterHandler<StaffIntroContentHandler>();
         builder.RegisterHandler<ChatLogHandler>();
         builder.RegisterHandler<HelpHandler>();
+        builder.RegisterHandler<HangmanAnnounceHandler>();
 
         builder.RegisterCommand<AddWatchlistCommand>();
         builder.RegisterCommand<RemoveWatchlistCommand>();

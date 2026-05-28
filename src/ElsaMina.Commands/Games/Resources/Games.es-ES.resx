@@ -741,4 +741,7 @@
     <data name="rps_game_cancelled" xml:space="preserve">
         <value>El juego de Piedra Papel Tijeras ha sido cancelado.</value>
     </data>
+    <data name="hangman_started_in" xml:space="preserve">
+        <value>A new hangman game was created in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
 </root>
