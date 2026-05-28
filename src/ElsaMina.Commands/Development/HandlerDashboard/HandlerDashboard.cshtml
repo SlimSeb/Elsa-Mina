@@ -1,0 +1,44 @@
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Development.HandlerDashboard.HandlerDashboardViewModel>
+
+@{
+    const string borderColor = StyleConstants.PRIMARY_BORDER_COLOR;
+    const string bgColor = StyleConstants.PRIMARY_BACKGROUND_COLOR;
+    const string cellStyle = $"border:1px solid {borderColor};padding:4px";
+    const string headerBg = $"background:{bgColor}";
+    const string btnGreen = "background:#4CAF50;color:white;border:none;padding:3px 10px;cursor:pointer;border-radius:3px";
+    const string btnRed = "background:#f44336;color:white;border:none;padding:3px 10px;cursor:pointer;border-radius:3px";
+}
+
+<div style="padding:8px;font-family:Verdana,sans-serif">
+    <h2 style="text-align:center;color:#6688AA">@GetString("handlerdashboard_title")</h2>
+    <hr/>
+    <table style="border-collapse:collapse;width:100%">
+        <tr style="@headerBg">
+            <th style="@cellStyle">@GetString("handlerdashboard_col_handler")</th>
+            <th style="@cellStyle">@GetString("handlerdashboard_col_status")</th>
+            <th style="@cellStyle">@GetString("handlerdashboard_col_action")</th>
+        </tr>
+        @foreach (var handler in Model.Handlers)
+        {
+            <tr>
+                <td style="@cellStyle"><b>@handler.Name</b></td>
+                <td style="@cellStyle">
+                    @if (handler.IsEnabled)
+                    {
+                        <span style="color:#4CAF50">@GetString("handlerdashboard_enabled")</span>
+                    }
+                    else
+                    {
+                        <span style="color:#f44336">@GetString("handlerdashboard_disabled")</span>
+                    }
+                </td>
+                <td style="@cellStyle">
+                    <button class="button" name="send" value="/w @Model.BotName,@(Model.Trigger)hdash toggle @handler.Identifier" style="@(handler.IsEnabled ? btnRed : btnGreen)">
+                        @(handler.IsEnabled ? GetString("handlerdashboard_btn_disable") : GetString("handlerdashboard_btn_enable"))
+                    </button>
+                </td>
+            </tr>
+        }
+    </table>
+</div>

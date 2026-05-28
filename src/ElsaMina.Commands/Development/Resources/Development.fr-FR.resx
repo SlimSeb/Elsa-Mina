@@ -72,4 +72,43 @@
     <data name="mayday_deactivated" xml:space="preserve">
         <value>Mode mayday désactivé. Le bot répond à nouveau à tout le monde.</value>
     </data>
+    <data name="togglehandler_help" xml:space="preserve">
+        <value>Liste les handlers, ou active/désactive l'un d'eux par son nom. Usage : -togglehandler [nom]</value>
+    </data>
+    <data name="togglehandler_list_title" xml:space="preserve">
+        <value>Handlers</value>
+    </data>
+    <data name="togglehandler_not_found" xml:space="preserve">
+        <value>Aucun handler nommé '{0}' n'a été trouvé.</value>
+    </data>
+    <data name="togglehandler_enabled" xml:space="preserve">
+        <value>Le handler '{0}' a été activé.</value>
+    </data>
+    <data name="togglehandler_disabled" xml:space="preserve">
+        <value>Le handler '{0}' a été désactivé.</value>
+    </data>
+    <data name="handlerdashboard_title" xml:space="preserve">
+        <value>Handlers</value>
+    </data>
+    <data name="handlerdashboard_col_handler" xml:space="preserve">
+        <value>Handler</value>
+    </data>
+    <data name="handlerdashboard_col_status" xml:space="preserve">
+        <value>État</value>
+    </data>
+    <data name="handlerdashboard_col_action" xml:space="preserve">
+        <value>Action</value>
+    </data>
+    <data name="handlerdashboard_enabled" xml:space="preserve">
+        <value>Activé</value>
+    </data>
+    <data name="handlerdashboard_disabled" xml:space="preserve">
+        <value>Désactivé</value>
+    </data>
+    <data name="handlerdashboard_btn_enable" xml:space="preserve">
+        <value>Activer</value>
+    </data>
+    <data name="handlerdashboard_btn_disable" xml:space="preserve">
+        <value>Désactiver</value>
+    </data>
 </root>

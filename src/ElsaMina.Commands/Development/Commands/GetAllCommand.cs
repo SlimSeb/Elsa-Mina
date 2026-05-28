@@ -33,9 +33,9 @@ public class GetAllCommand : Command
             .ToList();
 
         var categories = commands
-            .GroupBy(c => c.Category)
-            .OrderBy(g => g.Key)
-            .Select(g => string.IsNullOrEmpty(g.Key) ? "Other" : g.Key)
+            .GroupBy(command => command.Category)
+            .OrderBy(grouping => grouping.Key)
+            .Select(grouping => string.IsNullOrEmpty(grouping.Key) ? "Other" : grouping.Key)
             .ToList();
 
         var categoryIndex = int.TryParse(context.Target.Trim(), out var parsed)

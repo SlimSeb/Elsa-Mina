@@ -26,6 +26,7 @@ using ElsaMina.Commands.ChatLog;
 using ElsaMina.Commands.CustomCommands;
 using ElsaMina.Commands.Development;
 using ElsaMina.Commands.Development.Commands;
+using ElsaMina.Commands.Development.HandlerDashboard;
 using ElsaMina.Commands.Development.LagTest;
 using ElsaMina.Commands.Games.Blackjack;
 using ElsaMina.Commands.Games.ConnectFour;
@@ -167,6 +168,8 @@ public partial class CommandModule : Module
         builder.RegisterCommand<KillCommand>();
         builder.RegisterCommand<MaydayCommand>();
         builder.RegisterCommand<FeatureSwitchCommand>();
+        builder.RegisterCommand<ToggleHandlerCommand>();
+        builder.RegisterCommand<HandlerDashboardCommand>();
         builder.RegisterCommand<StopConnectionCommand>();
         builder.RegisterCommand<DeleteCustomCommand>();
         builder.RegisterCommand<EditCustomCommand>();

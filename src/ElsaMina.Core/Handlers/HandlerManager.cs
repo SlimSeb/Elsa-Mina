@@ -22,6 +22,8 @@ public class HandlerManager : IHandlerManager
 
     public bool IsInitialized { get; private set; }
 
+    public IReadOnlyCollection<IHandler> Handlers => _handlers.Values.ToList();
+
     public void Initialize()
     {
         var handlers = _containerService.Resolve<IEnumerable<IHandler>>().ToList();
