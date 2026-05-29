@@ -1,6 +1,7 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers.DefaultHandlers;
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Misc.Help;
 
@@ -17,7 +18,9 @@ public class HelpHandler : PrivateMessageHandler
 
     public override Task HandleMessageAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        if (_repliedToUsers.Contains(context.Sender.UserId) || context.Message.StartsWith(_configuration.Trigger))
+        if (_repliedToUsers.Contains(context.Sender.UserId)
+            || context.Message.StartsWith(_configuration.Trigger) ||
+            context.Sender.UserId == _configuration.Name.ToLowerAlphaNum())
         {
             return Task.CompletedTask;
         }
