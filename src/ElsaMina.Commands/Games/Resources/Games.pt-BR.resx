@@ -748,6 +748,6 @@
         <value>O jogo de Pedra Papel Tesoura foi cancelado.</value>
     </data>
     <data name="hangman_started_in" xml:space="preserve">
-        <value>A new hangman game was created in &lt;&lt;{0}&gt;&gt;</value>
+        <value>Um novo jogo da forca foi criado em &lt;&lt;{0}&gt;&gt;</value>
     </data>
 </root>

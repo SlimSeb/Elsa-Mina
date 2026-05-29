@@ -685,6 +685,6 @@
         <value>Das Schere Stein Papier Spiel wurde abgebrochen.</value>
     </data>
     <data name="hangman_started_in" xml:space="preserve">
-        <value>A new hangman game was created in &lt;&lt;{0}&gt;&gt;</value>
+        <value>Ein neues Galgenmännchen-Spiel wurde in &lt;&lt;{0}&gt;&gt; erstellt</value>
     </data>
 </root>

@@ -748,6 +748,6 @@
         <value>Le jeu de Pierre-Papier-Ciseaux a été annulé.</value>
     </data>
     <data name="hangman_started_in" xml:space="preserve">
-        <value>A new hangman game was created in &lt;&lt;{0}&gt;&gt;</value>
+        <value>Une nouvelle partie de pendu a été créée dans &lt;&lt;{0}&gt;&gt;</value>
     </data>
 </root>

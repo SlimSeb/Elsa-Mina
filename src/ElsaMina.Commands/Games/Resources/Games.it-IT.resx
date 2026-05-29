@@ -742,6 +742,6 @@
         <value>La partita di Carta Forbice Sasso è stata annullata.</value>
     </data>
     <data name="hangman_started_in" xml:space="preserve">
-        <value>A new hangman game was created in &lt;&lt;{0}&gt;&gt;</value>
+        <value>È stata creata una nuova partita dell'impiccato in &lt;&lt;{0}&gt;&gt;</value>
     </data>
 </root>
