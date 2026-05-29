@@ -85,8 +85,9 @@ public class GoogleSheetProvider : ISheetProvider
     /// </summary>
     private async Task<string> FindSpreadsheetIdAsync(string name, CancellationToken cancellationToken = default)
     {
+        var escapedName = name.Replace(@"\", @"\\").Replace("'", @"\'");
         var request = _drive.Files.List();
-        request.Q = $"name = '{name}' and mimeType = 'application/vnd.google-apps.spreadsheet'";
+        request.Q = $"name = '{escapedName}' and mimeType = 'application/vnd.google-apps.spreadsheet'";
         request.Fields = "files(id, name)";
 
         var response = await request.ExecuteAsync(cancellationToken);
