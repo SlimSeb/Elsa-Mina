@@ -34,7 +34,7 @@ public class ArcadeHallOfFameCommand : Command
             ? Math.Max(1, parsedPage)
             : 1;
 
-        var sheet = await _sheetProvider.GetSheetAsync(_configuration.ArcadeSpreadsheetName,
+        using var sheet = await _sheetProvider.GetSheetAsync(_configuration.ArcadeSpreadsheetName,
             _configuration.ArcadeHallOfFameSheetName, cancellationToken);
         var allEntries = await GetHallOfFameEntriesAsync(sheet, cancellationToken);
 
