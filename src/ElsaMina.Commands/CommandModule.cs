@@ -348,8 +348,8 @@ public partial class CommandModule : Module
         builder.RegisterHandler<StaffIntroChangeHandler>();
         builder.RegisterHandler<StaffIntroContentHandler>();
         builder.RegisterHandler<ChatLogHandler>();
-        builder.RegisterHandler<HelpHandler>(); // test needed!!
-        builder.RegisterHandler<HangmanAnnounceHandler>(); // this too
+        builder.RegisterHandler<HelpHandler>();
+        builder.RegisterHandler<HangmanAnnounceHandler>();
 
         builder.RegisterCommand<AddWatchlistCommand>();
         builder.RegisterCommand<RemoveWatchlistCommand>();
