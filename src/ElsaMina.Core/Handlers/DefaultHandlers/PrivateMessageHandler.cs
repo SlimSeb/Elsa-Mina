@@ -8,5 +8,6 @@ public abstract class PrivateMessageHandler : MessageHandler
     {
     }
 
+    public override IReadOnlySet<string> HandledMessageTypes => new HashSet<string> { "pm" };
     protected override ContextType HandledContextType => ContextType.Pm;
 }

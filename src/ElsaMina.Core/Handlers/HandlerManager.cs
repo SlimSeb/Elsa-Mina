@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Telemetry;

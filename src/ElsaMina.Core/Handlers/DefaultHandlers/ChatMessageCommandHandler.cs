@@ -15,5 +15,7 @@ public sealed class ChatMessageCommandHandler : CommandMessageHandler
     {
     }
 
+    public override IReadOnlySet<string> HandledMessageTypes => new HashSet<string> { "c:" };
+
     protected override ContextType HandledContextType => ContextType.Room;
 }

@@ -14,5 +14,6 @@ public sealed class PrivateMessageCommandHandler : CommandMessageHandler
     {
     }
 
+    public override IReadOnlySet<string> HandledMessageTypes => new HashSet<string> { "pm" };
     protected override ContextType HandledContextType => ContextType.Pm;
 }

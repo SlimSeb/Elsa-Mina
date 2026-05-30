@@ -13,8 +13,6 @@ public abstract class MessageHandler : Handler
 
     protected abstract ContextType HandledContextType { get; }
 
-    public override IReadOnlySet<string> HandledMessageTypes => (HashSet<string>)["c:", "pm"];
-
     public sealed override async Task HandleReceivedMessageAsync(string[] parts, string roomId = null, CancellationToken cancellationToken = default)
     {
         var context = _contextFactory.TryBuildContextFromReceivedMessage(parts, roomId);
