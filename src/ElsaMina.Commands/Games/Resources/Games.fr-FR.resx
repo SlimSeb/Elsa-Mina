@@ -750,4 +750,190 @@
     <data name="hangman_started_in" xml:space="preserve">
         <value>Une nouvelle partie de pendu a été créée dans &lt;&lt;{0}&gt;&gt;</value>
     </data>
+    <data name="tarot_title" xml:space="preserve">
+        <value>Tarot</value>
+    </data>
+    <data name="tarot_help" xml:space="preserve">
+        <value>Démarre une partie de Tarot (3 à 5 joueurs).</value>
+    </data>
+    <data name="tarot_already_running" xml:space="preserve">
+        <value>Une partie de Tarot est déjà en cours dans ce salon.</value>
+    </data>
+    <data name="tarot_other_game_running" xml:space="preserve">
+        <value>Un autre jeu est déjà en cours dans ce salon.</value>
+    </data>
+    <data name="tarot_game_created" xml:space="preserve">
+        <value>{0} a lancé une partie de Tarot !</value>
+    </data>
+    <data name="tarot_not_running" xml:space="preserve">
+        <value>Il n'y a pas de partie de Tarot en cours ici.</value>
+    </data>
+    <data name="tarot_join_already_started" xml:space="preserve">
+        <value>La partie a déjà commencé.</value>
+    </data>
+    <data name="tarot_join_full" xml:space="preserve">
+        <value>La partie est complète (5 joueurs max).</value>
+    </data>
+    <data name="tarot_join_already_joined" xml:space="preserve">
+        <value>Tu as déjà rejoint la partie.</value>
+    </data>
+    <data name="tarot_join_success" xml:space="preserve">
+        <value>{0} a rejoint la partie.</value>
+    </data>
+    <data name="tarot_start_already_started" xml:space="preserve">
+        <value>La partie a déjà commencé.</value>
+    </data>
+    <data name="tarot_start_not_a_player" xml:space="preserve">
+        <value>Seul un joueur ayant rejoint peut lancer la partie.</value>
+    </data>
+    <data name="tarot_start_not_enough_players" xml:space="preserve">
+        <value>Il faut au moins {0} joueurs pour commencer.</value>
+    </data>
+    <data name="tarot_bid_too_low" xml:space="preserve">
+        <value>{0}, ton enchère doit être supérieure à l'enchère actuelle.</value>
+    </data>
+    <data name="tarot_bidding_all_passed" xml:space="preserve">
+        <value>Tout le monde a passé. La donne est annulée.</value>
+    </data>
+    <data name="tarot_taker_announced" xml:space="preserve">
+        <value>{0} est le preneur avec une {1} !</value>
+    </data>
+    <data name="tarot_call_must_be_king" xml:space="preserve">
+        <value>Tu dois appeler un roi.</value>
+    </data>
+    <data name="tarot_king_called" xml:space="preserve">
+        <value>{0} a appelé le {1}.</value>
+    </data>
+    <data name="tarot_dog_revealed" xml:space="preserve">
+        <value>Le chien : {0}</value>
+    </data>
+    <data name="tarot_discard_not_in_hand" xml:space="preserve">
+        <value>Ces cartes ne sont pas toutes dans ta main.</value>
+    </data>
+    <data name="tarot_discard_forbidden_card" xml:space="preserve">
+        <value>Tu ne peux pas écarter de rois ni de bouts.</value>
+    </data>
+    <data name="tarot_discard_trumps_revealed" xml:space="preserve">
+        <value>Atouts mis à l'écart (révélés) : {0}</value>
+    </data>
+    <data name="tarot_play_not_in_hand" xml:space="preserve">
+        <value>Tu n'as pas cette carte.</value>
+    </data>
+    <data name="tarot_play_illegal" xml:space="preserve">
+        <value>Tu ne peux pas jouer cette carte maintenant.</value>
+    </data>
+    <data name="tarot_partner_revealed" xml:space="preserve">
+        <value>{0} est le partenaire du preneur !</value>
+    </data>
+    <data name="tarot_trick_won" xml:space="preserve">
+        <value>{0} remporte le pli n°{1}.</value>
+    </data>
+    <data name="tarot_game_cancelled" xml:space="preserve">
+        <value>La partie de Tarot a été annulée.</value>
+    </data>
+    <data name="tarot_bid_unknown" xml:space="preserve">
+        <value>Enchère inconnue. Utilise : passe, petite, garde, gardesans, gardecontre.</value>
+    </data>
+    <data name="tarot_card_unknown" xml:space="preserve">
+        <value>Carte inconnue : {0}</value>
+    </data>
+    <data name="tarot_bid_pass" xml:space="preserve">
+        <value>Passe</value>
+    </data>
+    <data name="tarot_bid_petite" xml:space="preserve">
+        <value>Petite</value>
+    </data>
+    <data name="tarot_bid_garde" xml:space="preserve">
+        <value>Garde</value>
+    </data>
+    <data name="tarot_bid_gardesans" xml:space="preserve">
+        <value>Garde Sans</value>
+    </data>
+    <data name="tarot_bid_gardecontre" xml:space="preserve">
+        <value>Garde Contre</value>
+    </data>
+    <data name="tarot_lobby_intro" xml:space="preserve">
+        <value>Une nouvelle partie de Tarot va commencer ! (3 à 5 joueurs)</value>
+    </data>
+    <data name="tarot_players_label" xml:space="preserve">
+        <value>Joueurs</value>
+    </data>
+    <data name="tarot_lobby_no_players" xml:space="preserve">
+        <value>personne pour l'instant</value>
+    </data>
+    <data name="tarot_lobby_join_button" xml:space="preserve">
+        <value>Rejoindre</value>
+    </data>
+    <data name="tarot_lobby_start_button" xml:space="preserve">
+        <value>Démarrer</value>
+    </data>
+    <data name="tarot_lobby_hint" xml:space="preserve">
+        <value>Tape {0}tarotjoin pour rejoindre, {0}tarotstart pour lancer ({1}+ joueurs).</value>
+    </data>
+    <data name="tarot_bidding_phase" xml:space="preserve">
+        <value>Enchères</value>
+    </data>
+    <data name="tarot_bidding_thinking" xml:space="preserve">
+        <value>réfléchit...</value>
+    </data>
+    <data name="tarot_kingcall_phase" xml:space="preserve">
+        <value>{0} appelle un roi pour trouver un partenaire...</value>
+    </data>
+    <data name="tarot_discard_phase" xml:space="preserve">
+        <value>{0} a pris le chien et compose son écart...</value>
+    </data>
+    <data name="tarot_dog_label" xml:space="preserve">
+        <value>Chien</value>
+    </data>
+    <data name="tarot_taker_label" xml:space="preserve">
+        <value>Preneur</value>
+    </data>
+    <data name="tarot_contract_label" xml:space="preserve">
+        <value>Contrat</value>
+    </data>
+    <data name="tarot_called_label" xml:space="preserve">
+        <value>Appelé</value>
+    </data>
+    <data name="tarot_partner_is" xml:space="preserve">
+        <value>Partenaire : {0}</value>
+    </data>
+    <data name="tarot_trick_progress" xml:space="preserve">
+        <value>Pli {0} / {1}</value>
+    </data>
+    <data name="tarot_waiting_for" xml:space="preserve">
+        <value>En attente de</value>
+    </data>
+    <data name="tarot_your_hand" xml:space="preserve">
+        <value>Ta main</value>
+    </data>
+    <data name="tarot_your_turn_bid" xml:space="preserve">
+        <value>C'est à toi d'enchérir :</value>
+    </data>
+    <data name="tarot_your_turn_call" xml:space="preserve">
+        <value>Appelle un roi pour trouver ton partenaire :</value>
+    </data>
+    <data name="tarot_your_turn_discard" xml:space="preserve">
+        <value>Compose ton écart ({0}/{1}) : clique sur les cartes pour les ajouter ou les retirer.</value>
+    </data>
+    <data name="tarot_result_title" xml:space="preserve">
+        <value>Tarot - Résultats</value>
+    </data>
+    <data name="tarot_result_no_score" xml:space="preserve">
+        <value>Aucun score à afficher.</value>
+    </data>
+    <data name="tarot_result_contract_made" xml:space="preserve">
+        <value>Contrat réussi !</value>
+    </data>
+    <data name="tarot_result_contract_failed" xml:space="preserve">
+        <value>Contrat chuté !</value>
+    </data>
+    <data name="tarot_result_points" xml:space="preserve">
+        <value>Preneur : {0} pts (objectif {1}, {2} bout(s))</value>
+    </data>
+    <data name="tarot_result_breakdown" xml:space="preserve">
+        <value>({0} base x{1} = {2})</value>
+    </data>
+    <data name="tarot_result_score_label" xml:space="preserve">
+        <value>Score</value>
+    </data>
 </root>

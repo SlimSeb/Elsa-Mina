@@ -41,6 +41,7 @@ using ElsaMina.Commands.Games.GuessingGame.PokeDesc;
 using ElsaMina.Commands.Games.LightsOut;
 using ElsaMina.Commands.Games.PokeRace;
 using ElsaMina.Commands.Games.RockPaperScissors;
+using ElsaMina.Commands.Games.Tarot;
 using ElsaMina.Commands.Games.TwentyFortyEight;
 using ElsaMina.Commands.Games.VoltorbFlip;
 using ElsaMina.Commands.JoinPhrases;
@@ -402,6 +403,15 @@ public partial class CommandModule : Module
         builder.RegisterCommand<EndTwentyFortyEightCommand>();
         builder.RegisterCommand<TwentyFortyEightLeaderboardCommand>();
 
+        builder.RegisterCommand<StartTarotCommand>();
+        builder.RegisterCommand<JoinTarotCommand>();
+        builder.RegisterCommand<BeginTarotCommand>();
+        builder.RegisterCommand<BidTarotCommand>();
+        builder.RegisterCommand<CallKingTarotCommand>();
+        builder.RegisterCommand<DiscardTarotCommand>();
+        builder.RegisterCommand<PlayTarotCommand>();
+        builder.RegisterCommand<EndTarotCommand>();
+
         builder.RegisterType<CountriesGame>().AsSelf();
         builder.RegisterType<CapitalCitiesGame>().AsSelf();
         builder.RegisterType<ConnectFourGame>().AsSelf();
@@ -409,6 +419,7 @@ public partial class CommandModule : Module
         builder.RegisterType<VoltorbFlipGame>().AsSelf();
         builder.RegisterType<PokeRaceGame>().AsSelf();
         builder.RegisterType<RpsGame>().AsSelf();
+        builder.RegisterType<TarotGame>().AsSelf();
         builder.RegisterType<PokeDescGame>().AsSelf();
         builder.RegisterType<PokeCriesGame>().AsSelf();
         builder.RegisterType<GatekeepersGame>().AsSelf();

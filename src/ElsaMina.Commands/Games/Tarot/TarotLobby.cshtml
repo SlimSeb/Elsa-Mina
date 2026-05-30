@@ -1,0 +1,31 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Tarot.TarotViewModel>
+@using ElsaMina.Core.Utils
+
+<div style="background:#2d2535;color:white;padding:10px;border-radius:6px">
+    <h3 style="margin:0;text-align:center">🃏 @GetString("tarot_title") 🃏</h3>
+    <p style="text-align:center;margin:6px 0">@GetString("tarot_lobby_intro")</p>
+
+    <p style="text-align:center;margin:6px 0">
+        <b>@GetString("tarot_players_label") (@Model.Game.PlayerCount/@ElsaMina.Commands.Games.Tarot.TarotConstants.MAX_PLAYERS):</b>
+        @if (Model.Game.PlayerCount == 0)
+        {
+            <em>@GetString("tarot_lobby_no_players")</em>
+        }
+        else
+        {
+            foreach (var player in Model.Game.Players)
+            {
+                <b style="color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</b>
+                <text>&nbsp;&nbsp;</text>
+            }
+        }
+    </p>
+
+    <p style="text-align:center;margin:6px 0">
+        <button class="button" name="send" value="@(Model.Trigger)tarotjoin">@GetString("tarot_lobby_join_button")</button>
+        <button class="button" name="send" value="@(Model.Trigger)tarotstart">@GetString("tarot_lobby_start_button")</button>
+    </p>
+    <p style="text-align:center;color:#bbb;font-size:0.85em;margin:4px 0">
+        @GetString("tarot_lobby_hint", Model.Trigger, ElsaMina.Commands.Games.Tarot.TarotConstants.MIN_PLAYERS)
+    </p>
+</div>
