@@ -2,36 +2,34 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
 using ElsaMina.FileSharing;
+using Lusamine.Markovify;
 
 namespace ElsaMina.Commands.ChatLog;
 
 [NamedCommand("markov", Aliases = ["imitate", "randomsentence"])]
 public class MarkovCommand : Command
 {
-    private const string StartToken = "";
-    private const string EndToken = "";
-    private const int MinMessages = 20;
-    private const int MaxWords = 40;
+    private const int MIN_MESSAGES = 20;
+    private const int STATE_SIZE = 2;
+    private const int MAX_WORDS = 40;
+    private const int TRIES = 50;
 
     private readonly IFileSharingService _fileSharingService;
     private readonly IClockService _clockService;
     private readonly IConfiguration _configuration;
-    private readonly IRandomService _randomService;
 
     public MarkovCommand(IFileSharingService fileSharingService, IClockService clockService,
-        IConfiguration configuration, IRandomService randomService)
+        IConfiguration configuration)
     {
         _fileSharingService = fileSharingService;
         _clockService = clockService;
         _configuration = configuration;
-        _randomService = randomService;
     }
 
-    public override Rank RequiredRank => Rank.Admin;
+    public override Rank RequiredRank => Rank.Voiced;
     public override string HelpMessageKey => "markov_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
@@ -79,13 +77,18 @@ public class MarkovCommand : Command
             }
         }
 
-        if (messages.Count < MinMessages)
+        if (messages.Count < MIN_MESSAGES)
         {
             context.ReplyLocalizedMessage("markov_not_enough_data");
             return;
         }
 
-        var sentence = GenerateSentence(messages);
+        // Each chat message is treated as its own sentence, so NewlineText (which splits
+        // on line boundaries rather than punctuation) is the right model for chat logs
+        var corpus = string.Join('\n', messages);
+        var model = new NewlineText(corpus, stateSize: STATE_SIZE);
+        var sentence = model.MakeSentence(tries: TRIES, testOutput: false, maxWords: MAX_WORDS);
+
         if (string.IsNullOrWhiteSpace(sentence))
         {
             context.ReplyLocalizedMessage("markov_not_enough_data");
@@ -106,50 +109,5 @@ public class MarkovCommand : Command
         return !trimmed.StartsWith(_configuration.Trigger, StringComparison.Ordinal)
                && !trimmed.StartsWith('/')
                && !trimmed.StartsWith('!');
-    }
-
-    private string GenerateSentence(IReadOnlyList<string> messages)
-    {
-        var transitions = new Dictionary<string, List<string>>();
-        foreach (var message in messages)
-        {
-            var words = message.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            if (words.Length == 0)
-            {
-                continue;
-            }
-
-            var tokens = new List<string> { StartToken };
-            tokens.AddRange(words);
-            tokens.Add(EndToken);
-
-            for (var i = 0; i < tokens.Count - 1; i++)
-            {
-                var key = tokens[i];
-                if (!transitions.TryGetValue(key, out var nextWords))
-                {
-                    nextWords = [];
-                    transitions[key] = nextWords;
-                }
-
-                nextWords.Add(tokens[i + 1]);
-            }
-        }
-
-        var current = StartToken;
-        var result = new List<string>();
-        while (result.Count < MaxWords && transitions.TryGetValue(current, out var candidates))
-        {
-            var next = _randomService.RandomElement(candidates);
-            if (next == EndToken)
-            {
-                break;
-            }
-
-            result.Add(next);
-            current = next;
-        }
-
-        return string.Join(' ', result);
     }
 }
