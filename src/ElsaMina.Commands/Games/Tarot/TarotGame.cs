@@ -470,21 +470,20 @@ public class TarotGame : Game, ITarotGame
     private async Task ResolveTrickAsync()
     {
         var winner = CurrentTrick.DetermineWinner();
-        var (excuseOwner, tarotCard) = CurrentTrick.Plays.FirstOrDefault(play => play.Card.IsExcuse);
+        var (excuseOwner, excusePlayCard) = CurrentTrick.Plays.FirstOrDefault(play => play.Card.IsExcuse);
 
         foreach (var (_, card) in CurrentTrick.Plays.Where(play => !play.Card.IsExcuse))
         {
             winner.CapturedPile.Add(card);
         }
 
-        if (tarotCard is not null)
+        if (excusePlayCard is not null)
         {
-            excuseOwner.CapturedPile.Add(tarotCard);
+            excuseOwner.CapturedPile.Add(excusePlayCard);
 
             if (excuseOwner != winner)
             {
-                var lowCard = excuseOwner.CapturedPile
-                    .FirstOrDefault(card => !card.IsExcuse && card.HalfPoints == 1);
+                var lowCard = excuseOwner.CapturedPile.FirstOrDefault(card => !card.IsExcuse && card.HalfPoints == 1);
                 if (lowCard is not null)
                 {
                     excuseOwner.CapturedPile.Remove(lowCard);
