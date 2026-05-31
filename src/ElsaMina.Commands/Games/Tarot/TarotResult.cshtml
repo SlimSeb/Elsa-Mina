@@ -83,31 +83,33 @@
             }
         </table>
 
-        <h4 style="margin:12px 0 4px 0;text-align:center">@GetString("tarot_cards_won_title")</h4>
-        @foreach (var player in game.Players)
-        {
-            var capturedPoints = player.CapturedPile.Sum(card => card.HalfPoints) / 2.0;
-            var orderedCards = player.CapturedPile
-                .OrderBy(card => card.Suit)
-                .ThenBy(card => card.Rank)
-                .ToList();
-            <div style="margin:6px 0;padding:5px 8px;background:#241d2d;border-radius:5px">
-                <span style="color:@player.Name.ToColorHexCodeWithCustoms();font-weight:bold">@player.Name</span>
-                <span style="color:#b9a9c9">(@GetString("tarot_cards_won_points", capturedPoints.ToString("0.#")))</span>
-                <div style="margin-top:3px;line-height:1.9em">
-                    @if (orderedCards.Count == 0)
-                    {
-                        <span style="color:#7a6b8a">&mdash;</span>
-                    }
-                    else
-                    {
-                        foreach (var card in orderedCards)
+        <details style="margin-top:12px">
+            <summary style="cursor:pointer;text-align:center;font-weight:bold">@GetString("tarot_cards_won_title")</summary>
+            @foreach (var player in game.Players)
+            {
+                var capturedPoints = player.CapturedPile.Sum(card => card.HalfPoints) / 2.0;
+                var orderedCards = player.CapturedPile
+                    .OrderBy(card => card.Suit)
+                    .ThenBy(card => card.Rank)
+                    .ToList();
+                <div style="margin:6px 0;padding:5px 8px;background:#241d2d;border-radius:5px">
+                    <span style="color:@player.Name.ToColorHexCodeWithCustoms();font-weight:bold">@player.Name</span>
+                    <span style="color:#b9a9c9">(@GetString("tarot_cards_won_points", capturedPoints.ToString("0.#")))</span>
+                    <div style="margin-top:3px;line-height:1.9em">
+                        @if (orderedCards.Count == 0)
                         {
-                            <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card);margin:0 3px">@card.ToDisplay()</span>
+                            <span style="color:#7a6b8a">&mdash;</span>
                         }
-                    }
+                        else
+                        {
+                            foreach (var card in orderedCards)
+                            {
+                                <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card);margin:0 3px">@card.ToDisplay()</span>
+                            }
+                        }
+                    </div>
                 </div>
-            </div>
-        }
+            }
+        </details>
     }
 </div>

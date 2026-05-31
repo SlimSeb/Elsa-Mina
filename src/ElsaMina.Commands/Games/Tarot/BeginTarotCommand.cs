@@ -7,7 +7,7 @@ namespace ElsaMina.Commands.Games.Tarot;
 [NamedCommand("tarotstart", Aliases = ["tarotbegin"])]
 public class BeginTarotCommand : Command
 {
-    public override Rank RequiredRank => Rank.Regular;
+    public override Rank RequiredRank => Rank.Voiced;
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
