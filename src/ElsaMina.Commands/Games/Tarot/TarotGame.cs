@@ -10,6 +10,8 @@ using JetBrains.Annotations;
 
 namespace ElsaMina.Commands.Games.Tarot;
 
+// faire descendre le lobby après chaque 
+//[00:34:06] ♡Panure: > couleur, bug T1, faire descendre l'interface, augmenter la taille de l'atout, expliciter la dernière carte jouée
 public class TarotGame : Game, ITarotGame
 {
     private static int _nextGameId;
@@ -25,11 +27,16 @@ public class TarotGame : Game, ITarotGame
     private readonly List<TarotCard> _pendingDiscards = [];
     private readonly HashSet<string> _initializedHandPanels = [];
 
+    private const int PANEL_REFRESH_EVERY_TRICKS = 3;
+
     private int _currentTurnIndex;
     private int _firstLeaderIndex;
     private int _takerIndex = -1;
     private int _partnerIndex = -1;
     private bool _publicPanelInitialized;
+    private int _publicPanelSegment;
+    private TarotTrick _lastTrick;
+    private TarotPlayer _lastTrickWinner;
 
     [UsedImplicitly]
     public TarotGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration)
@@ -70,12 +77,15 @@ public class TarotGame : Game, ITarotGame
     public bool PartnerRevealed { get; private set; }
 
     public TarotTrick CurrentTrick { get; private set; } = new();
+    public TarotTrick LastTrick => _lastTrick;
+    public TarotPlayer LastTrickWinner => _lastTrickWinner;
+    public TarotCard LastPlayedCard => CurrentTrick.Plays.Count > 0 ? CurrentTrick.Plays[^1].Card : null;
     public int TrickNumber { get; private set; }
     public int TotalTricks => _players.Count > 0 ? TarotConstants.HAND_SIZE[_players.Count] : 0;
 
     public TarotScoreResult ScoreResult { get; private set; }
 
-    private string PublicPanelId => $"tarot-{GameId}";
+    private string PublicPanelId => $"tarot-{GameId}-{_publicPanelSegment}";
     private string HandPanelId(string userId) => $"tarot-hand-{GameId}-{userId}";
 
     #region Lobby
@@ -491,12 +501,23 @@ public class TarotGame : Game, ITarotGame
 
         Context.ReplyLocalizedMessage("tarot_trick_won", winner.Name, TrickNumber);
 
+        _lastTrick = CurrentTrick;
+        _lastTrickWinner = winner;
         _currentTurnIndex = _players.IndexOf(winner);
 
         if (_players.All(player => player.Hand.Count == 0))
         {
             await FinishAsync();
             return;
+        }
+
+        // Periodically re-post the public panel so it drops back to the bottom of the chat
+        // instead of staying stuck high up in the scrollback.
+        if (TrickNumber % PANEL_REFRESH_EVERY_TRICKS == 0)
+        {
+            Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
+            _publicPanelSegment++;
+            _publicPanelInitialized = false;
         }
 
         TrickNumber++;

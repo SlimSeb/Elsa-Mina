@@ -23,6 +23,9 @@ public interface ITarotGame : IGame
     bool PartnerRevealed { get; }
 
     TarotTrick CurrentTrick { get; }
+    TarotTrick LastTrick { get; }
+    TarotPlayer LastTrickWinner { get; }
+    TarotCard LastPlayedCard { get; }
     int TrickNumber { get; }
     int TotalTricks { get; }
 

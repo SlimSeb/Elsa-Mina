@@ -9,18 +9,20 @@
     {
         if (card.IsExcuse)
         {
-            return "#7a3";
+            return "#8fd694";
         }
         if (card.IsTrump)
         {
-            return "#36c";
+            return "#7fc4ff";
         }
-        return card.Suit is TarotSuit.Hearts or TarotSuit.Diamonds ? "#d33" : "#111";
+        return card.Suit is TarotSuit.Hearts or TarotSuit.Diamonds ? "#ff7b7b" : "#ececec";
     }
+
+    string CardSize(TarotCard card) => card.IsTrump ? "1.7em" : "1.15em";
 }
 
-<div style="background:#f4f1f7;border:1px solid #b9a9c9;border-radius:6px;padding:8px">
-    <h3 style="margin:0 0 6px 0;text-align:center;color:#3a2d4a">🃏 @GetString("tarot_title")</h3>
+<div style="background:#2d2535;color:#ece7f2;border:1px solid #5a4a6a;border-radius:6px;padding:8px">
+    <h3 style="margin:0 0 6px 0;text-align:center">🃏 @GetString("tarot_title")</h3>
 
     @if (game.Phase == TarotPhase.Bidding)
     {
@@ -29,7 +31,7 @@
             @foreach (var player in game.Players)
             {
                 var isCurrent = game.CurrentPlayer == player;
-                <tr style="@(isCurrent ? "font-weight:bold;background:#e7dcf2" : "")">
+                <tr style="@(isCurrent ? "font-weight:bold;background:#473a57" : "")">
                     <td style="padding:2px 10px;color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</td>
                     <td style="padding:2px 10px">
                         @if (player.HasBid)
@@ -62,7 +64,7 @@
                 <b>@GetString("tarot_dog_label"):</b>
                 @foreach (var card in game.Dog)
                 {
-                    <span style="color:@CardColor(card);font-weight:bold;margin:0 3px">@card.ToDisplay()</span>
+                    <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card);margin:0 4px">@card.ToDisplay()</span>
                 }
             </p>
         }
@@ -82,25 +84,54 @@
         </p>
         @if (game.PartnerRevealed && game.Partner != null)
         {
-            <p style="text-align:center;margin:4px 0;color:#693">
+            <p style="text-align:center;margin:4px 0;color:#8fd694">
                 @GetString("tarot_partner_is", game.Partner.Name)
             </p>
         }
-        <p style="text-align:center;margin:4px 0;color:#666">
+
+        @if (game.LastTrick != null && game.LastTrickWinner != null)
+        {
+            <p style="text-align:center;margin:8px 0 2px 0;color:#b9a9c9;font-size:0.85em">
+                @GetString("tarot_last_trick_label") &mdash; @GetString("tarot_won_by", game.LastTrickWinner.Name)
+            </p>
+            <p style="text-align:center;margin:0 0 6px 0">
+                @foreach (var (player, card) in game.LastTrick.Plays)
+                {
+                    var isWinningCard = player == game.LastTrickWinner;
+                    <span style="display:inline-block;margin:0 5px;text-align:center;opacity:@(isWinningCard ? "1" : "0.55")">
+                        <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card)">@card.ToDisplay()</span><br>
+                        <span style="font-size:0.7em;color:#9a8caa">@player.Name@(isWinningCard ? " 🏆" : "")</span>
+                    </span>
+                }
+            </p>
+        }
+
+        <p style="text-align:center;margin:8px 0 2px 0;color:#b9a9c9">
             @GetString("tarot_trick_progress", game.TrickNumber, game.TotalTricks)
         </p>
-        <table style="margin:auto;border-collapse:collapse">
-            @foreach (var (player, card) in game.CurrentTrick.Plays)
+        @if (game.CurrentTrick.Plays.Count > 0)
+        {
+            <p style="text-align:center;margin:0 0 4px 0">
+                @for (var i = 0; i < game.CurrentTrick.Plays.Count; i++)
+                {
+                    var (player, card) = game.CurrentTrick.Plays[i];
+                    var isLast = i == game.CurrentTrick.Plays.Count - 1;
+                    <span style="display:inline-block;margin:0 6px;text-align:center;padding:3px 6px;border-radius:5px;@(isLast ? "background:#5a4a6a;box-shadow:0 0 0 2px #f7d774" : "")">
+                        <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card)">@card.ToDisplay()</span><br>
+                        <span style="font-size:0.7em;color:#cabbd9">@player.Name@(isLast ? " ◀" : "")</span>
+                    </span>
+                }
+            </p>
+            @if (game.LastPlayedCard != null)
             {
-                <tr>
-                    <td style="padding:2px 10px;color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</td>
-                    <td style="padding:2px 10px;font-size:1.2em;font-weight:bold;color:@CardColor(card)">@card.ToDisplay()</td>
-                </tr>
+                <p style="text-align:center;margin:0;color:#f7d774;font-size:0.8em">
+                    @GetString("tarot_last_played_label"): <b>@game.LastPlayedCard.ToDisplay()</b>
+                </p>
             }
-        </table>
+        }
         @if (game.CurrentPlayer != null)
         {
-            <p style="text-align:center;margin:6px 0">
+            <p style="text-align:center;margin:6px 0 0 0">
                 @GetString("tarot_waiting_for")
                 <b style="color:@game.CurrentPlayer.Name.ToColorHexCodeWithCustoms()">@game.CurrentPlayer.Name</b>
             </p>

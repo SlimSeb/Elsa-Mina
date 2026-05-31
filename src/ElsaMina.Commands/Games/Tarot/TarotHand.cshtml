@@ -12,21 +12,24 @@
     {
         if (card.IsExcuse)
         {
-            return "#7a3";
+            return "#3a7a3f";
         }
         if (card.IsTrump)
         {
-            return "#36c";
+            return "#1f6dbf";
         }
-        return card.Suit is TarotSuit.Hearts or TarotSuit.Diamonds ? "#d33" : "#111";
+        return card.Suit is TarotSuit.Hearts or TarotSuit.Diamonds ? "#cc2b2b" : "#111";
     }
+
+    string CardFontSize(TarotCard card) => card.IsTrump ? "1.5em" : "1.05em";
+    string CardPadding(TarotCard card) => card.IsTrump ? "6px 9px" : "3px 6px";
 
     string Action(string command, TarotCard card) =>
         $"/botmsg {Model.BotName}, {Model.Trigger}{command} {Model.RoomId}, {card.ToToken()}";
 }
 
-<div style="background:#fcfbff;border:1px solid #b9a9c9;border-radius:6px;padding:8px">
-    <h4 style="margin:0 0 6px 0;color:#3a2d4a">🃏 @GetString("tarot_your_hand")</h4>
+<div style="background:#211b29;color:#ece7f2;border:1px solid #5a4a6a;border-radius:6px;padding:8px">
+    <h4 style="margin:0 0 6px 0">🃏 @GetString("tarot_your_hand")</h4>
 
     @if (game.Phase == TarotPhase.Bidding && isViewerTurn)
     {
@@ -57,44 +60,53 @@
         <p style="margin:4px 0">@GetString("tarot_your_turn_discard", game.PendingDiscards.Count, ElsaMina.Commands.Games.Tarot.TarotConstants.DOG_SIZE[game.PlayerCount])</p>
     }
 
-    <p style="margin:6px 0;line-height:2em">
+    @if (game.Phase == TarotPhase.Playing && game.LastPlayedCard != null)
+    {
+        <p style="margin:2px 0;color:#c7b8d6;font-size:0.85em">
+            @GetString("tarot_last_played_label"):
+            <b style="color:@CardColor(game.LastPlayedCard)">@game.LastPlayedCard.ToDisplay()</b>
+        </p>
+    }
+
+    <p style="margin:6px 0;line-height:2.4em">
         @foreach (var card in Model.ViewerHand)
         {
             var color = CardColor(card);
+            var baseStyle = $"display:inline-block;margin:2px;padding:{CardPadding(card)};font-size:{CardFontSize(card)};font-weight:bold;border-radius:4px;background:#f3eef8;color:{color}";
             if (game.Phase == TarotPhase.Discard && isTaker)
             {
                 if (card.IsKing || card.IsOudler)
                 {
-                    <span style="display:inline-block;padding:3px 6px;margin:2px;border:1px solid #ddd;color:#bbb">@card.ToDisplay()</span>
+                    <span style="@baseStyle;opacity:0.4">@card.ToDisplay()</span>
                 }
                 else
                 {
                     var selected = game.PendingDiscards.Contains(card);
-                    <button class="button" name="send" value="@Action("tarotdiscard", card)"
-                            style="margin:2px;color:@color;@(selected ? "background:#f7d774;font-weight:bold" : "")">@card.ToDisplay()</button>
+                    <button name="send" value="@Action("tarotdiscard", card)"
+                            style="@baseStyle;cursor:pointer;@(selected ? "outline:3px solid #f7a000" : "")">@card.ToDisplay()</button>
                 }
             }
             else if (game.Phase == TarotPhase.Playing && isViewerTurn)
             {
                 if (Model.ViewerLegalMoves.Contains(card))
                 {
-                    <button class="button" name="send" value="@Action("tp", card)" style="margin:2px;color:@color">@card.ToDisplay()</button>
+                    <button name="send" value="@Action("tp", card)" style="@baseStyle;cursor:pointer">@card.ToDisplay()</button>
                 }
                 else
                 {
-                    <span style="display:inline-block;padding:3px 6px;margin:2px;border:1px solid #ddd;color:#bbb">@card.ToDisplay()</span>
+                    <span style="@baseStyle;opacity:0.35">@card.ToDisplay()</span>
                 }
             }
             else
             {
-                <span style="display:inline-block;padding:3px 6px;margin:2px;border:1px solid #ccc;border-radius:3px;color:@color">@card.ToDisplay()</span>
+                <span style="@baseStyle">@card.ToDisplay()</span>
             }
         }
     </p>
 
     @if (game.Phase == TarotPhase.Playing && !isViewerTurn && game.CurrentPlayer != null)
     {
-        <p style="margin:4px 0;color:#888;font-size:0.85em">
+        <p style="margin:4px 0;color:#9a8caa;font-size:0.85em">
             @GetString("tarot_waiting_for") <b>@game.CurrentPlayer.Name</b>
         </p>
     }

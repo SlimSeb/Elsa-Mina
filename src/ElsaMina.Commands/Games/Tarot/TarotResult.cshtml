@@ -6,8 +6,8 @@
     var result = game.ScoreResult;
 }
 
-<div style="background:#f4f1f7;border:1px solid #b9a9c9;border-radius:6px;padding:10px">
-    <h3 style="margin:0 0 8px 0;text-align:center;color:#3a2d4a">🃏 @GetString("tarot_result_title")</h3>
+<div style="background:#2d2535;color:#ece7f2;border:1px solid #5a4a6a;border-radius:6px;padding:10px">
+    <h3 style="margin:0 0 8px 0;text-align:center">🃏 @GetString("tarot_result_title")</h3>
 
     @if (result == null)
     {
@@ -27,11 +27,11 @@
         <p style="text-align:center;margin:4px 0;font-size:1.1em">
             @if (result.Made)
             {
-                <b style="color:#2a8">@GetString("tarot_result_contract_made")</b>
+                <b style="color:#6ddf9a">@GetString("tarot_result_contract_made")</b>
             }
             else
             {
-                <b style="color:#c33">@GetString("tarot_result_contract_failed")</b>
+                <b style="color:#ff7b7b">@GetString("tarot_result_contract_failed")</b>
             }
         </p>
 
@@ -41,7 +41,7 @@
                 (result.TargetHalfPoints / 2.0).ToString("0.#"),
                 result.OudlerCount)
         </p>
-        <p style="text-align:center;margin:4px 0;color:#666">
+        <p style="text-align:center;margin:4px 0;color:#b9a9c9">
             @GetString("tarot_result_breakdown",
                 (result.BaseHalfPoints / 2.0).ToString("0.#"),
                 result.Multiplier,
@@ -49,7 +49,7 @@
         </p>
 
         <table style="margin:8px auto 0 auto;border-collapse:collapse">
-            <tr style="border-bottom:1px solid #b9a9c9">
+            <tr style="border-bottom:1px solid #5a4a6a">
                 <th style="padding:2px 12px;text-align:left">@GetString("tarot_players_label")</th>
                 <th style="padding:2px 12px">@GetString("tarot_result_score_label")</th>
             </tr>
@@ -57,7 +57,7 @@
             {
                 var player = game.Players[i];
                 var delta = i < result.Deltas.Length ? result.Deltas[i] / 2.0 : 0;
-                var color = delta >= 0 ? "#2a8" : "#c33";
+                var color = delta >= 0 ? "#6ddf9a" : "#ff7b7b";
                 <tr>
                     <td style="padding:2px 12px;color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</td>
                     <td style="padding:2px 12px;text-align:center;font-weight:bold;color:@color">

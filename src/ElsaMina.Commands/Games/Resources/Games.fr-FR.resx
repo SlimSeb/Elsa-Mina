@@ -936,4 +936,13 @@
     <data name="tarot_result_score_label" xml:space="preserve">
         <value>Score</value>
     </data>
+    <data name="tarot_last_trick_label" xml:space="preserve">
+        <value>Pli précédent</value>
+    </data>
+    <data name="tarot_won_by" xml:space="preserve">
+        <value>remporté par {0}</value>
+    </data>
+    <data name="tarot_last_played_label" xml:space="preserve">
+        <value>Dernière carte jouée</value>
+    </data>
 </root>

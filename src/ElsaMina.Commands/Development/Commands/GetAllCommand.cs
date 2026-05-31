@@ -28,10 +28,9 @@ public class GetAllCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var commands = _commandExecutor.GetAllCommands()
-            .Where(command => !command.IsHidden)
-            .ToList();
-
+        var commands = context.IsSenderWhitelisted
+            ? _commandExecutor.GetAllCommands().ToList()
+            : _commandExecutor.GetAllCommands().Where(command => !command.IsHidden).ToList();
         var categories = commands
             .GroupBy(command => command.Category)
             .OrderBy(grouping => grouping.Key)
