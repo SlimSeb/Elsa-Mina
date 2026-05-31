@@ -1,9 +1,25 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Tarot.TarotViewModel>
+@using ElsaMina.Commands.Games.Tarot
 @using ElsaMina.Core.Utils
 
 @{
     var game = Model.Game;
     var result = game.ScoreResult;
+
+    string CardColor(TarotCard card)
+    {
+        if (card.IsExcuse)
+        {
+            return "#8fd694";
+        }
+        if (card.IsTrump)
+        {
+            return "#7fc4ff";
+        }
+        return card.Suit is TarotSuit.Hearts or TarotSuit.Diamonds ? "#ff7b7b" : "#ececec";
+    }
+
+    string CardSize(TarotCard card) => card.IsExcuse ? "1.45em" : "1.15em";
 }
 
 <div style="background:#2d2535;color:#ece7f2;border:1px solid #5a4a6a;border-radius:6px;padding:10px">
@@ -66,5 +82,32 @@
                 </tr>
             }
         </table>
+
+        <h4 style="margin:12px 0 4px 0;text-align:center">@GetString("tarot_cards_won_title")</h4>
+        @foreach (var player in game.Players)
+        {
+            var capturedPoints = player.CapturedPile.Sum(card => card.HalfPoints) / 2.0;
+            var orderedCards = player.CapturedPile
+                .OrderBy(card => card.Suit)
+                .ThenBy(card => card.Rank)
+                .ToList();
+            <div style="margin:6px 0;padding:5px 8px;background:#241d2d;border-radius:5px">
+                <span style="color:@player.Name.ToColorHexCodeWithCustoms();font-weight:bold">@player.Name</span>
+                <span style="color:#b9a9c9">(@GetString("tarot_cards_won_points", capturedPoints.ToString("0.#")))</span>
+                <div style="margin-top:3px;line-height:1.9em">
+                    @if (orderedCards.Count == 0)
+                    {
+                        <span style="color:#7a6b8a">&mdash;</span>
+                    }
+                    else
+                    {
+                        foreach (var card in orderedCards)
+                        {
+                            <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card);margin:0 3px">@card.ToDisplay()</span>
+                        }
+                    }
+                </div>
+            </div>
+        }
     }
 </div>

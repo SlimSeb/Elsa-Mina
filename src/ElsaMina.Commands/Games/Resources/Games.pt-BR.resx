@@ -936,6 +936,12 @@
     <data name="tarot_result_score_label" xml:space="preserve">
         <value>Pontuação</value>
     </data>
+    <data name="tarot_cards_won_title" xml:space="preserve">
+        <value>Cartas ganhas</value>
+    </data>
+    <data name="tarot_cards_won_points" xml:space="preserve">
+        <value>{0} pts</value>
+    </data>
     <data name="tarot_last_trick_label" xml:space="preserve">
         <value>Vaza anterior</value>
     </data>
