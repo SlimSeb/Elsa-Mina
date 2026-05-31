@@ -23,14 +23,13 @@ public class MoneyLeaderboardCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Regular;
-    public override bool IsAllowedInPrivateMessage => true;
     public override string HelpMessageKey => "money_leaderboard_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var richest = await dbContext.Money
-            .Where(account => account.Amount > 0)
+            .Where(account => account.RoomId == context.RoomId && account.Amount > 0)
             .OrderByDescending(account => account.Amount)
             .Take(LEADERBOARD_SIZE)
             .ToListAsync(cancellationToken);

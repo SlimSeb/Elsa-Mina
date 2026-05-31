@@ -288,7 +288,7 @@ public class TourEndHandlerTest
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
 
         await using var dbContext = new BotDbContext(_dbOptions);
-        var account = await dbContext.Money.FindAsync("pujolly");
+        var account = await dbContext.Money.FindAsync("pujolly", "arcade");
         Assert.That(account, Is.Not.Null);
         Assert.That(account.Amount, Is.EqualTo(18));
     }
@@ -298,7 +298,7 @@ public class TourEndHandlerTest
     {
         await using (var seedContext = new BotDbContext(_dbOptions))
         {
-            await seedContext.Money.AddAsync(new Money { Id = "pujolly", Amount = 100 });
+            await seedContext.Money.AddAsync(new Money { Id = "pujolly", RoomId = "arcade", Amount = 100 });
             await seedContext.SaveChangesAsync();
         }
 
@@ -307,7 +307,7 @@ public class TourEndHandlerTest
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
 
         await using var dbContext = new BotDbContext(_dbOptions);
-        var account = await dbContext.Money.FindAsync("pujolly");
+        var account = await dbContext.Money.FindAsync("pujolly", "arcade");
         Assert.That(account.Amount, Is.EqualTo(118));
     }
 
@@ -319,5 +319,25 @@ public class TourEndHandlerTest
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
 
         _bot.Received(1).Say("arcade", "pujolly won 18 bucks");
+    }
+
+    [Test]
+    public async Task Test_HandleReceivedMessageAsync_ShouldNotAffectBalanceInOtherRooms()
+    {
+        await using (var seedContext = new BotDbContext(_dbOptions))
+        {
+            await seedContext.Money.AddAsync(new Money { Id = "pujolly", RoomId = "lobby", Amount = 50 });
+            await seedContext.SaveChangesAsync();
+        }
+
+        var parts = new[] { "", "tournament", "end", TOUR_JSON };
+
+        await _handler.HandleReceivedMessageAsync(parts, "arcade");
+
+        await using var dbContext = new BotDbContext(_dbOptions);
+        var lobbyAccount = await dbContext.Money.FindAsync("pujolly", "lobby");
+        var arcadeAccount = await dbContext.Money.FindAsync("pujolly", "arcade");
+        Assert.That(lobbyAccount.Amount, Is.EqualTo(50));
+        Assert.That(arcadeAccount.Amount, Is.EqualTo(18));
     }
 }

@@ -18,7 +18,6 @@ public class TransferMoneyCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Regular;
-    public override bool IsAllowedInPrivateMessage => true;
     public override string HelpMessageKey => "transfer_money_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
@@ -53,17 +52,17 @@ public class TransferMoneyCommand : Command
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var senderAccount = await dbContext.Money.FindAsync([senderId], cancellationToken);
+        var senderAccount = await dbContext.Money.FindAsync([senderId, context.RoomId], cancellationToken);
         if (senderAccount == null || senderAccount.Amount < amount)
         {
             context.ReplyLocalizedMessage("transfer_money_insufficient_funds", senderAccount?.Amount ?? 0);
             return;
         }
 
-        var recipientAccount = await dbContext.Money.FindAsync([recipientId], cancellationToken);
+        var recipientAccount = await dbContext.Money.FindAsync([recipientId, context.RoomId], cancellationToken);
         if (recipientAccount == null)
         {
-            recipientAccount = new Money { Id = recipientId, Amount = 0 };
+            recipientAccount = new Money { Id = recipientId, RoomId = context.RoomId, Amount = 0 };
             await dbContext.Money.AddAsync(recipientAccount, cancellationToken);
         }
 

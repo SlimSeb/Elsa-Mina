@@ -99,10 +99,10 @@ public class TourEndHandler : Handler
             if (!string.IsNullOrEmpty(result.Winner) && result.Players.Count > 0)
             {
                 var prize = result.Players.Count * PRIZE_PER_PARTICIPANT;
-                var winnerAccount = await dbContext.Money.FindAsync([result.Winner], cancellationToken);
+                var winnerAccount = await dbContext.Money.FindAsync([result.Winner, roomId], cancellationToken);
                 if (winnerAccount == null)
                 {
-                    winnerAccount = new Money { Id = result.Winner, Amount = prize };
+                    winnerAccount = new Money { Id = result.Winner, RoomId = roomId, Amount = prize };
                     await dbContext.Money.AddAsync(winnerAccount, cancellationToken);
                 }
                 else

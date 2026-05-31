@@ -18,7 +18,6 @@ public class GiveMoneyCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Admin;
-    public override bool IsAllowedInPrivateMessage => true;
     public override string HelpMessageKey => "give_money_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
@@ -45,10 +44,10 @@ public class GiveMoneyCommand : Command
         }
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var account = await dbContext.Money.FindAsync([recipientId], cancellationToken);
+        var account = await dbContext.Money.FindAsync([recipientId, context.RoomId], cancellationToken);
         if (account == null)
         {
-            account = new Money { Id = recipientId, Amount = amount };
+            account = new Money { Id = recipientId, RoomId = context.RoomId, Amount = amount };
             await dbContext.Money.AddAsync(account, cancellationToken);
         }
         else

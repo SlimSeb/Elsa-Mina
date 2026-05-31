@@ -17,7 +17,6 @@ public class MoneyCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Regular;
-    public override bool IsAllowedInPrivateMessage => true;
     public override string HelpMessageKey => "money_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
@@ -31,7 +30,7 @@ public class MoneyCommand : Command
         }
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var account = await dbContext.Money.FindAsync([targetId], cancellationToken);
+        var account = await dbContext.Money.FindAsync([targetId, context.RoomId], cancellationToken);
         var amount = account?.Amount ?? 0;
 
         context.ReplyLocalizedMessage("money_balance", targetName, amount);

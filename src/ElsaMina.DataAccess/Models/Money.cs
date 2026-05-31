@@ -6,5 +6,6 @@ namespace ElsaMina.DataAccess.Models;
 public class Money
 {
     public string Id { get; set; }
+    public string RoomId { get; set; }
     public long Amount { get; set; }
 }
