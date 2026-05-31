@@ -789,6 +789,9 @@
     <data name="tarot_bidding_all_passed" xml:space="preserve">
         <value>Todos pasaron. La mano se cancela.</value>
     </data>
+    <data name="tarot_turn_timeout_warning" xml:space="preserve">
+        <value>⏰ ¡Date prisa! Solo te quedan {0} segundos para jugar antes de quedar eliminado por tiempo.</value>
+    </data>
     <data name="tarot_taker_announced" xml:space="preserve">
         <value>¡{0} es el tomador con una {1}!</value>
     </data>

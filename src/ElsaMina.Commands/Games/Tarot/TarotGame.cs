@@ -19,6 +19,7 @@ public class TarotGame : Game, ITarotGame
 
     private readonly SemaphoreSlim _actionLock = new(1, 1);
     private readonly PeriodicTimerRunner _turnTimer;
+    private readonly PeriodicTimerRunner _turnWarningTimer;
     private readonly List<TarotPlayer> _players = [];
     private readonly List<TarotCard> _dog = [];
     private readonly List<TarotCard> _pendingDiscards = [];
@@ -46,6 +47,13 @@ public class TarotGame : Game, ITarotGame
         _configuration = configuration;
         GameId = Interlocked.Increment(ref _nextGameId);
         _turnTimer = new PeriodicTimerRunner(turnTimeout, OnTurnTimeoutAsync, runOnce: true);
+
+        // Warn the active player by PM once only the warning threshold of time is left on their turn.
+        var warningDelay = turnTimeout - TarotConstants.TURN_TIMEOUT_WARNING_REMAINING;
+        if (warningDelay > TimeSpan.Zero)
+        {
+            _turnWarningTimer = new PeriodicTimerRunner(warningDelay, OnTurnWarningAsync, runOnce: true);
+        }
     }
 
     public int GameId { get; }
@@ -680,15 +688,47 @@ public class TarotGame : Game, ITarotGame
         return discardable.Take(dogSize).ToList();
     }
 
+    private async Task OnTurnWarningAsync()
+    {
+        await _actionLock.WaitAsync();
+        try
+        {
+            var player = Phase switch
+            {
+                TarotPhase.KingCall or TarotPhase.Discard => Taker,
+                TarotPhase.Bidding or TarotPhase.Playing => CurrentPlayer,
+                _ => null
+            };
+
+            if (player is null)
+            {
+                return;
+            }
+
+            var seconds = (int)TarotConstants.TURN_TIMEOUT_WARNING_REMAINING.TotalSeconds;
+            var message = Context.GetString("tarot_turn_timeout_warning", seconds);
+            Context.SendMessageIn(Context.RoomId, $"/pm {player.UserId}, {message}");
+        }
+        finally
+        {
+            _actionLock.Release();
+        }
+    }
+
     private void RestartTurnTimer()
     {
         if (Phase is TarotPhase.Bidding or TarotPhase.KingCall or TarotPhase.Discard or TarotPhase.Playing)
         {
             _turnTimer.Restart();
+            _turnWarningTimer?.Restart();
         }
     }
 
-    private void StopTurnTimer() => _turnTimer.Stop();
+    private void StopTurnTimer()
+    {
+        _turnTimer.Stop();
+        _turnWarningTimer?.Stop();
+    }
 
     #endregion
 

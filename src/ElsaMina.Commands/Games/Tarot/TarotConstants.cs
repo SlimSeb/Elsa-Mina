@@ -8,6 +8,11 @@ public static class TarotConstants
     public static readonly TimeSpan TURN_TIMEOUT = TimeSpan.FromSeconds(60);
 
     /// <summary>
+    /// How much time must remain on a player's turn when they are warned by PM that they risk timing out.
+    /// </summary>
+    public static readonly TimeSpan TURN_TIMEOUT_WARNING_REMAINING = TimeSpan.FromSeconds(30);
+
+    /// <summary>
     /// Number of cards dealt to each player, keyed by player count.
     /// </summary>
     public static readonly IReadOnlyDictionary<int, int> HAND_SIZE = new Dictionary<int, int>

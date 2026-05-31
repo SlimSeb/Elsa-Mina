@@ -795,6 +795,9 @@
     <data name="tarot_bidding_all_passed" xml:space="preserve">
         <value>Tout le monde a passé. La donne est annulée.</value>
     </data>
+    <data name="tarot_turn_timeout_warning" xml:space="preserve">
+        <value>⏰ Dépêche-toi ! Il ne te reste que {0} secondes pour jouer avant d'être éliminé pour temps écoulé.</value>
+    </data>
     <data name="tarot_taker_announced" xml:space="preserve">
         <value>{0} est le preneur avec une {1} !</value>
     </data>
