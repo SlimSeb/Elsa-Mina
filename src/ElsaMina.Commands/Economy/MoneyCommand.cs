@@ -1,6 +1,7 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Economy;
@@ -20,6 +21,12 @@ public class MoneyCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
+        if (!await context.IsBucksEnabledAsync(cancellationToken))
+        {
+            context.ReplyLocalizedMessage("bucks_disabled");
+            return;
+        }
+
         var targetName = string.IsNullOrWhiteSpace(context.Target) ? context.Sender.Name : context.Target.Trim();
         var targetId = targetName.ToLowerAlphaNum();
         if (string.IsNullOrEmpty(targetId))

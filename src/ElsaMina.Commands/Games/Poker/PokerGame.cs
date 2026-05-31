@@ -59,6 +59,10 @@ public class PokerGame : Game, IPokerGame
     public IContext Context { get; set; }
     public long BuyIn { get; set; } = PokerConstants.DEFAULT_BUY_IN;
 
+    // When bucks are disabled in the room, poker runs as a "for fun" mode:
+    // the buy-in only seeds each player's chip stack and no real bucks are moved.
+    public bool IsForFun { get; set; }
+
     public IReadOnlyList<PokerPlayer> Players => _players;
     public int PlayerCount => _players.Count;
     public PokerPhase Phase { get; private set; } = PokerPhase.Lobby;
@@ -112,13 +116,16 @@ public class PokerGame : Game, IPokerGame
                 return (false, "poker_join_already_joined", []);
             }
 
-            var balance = await _moneyService.GetBalanceAsync(Context.RoomId, user.UserId);
-            if (balance < BuyIn)
+            if (!IsForFun)
             {
-                return (false, "poker_join_insufficient_funds", [BuyIn, balance]);
-            }
+                var balance = await _moneyService.GetBalanceAsync(Context.RoomId, user.UserId);
+                if (balance < BuyIn)
+                {
+                    return (false, "poker_join_insufficient_funds", [BuyIn, balance]);
+                }
 
-            await _moneyService.AddAsync(Context.RoomId, user.UserId, -BuyIn);
+                await _moneyService.AddAsync(Context.RoomId, user.UserId, -BuyIn);
+            }
 
             _players.Add(new PokerPlayer(user, BuyIn));
             await RenderPublicAsync();
@@ -510,6 +517,11 @@ public class PokerGame : Game, IPokerGame
 
     private async Task SettleAsync(Func<PokerPlayer, long> payout)
     {
+        if (IsForFun)
+        {
+            return;
+        }
+
         foreach (var player in _players)
         {
             var amount = payout(player);

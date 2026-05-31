@@ -30,6 +30,9 @@
     <data name="poker_title" xml:space="preserve">
         <value>Texas Hold'em</value>
     </data>
+    <data name="poker_for_fun_mode" xml:space="preserve">
+        <value>This table is running in for fun mode: no bucks are at stake, the buy-in only sets your starting chips.</value>
+    </data>
     <data name="poker_game_created" xml:space="preserve">
         <value>{0} started a Texas Hold'em table (buy-in: {1} bucks). Type the join button to sit down!</value>
     </data>

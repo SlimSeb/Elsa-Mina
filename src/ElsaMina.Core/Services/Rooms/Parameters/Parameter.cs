@@ -11,5 +11,6 @@ public enum Parameter
     TournamentBettingEnabled,
     ShowYoutubeLinkPreview,
     ShowUrlPreview,
-    TenorGifEnabled
+    TenorGifEnabled,
+    BucksEnabled
 }

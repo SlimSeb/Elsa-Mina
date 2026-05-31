@@ -92,6 +92,15 @@
     <data name="parameter_description_is_showing_url_preview" xml:space="preserve">
         <value>Mostra una scheda di anteprima con titolo e descrizione quando viene pubblicato un URL</value>
     </data>
+    <data name="parameter_name_bucks_enabled" xml:space="preserve">
+        <value>Bucks</value>
+    </data>
+    <data name="parameter_description_bucks_enabled" xml:space="preserve">
+        <value>Abilita o disabilita l'economia di bucks (saldi, trasferimenti, premi) per questa stanza.</value>
+    </data>
+    <data name="bucks_disabled" xml:space="preserve">
+        <value>L'economia di bucks è disabilitata in questa stanza.</value>
+    </data>
     <data name="parameter_name_tenor_gif_enabled" xml:space="preserve">
         <value>GIF di Tenor</value>
     </data>

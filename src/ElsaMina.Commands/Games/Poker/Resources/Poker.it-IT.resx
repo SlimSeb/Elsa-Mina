@@ -30,6 +30,9 @@
     <data name="poker_title" xml:space="preserve">
         <value>Texas Hold'em</value>
     </data>
+    <data name="poker_for_fun_mode" xml:space="preserve">
+        <value>Questo tavolo è in modalità per divertimento: nessun bucks è in palio, il buy-in definisce solo le tue fiche iniziali.</value>
+    </data>
     <data name="poker_game_created" xml:space="preserve">
         <value>{0} ha aperto un tavolo di Texas Hold'em (buy-in: {1} bucks). Premi il pulsante per sederti!</value>
     </data>

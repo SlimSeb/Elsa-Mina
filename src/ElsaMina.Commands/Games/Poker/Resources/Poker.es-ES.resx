@@ -30,6 +30,9 @@
     <data name="poker_title" xml:space="preserve">
         <value>Texas Hold'em</value>
     </data>
+    <data name="poker_for_fun_mode" xml:space="preserve">
+        <value>Esta mesa está en modo por diversión: no hay bucks en juego, la entrada solo define tus fichas iniciales.</value>
+    </data>
     <data name="poker_game_created" xml:space="preserve">
         <value>{0} inició una mesa de Texas Hold'em (entrada: {1} bucks). ¡Pulsa el botón para sentarte!</value>
     </data>

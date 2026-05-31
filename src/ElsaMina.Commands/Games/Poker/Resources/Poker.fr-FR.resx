@@ -30,6 +30,9 @@
     <data name="poker_title" xml:space="preserve">
         <value>Texas Hold'em</value>
     </data>
+    <data name="poker_for_fun_mode" xml:space="preserve">
+        <value>Cette table est en mode pour le fun : aucun bucks n'est en jeu, la cave définit seulement votre tapis de départ.</value>
+    </data>
     <data name="poker_game_created" xml:space="preserve">
         <value>{0} a lancé une table de Texas Hold'em (cave : {1} bucks). Cliquez sur le bouton pour vous asseoir !</value>
     </data>

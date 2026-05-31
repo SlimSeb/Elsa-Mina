@@ -92,6 +92,15 @@
     <data name="parameter_description_is_showing_url_preview" xml:space="preserve">
         <value>Shows a preview card with title and description when a URL is posted</value>
     </data>
+    <data name="parameter_name_bucks_enabled" xml:space="preserve">
+        <value>Bucks</value>
+    </data>
+    <data name="parameter_description_bucks_enabled" xml:space="preserve">
+        <value>Enable or disable the bucks economy (balances, transfers, prizes) for this room.</value>
+    </data>
+    <data name="bucks_disabled" xml:space="preserve">
+        <value>The bucks economy is disabled in this room.</value>
+    </data>
     <data name="parameter_name_tenor_gif_enabled" xml:space="preserve">
         <value>Tenor GIFs</value>
     </data>

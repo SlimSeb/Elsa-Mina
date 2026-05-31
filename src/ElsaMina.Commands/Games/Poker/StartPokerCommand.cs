@@ -2,6 +2,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 
 namespace ElsaMina.Commands.Games.Poker;
 
@@ -47,12 +48,20 @@ public class StartPokerCommand : Command
             }
         }
 
+        var isForFun = !await context.IsBucksEnabledAsync(cancellationToken);
+
         var game = _dependencyContainerService.Resolve<PokerGame>();
         game.Context = context;
         game.BuyIn = buyIn;
+        game.IsForFun = isForFun;
         context.Room.Game = game;
 
         context.ReplyLocalizedMessage("poker_game_created", context.Sender.Name, buyIn);
+        if (isForFun)
+        {
+            context.ReplyLocalizedMessage("poker_for_fun_mode");
+        }
+
         await game.BeginJoinPhaseAsync();
     }
 }

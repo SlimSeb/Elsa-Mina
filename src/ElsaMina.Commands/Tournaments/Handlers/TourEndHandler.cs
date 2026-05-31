@@ -5,6 +5,7 @@ using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
@@ -57,6 +58,10 @@ public class TourEndHandler : Handler
             return;
         }
 
+        var room = _roomsManager.GetRoom(roomId);
+        var isBucksEnabled = room != null &&
+                             (await room.GetParameterValueAsync(Parameter.BucksEnabled, cancellationToken)).ToBoolean();
+
         try
         {
             await using var dbContext = await _botDbContextFactory.CreateDbContextAsync(cancellationToken);
@@ -96,7 +101,7 @@ public class TourEndHandler : Handler
                 record.PlayedGames += playedGamesInTournament;
             }
 
-            if (!string.IsNullOrEmpty(result.Winner) && result.Players.Count > 0)
+            if (isBucksEnabled && !string.IsNullOrEmpty(result.Winner) && result.Players.Count > 0)
             {
                 var prize = result.Players.Count * PRIZE_PER_PARTICIPANT;
                 // The winner is one of the players, so their room data was created in the loop above.
@@ -120,12 +125,11 @@ public class TourEndHandler : Handler
             return;
         }
 
-        if (result.Players.Count > 0)
+        if (isBucksEnabled && result.Players.Count > 0)
         {
             var prize = result.Players.Count * PRIZE_PER_PARTICIPANT;
-            var culture = _roomsManager.GetRoom(roomId)?.Culture;
             var prizeMessage = string.Format(
-                _resourcesService.GetString("tournament_winner_prize", culture), result.Winner, prize);
+                _resourcesService.GetString("tournament_winner_prize", room?.Culture), result.Winner, prize);
             _bot.Say(roomId, prizeMessage);
         }
 

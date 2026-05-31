@@ -30,6 +30,9 @@
     <data name="poker_title" xml:space="preserve">
         <value>Texas Hold'em</value>
     </data>
+    <data name="poker_for_fun_mode" xml:space="preserve">
+        <value>Dieser Tisch läuft im Spaßmodus: Es stehen keine Bucks auf dem Spiel, der Buy-in legt nur deine Start-Chips fest.</value>
+    </data>
     <data name="poker_game_created" xml:space="preserve">
         <value>{0} hat einen Texas-Hold'em-Tisch eröffnet (Buy-in: {1} Bucks). Klicke auf den Button, um mitzuspielen!</value>
     </data>

@@ -1,6 +1,7 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
@@ -27,9 +28,15 @@ public class MoneyLeaderboardCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
+        if (!await context.IsBucksEnabledAsync(cancellationToken))
+        {
+            context.ReplyLocalizedMessage("bucks_disabled");
+            return;
+        }
+
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var richest = await dbContext.RoomUsers
-            .Where(roomUser => roomUser.RoomId == context.RoomId && roomUser.Money > 0)
+            .Where(roomUser => roomUser.RoomId == context.RoomId && roomUser.Money > IMoneyService.DEFAULT_BALANCE)
             .OrderByDescending(roomUser => roomUser.Money)
             .Take(LEADERBOARD_SIZE)
             .Select(roomUser => new { roomUser.Id, roomUser.Money })

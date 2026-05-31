@@ -208,6 +208,36 @@ public class PokerGameTest
         }
     }
 
+    [Test]
+    public async Task Test_ForFunMode_ShouldSeatBrokePlayers_AndMoveNoMoney()
+    {
+        _game.IsForFun = true;
+        // Both players are broke: in a real-money game they could not buy in.
+        _moneyService.Seed(ROOM_ID, "player1", 0);
+        _moneyService.Seed(ROOM_ID, "player2", 0);
+        var users = new[] { User("player1"), User("player2") };
+
+        foreach (var user in users)
+        {
+            var (success, _, _) = await _game.JoinAsync(user);
+            Assert.That(success, Is.True);
+        }
+
+        Assert.That(_game.PlayerCount, Is.EqualTo(2));
+
+        await _game.StartAsync(users[0]);
+        var firstToAct = _game.CurrentPlayer;
+        await _game.FoldAsync(firstToAct.User);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Phase, Is.EqualTo(PokerPhase.Finished));
+            // No real bucks were ever taken on buy-in or paid out on settle.
+            Assert.That(_moneyService.GetBalance("player1"), Is.EqualTo(0));
+            Assert.That(_moneyService.GetBalance("player2"), Is.EqualTo(0));
+        }
+    }
+
     /// <summary>
     /// In-memory <see cref="IMoneyService"/> mirroring the real default-100 / get-or-create semantics.
     /// </summary>

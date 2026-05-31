@@ -112,6 +112,14 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
                 DescriptionKey = "parameter_description_tenor_gif_enabled",
                 Type = RoomBotConfigurationType.Boolean,
                 DefaultValue = true.ToString()
+            },
+            [Parameter.BucksEnabled] = new ParameterDefinition
+            {
+                Identifier = "bck",
+                NameKey = "parameter_name_bucks_enabled",
+                DescriptionKey = "parameter_description_bucks_enabled",
+                Type = RoomBotConfigurationType.Boolean,
+                DefaultValue = false.ToString()
             }
         };
 }

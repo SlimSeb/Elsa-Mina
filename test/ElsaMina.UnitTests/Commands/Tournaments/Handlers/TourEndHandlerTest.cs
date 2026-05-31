@@ -6,6 +6,7 @@ using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +58,11 @@ public class TourEndHandlerTest
         _resourcesService
             .GetString("tournament_winner_prize", Arg.Any<CultureInfo>())
             .Returns("{0} won {1} bucks");
+        // Bucks economy is required for tournament prizes; enable it for every room by default.
+        var room = Substitute.For<IRoom>();
+        room.GetParameterValueAsync(Parameter.BucksEnabled, Arg.Any<CancellationToken>())
+            .Returns("true");
+        _roomsManager.GetRoom(Arg.Any<string>()).Returns(room);
 
         _handler = new TourEndHandler(_botDbContextFactory, _roomUserDataService, _profileService,
             _roomsManager, _resourcesService, _bot, _clockService);
@@ -359,5 +365,24 @@ public class TourEndHandlerTest
         var arcadeAccount = await dbContext.RoomUsers.FindAsync("pujolly", "arcade");
         Assert.That(lobbyAccount.Money, Is.EqualTo(50));
         Assert.That(arcadeAccount.Money, Is.EqualTo(118));
+    }
+
+    [Test]
+    public async Task Test_HandleReceivedMessageAsync_ShouldNotAwardPrize_WhenBucksAreDisabled()
+    {
+        var room = Substitute.For<IRoom>();
+        room.GetParameterValueAsync(Parameter.BucksEnabled, Arg.Any<CancellationToken>())
+            .Returns("false");
+        _roomsManager.GetRoom(Arg.Any<string>()).Returns(room);
+
+        var parts = new[] { "", "tournament", "end", TOUR_JSON };
+
+        await _handler.HandleReceivedMessageAsync(parts, "arcade");
+
+        await using var dbContext = new BotDbContext(_dbOptions);
+        var account = await dbContext.RoomUsers.FindAsync("pujolly", "arcade");
+        Assert.That(account, Is.Not.Null);
+        Assert.That(account.Money, Is.EqualTo(100));
+        _bot.DidNotReceive().Say("arcade", "pujolly won 18 bucks");
     }
 }

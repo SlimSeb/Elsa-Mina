@@ -130,12 +130,6 @@ public class TarotGame : Game, ITarotGame
                 return;
             }
 
-            if (_players.All(player => player.UserId != user.UserId))
-            {
-                Context.ReplyLocalizedMessage("tarot_start_not_a_player");
-                return;
-            }
-
             if (_players.Count < TarotConstants.MIN_PLAYERS)
             {
                 Context.ReplyLocalizedMessage("tarot_start_not_enough_players", TarotConstants.MIN_PLAYERS);
