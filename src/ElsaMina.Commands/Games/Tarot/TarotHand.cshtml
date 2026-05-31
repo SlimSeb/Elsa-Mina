@@ -21,8 +21,8 @@
         return card.Suit is TarotSuit.Hearts or TarotSuit.Diamonds ? "#cc2b2b" : "#111";
     }
 
-    string CardFontSize(TarotCard card) => card.IsTrump ? "1.5em" : "1.05em";
-    string CardPadding(TarotCard card) => card.IsTrump ? "6px 9px" : "3px 6px";
+    string CardFontSize(TarotCard card) => card.IsExcuse ? "1.35em" : "1.05em";
+    string CardPadding(TarotCard card) => card.IsExcuse ? "5px 8px" : "3px 6px";
 
     string Action(string command, TarotCard card) =>
         $"/botmsg {Model.BotName}, {Model.Trigger}{command} {Model.RoomId}, {card.ToToken()}";

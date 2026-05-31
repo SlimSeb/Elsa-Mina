@@ -18,7 +18,7 @@
         return card.Suit is TarotSuit.Hearts or TarotSuit.Diamonds ? "#ff7b7b" : "#ececec";
     }
 
-    string CardSize(TarotCard card) => card.IsTrump ? "1.7em" : "1.15em";
+    string CardSize(TarotCard card) => card.IsExcuse ? "1.45em" : "1.15em";
 }
 
 <div style="background:#2d2535;color:#ece7f2;border:1px solid #5a4a6a;border-radius:6px;padding:8px">
@@ -92,7 +92,7 @@
         @if (game.LastTrick != null && game.LastTrickWinner != null)
         {
             <p style="text-align:center;margin:8px 0 2px 0;color:#b9a9c9;font-size:0.85em">
-                @GetString("tarot_last_trick_label") &mdash; @GetString("tarot_won_by", game.LastTrickWinner.Name)
+                @GetString("tarot_last_trick_label") :ta @GetString("tarot_won_by", game.LastTrickWinner.Name)
             </p>
             <p style="text-align:center;margin:0 0 6px 0">
                 @foreach (var (player, card) in game.LastTrick.Plays)

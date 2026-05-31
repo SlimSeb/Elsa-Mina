@@ -1,4 +1,3 @@
-using System.Threading;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Games;
@@ -173,14 +172,14 @@ public class TarotGame : Game, ITarotGame
         var dogSize = TarotConstants.DOG_SIZE[_players.Count];
 
         var cursor = 0;
-        for (var playerIndex = 0; playerIndex < _players.Count; playerIndex++)
+        foreach (var player in _players)
         {
             for (var card = 0; card < handSize; card++)
             {
-                _players[playerIndex].Hand.Add(deck[cursor++]);
+                player.Hand.Add(deck[cursor++]);
             }
 
-            SortHand(_players[playerIndex].Hand);
+            SortHand(player.Hand);
         }
 
         for (var card = 0; card < dogSize; card++)
@@ -239,7 +238,7 @@ public class TarotGame : Game, ITarotGame
         if (HighestBid == TarotBid.Pass)
         {
             Context.ReplyLocalizedMessage("tarot_bidding_all_passed");
-            await EndGameAsync();
+            EndGame();
             return;
         }
 
@@ -609,7 +608,7 @@ public class TarotGame : Game, ITarotGame
         OnEnd();
     }
 
-    private async Task EndGameAsync()
+    private void EndGame()
     {
         StopTurnTimer();
         Phase = TarotPhase.Finished;
