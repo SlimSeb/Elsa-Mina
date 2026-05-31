@@ -312,4 +312,7 @@
     <data name="top_bettors_error" xml:space="preserve">
         <value>Impossibile recuperare i dati sulle scommesse.</value>
     </data>
+  <data name="tournament_winner_prize" xml:space="preserve">
+    <value>{0} ha vinto {1} bucks per aver vinto il torneo!</value>
+  </data>
 </root>

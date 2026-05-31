@@ -1,8 +1,11 @@
+using System.Globalization;
 using ElsaMina.Commands.Profile;
 using ElsaMina.Commands.Tournaments.Handlers;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Clock;
+using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.RoomUserData;
+using ElsaMina.Core.Services.Rooms;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +22,8 @@ public class TourEndHandlerTest
     private IBotDbContextFactory _botDbContextFactory;
     private IRoomUserDataService _roomUserDataService;
     private IProfileService _profileService;
+    private IRoomsManager _roomsManager;
+    private IResourcesService _resourcesService;
     private IBot _bot;
     private IClockService _clockService;
     private DbContextOptions<BotDbContext> _dbOptions;
@@ -30,6 +35,8 @@ public class TourEndHandlerTest
         _botDbContextFactory = Substitute.For<IBotDbContextFactory>();
         _roomUserDataService = Substitute.For<IRoomUserDataService>();
         _profileService = Substitute.For<IProfileService>();
+        _roomsManager = Substitute.For<IRoomsManager>();
+        _resourcesService = Substitute.For<IResourcesService>();
         _bot = Substitute.For<IBot>();
         _clockService = Substitute.For<IClockService>();
         _clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
@@ -42,8 +49,12 @@ public class TourEndHandlerTest
         _profileService
             .GetProfileHtmlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns("<profile/>");
+        _resourcesService
+            .GetString("tournament_winner_prize", Arg.Any<CultureInfo>())
+            .Returns("{0} won {1} bucks");
 
-        _handler = new TourEndHandler(_botDbContextFactory, _roomUserDataService, _profileService, _bot, _clockService);
+        _handler = new TourEndHandler(_botDbContextFactory, _roomUserDataService, _profileService,
+            _roomsManager, _resourcesService, _bot, _clockService);
     }
 
     [TearDown]
@@ -266,5 +277,47 @@ public class TourEndHandlerTest
         var parts = new[] { "", "tournament", "end", TOUR_JSON };
 
         Assert.DoesNotThrowAsync(() => _handler.HandleReceivedMessageAsync(parts, "arcade"));
+    }
+
+    [Test]
+    public async Task Test_HandleReceivedMessageAsync_ShouldAwardWinnerTwiceTheParticipantCount()
+    {
+        // 9 participants, so the winner (Pujolly) earns 18 bucks
+        var parts = new[] { "", "tournament", "end", TOUR_JSON };
+
+        await _handler.HandleReceivedMessageAsync(parts, "arcade");
+
+        await using var dbContext = new BotDbContext(_dbOptions);
+        var account = await dbContext.Money.FindAsync("pujolly");
+        Assert.That(account, Is.Not.Null);
+        Assert.That(account.Amount, Is.EqualTo(18));
+    }
+
+    [Test]
+    public async Task Test_HandleReceivedMessageAsync_ShouldAddToExistingBalance_WhenWinnerAlreadyHasBucks()
+    {
+        await using (var seedContext = new BotDbContext(_dbOptions))
+        {
+            await seedContext.Money.AddAsync(new Money { Id = "pujolly", Amount = 100 });
+            await seedContext.SaveChangesAsync();
+        }
+
+        var parts = new[] { "", "tournament", "end", TOUR_JSON };
+
+        await _handler.HandleReceivedMessageAsync(parts, "arcade");
+
+        await using var dbContext = new BotDbContext(_dbOptions);
+        var account = await dbContext.Money.FindAsync("pujolly");
+        Assert.That(account.Amount, Is.EqualTo(118));
+    }
+
+    [Test]
+    public async Task Test_HandleReceivedMessageAsync_ShouldAnnounceThePrize_ToTheRoom()
+    {
+        var parts = new[] { "", "tournament", "end", TOUR_JSON };
+
+        await _handler.HandleReceivedMessageAsync(parts, "arcade");
+
+        _bot.Received(1).Say("arcade", "pujolly won 18 bucks");
     }
 }

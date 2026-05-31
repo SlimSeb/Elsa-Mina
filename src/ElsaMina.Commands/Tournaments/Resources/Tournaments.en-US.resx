@@ -312,4 +312,7 @@
     <data name="top_bettors_error" xml:space="preserve">
         <value>Could not retrieve betting data.</value>
     </data>
+  <data name="tournament_winner_prize" xml:space="preserve">
+    <value>{0} won {1} bucks for winning the tournament!</value>
+  </data>
 </root>

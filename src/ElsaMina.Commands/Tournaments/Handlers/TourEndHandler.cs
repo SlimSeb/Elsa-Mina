@@ -2,7 +2,9 @@ using ElsaMina.Commands.Profile;
 using ElsaMina.Core;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Services.Clock;
+using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.RoomUserData;
+using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
@@ -12,21 +14,29 @@ namespace ElsaMina.Commands.Tournaments.Handlers;
 
 public class TourEndHandler : Handler
 {
+    private const int PRIZE_PER_PARTICIPANT = 2;
+
     private readonly IBotDbContextFactory _botDbContextFactory;
     private readonly IRoomUserDataService _roomUserDataService;
     private readonly IProfileService _profileService;
+    private readonly IRoomsManager _roomsManager;
+    private readonly IResourcesService _resourcesService;
     private readonly IBot _bot;
     private readonly IClockService _clockService;
 
     public TourEndHandler(IBotDbContextFactory botDbContextFactory,
         IRoomUserDataService roomUserDataService,
         IProfileService profileService,
+        IRoomsManager roomsManager,
+        IResourcesService resourcesService,
         IBot bot,
         IClockService clockService)
     {
         _botDbContextFactory = botDbContextFactory;
         _roomUserDataService = roomUserDataService;
         _profileService = profileService;
+        _roomsManager = roomsManager;
+        _resourcesService = resourcesService;
         _bot = bot;
         _clockService = clockService;
     }
@@ -86,6 +96,21 @@ public class TourEndHandler : Handler
                 record.PlayedGames += playedGamesInTournament;
             }
 
+            if (!string.IsNullOrEmpty(result.Winner) && result.Players.Count > 0)
+            {
+                var prize = result.Players.Count * PRIZE_PER_PARTICIPANT;
+                var winnerAccount = await dbContext.Money.FindAsync([result.Winner], cancellationToken);
+                if (winnerAccount == null)
+                {
+                    winnerAccount = new Money { Id = result.Winner, Amount = prize };
+                    await dbContext.Money.AddAsync(winnerAccount, cancellationToken);
+                }
+                else
+                {
+                    winnerAccount.Amount += prize;
+                }
+            }
+
             await dbContext.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
@@ -96,6 +121,15 @@ public class TourEndHandler : Handler
         if (result.Winner == null)
         {
             return;
+        }
+
+        if (result.Players.Count > 0)
+        {
+            var prize = result.Players.Count * PRIZE_PER_PARTICIPANT;
+            var culture = _roomsManager.GetRoom(roomId)?.Culture;
+            var prizeMessage = string.Format(
+                _resourcesService.GetString("tournament_winner_prize", culture), result.Winner, prize);
+            _bot.Say(roomId, prizeMessage);
         }
 
         try
