@@ -24,14 +24,13 @@ public class TarotGame : Game, ITarotGame
     private readonly List<TarotCard> _pendingDiscards = [];
     private readonly HashSet<string> _initializedHandPanels = [];
 
-    private const int PANEL_REFRESH_EVERY_TRICKS = 2;
-
     private int _currentTurnIndex;
     private int _firstLeaderIndex;
     private int _takerIndex = -1;
     private int _partnerIndex = -1;
     private bool _publicPanelInitialized;
     private int _publicPanelSegment;
+    private int _handPanelSegment;
 
     [UsedImplicitly]
     public TarotGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration)
@@ -81,7 +80,7 @@ public class TarotGame : Game, ITarotGame
     public TarotScoreResult ScoreResult { get; private set; }
 
     private string PublicPanelId => $"tarot-{GameId}-{_publicPanelSegment}";
-    private string HandPanelId(string userId) => $"tarot-hand-{GameId}-{userId}";
+    private string HandPanelId(string userId) => $"tarot-hand-{GameId}-{userId}-{_handPanelSegment}";
 
     #region Lobby
 
@@ -504,14 +503,19 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
-        // Periodically re-post the public panel so it drops back to the bottom of the chat
-        // instead of staying stuck high up in the scrollback.
-        if (TrickNumber % PANEL_REFRESH_EVERY_TRICKS == 0)
+        // Force re-post the public and hand panels so they drop back to the bottom of
+        // the chat instead of staying stuck high up in the scrollback.
+        Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
+        _publicPanelSegment++;
+        _publicPanelInitialized = false;
+
+        foreach (var player in _players)
         {
-            Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
-            _publicPanelSegment++;
-            _publicPanelInitialized = false;
+            Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
+                string.Empty, true);
         }
+        _handPanelSegment++;
+        _initializedHandPanels.Clear();
 
         TrickNumber++;
         CurrentTrick = new TarotTrick();
