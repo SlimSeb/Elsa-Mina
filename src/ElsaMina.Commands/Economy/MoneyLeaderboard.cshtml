@@ -1,0 +1,27 @@
+@using ElsaMina.Core.Utils
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Economy.MoneyLeaderboardViewModel>
+<b>@GetString("money_leaderboard_title") :</b><br>
+<table>
+    <tr>
+        <th>#</th>
+        <th>@GetString("money_leaderboard_user")</th>
+        <th>@GetString("money_leaderboard_amount")</th>
+    </tr>
+    @{ var rank = 0; }
+    @foreach (var (user, amount) in Model.Leaderboard)
+    {
+        rank++;
+        <tr>
+            <td>@rank</td>
+            <td>
+                <span
+                    class="username"
+                    data-name="@user"
+                    style="font-weight: bold; font-style: italic; color: @user.ToColorHexCodeWithCustoms();">
+                    @user
+                </span>
+            </td>
+            <td>@amount bucks</td>
+        </tr>
+    }
+</table>

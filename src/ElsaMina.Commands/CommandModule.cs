@@ -28,6 +28,7 @@ using ElsaMina.Commands.Development;
 using ElsaMina.Commands.Development.Commands;
 using ElsaMina.Commands.Development.HandlerDashboard;
 using ElsaMina.Commands.Development.LagTest;
+using ElsaMina.Commands.Economy;
 using ElsaMina.Commands.Games;
 using ElsaMina.Commands.Games.Blackjack;
 using ElsaMina.Commands.Games.ConnectFour;
@@ -233,6 +234,10 @@ public partial class CommandModule : Module
         builder.RegisterCommand<GetArcadeLevelCommand>();
         builder.RegisterCommand<AddPointsCommand>();
         builder.RegisterCommand<RemovePointsCommand>();
+        builder.RegisterCommand<GiveMoneyCommand>();
+        builder.RegisterCommand<TransferMoneyCommand>();
+        builder.RegisterCommand<MoneyCommand>();
+        builder.RegisterCommand<MoneyLeaderboardCommand>();
         builder.RegisterCommand<LeaderboardCommand>();
         builder.RegisterCommand<ClearPointsCommand>();
         builder.RegisterCommand<ForfeitConnectFourCommand>();

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="give_money_help" xml:space="preserve">
+        <value>Syntax: givemoney (user), (amount). Creates bucks out of nothing and gives them to a user.</value>
+    </data>
+
+    <data name="give_money_success" xml:space="preserve">
+        <value>Gave {0} bucks to {1}. Their new balance is {2} bucks.</value>
+    </data>
+
+    <data name="money_invalid_amount" xml:space="preserve">
+        <value>Please provide a valid positive amount.</value>
+    </data>
+
+    <data name="transfer_money_help" xml:space="preserve">
+        <value>Syntax: transfer (user), (amount). Transfers bucks from your balance to another user.</value>
+    </data>
+
+    <data name="transfer_money_self" xml:space="preserve">
+        <value>You cannot transfer bucks to yourself.</value>
+    </data>
+
+    <data name="transfer_money_insufficient_funds" xml:space="preserve">
+        <value>You don't have enough bucks. Your balance is {0} bucks.</value>
+    </data>
+
+    <data name="transfer_money_success" xml:space="preserve">
+        <value>You transferred {0} bucks to {1}. Your new balance is {2} bucks.</value>
+    </data>
+
+    <data name="money_help" xml:space="preserve">
+        <value>Syntax: money [user]. Shows the bucks balance of a user (yours if omitted).</value>
+    </data>
+
+    <data name="money_balance" xml:space="preserve">
+        <value>{0} has {1} bucks.</value>
+    </data>
+
+    <data name="money_leaderboard_help" xml:space="preserve">
+        <value>Syntax: richest. Shows the top 20 richest users.</value>
+    </data>
+
+    <data name="money_leaderboard_empty" xml:space="preserve">
+        <value>Nobody has any bucks yet.</value>
+    </data>
+
+    <data name="money_leaderboard_title" xml:space="preserve">
+        <value>Top 20 richest users</value>
+    </data>
+
+    <data name="money_leaderboard_user" xml:space="preserve">
+        <value>User</value>
+    </data>
+
+    <data name="money_leaderboard_amount" xml:space="preserve">
+        <value>Bucks</value>
+    </data>
+</root>

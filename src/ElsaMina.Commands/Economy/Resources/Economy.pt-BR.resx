@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="give_money_help" xml:space="preserve">
+        <value>Sintaxe: givemoney (usuário), (quantia). Cria bucks do nada e os dá a um usuário.</value>
+    </data>
+
+    <data name="give_money_success" xml:space="preserve">
+        <value>Foram dados {0} bucks para {1}. O novo saldo dele é de {2} bucks.</value>
+    </data>
+
+    <data name="money_invalid_amount" xml:space="preserve">
+        <value>Por favor, forneça uma quantia positiva válida.</value>
+    </data>
+
+    <data name="transfer_money_help" xml:space="preserve">
+        <value>Sintaxe: transfer (usuário), (quantia). Transfere bucks do seu saldo para outro usuário.</value>
+    </data>
+
+    <data name="transfer_money_self" xml:space="preserve">
+        <value>Você não pode transferir bucks para si mesmo.</value>
+    </data>
+
+    <data name="transfer_money_insufficient_funds" xml:space="preserve">
+        <value>Você não tem bucks suficientes. Seu saldo é de {0} bucks.</value>
+    </data>
+
+    <data name="transfer_money_success" xml:space="preserve">
+        <value>Você transferiu {0} bucks para {1}. Seu novo saldo é de {2} bucks.</value>
+    </data>
+
+    <data name="money_help" xml:space="preserve">
+        <value>Sintaxe: money [usuário]. Mostra o saldo em bucks de um usuário (o seu, se omitido).</value>
+    </data>
+
+    <data name="money_balance" xml:space="preserve">
+        <value>{0} tem {1} bucks.</value>
+    </data>
+
+    <data name="money_leaderboard_help" xml:space="preserve">
+        <value>Sintaxe: richest. Mostra os 20 usuários mais ricos.</value>
+    </data>
+
+    <data name="money_leaderboard_empty" xml:space="preserve">
+        <value>Ninguém tem bucks ainda.</value>
+    </data>
+
+    <data name="money_leaderboard_title" xml:space="preserve">
+        <value>Top 20 dos usuários mais ricos</value>
+    </data>
+
+    <data name="money_leaderboard_user" xml:space="preserve">
+        <value>Usuário</value>
+    </data>
+
+    <data name="money_leaderboard_amount" xml:space="preserve">
+        <value>Bucks</value>
+    </data>
+</root>
