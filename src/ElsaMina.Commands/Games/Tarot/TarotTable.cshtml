@@ -92,7 +92,7 @@
         @if (game.LastTrick != null && game.LastTrickWinner != null)
         {
             <p style="text-align:center;margin:8px 0 2px 0;color:#b9a9c9;font-size:0.85em">
-                @GetString("tarot_last_trick_label") :ta @GetString("tarot_won_by", game.LastTrickWinner.Name)
+                @GetString("tarot_last_trick_label") : @GetString("tarot_won_by", game.LastTrickWinner.Name)
             </p>
             <p style="text-align:center;margin:0 0 6px 0">
                 @foreach (var (player, card) in game.LastTrick.Plays)
