@@ -1,0 +1,80 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Poker.PokerViewModel>
+@using ElsaMina.Commands.Games.Poker
+@using ElsaMina.Core.Utils
+
+@{
+    var game = Model.Game;
+
+    string CardColor(PokerCard card) => card.IsRed ? "#cc2b2b" : "#111";
+
+    string HandName(PokerPlayer player)
+    {
+        if (player.Evaluation == null)
+        {
+            return string.Empty;
+        }
+        return player.Evaluation.IsRoyalFlush
+            ? GetString("poker_hand_royalflush")
+            : GetString($"poker_hand_{player.Evaluation.Rank.ToString().ToLowerInvariant()}");
+    }
+}
+
+<div style="background:#13361f;color:#eafff0;border:1px solid #2f7a4a;border-radius:6px;padding:10px">
+    <h3 style="margin:0 0 8px 0;text-align:center">♠ @GetString("poker_result_title") ♥</h3>
+
+    @if (game.CommunityCards.Count > 0)
+    {
+        <p style="text-align:center;margin:6px 0">
+            @foreach (var card in game.CommunityCards)
+            {
+                <span style="display:inline-block;min-width:22px;text-align:center;padding:5px 7px;margin:2px;background:#fff;color:@CardColor(card);border-radius:4px;font-weight:bold;font-size:1.15em">@card.ToDisplay()</span>
+            }
+        </p>
+    }
+
+    <p style="text-align:center;margin:4px 0"><b>@GetString("poker_pot_label"):</b> @game.TotalPot</p>
+
+    <table style="margin:8px auto 0 auto;border-collapse:collapse">
+        @foreach (var player in game.Players)
+        {
+            var delta = player.Winnings - player.Committed;
+            var deltaColor = delta > 0 ? "#6ddf9a" : delta < 0 ? "#ff8a8a" : "#cfe";
+            var reveal = game.WentToShowdown && !player.HasFolded;
+            <tr style="border-bottom:1px solid #2f7a4a">
+                <td style="padding:4px 10px;color:@player.Name.ToColorHexCodeWithCustoms();font-weight:bold">
+                    @player.Name
+                    @if (player.Winnings > 0)
+                    {
+                        <text>🏆</text>
+                    }
+                </td>
+                <td style="padding:4px 10px">
+                    @if (reveal)
+                    {
+                        foreach (var card in player.HoleCards)
+                        {
+                            <span style="display:inline-block;min-width:18px;text-align:center;padding:3px 5px;margin:1px;background:#fff;color:@CardColor(card);border-radius:3px;font-weight:bold">@card.ToDisplay()</span>
+                        }
+                    }
+                    else if (player.HasFolded)
+                    {
+                        <span style="color:#c98;font-size:0.85em">@GetString("poker_status_folded")</span>
+                    }
+                </td>
+                <td style="padding:4px 10px;color:#bfe6cd;font-size:0.9em">
+                    @if (reveal)
+                    {
+                        @HandName(player)
+                    }
+                </td>
+                <td style="padding:4px 10px;text-align:right;font-weight:bold;color:@deltaColor">
+                    @(delta >= 0 ? "+" : "")@delta
+                </td>
+            </tr>
+        }
+    </table>
+
+    <p style="text-align:center;margin:8px 0 0 0;color:#9fc7ad;font-size:0.85em">
+        @GetString("poker_result_footer", Model.Trigger)
+    </p>
+</div>

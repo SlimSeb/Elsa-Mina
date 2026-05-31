@@ -1,0 +1,95 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Poker.PokerViewModel>
+@using ElsaMina.Commands.Games.Poker
+@using ElsaMina.Core.Utils
+
+@{
+    var game = Model.Game;
+
+    string CardColor(PokerCard card) => card.IsRed ? "#cc2b2b" : "#111";
+
+    string PositionTag(PokerPlayer player)
+    {
+        if (player == game.Dealer)
+        {
+            return GetString("poker_tag_dealer");
+        }
+        if (player == game.SmallBlindPlayer)
+        {
+            return GetString("poker_tag_small_blind");
+        }
+        if (player == game.BigBlindPlayer)
+        {
+            return GetString("poker_tag_big_blind");
+        }
+        return string.Empty;
+    }
+}
+
+<div style="background:#13361f;color:#eafff0;border:1px solid #2f7a4a;border-radius:6px;padding:10px">
+    <h3 style="margin:0 0 6px 0;text-align:center">♠ @GetString("poker_title") ♥</h3>
+
+    <p style="text-align:center;margin:6px 0">
+        @if (game.CommunityCards.Count == 0)
+        {
+            <em style="color:#9fc7ad">@GetString("poker_no_community")</em>
+        }
+        else
+        {
+            foreach (var card in game.CommunityCards)
+            {
+                <span style="display:inline-block;min-width:22px;text-align:center;padding:5px 7px;margin:2px;background:#fff;color:@CardColor(card);border-radius:4px;font-weight:bold;font-size:1.2em">@card.ToDisplay()</span>
+            }
+        }
+    </p>
+
+    <p style="text-align:center;margin:6px 0;font-size:1.05em">
+        <b>@GetString("poker_pot_label"):</b> @game.TotalPot
+        @if (game.CurrentBet > 0)
+        {
+            <text>&nbsp;|&nbsp; <b>@GetString("poker_current_bet_label"):</b> @game.CurrentBet</text>
+        }
+    </p>
+
+    <table style="margin:6px auto 0 auto;border-collapse:collapse;font-size:0.95em">
+        @foreach (var player in game.Players)
+        {
+            var isCurrent = game.CurrentPlayer == player;
+            var tag = PositionTag(player);
+            <tr style="@(isCurrent ? "background:#27562f;font-weight:bold" : "")">
+                <td style="padding:3px 8px;text-align:right;color:#cfe">@(isCurrent ? "▶" : "")</td>
+                <td style="padding:3px 8px;color:@player.Name.ToColorHexCodeWithCustoms()">
+                    @player.Name
+                    @if (!string.IsNullOrEmpty(tag))
+                    {
+                        <span style="color:#9fc7ad;font-size:0.8em">(@tag)</span>
+                    }
+                </td>
+                <td style="padding:3px 8px;text-align:right">@GetString("poker_stack_short"): @player.Stack</td>
+                <td style="padding:3px 8px;text-align:right">
+                    @if (player.RoundBet > 0)
+                    {
+                        <span style="color:#f7d774">@player.RoundBet</span>
+                    }
+                </td>
+                <td style="padding:3px 8px">
+                    @if (player.HasFolded)
+                    {
+                        <span style="color:#c98">@GetString("poker_status_folded")</span>
+                    }
+                    else if (player.IsAllIn)
+                    {
+                        <span style="color:#ff9b54">@GetString("poker_status_all_in")</span>
+                    }
+                </td>
+            </tr>
+        }
+    </table>
+
+    @if (game.CurrentPlayer != null)
+    {
+        <p style="text-align:center;margin:8px 0 0 0">
+            @GetString("poker_waiting_for")
+            <b style="color:@game.CurrentPlayer.Name.ToColorHexCodeWithCustoms()">@game.CurrentPlayer.Name</b>
+        </p>
+    }
+</div>

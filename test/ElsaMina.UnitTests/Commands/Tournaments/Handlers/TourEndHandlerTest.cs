@@ -46,6 +46,11 @@ public class TourEndHandlerTest
         _botDbContextFactory
             .CreateDbContextAsync(Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromResult(new BotDbContext(_dbOptions)));
+        // Mirror the real service: ensure the room user row exists (starting at the default balance).
+        _roomUserDataService
+            .GetOrCreateRoomSpecificUserDataAsync(Arg.Any<string>(), Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call => GetOrCreateRoomUserAsync(call.ArgAt<string>(0), call.ArgAt<string>(1)));
         _profileService
             .GetProfileHtmlAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns("<profile/>");
@@ -62,6 +67,21 @@ public class TourEndHandlerTest
     {
         await using var dbContext = new BotDbContext(_dbOptions);
         await dbContext.Database.EnsureDeletedAsync();
+    }
+
+    private async Task<RoomUser> GetOrCreateRoomUserAsync(string roomId, string userId)
+    {
+        await using var dbContext = new BotDbContext(_dbOptions);
+        var existing = await dbContext.RoomUsers.FindAsync(userId, roomId);
+        if (existing != null)
+        {
+            return existing;
+        }
+
+        var roomUser = new RoomUser { Id = userId, RoomId = roomId };
+        dbContext.RoomUsers.Add(roomUser);
+        await dbContext.SaveChangesAsync();
+        return roomUser;
     }
 
     [Test]
@@ -282,15 +302,15 @@ public class TourEndHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldAwardWinnerTwiceTheParticipantCount()
     {
-        // 9 participants, so the winner (Pujolly) earns 18 bucks
+        // 9 participants, so the winner (Pujolly) earns 18 bucks on top of the default balance of 100.
         var parts = new[] { "", "tournament", "end", TOUR_JSON };
 
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
 
         await using var dbContext = new BotDbContext(_dbOptions);
-        var account = await dbContext.Money.FindAsync("pujolly", "arcade");
+        var account = await dbContext.RoomUsers.FindAsync("pujolly", "arcade");
         Assert.That(account, Is.Not.Null);
-        Assert.That(account.Amount, Is.EqualTo(18));
+        Assert.That(account.Money, Is.EqualTo(118));
     }
 
     [Test]
@@ -298,7 +318,7 @@ public class TourEndHandlerTest
     {
         await using (var seedContext = new BotDbContext(_dbOptions))
         {
-            await seedContext.Money.AddAsync(new Money { Id = "pujolly", RoomId = "arcade", Amount = 100 });
+            seedContext.RoomUsers.Add(new RoomUser { Id = "pujolly", RoomId = "arcade", Money = 200 });
             await seedContext.SaveChangesAsync();
         }
 
@@ -307,8 +327,8 @@ public class TourEndHandlerTest
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
 
         await using var dbContext = new BotDbContext(_dbOptions);
-        var account = await dbContext.Money.FindAsync("pujolly", "arcade");
-        Assert.That(account.Amount, Is.EqualTo(118));
+        var account = await dbContext.RoomUsers.FindAsync("pujolly", "arcade");
+        Assert.That(account.Money, Is.EqualTo(218));
     }
 
     [Test]
@@ -326,7 +346,7 @@ public class TourEndHandlerTest
     {
         await using (var seedContext = new BotDbContext(_dbOptions))
         {
-            await seedContext.Money.AddAsync(new Money { Id = "pujolly", RoomId = "lobby", Amount = 50 });
+            seedContext.RoomUsers.Add(new RoomUser { Id = "pujolly", RoomId = "lobby", Money = 50 });
             await seedContext.SaveChangesAsync();
         }
 
@@ -335,9 +355,9 @@ public class TourEndHandlerTest
         await _handler.HandleReceivedMessageAsync(parts, "arcade");
 
         await using var dbContext = new BotDbContext(_dbOptions);
-        var lobbyAccount = await dbContext.Money.FindAsync("pujolly", "lobby");
-        var arcadeAccount = await dbContext.Money.FindAsync("pujolly", "arcade");
-        Assert.That(lobbyAccount.Amount, Is.EqualTo(50));
-        Assert.That(arcadeAccount.Amount, Is.EqualTo(18));
+        var lobbyAccount = await dbContext.RoomUsers.FindAsync("pujolly", "lobby");
+        var arcadeAccount = await dbContext.RoomUsers.FindAsync("pujolly", "arcade");
+        Assert.That(lobbyAccount.Money, Is.EqualTo(50));
+        Assert.That(arcadeAccount.Money, Is.EqualTo(118));
     }
 }

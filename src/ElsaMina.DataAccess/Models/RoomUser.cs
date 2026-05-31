@@ -10,6 +10,7 @@ public class RoomUser
 {
     public string Id { get; set; }
     public string RoomId { get; set; }
+    public long Money { get; set; } = 100;
     public string Avatar { get; set; }
     public string Title { get; set; }
     public string JoinPhrase { get; set; }

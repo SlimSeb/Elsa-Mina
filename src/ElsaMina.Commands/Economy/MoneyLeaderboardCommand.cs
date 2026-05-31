@@ -28,10 +28,11 @@ public class MoneyLeaderboardCommand : Command
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var richest = await dbContext.Money
-            .Where(account => account.RoomId == context.RoomId && account.Amount > 0)
-            .OrderByDescending(account => account.Amount)
+        var richest = await dbContext.RoomUsers
+            .Where(roomUser => roomUser.RoomId == context.RoomId && roomUser.Money > 0)
+            .OrderByDescending(roomUser => roomUser.Money)
             .Take(LEADERBOARD_SIZE)
+            .Select(roomUser => new { roomUser.Id, roomUser.Money })
             .ToListAsync(cancellationToken);
 
         if (richest.Count == 0)
@@ -43,7 +44,7 @@ public class MoneyLeaderboardCommand : Command
         var template = await _templatesManager.GetTemplateAsync("Economy/MoneyLeaderboard", new MoneyLeaderboardViewModel
         {
             Culture = context.Culture,
-            Leaderboard = richest.Select(account => new KeyValuePair<string, long>(account.Id, account.Amount)).ToList()
+            Leaderboard = richest.Select(account => new KeyValuePair<string, long>(account.Id, account.Money)).ToList()
         });
 
         context.Reply($"/addhtmlbox {template.RemoveNewlines()}");

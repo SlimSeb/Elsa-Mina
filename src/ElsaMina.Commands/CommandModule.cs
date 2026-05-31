@@ -40,6 +40,7 @@ using ElsaMina.Commands.Games.GuessingGame.Gatekeepers;
 using ElsaMina.Commands.Games.GuessingGame.PokeCries;
 using ElsaMina.Commands.Games.GuessingGame.PokeDesc;
 using ElsaMina.Commands.Games.LightsOut;
+using ElsaMina.Commands.Games.Poker;
 using ElsaMina.Commands.Games.PokeRace;
 using ElsaMina.Commands.Games.RockPaperScissors;
 using ElsaMina.Commands.Games.Tarot;
@@ -238,6 +239,7 @@ public partial class CommandModule : Module
         builder.RegisterCommand<TransferMoneyCommand>();
         builder.RegisterCommand<MoneyCommand>();
         builder.RegisterCommand<MoneyLeaderboardCommand>();
+        builder.RegisterType<MoneyService>().As<IMoneyService>().SingleInstance();
         builder.RegisterCommand<LeaderboardCommand>();
         builder.RegisterCommand<ClearPointsCommand>();
         builder.RegisterCommand<ForfeitConnectFourCommand>();
@@ -417,6 +419,15 @@ public partial class CommandModule : Module
         builder.RegisterCommand<PlayTarotCommand>();
         builder.RegisterCommand<EndTarotCommand>();
 
+        builder.RegisterCommand<StartPokerCommand>();
+        builder.RegisterCommand<JoinPokerCommand>();
+        builder.RegisterCommand<BeginPokerCommand>();
+        builder.RegisterCommand<FoldPokerCommand>();
+        builder.RegisterCommand<CheckPokerCommand>();
+        builder.RegisterCommand<CallPokerCommand>();
+        builder.RegisterCommand<RaisePokerCommand>();
+        builder.RegisterCommand<EndPokerCommand>();
+
         builder.RegisterType<CountriesGame>().AsSelf();
         builder.RegisterType<CapitalCitiesGame>().AsSelf();
         builder.RegisterType<ConnectFourGame>().AsSelf();
@@ -425,6 +436,7 @@ public partial class CommandModule : Module
         builder.RegisterType<PokeRaceGame>().AsSelf();
         builder.RegisterType<RpsGame>().AsSelf();
         builder.RegisterType<TarotGame>().AsSelf();
+        builder.RegisterType<PokerGame>().AsSelf();
         builder.RegisterType<PokeDescGame>().AsSelf();
         builder.RegisterType<PokeCriesGame>().AsSelf();
         builder.RegisterType<GatekeepersGame>().AsSelf();

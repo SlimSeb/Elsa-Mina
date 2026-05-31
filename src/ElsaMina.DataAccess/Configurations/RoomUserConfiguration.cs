@@ -12,6 +12,10 @@ public class RoomUserConfiguration : IEntityTypeConfiguration<RoomUser>
             .HasKey(userData => new { userData.Id, userData.RoomId });
 
         builder
+            .Property(userData => userData.Money)
+            .HasDefaultValue(100L);
+
+        builder
             .HasOne(roomUser => roomUser.User)
             .WithMany(savedUser => savedUser.RoomData)
             .HasForeignKey(roomUser => roomUser.Id);

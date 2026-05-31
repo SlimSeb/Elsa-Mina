@@ -1,0 +1,34 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Poker.PokerViewModel>
+@using ElsaMina.Core.Utils
+
+<div style="background:#13361f;color:#eafff0;border:1px solid #2f7a4a;border-radius:6px;padding:10px">
+    <h3 style="margin:0;text-align:center">♠ @GetString("poker_title") ♥</h3>
+    <p style="text-align:center;margin:6px 0">@GetString("poker_lobby_intro", Model.Game.BuyIn)</p>
+    <p style="text-align:center;margin:2px 0;color:#bfe6cd;font-size:0.85em">
+        @GetString("poker_blinds_label", Model.Game.SmallBlindAmount, Model.Game.BigBlindAmount)
+    </p>
+
+    <p style="text-align:center;margin:6px 0">
+        <b>@GetString("poker_players_label") (@Model.Game.PlayerCount/@ElsaMina.Commands.Games.Poker.PokerConstants.MAX_PLAYERS):</b>
+        @if (Model.Game.PlayerCount == 0)
+        {
+            <em>@GetString("poker_lobby_no_players")</em>
+        }
+        else
+        {
+            foreach (var player in Model.Game.Players)
+            {
+                <b style="color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</b>
+                <text>&nbsp;&nbsp;</text>
+            }
+        }
+    </p>
+
+    <p style="text-align:center;margin:6px 0">
+        <button class="button" name="send" value="@(Model.Trigger)pokerjoin">@GetString("poker_lobby_join_button")</button>
+        <button class="button" name="send" value="@(Model.Trigger)pokerstart">@GetString("poker_lobby_start_button")</button>
+    </p>
+    <p style="text-align:center;color:#9fc7ad;font-size:0.85em;margin:4px 0">
+        @GetString("poker_lobby_hint", Model.Trigger, ElsaMina.Commands.Games.Poker.PokerConstants.MIN_PLAYERS)
+    </p>
+</div>

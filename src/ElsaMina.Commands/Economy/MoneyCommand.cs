@@ -2,18 +2,17 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
-using ElsaMina.DataAccess;
 
 namespace ElsaMina.Commands.Economy;
 
 [NamedCommand("money", Aliases = ["balance", "wallet"])]
 public class MoneyCommand : Command
 {
-    private readonly IBotDbContextFactory _dbContextFactory;
+    private readonly IMoneyService _moneyService;
 
-    public MoneyCommand(IBotDbContextFactory dbContextFactory)
+    public MoneyCommand(IMoneyService moneyService)
     {
-        _dbContextFactory = dbContextFactory;
+        _moneyService = moneyService;
     }
 
     public override Rank RequiredRank => Rank.Regular;
@@ -29,9 +28,7 @@ public class MoneyCommand : Command
             return;
         }
 
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var account = await dbContext.Money.FindAsync([targetId, context.RoomId], cancellationToken);
-        var amount = account?.Amount ?? 0;
+        var amount = await _moneyService.GetBalanceAsync(context.RoomId, targetId, cancellationToken);
 
         context.ReplyLocalizedMessage("money_balance", targetName, amount);
     }

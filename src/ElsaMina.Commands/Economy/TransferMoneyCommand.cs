@@ -2,19 +2,17 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
-using ElsaMina.DataAccess;
-using ElsaMina.DataAccess.Models;
 
 namespace ElsaMina.Commands.Economy;
 
 [NamedCommand("transfer", Aliases = ["pay", "send-money"])]
 public class TransferMoneyCommand : Command
 {
-    private readonly IBotDbContextFactory _dbContextFactory;
+    private readonly IMoneyService _moneyService;
 
-    public TransferMoneyCommand(IBotDbContextFactory dbContextFactory)
+    public TransferMoneyCommand(IMoneyService moneyService)
     {
-        _dbContextFactory = dbContextFactory;
+        _moneyService = moneyService;
     }
 
     public override Rank RequiredRank => Rank.Regular;
@@ -50,27 +48,16 @@ public class TransferMoneyCommand : Command
             return;
         }
 
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-
-        var senderAccount = await dbContext.Money.FindAsync([senderId, context.RoomId], cancellationToken);
-        if (senderAccount == null || senderAccount.Amount < amount)
+        var senderBalance = await _moneyService.GetBalanceAsync(context.RoomId, senderId, cancellationToken);
+        if (senderBalance < amount)
         {
-            context.ReplyLocalizedMessage("transfer_money_insufficient_funds", senderAccount?.Amount ?? 0);
+            context.ReplyLocalizedMessage("transfer_money_insufficient_funds", senderBalance);
             return;
         }
 
-        var recipientAccount = await dbContext.Money.FindAsync([recipientId, context.RoomId], cancellationToken);
-        if (recipientAccount == null)
-        {
-            recipientAccount = new Money { Id = recipientId, RoomId = context.RoomId, Amount = 0 };
-            await dbContext.Money.AddAsync(recipientAccount, cancellationToken);
-        }
+        var newSenderBalance = await _moneyService.AddAsync(context.RoomId, senderId, -amount, cancellationToken);
+        await _moneyService.AddAsync(context.RoomId, recipientId, amount, cancellationToken);
 
-        senderAccount.Amount -= amount;
-        recipientAccount.Amount += amount;
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        context.ReplyLocalizedMessage("transfer_money_success", amount, recipientName, senderAccount.Amount);
+        context.ReplyLocalizedMessage("transfer_money_success", amount, recipientName, newSenderBalance);
     }
 }

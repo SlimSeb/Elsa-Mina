@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="poker_help" xml:space="preserve">
+        <value>Sintassi: poker [buy-in]. Avvia un tavolo di Texas Hold'em dove i giocatori entrano con i bucks (100 di default). Usa pokerjoin per sederti e pokerstart per distribuire.</value>
+    </data>
+    <data name="poker_title" xml:space="preserve">
+        <value>Texas Hold'em</value>
+    </data>
+    <data name="poker_game_created" xml:space="preserve">
+        <value>{0} ha aperto un tavolo di Texas Hold'em (buy-in: {1} bucks). Premi il pulsante per sederti!</value>
+    </data>
+    <data name="poker_already_running" xml:space="preserve">
+        <value>C'è già una partita di poker in corso in questa stanza.</value>
+    </data>
+    <data name="poker_other_game_running" xml:space="preserve">
+        <value>C'è già un altro gioco in corso in questa stanza.</value>
+    </data>
+    <data name="poker_not_running" xml:space="preserve">
+        <value>Non c'è nessuna partita di poker in corso in questa stanza.</value>
+    </data>
+    <data name="poker_invalid_buy_in" xml:space="preserve">
+        <value>Fornisci un buy-in valido di almeno {0} bucks.</value>
+    </data>
+    <data name="poker_game_cancelled" xml:space="preserve">
+        <value>La partita di poker è stata annullata e ogni giocatore è stato rimborsato.</value>
+    </data>
+    <data name="poker_join_success" xml:space="preserve">
+        <value>{0} si è unito al tavolo con {1} bucks.</value>
+    </data>
+    <data name="poker_join_already_started" xml:space="preserve">
+        <value>La mano è già iniziata, non puoi unirti ora.</value>
+    </data>
+    <data name="poker_join_full" xml:space="preserve">
+        <value>Il tavolo è pieno.</value>
+    </data>
+    <data name="poker_join_already_joined" xml:space="preserve">
+        <value>Ti sei già unito a questo tavolo.</value>
+    </data>
+    <data name="poker_join_insufficient_funds" xml:space="preserve">
+        <value>Ti servono {0} bucks per unirti, ma ne hai solo {1}.</value>
+    </data>
+    <data name="poker_start_already_started" xml:space="preserve">
+        <value>La mano è già iniziata.</value>
+    </data>
+    <data name="poker_start_not_a_player" xml:space="preserve">
+        <value>Solo un giocatore seduto può avviare la mano.</value>
+    </data>
+    <data name="poker_start_not_enough_players" xml:space="preserve">
+        <value>Servono almeno {0} giocatori per iniziare.</value>
+    </data>
+    <data name="poker_cannot_check" xml:space="preserve">
+        <value>{0}, non puoi passare: ci sono {1} bucks da chiamare.</value>
+    </data>
+    <data name="poker_raise_too_low" xml:space="preserve">
+        <value>{0}, il tuo rilancio è troppo basso. Devi rilanciare almeno a {1}.</value>
+    </data>
+    <data name="poker_raise_invalid_amount" xml:space="preserve">
+        <value>Fornisci un importo di rilancio valido.</value>
+    </data>
+    <data name="poker_lobby_intro" xml:space="preserve">
+        <value>Siediti e gioca! Il buy-in è di {0} bucks.</value>
+    </data>
+    <data name="poker_blinds_label" xml:space="preserve">
+        <value>Bui: {0} / {1}</value>
+    </data>
+    <data name="poker_players_label" xml:space="preserve">
+        <value>Giocatori</value>
+    </data>
+    <data name="poker_lobby_no_players" xml:space="preserve">
+        <value>ancora nessuno</value>
+    </data>
+    <data name="poker_lobby_join_button" xml:space="preserve">
+        <value>Unisciti</value>
+    </data>
+    <data name="poker_lobby_start_button" xml:space="preserve">
+        <value>Inizia</value>
+    </data>
+    <data name="poker_lobby_hint" xml:space="preserve">
+        <value>Usa {0}pokerjoin per sederti. Servono almeno {1} giocatori.</value>
+    </data>
+    <data name="poker_no_community" xml:space="preserve">
+        <value>Ancora nessuna carta comune</value>
+    </data>
+    <data name="poker_pot_label" xml:space="preserve">
+        <value>Piatto</value>
+    </data>
+    <data name="poker_current_bet_label" xml:space="preserve">
+        <value>Puntata da chiamare</value>
+    </data>
+    <data name="poker_tag_dealer" xml:space="preserve">
+        <value>D</value>
+    </data>
+    <data name="poker_tag_small_blind" xml:space="preserve">
+        <value>PB</value>
+    </data>
+    <data name="poker_tag_big_blind" xml:space="preserve">
+        <value>GB</value>
+    </data>
+    <data name="poker_stack_short" xml:space="preserve">
+        <value>Stack</value>
+    </data>
+    <data name="poker_status_folded" xml:space="preserve">
+        <value>passato</value>
+    </data>
+    <data name="poker_status_all_in" xml:space="preserve">
+        <value>all-in</value>
+    </data>
+    <data name="poker_waiting_for" xml:space="preserve">
+        <value>In attesa di</value>
+    </data>
+    <data name="poker_your_hand" xml:space="preserve">
+        <value>La tua mano</value>
+    </data>
+    <data name="poker_no_cards" xml:space="preserve">
+        <value>Ancora nessuna carta</value>
+    </data>
+    <data name="poker_to_call_label" xml:space="preserve">
+        <value>Da chiamare</value>
+    </data>
+    <data name="poker_action_fold" xml:space="preserve">
+        <value>Passa</value>
+    </data>
+    <data name="poker_action_check" xml:space="preserve">
+        <value>Checka</value>
+    </data>
+    <data name="poker_action_call" xml:space="preserve">
+        <value>Chiama</value>
+    </data>
+    <data name="poker_action_bet" xml:space="preserve">
+        <value>Punta</value>
+    </data>
+    <data name="poker_action_raise" xml:space="preserve">
+        <value>Rilancia</value>
+    </data>
+    <data name="poker_action_pot" xml:space="preserve">
+        <value>Piatto</value>
+    </data>
+    <data name="poker_action_all_in" xml:space="preserve">
+        <value>All-in</value>
+    </data>
+    <data name="poker_raise_hint" xml:space="preserve">
+        <value>Scrivi {0}pr (importo) per rilanciare a un importo personalizzato.</value>
+    </data>
+    <data name="poker_result_title" xml:space="preserve">
+        <value>Showdown</value>
+    </data>
+    <data name="poker_result_footer" xml:space="preserve">
+        <value>Usa {0}poker per iniziare una nuova mano.</value>
+    </data>
+    <data name="poker_hand_highcard" xml:space="preserve">
+        <value>Carta alta</value>
+    </data>
+    <data name="poker_hand_pair" xml:space="preserve">
+        <value>Coppia</value>
+    </data>
+    <data name="poker_hand_twopair" xml:space="preserve">
+        <value>Doppia coppia</value>
+    </data>
+    <data name="poker_hand_threeofakind" xml:space="preserve">
+        <value>Tris</value>
+    </data>
+    <data name="poker_hand_straight" xml:space="preserve">
+        <value>Scala</value>
+    </data>
+    <data name="poker_hand_flush" xml:space="preserve">
+        <value>Colore</value>
+    </data>
+    <data name="poker_hand_fullhouse" xml:space="preserve">
+        <value>Full</value>
+    </data>
+    <data name="poker_hand_fourofakind" xml:space="preserve">
+        <value>Poker</value>
+    </data>
+    <data name="poker_hand_straightflush" xml:space="preserve">
+        <value>Scala colore</value>
+    </data>
+    <data name="poker_hand_royalflush" xml:space="preserve">
+        <value>Scala reale</value>
+    </data>
+</root>

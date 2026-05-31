@@ -2,19 +2,17 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
-using ElsaMina.DataAccess;
-using ElsaMina.DataAccess.Models;
 
 namespace ElsaMina.Commands.Economy;
 
 [NamedCommand("givemoney", Aliases = ["give-money"])]
 public class GiveMoneyCommand : Command
 {
-    private readonly IBotDbContextFactory _dbContextFactory;
+    private readonly IMoneyService _moneyService;
 
-    public GiveMoneyCommand(IBotDbContextFactory dbContextFactory)
+    public GiveMoneyCommand(IMoneyService moneyService)
     {
-        _dbContextFactory = dbContextFactory;
+        _moneyService = moneyService;
     }
 
     public override Rank RequiredRank => Rank.Admin;
@@ -43,20 +41,8 @@ public class GiveMoneyCommand : Command
             return;
         }
 
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var account = await dbContext.Money.FindAsync([recipientId, context.RoomId], cancellationToken);
-        if (account == null)
-        {
-            account = new Money { Id = recipientId, RoomId = context.RoomId, Amount = amount };
-            await dbContext.Money.AddAsync(account, cancellationToken);
-        }
-        else
-        {
-            account.Amount += amount;
-        }
+        var newBalance = await _moneyService.AddAsync(context.RoomId, recipientId, amount, cancellationToken);
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        context.ReplyLocalizedMessage("give_money_success", amount, recipientName, account.Amount);
+        context.ReplyLocalizedMessage("give_money_success", amount, recipientName, newBalance);
     }
 }

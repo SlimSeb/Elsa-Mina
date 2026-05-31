@@ -99,15 +99,12 @@ public class TourEndHandler : Handler
             if (!string.IsNullOrEmpty(result.Winner) && result.Players.Count > 0)
             {
                 var prize = result.Players.Count * PRIZE_PER_PARTICIPANT;
-                var winnerAccount = await dbContext.Money.FindAsync([result.Winner, roomId], cancellationToken);
-                if (winnerAccount == null)
+                // The winner is one of the players, so their room data was created in the loop above.
+                var winnerId = result.Winner.ToLowerAlphaNum();
+                var winnerRoomUser = await dbContext.RoomUsers.FindAsync([winnerId, roomId], cancellationToken);
+                if (winnerRoomUser != null)
                 {
-                    winnerAccount = new Money { Id = result.Winner, RoomId = roomId, Amount = prize };
-                    await dbContext.Money.AddAsync(winnerAccount, cancellationToken);
-                }
-                else
-                {
-                    winnerAccount.Amount += prize;
+                    winnerRoomUser.Money += prize;
                 }
             }
 

@@ -1,0 +1,86 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Poker.PokerViewModel>
+@using ElsaMina.Commands.Games.Poker
+@using ElsaMina.Core.Utils
+
+@{
+    var game = Model.Game;
+    var viewer = Model.Viewer;
+    var isBetting = game.Phase is PokerPhase.Preflop or PokerPhase.Flop or PokerPhase.Turn or PokerPhase.River;
+    var isViewerTurn = isBetting && game.CurrentPlayer == viewer;
+
+    var toCall = viewer != null ? game.AmountToCall(viewer) : 0;
+    var allInTo = viewer != null ? viewer.RoundBet + viewer.Stack : 0;
+    var minRaiseTo = game.MinimumRaiseTo();
+    var potRaiseTo = game.CurrentBet + game.TotalPot + toCall;
+    var canRaise = viewer != null && viewer.Stack > toCall;
+
+    string CardColor(PokerCard card) => card.IsRed ? "#cc2b2b" : "#111";
+
+    string RaiseButton(long amountTo, string label)
+    {
+        var clamped = Math.Min(amountTo, allInTo);
+        return $"<button class=\"button\" name=\"send\" value=\"/botmsg {Model.BotName}, {Model.Trigger}pokerraise {Model.RoomId}, {clamped}\">{label} ({clamped})</button>";
+    }
+}
+
+<div style="background:#0f2a18;color:#eafff0;border:1px solid #2f7a4a;border-radius:6px;padding:8px">
+    <h4 style="margin:0 0 6px 0">@GetString("poker_your_hand")</h4>
+
+    <p style="margin:6px 0">
+        @if (viewer == null || viewer.HoleCards.Count == 0)
+        {
+            <em style="color:#9fc7ad">@GetString("poker_no_cards")</em>
+        }
+        else
+        {
+            foreach (var card in viewer.HoleCards)
+            {
+                <span style="display:inline-block;min-width:22px;text-align:center;padding:6px 9px;margin:2px;background:#fff;color:@CardColor(card);border-radius:4px;font-weight:bold;font-size:1.3em">@card.ToDisplay()</span>
+            }
+        }
+    </p>
+
+    @if (viewer != null && !viewer.HasFolded)
+    {
+        <p style="margin:2px 0;color:#bfe6cd;font-size:0.9em">
+            @GetString("poker_stack_short"): <b>@viewer.Stack</b>
+            @if (toCall > 0)
+            {
+                <text>&nbsp;|&nbsp; @GetString("poker_to_call_label"): <b style="color:#f7d774">@Math.Min(toCall, viewer.Stack)</b></text>
+            }
+        </p>
+    }
+
+    @if (isViewerTurn)
+    {
+        <p style="margin:6px 0">
+            <button class="button" name="send" value="/botmsg @Model.BotName, @(Model.Trigger)pokerfold @Model.RoomId">@GetString("poker_action_fold")</button>
+            @if (toCall == 0)
+            {
+                <button class="button" name="send" value="/botmsg @Model.BotName, @(Model.Trigger)pokercheck @Model.RoomId">@GetString("poker_action_check")</button>
+            }
+            else
+            {
+                <button class="button" name="send" value="/botmsg @Model.BotName, @(Model.Trigger)pokercall @Model.RoomId">@GetString("poker_action_call") (@Math.Min(toCall, viewer.Stack))</button>
+            }
+        </p>
+        @if (canRaise)
+        {
+            <p style="margin:6px 0">
+                @Raw(RaiseButton(minRaiseTo, GetString(game.CurrentBet == 0 ? "poker_action_bet" : "poker_action_raise")))
+                @if (potRaiseTo > minRaiseTo && potRaiseTo < allInTo)
+                {
+                    @Raw(RaiseButton(potRaiseTo, GetString("poker_action_pot")))
+                }
+                <button class="button" name="send" value="/botmsg @Model.BotName, @(Model.Trigger)pokerraise @Model.RoomId, @allInTo">@GetString("poker_action_all_in") (@allInTo)</button>
+            </p>
+            <p style="margin:2px 0;color:#9fc7ad;font-size:0.8em">@GetString("poker_raise_hint", Model.Trigger)</p>
+        }
+    }
+    else if (isBetting && viewer != null && !viewer.HasFolded && game.CurrentPlayer != null)
+    {
+        <p style="margin:6px 0;color:#9fc7ad;font-size:0.85em">
+            @GetString("poker_waiting_for") <b>@game.CurrentPlayer.Name</b>
+        </p>
+    }
+</div>
