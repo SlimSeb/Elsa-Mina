@@ -23,6 +23,7 @@ public class TarotGame : Game, ITarotGame
     private readonly List<TarotCard> _dog = [];
     private readonly List<TarotCard> _pendingDiscards = [];
     private readonly HashSet<string> _initializedHandPanels = [];
+    private readonly Dictionary<string, int> _handPanelSegments = [];
 
     private int _currentTurnIndex;
     private int _firstLeaderIndex;
@@ -30,7 +31,6 @@ public class TarotGame : Game, ITarotGame
     private int _partnerIndex = -1;
     private bool _publicPanelInitialized;
     private int _publicPanelSegment;
-    private int _handPanelSegment;
 
     [UsedImplicitly]
     public TarotGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration)
@@ -80,7 +80,8 @@ public class TarotGame : Game, ITarotGame
     public TarotScoreResult ScoreResult { get; private set; }
 
     private string PublicPanelId => $"tarot-{GameId}-{_publicPanelSegment}";
-    private string HandPanelId(string userId) => $"tarot-hand-{GameId}-{userId}-{_handPanelSegment}";
+    private string HandPanelId(string userId) =>
+        $"tarot-hand-{GameId}-{userId}-{_handPanelSegments.GetValueOrDefault(userId)}";
 
     #region Lobby
 
@@ -180,7 +181,7 @@ public class TarotGame : Game, ITarotGame
         _firstLeaderIndex = 0;
         _currentTurnIndex = 0;
 
-        await RenderAllAsync();
+        await RenderForNewTurnAsync();
         RestartTurnTimer();
     }
 
@@ -218,7 +219,7 @@ public class TarotGame : Game, ITarotGame
             _currentTurnIndex = (_currentTurnIndex + 1) % _players.Count;
         } while (CurrentPlayer.HasBid);
 
-        await RenderAllAsync();
+        await RenderForNewTurnAsync();
         RestartTurnTimer();
     }
 
@@ -240,7 +241,7 @@ public class TarotGame : Game, ITarotGame
         if (_players.Count == 5)
         {
             Phase = TarotPhase.KingCall;
-            await RenderAllAsync();
+            await RenderForNewTurnAsync();
             RestartTurnTimer();
             return;
         }
@@ -289,7 +290,7 @@ public class TarotGame : Game, ITarotGame
                 SortHand(Taker.Hand);
                 Phase = TarotPhase.Discard;
                 _currentTurnIndex = _takerIndex;
-                await RenderAllAsync();
+                await RenderForNewTurnAsync();
                 RestartTurnTimer();
                 return;
 
@@ -404,7 +405,7 @@ public class TarotGame : Game, ITarotGame
         CurrentTrick = new TarotTrick();
         _currentTurnIndex = _firstLeaderIndex;
 
-        await RenderAllAsync();
+        await RenderForNewTurnAsync();
         RestartTurnTimer();
     }
 
@@ -452,7 +453,7 @@ public class TarotGame : Game, ITarotGame
         if (CurrentTrick.Plays.Count < _players.Count)
         {
             _currentTurnIndex = (_currentTurnIndex + 1) % _players.Count;
-            await RenderAllAsync();
+            await RenderForNewTurnAsync();
             RestartTurnTimer();
             return;
         }
@@ -507,8 +508,8 @@ public class TarotGame : Game, ITarotGame
         {
             Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
                 string.Empty, true);
+            _handPanelSegments[player.UserId] = _handPanelSegments.GetValueOrDefault(player.UserId) + 1;
         }
-        _handPanelSegment++;
         _initializedHandPanels.Clear();
 
         TrickNumber++;
@@ -699,6 +700,44 @@ public class TarotGame : Game, ITarotGame
         await RenderHandsAsync();
     }
 
+    /// <summary>
+    /// Renders the table and refreshes every hand, but re-posts the active player's hand as a fresh
+    /// box at the bottom of their chat so they notice it is their turn instead of having to scroll
+    /// back up to a panel updated in place.
+    /// </summary>
+    private async Task RenderForNewTurnAsync()
+    {
+        await RenderPublicAsync();
+        foreach (var player in _players)
+        {
+            if (player == CurrentPlayer)
+            {
+                await RepostHandAsync(player);
+            }
+            else
+            {
+                await RenderHandAsync(player);
+            }
+        }
+    }
+
+    private async Task RepostHandAsync(TarotPlayer player)
+    {
+        if (player is null)
+        {
+            return;
+        }
+
+        // Clear the existing panel then bump the player's segment so the next render posts a new box
+        // at the bottom of their chat instead of updating the old one in the scrollback.
+        Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
+            string.Empty, true);
+        _handPanelSegments[player.UserId] = _handPanelSegments.GetValueOrDefault(player.UserId) + 1;
+        _initializedHandPanels.Remove(player.UserId);
+
+        await RenderHandAsync(player);
+    }
+
     private async Task RenderPublicAsync()
     {
         var templateKey = Phase switch
@@ -717,13 +756,18 @@ public class TarotGame : Game, ITarotGame
     {
         foreach (var player in _players)
         {
-            var model = BuildModel(player);
-            var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotHand", model);
-            var alreadyInitialized = _initializedHandPanels.Contains(player.UserId);
-            Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
-                html.RemoveNewlines(), alreadyInitialized);
-            _initializedHandPanels.Add(player.UserId);
+            await RenderHandAsync(player);
         }
+    }
+
+    private async Task RenderHandAsync(TarotPlayer player)
+    {
+        var model = BuildModel(player);
+        var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotHand", model);
+        var alreadyInitialized = _initializedHandPanels.Contains(player.UserId);
+        Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
+            html.RemoveNewlines(), alreadyInitialized);
+        _initializedHandPanels.Add(player.UserId);
     }
 
     private TarotViewModel BuildModel(TarotPlayer viewer) => new()

@@ -5,7 +5,7 @@ public static class TarotConstants
     public const int MIN_PLAYERS = 3;
     public const int MAX_PLAYERS = 5;
 
-    public static readonly TimeSpan TURN_TIMEOUT = TimeSpan.FromSeconds(90);
+    public static readonly TimeSpan TURN_TIMEOUT = TimeSpan.FromSeconds(60);
 
     /// <summary>
     /// Number of cards dealt to each player, keyed by player count.
