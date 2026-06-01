@@ -38,6 +38,7 @@ public abstract class Context : IContext
 
     public IBot Bot { get; }
     public string Message { get; }
+    public string RawMessage { get; init; }
     public string Target { get; }
     public IUser Sender { get; }
     public IRoom Room => _roomsManager.GetRoom(RoomId);

@@ -7,8 +7,9 @@ namespace ElsaMina.Commands.Misc.Help;
 
 public class HelpHandler : PrivateMessageHandler
 {
-    private readonly HashSet<string> _repliedToUsers = [];
+    private const string CLOSE_HTML_PAGE_MARKER = "|closepage|";
 
+    private readonly HashSet<string> _repliedToUsers = [];
     private readonly IConfiguration _configuration;
 
     public HelpHandler(IContextFactory contextFactory, IConfiguration configuration) : base(contextFactory)
@@ -19,8 +20,9 @@ public class HelpHandler : PrivateMessageHandler
     public override Task HandleMessageAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (_repliedToUsers.Contains(context.Sender.UserId)
-            || context.Message.StartsWith(_configuration.Trigger) ||
-            context.Sender.UserId == _configuration.Name.ToLowerAlphaNum())
+            || context.Message.StartsWith(_configuration.Trigger)
+            || context.Sender.UserId == _configuration.Name.ToLowerAlphaNum()
+            || context.RawMessage.Contains(CLOSE_HTML_PAGE_MARKER))
         {
             return Task.CompletedTask;
         }

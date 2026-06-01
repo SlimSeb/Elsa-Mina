@@ -19,6 +19,7 @@ public class ContextFactory : IContextFactory
     private readonly IBot _bot;
     private readonly IPmSendersManager _pmSendersManager;
 
+    // todo : refactor this shit~
     public ContextFactory(IConfiguration configuration,
         IResourcesService resourcesService,
         IRoomsManager roomsManager,
@@ -59,7 +60,10 @@ public class ContextFactory : IContextFactory
                 }
 
                 return new RoomContext(_configuration, _resourcesService, _roomsManager, _userDetailsManager,
-                    _bot, message, target, user, command, room, timestamp);
+                    _bot, message, target, user, command, room, timestamp)
+                {
+                    RawMessage = string.Join("|", parts)
+                };
             }
             case > 2 when parts[1] == "pm":
             {
@@ -71,7 +75,10 @@ public class ContextFactory : IContextFactory
 
                 var (target, command) = GetTargetAndCommand(message);
                 return new PmContext(_configuration, _resourcesService, _roomsManager, _userDetailsManager,
-                    _bot, message, target, _pmSendersManager.GetUser(parts[2]), command);
+                    _bot, message, target, _pmSendersManager.GetUser(parts[2]), command)
+                {
+                    RawMessage = string.Join("|", parts)
+                };
             }
             default:
                 return null;
