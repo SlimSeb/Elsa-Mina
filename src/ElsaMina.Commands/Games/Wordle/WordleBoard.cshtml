@@ -1,0 +1,146 @@
+@using ElsaMina.Core.Services.Templates
+@using ElsaMina.Commands.Games.Wordle
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Wordle.WordleModel>
+
+@{
+    var game = Model.CurrentGame;
+
+    const string correctStyle = "background-color: #6aaa64; border: 2px solid #6aaa64; color: #ffffff;";
+    const string presentStyle = "background-color: #c9b458; border: 2px solid #c9b458; color: #ffffff;";
+    const string absentStyle = "background-color: #787c7e; border: 2px solid #787c7e; color: #ffffff;";
+    const string emptyStyle = "background-color: transparent; border: 2px solid #d3d6da;";
+    const string typingStyle = "background-color: transparent; border: 2px solid #878a8c;";
+    const string gridBg = "background-color: #ffffff10; padding: 8px; border-radius: 8px;";
+
+    Func<WordleLetterState, string> tileStyle = state => state switch
+    {
+        WordleLetterState.Correct => correctStyle,
+        WordleLetterState.Present => presentStyle,
+        WordleLetterState.Absent => absentStyle,
+        _ => emptyStyle
+    };
+
+    const string keyRow1 = "QWERTYUIOP";
+    const string keyRow2 = "ASDFGHJKL";
+    const string keyRow3 = "ZXCVBNM";
+
+    var guessCommand = Model.IsPrivateMode
+        ? $"/botmsg {Model.BotName},{Model.Trigger}wlg {Model.RoomId}, "
+        : $"{Model.Trigger}wlg ";
+
+    var keyCommand = $"/botmsg {Model.BotName},{Model.Trigger}wlkey {Model.RoomId}, ";
+}
+
+<table style="border-collapse: collapse; width: 100%;">
+    <thead>
+        <tr>
+            <th style="border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; background-color: @StyleConstants.PRIMARY_BACKGROUND_COLOR;">@GetString("wordle_panel_title")</th>
+            <th style="border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; background-color: @StyleConstants.PRIMARY_BACKGROUND_COLOR;">@GetString("wordle_panel_guesses", game.Guesses.Count, game.MaxGuesses)</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; text-align: center;">
+                <div style="@gridBg display: inline-block;">
+                    <table style="border-collapse: separate; border-spacing: 4px; margin: auto;">
+                        @for (var row = 0; row < game.MaxGuesses; row++)
+                        {
+                            <tr>
+                                @{
+                                    var isInputRow = game.IsRoundActive && row == game.Guesses.Count;
+                                }
+                                @for (var col = 0; col < game.WordLength; col++)
+                                {
+                                    var letter = "";
+                                    var style = emptyStyle;
+                                    if (row < game.Guesses.Count)
+                                    {
+                                        letter = game.Guesses[row].Word[col].ToString();
+                                        style = tileStyle(game.Guesses[row].States[col]);
+                                    }
+                                    else if (isInputRow && col < game.CurrentInput.Length)
+                                    {
+                                        letter = game.CurrentInput[col].ToString();
+                                        style = typingStyle;
+                                    }
+                                    <td>
+                                        <div style="width: 40px; height: 40px; line-height: 40px; text-align: center; font-weight: bold; font-size: 1.3em; border-radius: 4px; @style">@letter</div>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </td>
+            <td style="padding: 16px; border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; vertical-align: top;">
+                <span style="font-weight: bold; font-size: 1.1em;">@GetString("wordle_panel_title")</span><br/>
+                @if (game.Owner != null)
+                {
+                    <span style="color: #666; font-size: 0.9em;">@GetString("wordle_panel_player", game.Owner.Name)</span><br/>
+                }
+                <br/>
+                @if (game.IsRoundActive)
+                {
+                    <span>@GetString("wordle_panel_how_to_guess")</span><br/>
+                    <code>@guessCommand@(new string('?', game.WordLength))</code><br/>
+                }
+                else if (game.IsWon)
+                {
+                    <span style="color: #6aaa64; font-weight: bold;">@GetString("wordle_panel_solved", game.Guesses.Count)</span><br/>
+                }
+                else
+                {
+                    <span style="font-weight: bold; color: #c04a4a; font-size: 1.05em;">@GetString("wordle_panel_answer_was", game.RevealedAnswer)</span><br/>
+                }
+                <br/>
+                <div style="text-align: center;">
+                    @foreach (var keyRow in new[] { keyRow1, keyRow2, keyRow3 })
+                    {
+                        <div style="margin-bottom: 4px;">
+                            @foreach (var key in keyRow)
+                            {
+                                var keyState = game.KeyboardStates.TryGetValue(key, out var value) ? value : WordleLetterState.Empty;
+                                @if (game.IsRoundActive)
+                                {
+                                    <button class="button" name="send" value="@keyCommand@key"
+                                            style="display: inline-block; width: 26px; height: 32px; text-align: center; font-weight: bold; font-size: 0.85em; border-radius: 3px; margin: 1px; cursor: pointer; @tileStyle(keyState)">@key</button>
+                                }
+                                else
+                                {
+                                    <span style="display: inline-block; width: 22px; height: 26px; line-height: 26px; text-align: center; font-weight: bold; font-size: 0.85em; border-radius: 3px; margin: 1px; @tileStyle(keyState)">@key</span>
+                                }
+                            }
+                        </div>
+                    }
+                    @if (game.IsRoundActive)
+                    {
+                        <div style="margin-top: 6px;">
+                            <button class="button" name="send" value="@(keyCommand)enter"
+                                    style="font-weight: bold; margin: 1px;">@GetString("wordle_panel_enter")</button>
+                            <button class="button" name="send" value="@(keyCommand)back"
+                                    style="font-weight: bold; margin: 1px;">@GetString("wordle_panel_backspace")</button>
+                        </div>
+                    }
+                </div>
+                <br/>
+                @if (!game.IsEnded)
+                {
+                    <details>
+                        <summary>@GetString("wordle_panel_options")</summary>
+                        <br/>
+                        <button
+                            class="button"
+                            name="send"
+                            value="@(Model.IsPrivateMode ? $"/botmsg {Model.BotName},{Model.Trigger}wlend {Model.RoomId}" : $"{Model.Trigger}wlend")">
+                            @GetString("wordle_panel_stop")
+                        </button>
+                    </details>
+                }
+                else
+                {
+                    <span style="color: #888;">@GetString("wordle_panel_come_back_tomorrow")</span>
+                }
+            </td>
+        </tr>
+    </tbody>
+</table>

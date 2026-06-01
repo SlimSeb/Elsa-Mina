@@ -14,6 +14,8 @@ public class DataManager : IDataManager
     public ICountriesGameData CountriesGameData { get; private set; }
     public IReadOnlyList<PokemonDescription> PokemonDescriptions { get; private set; }
     public ICapitalCitiesGameData CapitalCitiesGameData { get; private set; }
+    public IReadOnlyList<string> WordleWords { get; private set; }
+    public IReadOnlyList<string> WordleWordsFr { get; private set; }
 
     public async Task Initialize()
     {
@@ -24,8 +26,12 @@ public class DataManager : IDataManager
         var capitalsList =
             await GetDataFromFile<List<CapitalCityData>>(Path.Join(DATA_DIRECTORY_NAME, "capital_cities.json"));
         CapitalCitiesGameData = new CapitalCitiesGameData { Capitals = capitalsList };
+        WordleWords =
+            await GetDataFromFile<List<string>>(Path.Join(DATA_DIRECTORY_NAME, "wordle_words.json"));
+        WordleWordsFr =
+            await GetDataFromFile<List<string>>(Path.Join(DATA_DIRECTORY_NAME, "wordle_words_fr.json"));
 
-        Log.Information("Fetched countries, capital cities & pokemon descriptions.");
+        Log.Information("Fetched countries, capital cities, pokemon descriptions & wordle words.");
     }
 
     private static async Task<T> GetDataFromFile<T>(string filePath)

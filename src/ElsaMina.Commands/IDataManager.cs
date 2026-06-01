@@ -9,4 +9,6 @@ public interface IDataManager
     ICountriesGameData CountriesGameData { get; }
     IReadOnlyList<PokemonDescription> PokemonDescriptions { get; }
     ICapitalCitiesGameData CapitalCitiesGameData { get; }
+    IReadOnlyList<string> WordleWords { get; }
+    IReadOnlyList<string> WordleWordsFr { get; }
 }

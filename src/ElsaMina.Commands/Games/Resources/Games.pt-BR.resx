@@ -978,4 +978,124 @@
     <data name="tarot_last_played_label" xml:space="preserve">
         <value>Última carta jogada</value>
     </data>
+    <data name="wordle_game_started" xml:space="preserve">
+        <value>Wordle iniciado! Adivinhe a palavra de {0} letras. Você tem {1} tentativas.</value>
+    </data>
+    <data name="wordle_game_win" xml:space="preserve">
+        <value>Parabéns {0}! Você encontrou a palavra em {1} tentativas.</value>
+    </data>
+    <data name="wordle_game_lose" xml:space="preserve">
+        <value>Sem tentativas, {0}!</value>
+    </data>
+    <data name="wordle_game_timeout" xml:space="preserve">
+        <value>Wordle expirou!</value>
+    </data>
+    <data name="wordle_game_round_active" xml:space="preserve">
+        <value>Já há uma rodada de Wordle em andamento.</value>
+    </data>
+    <data name="wordle_game_waiting" xml:space="preserve">
+        <value>O jogo de Wordle está esperando um jogador entrar.</value>
+    </data>
+    <data name="wordle_game_already_running" xml:space="preserve">
+        <value>Já há outro jogo em andamento nesta sala.</value>
+    </data>
+    <data name="wordle_game_no_game" xml:space="preserve">
+        <value>Não há nenhum jogo de Wordle em andamento.</value>
+    </data>
+    <data name="wordle_game_cancelled" xml:space="preserve">
+        <value>O jogo de Wordle foi cancelado.</value>
+    </data>
+    <data name="wordle_game_not_owner" xml:space="preserve">
+        <value>Apenas o jogador ou um membro da equipe pode parar este jogo.</value>
+    </data>
+    <data name="wordle_pm_missing_room" xml:space="preserve">
+        <value>Por favor, informe o identificador da sala.</value>
+    </data>
+    <data name="wordle_pm_invalid_room" xml:space="preserve">
+        <value>Não estou nessa sala.</value>
+    </data>
+    <data name="wordle_guess_pm_format" xml:space="preserve">
+        <value>Formato: wlg &lt;sala&gt;, &lt;palavra&gt;</value>
+    </data>
+    <data name="wordle_guess_round_not_active" xml:space="preserve">
+        <value>Não há uma rodada ativa para adivinhar.</value>
+    </data>
+    <data name="wordle_guess_not_owner" xml:space="preserve">
+        <value>Você não é o jogador deste jogo.</value>
+    </data>
+    <data name="wordle_guess_invalid_length" xml:space="preserve">
+        <value>Seu palpite deve ter {0} letras.</value>
+    </data>
+    <data name="wordle_guess_not_alphabetic" xml:space="preserve">
+        <value>Seu palpite deve conter apenas letras.</value>
+    </data>
+    <data name="wordle_guess_already_guessed" xml:space="preserve">
+        <value>Você já tentou essa palavra.</value>
+    </data>
+    <data name="wordle_panel_title" xml:space="preserve">
+        <value>Wordle</value>
+    </data>
+    <data name="wordle_panel_waiting_for_player" xml:space="preserve">
+        <value>Aguardando um jogador entrar...</value>
+    </data>
+    <data name="wordle_panel_join" xml:space="preserve">
+        <value>Entrar</value>
+    </data>
+    <data name="wordle_panel_guesses" xml:space="preserve">
+        <value>Tentativas: {0}/{1}</value>
+    </data>
+    <data name="wordle_panel_player" xml:space="preserve">
+        <value>Jogador: {0}</value>
+    </data>
+    <data name="wordle_panel_how_to_guess" xml:space="preserve">
+        <value>Digite seu palpite:</value>
+    </data>
+    <data name="wordle_panel_solved" xml:space="preserve">
+        <value>Resolvido em {0} tentativas!</value>
+    </data>
+    <data name="wordle_panel_answer_was" xml:space="preserve">
+        <value>A palavra era: {0}</value>
+    </data>
+    <data name="wordle_panel_options" xml:space="preserve">
+        <value>Opções</value>
+    </data>
+    <data name="wordle_panel_stop" xml:space="preserve">
+        <value>Parar o jogo</value>
+    </data>
+    <data name="wordle_panel_play_again" xml:space="preserve">
+        <value>Jogar novamente</value>
+    </data>
+    <data name="wordle_leaderboard_empty" xml:space="preserve">
+        <value>O ranking de Wordle está vazio.</value>
+    </data>
+    <data name="wordle_leaderboard_title" xml:space="preserve">
+        <value>Ranking de Wordle</value>
+    </data>
+    <data name="wordle_leaderboard_max_streak" xml:space="preserve">
+        <value>Melhor sequência</value>
+    </data>
+    <data name="wordle_leaderboard_wins" xml:space="preserve">
+        <value>Vitórias</value>
+    </data>
+    <data name="wordle_leaderboard_played" xml:space="preserve">
+        <value>Jogos</value>
+    </data>
+    <data name="wordle_panel_enter" xml:space="preserve">
+        <value>Enviar</value>
+    </data>
+    <data name="wordle_panel_backspace" xml:space="preserve">
+        <value>Apagar</value>
+    </data>
+    <data name="wordle_guess_not_in_list" xml:space="preserve">
+        <value>Essa palavra não está na minha lista de palavras.</value>
+    </data>
+    <data name="wordle_already_played_today" xml:space="preserve">
+        <value>Você já jogou o Wordle de hoje. Volte amanhã para uma nova palavra!</value>
+    </data>
+    <data name="wordle_panel_come_back_tomorrow" xml:space="preserve">
+        <value>Volte amanhã para uma nova palavra!</value>
+    </data>
+    <data name="wordle_panel_not_solved" xml:space="preserve">
+        <value>Sem tentativas!</value>
+    </data>
 </root>

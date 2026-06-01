@@ -46,6 +46,7 @@ using ElsaMina.Commands.Games.RockPaperScissors;
 using ElsaMina.Commands.Games.Tarot;
 using ElsaMina.Commands.Games.TwentyFortyEight;
 using ElsaMina.Commands.Games.VoltorbFlip;
+using ElsaMina.Commands.Games.Wordle;
 using ElsaMina.Commands.JoinPhrases;
 using ElsaMina.Commands.Misc;
 using ElsaMina.Commands.Misc.Crypto;
@@ -391,6 +392,12 @@ public partial class CommandModule : Module
         builder.RegisterCommand<EndLightsOutCommand>();
         builder.RegisterCommand<LightsOutLeaderboardCommand>();
 
+        builder.RegisterCommand<StartWordleCommand>();
+        builder.RegisterCommand<GuessWordleCommand>();
+        builder.RegisterCommand<WordleKeyCommand>();
+        builder.RegisterCommand<EndWordleCommand>();
+        builder.RegisterCommand<WordleLeaderboardCommand>();
+
         builder.RegisterCommand<StartFloodItCommand>();
         builder.RegisterCommand<JoinFloodItCommand>();
         builder.RegisterCommand<FloodItColorCommand>();
@@ -446,6 +453,9 @@ public partial class CommandModule : Module
 
         builder.RegisterType<LightsOutGame>().AsSelf();
         builder.RegisterType<LightsOutGameManager>().As<ILightsOutGameManager>().SingleInstance();
+        builder.RegisterType<WordleGame>().AsSelf();
+        builder.RegisterType<WordleGameManager>().As<IWordleGameManager>().SingleInstance();
+        builder.RegisterType<WordleDailyService>().As<IWordleDailyService>().SingleInstance();
         builder.RegisterType<FloodItGame>().AsSelf();
         builder.RegisterType<FloodItGameManager>().As<IFloodItGameManager>().SingleInstance();
         builder.RegisterType<TwentyFortyEightGame>().AsSelf();

@@ -1,0 +1,69 @@
+@using ElsaMina.Core.Services.Templates
+@using ElsaMina.Commands.Games.Wordle
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Wordle.WordleModel>
+
+@{
+    var game = Model.CurrentGame;
+
+    const string correctStyle = "background-color: #6aaa64; border: 2px solid #6aaa64; color: #ffffff;";
+    const string presentStyle = "background-color: #c9b458; border: 2px solid #c9b458; color: #ffffff;";
+    const string absentStyle = "background-color: #787c7e; border: 2px solid #787c7e; color: #ffffff;";
+    const string emptyStyle = "background-color: transparent; border: 2px solid #d3d6da;";
+    const string gridBg = "background-color: #ffffff10; padding: 8px; border-radius: 8px;";
+
+    Func<WordleLetterState, string> tileStyle = state => state switch
+    {
+        WordleLetterState.Correct => correctStyle,
+        WordleLetterState.Present => presentStyle,
+        WordleLetterState.Absent => absentStyle,
+        _ => emptyStyle
+    };
+}
+
+<table style="border-collapse: collapse; width: 100%;">
+    <thead>
+        <tr>
+            <th style="border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; background-color: @StyleConstants.PRIMARY_BACKGROUND_COLOR;">@GetString("wordle_panel_title")</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; text-align: center; padding: 8px;">
+                @if (game.Owner != null)
+                {
+                    <span style="font-weight: bold;">@GetString("wordle_panel_player", game.Owner.Name)</span>
+                    <span> &mdash; @GetString("wordle_panel_guesses", game.Guesses.Count, game.MaxGuesses)</span><br/>
+                }
+                <div style="@gridBg display: inline-block; margin-top: 6px;">
+                    <table style="border-collapse: separate; border-spacing: 4px; margin: auto;">
+                        @for (var row = 0; row < game.MaxGuesses; row++)
+                        {
+                            <tr>
+                                @for (var col = 0; col < game.WordLength; col++)
+                                {
+                                    var style = emptyStyle;
+                                    if (row < game.Guesses.Count)
+                                    {
+                                        style = tileStyle(game.Guesses[row].States[col]);
+                                    }
+                                    <td>
+                                        <div style="width: 32px; height: 32px; border-radius: 4px; @style"></div>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <br/>
+                @if (game.IsWon)
+                {
+                    <span style="color: #6aaa64; font-weight: bold;">@GetString("wordle_panel_solved", game.Guesses.Count)</span>
+                }
+                else if (!game.IsRoundActive)
+                {
+                    <span style="font-weight: bold;">@GetString("wordle_panel_not_solved")</span>
+                }
+            </td>
+        </tr>
+    </tbody>
+</table>

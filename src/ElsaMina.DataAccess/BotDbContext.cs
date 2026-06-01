@@ -40,6 +40,7 @@ public class BotDbContext : DbContext
     public DbSet<LadderEloSnapshot> LadderEloSnapshots { get; set; }
     public DbSet<TrackedEloUser> TrackedEloUsers { get; set; }
     public DbSet<TarotStats> TarotStats { get; set; }
+    public DbSet<WordleScore> WordleScores { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
