@@ -15,6 +15,7 @@ public class TarotGameTest
     private IRandomService _randomService;
     private ITemplatesManager _templatesManager;
     private IConfiguration _configuration;
+    private ITarotStatsService _statsService;
     private IContext _context;
     private TarotGame _game;
 
@@ -24,6 +25,7 @@ public class TarotGameTest
         _randomService = Substitute.For<IRandomService>(); // ShuffleInPlace is a no-op -> deterministic deal
         _templatesManager = Substitute.For<ITemplatesManager>();
         _configuration = Substitute.For<IConfiguration>();
+        _statsService = Substitute.For<ITarotStatsService>();
         _context = Substitute.For<IContext>();
 
         _configuration.Name.Returns("ElsaMina");
@@ -33,7 +35,7 @@ public class TarotGameTest
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>())
             .Returns(Task.FromResult(string.Empty));
 
-        _game = new TarotGame(_randomService, _templatesManager, _configuration);
+        _game = new TarotGame(_randomService, _templatesManager, _configuration, _statsService);
         _game.Context = _context;
     }
 

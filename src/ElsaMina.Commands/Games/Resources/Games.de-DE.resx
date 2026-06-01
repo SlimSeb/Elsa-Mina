@@ -771,6 +771,30 @@
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>Die Tarot-Partie wurde abgebrochen.</value>
     </data>
+    <data name="tarot_leaderboard_title" xml:space="preserve">
+        <value>Tarot-Rangliste</value>
+    </data>
+    <data name="tarot_leaderboard_score" xml:space="preserve">
+        <value>Punkte</value>
+    </data>
+    <data name="tarot_leaderboard_games" xml:space="preserve">
+        <value>Spiele</value>
+    </data>
+    <data name="tarot_leaderboard_wins" xml:space="preserve">
+        <value>Siege</value>
+    </data>
+    <data name="tarot_leaderboard_taker" xml:space="preserve">
+        <value>Alleinspieler (gewonnen/gesamt)</value>
+    </data>
+    <data name="tarot_leaderboard_empty" xml:space="preserve">
+        <value>Es wurden noch keine Tarot-Spiele aufgezeichnet.</value>
+    </data>
+    <data name="tarot_stats_not_found" xml:space="preserve">
+        <value>Keine Tarot-Statistiken für {0} gefunden.</value>
+    </data>
+    <data name="tarot_stats_info" xml:space="preserve">
+        <value>Tarot-Statistiken für {0}: Punkte {1}, Spiele {2}, Siege {3}, Als Alleinspieler {4}, Siege als Alleinspieler {5}.</value>
+    </data>
     <data name="tarot_bid_unknown" xml:space="preserve">
         <value>Unbekanntes Gebot. Verwende: pass, petite, garde, gardesans, gardecontre.</value>
     </data>

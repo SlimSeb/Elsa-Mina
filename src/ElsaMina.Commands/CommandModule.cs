@@ -418,6 +418,8 @@ public partial class CommandModule : Module
         builder.RegisterCommand<DiscardTarotCommand>();
         builder.RegisterCommand<PlayTarotCommand>();
         builder.RegisterCommand<EndTarotCommand>();
+        builder.RegisterCommand<TarotLeaderboardCommand>();
+        builder.RegisterCommand<TarotStatsCommand>();
 
         builder.RegisterCommand<StartPokerCommand>();
         builder.RegisterCommand<JoinPokerCommand>();
@@ -436,6 +438,7 @@ public partial class CommandModule : Module
         builder.RegisterType<PokeRaceGame>().AsSelf();
         builder.RegisterType<RpsGame>().AsSelf();
         builder.RegisterType<TarotGame>().AsSelf();
+        builder.RegisterType<TarotStatsService>().As<ITarotStatsService>().SingleInstance();
         builder.RegisterType<PokerGame>().AsSelf();
         builder.RegisterType<PokeDescGame>().AsSelf();
         builder.RegisterType<PokeCriesGame>().AsSelf();

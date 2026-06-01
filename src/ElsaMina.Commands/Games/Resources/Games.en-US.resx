@@ -834,6 +834,30 @@
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>The French Tarot game was cancelled.</value>
     </data>
+    <data name="tarot_leaderboard_title" xml:space="preserve">
+        <value>French Tarot Leaderboard</value>
+    </data>
+    <data name="tarot_leaderboard_score" xml:space="preserve">
+        <value>Score</value>
+    </data>
+    <data name="tarot_leaderboard_games" xml:space="preserve">
+        <value>Games</value>
+    </data>
+    <data name="tarot_leaderboard_wins" xml:space="preserve">
+        <value>Wins</value>
+    </data>
+    <data name="tarot_leaderboard_taker" xml:space="preserve">
+        <value>Taker (won/total)</value>
+    </data>
+    <data name="tarot_leaderboard_empty" xml:space="preserve">
+        <value>No French Tarot games have been recorded yet.</value>
+    </data>
+    <data name="tarot_stats_not_found" xml:space="preserve">
+        <value>No French Tarot stats found for {0}.</value>
+    </data>
+    <data name="tarot_stats_info" xml:space="preserve">
+        <value>Tarot stats for {0}: Score {1}, Games {2}, Wins {3}, Times taker {4}, Taker wins {5}.</value>
+    </data>
     <data name="tarot_bid_unknown" xml:space="preserve">
         <value>Unknown bid. Use: pass, petite, garde, gardesans, gardecontre.</value>
     </data>

@@ -40,7 +40,8 @@ public class StartTarotCommandTest
         var templates = Substitute.For<ITemplatesManager>();
         templates.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns(Task.FromResult(string.Empty));
 
-        _game = new TarotGame(Substitute.For<IRandomService>(), templates, configuration);
+        _game = new TarotGame(Substitute.For<IRandomService>(), templates, configuration,
+            Substitute.For<ITarotStatsService>());
         _game.Context = _context;
         _dependencyContainerService.Resolve<TarotGame>().Returns(_game);
 

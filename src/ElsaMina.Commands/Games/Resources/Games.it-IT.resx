@@ -828,6 +828,30 @@
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>La partita di Tarocchi è stata annullata.</value>
     </data>
+    <data name="tarot_leaderboard_title" xml:space="preserve">
+        <value>Classifica di Tarot</value>
+    </data>
+    <data name="tarot_leaderboard_score" xml:space="preserve">
+        <value>Punteggio</value>
+    </data>
+    <data name="tarot_leaderboard_games" xml:space="preserve">
+        <value>Partite</value>
+    </data>
+    <data name="tarot_leaderboard_wins" xml:space="preserve">
+        <value>Vittorie</value>
+    </data>
+    <data name="tarot_leaderboard_taker" xml:space="preserve">
+        <value>Chiamante (vinte/totali)</value>
+    </data>
+    <data name="tarot_leaderboard_empty" xml:space="preserve">
+        <value>Nessuna partita di Tarot è stata ancora registrata.</value>
+    </data>
+    <data name="tarot_stats_not_found" xml:space="preserve">
+        <value>Nessuna statistica di Tarot trovata per {0}.</value>
+    </data>
+    <data name="tarot_stats_info" xml:space="preserve">
+        <value>Statistiche di Tarot di {0}: Punteggio {1}, Partite {2}, Vittorie {3}, Volte chiamante {4}, Vittorie come chiamante {5}.</value>
+    </data>
     <data name="tarot_bid_unknown" xml:space="preserve">
         <value>Puntata sconosciuta. Usa: pass, petite, garde, gardesans, gardecontre.</value>
     </data>

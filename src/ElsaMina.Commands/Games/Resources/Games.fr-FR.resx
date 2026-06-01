@@ -834,6 +834,30 @@
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>La partie de Tarot a été annulée.</value>
     </data>
+    <data name="tarot_leaderboard_title" xml:space="preserve">
+        <value>Classement du Tarot</value>
+    </data>
+    <data name="tarot_leaderboard_score" xml:space="preserve">
+        <value>Score</value>
+    </data>
+    <data name="tarot_leaderboard_games" xml:space="preserve">
+        <value>Parties</value>
+    </data>
+    <data name="tarot_leaderboard_wins" xml:space="preserve">
+        <value>Victoires</value>
+    </data>
+    <data name="tarot_leaderboard_taker" xml:space="preserve">
+        <value>Preneur (gagnées/total)</value>
+    </data>
+    <data name="tarot_leaderboard_empty" xml:space="preserve">
+        <value>Aucune partie de Tarot n'a encore été enregistrée.</value>
+    </data>
+    <data name="tarot_stats_not_found" xml:space="preserve">
+        <value>Aucune statistique de Tarot trouvée pour {0}.</value>
+    </data>
+    <data name="tarot_stats_info" xml:space="preserve">
+        <value>Statistiques de Tarot de {0} : Score {1}, Parties {2}, Victoires {3}, Fois preneur {4}, Contrats réussis {5}.</value>
+    </data>
     <data name="tarot_bid_unknown" xml:space="preserve">
         <value>Enchère inconnue. Utilise : passe, petite, garde, gardesans, gardecontre.</value>
     </data>

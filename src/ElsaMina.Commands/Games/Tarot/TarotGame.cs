@@ -16,6 +16,7 @@ public class TarotGame : Game, ITarotGame
     private readonly IRandomService _randomService;
     private readonly ITemplatesManager _templatesManager;
     private readonly IConfiguration _configuration;
+    private readonly ITarotStatsService _statsService;
 
     private readonly SemaphoreSlim _actionLock = new(1, 1);
     private readonly PeriodicTimerRunner _turnTimer;
@@ -34,17 +35,19 @@ public class TarotGame : Game, ITarotGame
     private int _publicPanelSegment;
 
     [UsedImplicitly]
-    public TarotGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration)
-        : this(randomService, templatesManager, configuration, TarotConstants.TURN_TIMEOUT)
+    public TarotGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration,
+        ITarotStatsService statsService)
+        : this(randomService, templatesManager, configuration, statsService, TarotConstants.TURN_TIMEOUT)
     {
     }
 
     public TarotGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration,
-        TimeSpan turnTimeout)
+        ITarotStatsService statsService, TimeSpan turnTimeout)
     {
         _randomService = randomService;
         _templatesManager = templatesManager;
         _configuration = configuration;
+        _statsService = statsService;
         GameId = Interlocked.Increment(ref _nextGameId);
         _turnTimer = new PeriodicTimerRunner(turnTimeout, OnTurnTimeoutAsync, runOnce: true);
 
@@ -598,6 +601,7 @@ public class TarotGame : Game, ITarotGame
 
         Phase = TarotPhase.Finished;
         StopTurnTimer();
+        await _statsService.RecordDealAsync(_players, ScoreResult);
         await RenderPublicAsync();
         OnEnd();
     }
