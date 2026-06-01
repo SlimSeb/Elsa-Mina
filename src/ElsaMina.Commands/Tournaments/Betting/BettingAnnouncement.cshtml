@@ -3,7 +3,8 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Tournaments.Betting.BettingAnnouncementViewModel>
 
 @{
-    const string cellStyle = "float: left;" +
+    const int columns = 3;
+    const string cellStyle = "vertical-align: top;" +
                              "width: 220px;" +
                              "padding: 2px 8px;" +
                              "box-sizing: border-box;";
@@ -26,30 +27,43 @@
             @GetString("betting_announcement_closed")
         </i>
     }
-    <div>
-        @foreach (var player in Model.Players)
+    <table style="table-layout: fixed; border-collapse: collapse">
+        <tbody>
+        @for (var rowStart = 0; rowStart < Model.Players.Length; rowStart += columns)
         {
-            var bettors = Model.BetsByPlayer != null && Model.BetsByPlayer.TryGetValue(player.UserId, out var list) ? list : [];
-            <div style="@cellStyle">
-                <span
-                    class="username"
-                    data-name="@player.UserId"
-                    style="color: @player.UserId.ToColorHexCodeWithCustoms(); display: inline-block; width: 110px; margin-right: 8px; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
-                    @player.UserName
-                </span>
-                @if (Model.IsBettingOpen)
+            <tr>
+                @for (var column = 0; column < columns; column++)
                 {
-                    <button class="button" name="send"
-                            value="/pm @Model.BotName, @(Model.Trigger)bet @Model.RoomId @player.UserId">@GetString("betting_announcement_bet_button")</button>
+                    var index = rowStart + column;
+                    if (index >= Model.Players.Length)
+                    {
+                        <td style="@cellStyle"></td>
+                        continue;
+                    }
+                    var player = Model.Players[index];
+                    var bettors = Model.BetsByPlayer != null && Model.BetsByPlayer.TryGetValue(player.UserId, out var list) ? list : [];
+                    <td style="@cellStyle">
+                        <span
+                            class="username"
+                            data-name="@player.UserId"
+                            style="color: @player.UserId.ToColorHexCodeWithCustoms(); display: inline-block; width: 110px; margin-right: 8px; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
+                            @player.UserName
+                        </span>
+                        @if (Model.IsBettingOpen)
+                        {
+                            <button class="button" name="send"
+                                    value="/pm @Model.BotName, @(Model.Trigger)bet @Model.RoomId @player.UserId">@GetString("betting_announcement_bet_button")</button>
+                        }
+                        @if (bettors.Count > 0)
+                        {
+                            <div style="font-size: 0.85em; color: gray">
+                                @string.Join(", ", bettors)
+                            </div>
+                        }
+                    </td>
                 }
-                @if (bettors.Count > 0)
-                {
-                    <div style="font-size: 0.85em; color: gray">
-                        @string.Join(", ", bettors)
-                    </div>
-                }
-            </div>
+            </tr>
         }
-        <div style="clear: both"></div>
-    </div>
+        </tbody>
+    </table>
 </div>
