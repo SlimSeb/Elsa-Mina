@@ -48,6 +48,39 @@
     <data name="bugreport_not_configured" xml:space="preserve">
         <value>Le lien de signalement de bug n'est pas configuré.</value>
     </data>
+    <data name="bugreport_panel_title" xml:space="preserve">
+        <value>Signaler un bug</value>
+    </data>
+    <data name="bugreport_panel_intro" xml:space="preserve">
+        <value>Remplissez ce formulaire pour signaler un bug. Votre signalement sera transmis directement aux développeurs.</value>
+    </data>
+    <data name="bugreport_panel_field_title" xml:space="preserve">
+        <value>Titre</value>
+    </data>
+    <data name="bugreport_panel_field_description" xml:space="preserve">
+        <value>Description</value>
+    </data>
+    <data name="bugreport_panel_title_placeholder" xml:space="preserve">
+        <value>Résumé court du problème</value>
+    </data>
+    <data name="bugreport_panel_description_placeholder" xml:space="preserve">
+        <value>Décrivez le bug, comment le reproduire, ce qui était attendu...</value>
+    </data>
+    <data name="bugreport_panel_submit" xml:space="preserve">
+        <value>Envoyer</value>
+    </data>
+    <data name="bugreport_missing_title" xml:space="preserve">
+        <value>Vous devez fournir un titre pour le signalement.</value>
+    </data>
+    <data name="bugreport_issue_reporter" xml:space="preserve">
+        <value>Signalé via Showdown par {0}</value>
+    </data>
+    <data name="bugreport_submit_success" xml:space="preserve">
+        <value>Merci ! Votre signalement a été créé (issue #{0}) : {1}</value>
+    </data>
+    <data name="bugreport_submit_error" xml:space="preserve">
+        <value>Une erreur est survenue lors de la création du signalement. Réessayez plus tard.</value>
+    </data>
     <data name="lagtest_result" xml:space="preserve">
         <value>Latence : {0} ms</value>
     </data>

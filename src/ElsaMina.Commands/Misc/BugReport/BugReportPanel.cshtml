@@ -1,0 +1,39 @@
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Misc.BugReport.BugReportPanelViewModel>
+
+@{
+    const string containerStyle = "padding: 1.5rem;";
+    const string labelStyle = "display: block; font-weight: bold; margin-bottom: .25rem;";
+    const string fieldStyle = "width: 100%; box-sizing: border-box; margin-bottom: .75rem;";
+    var submitCommand = $"/w {Model.BotName},{Model.Trigger}submitbugreport {{title}}|||{{description}}";
+}
+
+<div style="@containerStyle">
+    <h2>@GetString("bugreport_panel_title")</h2>
+    <p>@GetString("bugreport_panel_intro")</p>
+    <form data-submitsend="@submitCommand">
+        <div>
+            <label style="@labelStyle" for="bugreport-title">@GetString("bugreport_panel_field_title")</label>
+            <input
+                class="textbox"
+                style="@fieldStyle"
+                type="text"
+                id="bugreport-title"
+                name="title"
+                placeholder="@GetString("bugreport_panel_title_placeholder")"
+                required />
+        </div>
+        <div>
+            <label style="@labelStyle" for="bugreport-description">@GetString("bugreport_panel_field_description")</label>
+            <textarea
+                class="textbox"
+                style="@fieldStyle"
+                id="bugreport-description"
+                name="description"
+                rows="5"
+                placeholder="@GetString("bugreport_panel_description_placeholder")"
+                required></textarea>
+        </div>
+        <button class="button" type="submit"><strong>@GetString("bugreport_panel_submit")</strong></button>
+    </form>
+</div>

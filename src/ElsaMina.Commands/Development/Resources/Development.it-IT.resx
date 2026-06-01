@@ -48,6 +48,39 @@
     <data name="bugreport_not_configured" xml:space="preserve">
         <value>Il link per la segnalazione dei bug non è configurato.</value>
     </data>
+    <data name="bugreport_panel_title" xml:space="preserve">
+        <value>Segnala un bug</value>
+    </data>
+    <data name="bugreport_panel_intro" xml:space="preserve">
+        <value>Compila questo modulo per segnalare un bug. La tua segnalazione sarà inviata direttamente agli sviluppatori.</value>
+    </data>
+    <data name="bugreport_panel_field_title" xml:space="preserve">
+        <value>Titolo</value>
+    </data>
+    <data name="bugreport_panel_field_description" xml:space="preserve">
+        <value>Descrizione</value>
+    </data>
+    <data name="bugreport_panel_title_placeholder" xml:space="preserve">
+        <value>Breve riassunto del problema</value>
+    </data>
+    <data name="bugreport_panel_description_placeholder" xml:space="preserve">
+        <value>Descrivi il bug, come riprodurlo, cosa ti aspettavi...</value>
+    </data>
+    <data name="bugreport_panel_submit" xml:space="preserve">
+        <value>Invia</value>
+    </data>
+    <data name="bugreport_missing_title" xml:space="preserve">
+        <value>Devi fornire un titolo per la segnalazione.</value>
+    </data>
+    <data name="bugreport_issue_reporter" xml:space="preserve">
+        <value>Segnalato tramite Showdown da {0}</value>
+    </data>
+    <data name="bugreport_submit_success" xml:space="preserve">
+        <value>Grazie! La tua segnalazione è stata creata (issue #{0}): {1}</value>
+    </data>
+    <data name="bugreport_submit_error" xml:space="preserve">
+        <value>Si è verificato un errore durante la creazione della segnalazione. Riprova più tardi.</value>
+    </data>
     <data name="lagtest_result" xml:space="preserve">
         <value>Latenza: {0} ms</value>
     </data>

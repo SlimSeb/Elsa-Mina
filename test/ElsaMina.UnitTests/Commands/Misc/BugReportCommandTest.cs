@@ -1,7 +1,8 @@
-using ElsaMina.Commands.Misc;
+using ElsaMina.Commands.Misc.BugReport;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Templates;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Misc;
@@ -9,6 +10,8 @@ namespace ElsaMina.UnitTests.Commands.Misc;
 public class BugReportCommandTest
 {
     private IConfiguration _configuration;
+    private IGithubIssueService _githubIssueService;
+    private ITemplatesManager _templatesManager;
     private IContext _context;
     private BugReportCommand _command;
 
@@ -16,8 +19,10 @@ public class BugReportCommandTest
     public void SetUp()
     {
         _configuration = Substitute.For<IConfiguration>();
+        _githubIssueService = Substitute.For<IGithubIssueService>();
+        _templatesManager = Substitute.For<ITemplatesManager>();
         _context = Substitute.For<IContext>();
-        _command = new BugReportCommand(_configuration);
+        _command = new BugReportCommand(_configuration, _githubIssueService, _templatesManager);
     }
 
     [Test]
@@ -33,8 +38,21 @@ public class BugReportCommandTest
     }
 
     [Test]
+    public async Task Test_RunAsync_ShouldDisplayPanel_WhenGithubIsConfigured()
+    {
+        _githubIssueService.IsConfigured.Returns(true);
+        _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>())
+            .Returns(Task.FromResult("<html></html>"));
+
+        await _command.RunAsync(_context);
+
+        _context.Received(1).ReplyHtmlPage("bug-report", Arg.Any<string>());
+    }
+
+    [Test]
     public async Task Test_RunAsync_ShouldReplyWithLink_WhenBugReportLinkIsConfigured()
     {
+        _githubIssueService.IsConfigured.Returns(false);
         _configuration.BugReportLink.Returns("https://github.com/example/issues");
 
         await _command.RunAsync(_context);
@@ -43,20 +61,10 @@ public class BugReportCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReplyNotConfigured_WhenBugReportLinkIsNull()
+    public async Task Test_RunAsync_ShouldReplyNotConfigured_WhenNothingIsConfigured()
     {
+        _githubIssueService.IsConfigured.Returns(false);
         _configuration.BugReportLink.Returns((string)null);
-
-        await _command.RunAsync(_context);
-
-        _context.Received(1).ReplyRankAwareLocalizedMessage("bugreport_not_configured");
-        _context.DidNotReceive().ReplyRankAwareLocalizedMessage("bugreport_reply", Arg.Any<object[]>());
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldReplyNotConfigured_WhenBugReportLinkIsEmpty()
-    {
-        _configuration.BugReportLink.Returns(string.Empty);
 
         await _command.RunAsync(_context);
 
@@ -67,6 +75,7 @@ public class BugReportCommandTest
     [Test]
     public async Task Test_RunAsync_ShouldReplyNotConfigured_WhenBugReportLinkIsWhitespace()
     {
+        _githubIssueService.IsConfigured.Returns(false);
         _configuration.BugReportLink.Returns("   ");
 
         await _command.RunAsync(_context);
