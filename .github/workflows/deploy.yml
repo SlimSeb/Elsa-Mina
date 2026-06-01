@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "10.0.x"
-          cache: true               # add this
+          cache: true 
           cache-dependency-path: "**/*.csproj"
       - name: restore
         run: ./scripts/Build/restore.sh
