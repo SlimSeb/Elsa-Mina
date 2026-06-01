@@ -25,7 +25,7 @@
     string CardPadding(TarotCard card) => card.IsExcuse ? "5px 8px" : "3px 6px";
 
     string Action(string command, TarotCard card) =>
-        $"/botmsg {Model.BotName}, {Model.Trigger}{command} {Model.RoomId}, {card.ToToken()}";
+        $"/w {Model.BotName}, {Model.Trigger}{command} {Model.RoomId}, {card.ToToken()}";
 }
 
 <div style="background:#211b29;color:#ece7f2;border:1px solid #5a4a6a;border-radius:6px;padding:8px">
@@ -35,11 +35,11 @@
     {
         <p style="margin:4px 0">@GetString("tarot_your_turn_bid")</p>
         <p style="margin:4px 0">
-            <button class="button" name="send" value="/botmsg @Model.BotName, @(Model.Trigger)tb @Model.RoomId, pass">@GetString("tarot_bid_pass")</button>
-            <button class="button" name="send" value="/botmsg @Model.BotName, @(Model.Trigger)tb @Model.RoomId, petite">@GetString("tarot_bid_petite")</button>
-            <button class="button" name="send" value="/botmsg @Model.BotName, @(Model.Trigger)tb @Model.RoomId, garde">@GetString("tarot_bid_garde")</button>
-            <button class="button" name="send" value="/botmsg @Model.BotName, @(Model.Trigger)tb @Model.RoomId, gardesans">@GetString("tarot_bid_gardesans")</button>
-            <button class="button" name="send" value="/botmsg @Model.BotName, @(Model.Trigger)tb @Model.RoomId, gardecontre">@GetString("tarot_bid_gardecontre")</button>
+            <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tb @Model.RoomId, pass">@GetString("tarot_bid_pass")</button>
+            <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tb @Model.RoomId, petite">@GetString("tarot_bid_petite")</button>
+            <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tb @Model.RoomId, garde">@GetString("tarot_bid_garde")</button>
+            <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tb @Model.RoomId, gardesans">@GetString("tarot_bid_gardesans")</button>
+            <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tb @Model.RoomId, gardecontre">@GetString("tarot_bid_gardecontre")</button>
         </p>
     }
 
