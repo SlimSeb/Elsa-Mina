@@ -21,6 +21,7 @@ public interface IContext
     string GetString(string key, params object[] formatArguments);
     void ReplyHtmlPage(string pageName, string html);
     void SendHtmlPageTo(string userId, string pageName, string html);
+    void CloseHtmlPage(string userId, string pageName);
     bool HasRankOrHigher(Rank requiredRank);
     Task<Rank> GetUserRankInRoom(string roomId, CancellationToken cancellationToken = default);
     Task<bool> HasSufficientRankInRoom(string roomId, Rank requiredRank, CancellationToken cancellationToken = default);

@@ -63,6 +63,11 @@ public abstract class Context : IContext
         Bot.Say(_configuration.DefaultRoom, $"/sendhtmlpage {userId}, {pageName}, {html}");
     }
 
+    public void CloseHtmlPage(string userId, string pageName)
+    {
+        Bot.Say(_configuration.DefaultRoom, $"/closehtmlpage {userId}, {pageName}");
+    }
+
     public string GetString(string key)
     {
         var localizedString = _resourcesService.GetString(key, Culture ?? DefaultCulture);

@@ -784,7 +784,7 @@ public class TarotGame : Game, ITarotGame
     {
         foreach (var player in _players)
         {
-            Context.SendHtmlPageTo(player.UserId, PlayerPageId, "<div></div>");
+            Context.CloseHtmlPage(player.UserId, PlayerPageId);
         }
     }
 
