@@ -24,6 +24,7 @@ public class TarotGame : Game, ITarotGame
     private readonly List<TarotPlayer> _players = [];
     private readonly List<TarotCard> _dog = [];
     private readonly List<TarotCard> _pendingDiscards = [];
+    private readonly HashSet<string> _initializedHandPanels = [];
 
     private int _currentTurnIndex;
     private int _firstLeaderIndex;
@@ -88,7 +89,8 @@ public class TarotGame : Game, ITarotGame
     public TarotScoreResult ScoreResult { get; private set; }
 
     private string PublicPanelId => $"tarot-{GameId}";
-    private string HandPageId => $"tarot-hand-{GameId}";
+    private string HandPanelId(string userId) =>
+        $"tarot-hand-{GameId}-{userId}";
 
     #region Lobby
 
@@ -188,7 +190,7 @@ public class TarotGame : Game, ITarotGame
         _firstLeaderIndex = 0;
         _currentTurnIndex = 0;
 
-        await RenderAllAsync();
+        await RenderForNewTurnAsync();
         RestartTurnTimer();
     }
 
@@ -226,7 +228,7 @@ public class TarotGame : Game, ITarotGame
             _currentTurnIndex = (_currentTurnIndex + 1) % _players.Count;
         } while (CurrentPlayer.HasBid);
 
-        await RenderAllAsync();
+        await RenderForNewTurnAsync();
         RestartTurnTimer();
     }
 
@@ -248,7 +250,7 @@ public class TarotGame : Game, ITarotGame
         if (_players.Count == 5)
         {
             Phase = TarotPhase.KingCall;
-            await RenderAllAsync();
+            await RenderForNewTurnAsync();
             RestartTurnTimer();
             return;
         }
@@ -297,7 +299,7 @@ public class TarotGame : Game, ITarotGame
                 SortHand(Taker.Hand);
                 Phase = TarotPhase.Discard;
                 _currentTurnIndex = _takerIndex;
-                await RenderAllAsync();
+                await RenderForNewTurnAsync();
                 RestartTurnTimer();
                 return;
 
@@ -412,7 +414,7 @@ public class TarotGame : Game, ITarotGame
         CurrentTrick = new TarotTrick();
         _currentTurnIndex = _firstLeaderIndex;
 
-        await RenderAllAsync();
+        await RenderForNewTurnAsync();
         RestartTurnTimer();
     }
 
@@ -460,7 +462,7 @@ public class TarotGame : Game, ITarotGame
         if (CurrentTrick.Plays.Count < _players.Count)
         {
             _currentTurnIndex = (_currentTurnIndex + 1) % _players.Count;
-            await RenderAllAsync();
+            await RenderForNewTurnAsync();
             RestartTurnTimer();
             return;
         }
@@ -505,11 +507,17 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
-        // Force re-post the public panel so it drops back to the bottom of the chat
-        // instead of staying stuck high up in the scrollback. Hands live in HTML pages
-        // that update in place, so they need no such workaround.
-        Context.SendUpdatableHtml(PublicPanelId, string.Empty, isChanging: false);
+        // Force re-post the public and hand panels so they drop back to the bottom of
+        // the chat instead of staying stuck high up in the scrollback.
+        Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
         _publicPanelInitialized = false;
+
+        foreach (var player in _players)
+        {
+            Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
+                string.Empty, true);
+        }
+        _initializedHandPanels.Clear();
 
         TrickNumber++;
         CurrentTrick = new TarotTrick();
@@ -732,6 +740,43 @@ public class TarotGame : Game, ITarotGame
         await RenderHandsAsync();
     }
 
+    /// <summary>
+    /// Renders the table and refreshes every hand, but re-posts the active player's hand as a fresh
+    /// box at the bottom of their chat so they notice it is their turn instead of having to scroll
+    /// back up to a panel updated in place.
+    /// </summary>
+    private async Task RenderForNewTurnAsync()
+    {
+        await RenderPublicAsync();
+        foreach (var player in _players)
+        {
+            if (player == CurrentPlayer)
+            {
+                await RepostHandAsync(player);
+            }
+            else
+            {
+                await RenderHandAsync(player);
+            }
+        }
+    }
+
+    private async Task RepostHandAsync(TarotPlayer player)
+    {
+        if (player is null)
+        {
+            return;
+        }
+
+        // Clear the existing panel then bump the player's segment so the next render posts a new box
+        // at the bottom of their chat instead of updating the old one in the scrollback.
+        Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
+            string.Empty, isChanging: false);
+        _initializedHandPanels.Remove(player.UserId);
+
+        await RenderHandAsync(player);
+    }
+
     private async Task RenderPublicAsync()
     {
         var templateKey = Phase switch
@@ -758,7 +803,10 @@ public class TarotGame : Game, ITarotGame
     {
         var model = BuildModel(player);
         var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotHand", model);
-        Context.SendHtmlPageTo(player.UserId, HandPageId, html.RemoveNewlines());
+        var alreadyInitialized = _initializedHandPanels.Contains(player.UserId);
+        Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
+            html.RemoveNewlines(), alreadyInitialized);
+        _initializedHandPanels.Add(player.UserId);
     }
 
     private TarotViewModel BuildModel(TarotPlayer viewer) => new()
