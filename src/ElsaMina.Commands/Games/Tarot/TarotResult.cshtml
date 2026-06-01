@@ -104,7 +104,7 @@
                         {
                             foreach (var card in orderedCards)
                             {
-                                <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card);margin:0 3px">@card.ToDisplay()</span>
+                                <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card);margin:0 3px">@card.ToDisplay(Model.Culture)</span>
                             }
                         }
                     </div>

@@ -142,18 +142,21 @@ public sealed record TarotCard(TarotSuit Suit, int Rank)
     }
 
     /// <summary>
-    /// Human-readable display with suit emoji, e.g. "K♥", "T21", "🃏".
+    /// Human-readable display with suit emoji, e.g. "K♥", "T21", "🃏". When <paramref name="culture"/>
+    /// is French, trumps use "A" (Atout) and face cards use V/C/D/R (Valet, Cavalier, Dame, Roi).
     /// </summary>
-    public string ToDisplay()
+    public string ToDisplay(CultureInfo culture = null)
     {
         if (IsExcuse)
         {
             return "🃏";
         }
 
+        var isFrench = culture?.TwoLetterISOLanguageName == "fr";
+
         if (IsTrump)
         {
-            return $"T{Rank}";
+            return $"{(isFrench ? "A" : "T")}{Rank}";
         }
 
         var suitSymbol = Suit switch
@@ -164,15 +167,27 @@ public sealed record TarotCard(TarotSuit Suit, int Rank)
             _ => "♣"
         };
 
-        return $"{RankToken().ToUpperInvariant()}{suitSymbol}";
+        return $"{DisplayRankToken(isFrench)}{suitSymbol}";
     }
 
+    /// <summary>
+    /// Canonical lowercase rank token that <see cref="Parse"/> round-trips (used in button values).
+    /// </summary>
     private string RankToken() => Rank switch
     {
         JACK => "j",
         CAVALIER => "c",
         QUEEN => "q",
         KING => "k",
+        _ => Rank.ToString(CultureInfo.InvariantCulture)
+    };
+
+    private string DisplayRankToken(bool isFrench) => Rank switch
+    {
+        JACK => isFrench ? "V" : "J",
+        CAVALIER => "C",
+        QUEEN => isFrench ? "D" : "Q",
+        KING => isFrench ? "R" : "K",
         _ => Rank.ToString(CultureInfo.InvariantCulture)
     };
 

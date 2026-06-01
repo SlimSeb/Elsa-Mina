@@ -1,3 +1,4 @@
+using System.Globalization;
 using ElsaMina.Commands.Games.Tarot;
 
 namespace ElsaMina.UnitTests.Commands.Games.Tarot;
@@ -62,6 +63,46 @@ public class TarotCardTest
         foreach (var card in TarotConstants.BuildDeck())
         {
             Assert.That(TarotCard.Parse(card.ToToken()), Is.EqualTo(card), $"failed for {card.ToToken()}");
+        }
+    }
+
+    [TestCase(TarotSuit.Trump, 21, "T21")]
+    [TestCase(TarotSuit.Hearts, TarotCard.JACK, "J♥")]
+    [TestCase(TarotSuit.Hearts, TarotCard.CAVALIER, "C♥")]
+    [TestCase(TarotSuit.Hearts, TarotCard.QUEEN, "Q♥")]
+    [TestCase(TarotSuit.Hearts, TarotCard.KING, "K♥")]
+    public void Test_ToDisplay_ShouldUseDefaultNotation_WhenCultureIsNotFrench(TarotSuit suit, int rank, string expected)
+    {
+        var card = new TarotCard(suit, rank);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(card.ToDisplay(), Is.EqualTo(expected));
+            Assert.That(card.ToDisplay(new CultureInfo("en-US")), Is.EqualTo(expected));
+        }
+    }
+
+    [TestCase(TarotSuit.Trump, 21, "A21")]
+    [TestCase(TarotSuit.Hearts, TarotCard.JACK, "V♥")]
+    [TestCase(TarotSuit.Hearts, TarotCard.CAVALIER, "C♥")]
+    [TestCase(TarotSuit.Hearts, TarotCard.QUEEN, "D♥")]
+    [TestCase(TarotSuit.Hearts, TarotCard.KING, "R♥")]
+    public void Test_ToDisplay_ShouldUseFrenchNotation_WhenCultureIsFrench(TarotSuit suit, int rank, string expected)
+    {
+        var card = new TarotCard(suit, rank);
+
+        Assert.That(card.ToDisplay(new CultureInfo("fr-FR")), Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void Test_ToDisplay_ShouldReturnExcuseEmoji_RegardlessOfCulture()
+    {
+        var excuse = new TarotCard(TarotSuit.Excuse, 0);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(excuse.ToDisplay(new CultureInfo("en-US")), Is.EqualTo("🃏"));
+            Assert.That(excuse.ToDisplay(new CultureInfo("fr-FR")), Is.EqualTo("🃏"));
         }
     }
 

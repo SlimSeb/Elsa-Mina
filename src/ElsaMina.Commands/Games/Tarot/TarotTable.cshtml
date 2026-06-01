@@ -64,7 +64,7 @@
                 <b>@GetString("tarot_dog_label"):</b>
                 @foreach (var card in game.Dog)
                 {
-                    <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card);margin:0 4px">@card.ToDisplay()</span>
+                    <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card);margin:0 4px">@card.ToDisplay(Model.Culture)</span>
                 }
             </p>
         }
@@ -79,7 +79,7 @@
             @if (game.CalledKing != null)
             {
                 <text>&nbsp;|&nbsp; @GetString("tarot_called_label"): </text>
-                <span style="color:@CardColor(game.CalledKing);font-weight:bold">@game.CalledKing.ToDisplay()</span>
+                <span style="color:@CardColor(game.CalledKing);font-weight:bold">@game.CalledKing.ToDisplay(Model.Culture)</span>
             }
         </p>
         @if (game.PartnerRevealed && game.Partner != null)
@@ -99,7 +99,7 @@
                 {
                     var isWinningCard = player == game.LastTrickWinner;
                     <span style="display:inline-block;margin:0 5px;text-align:center;opacity:@(isWinningCard ? "1" : "0.55")">
-                        <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card)">@card.ToDisplay()</span><br>
+                        <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card)">@card.ToDisplay(Model.Culture)</span><br>
                         <span style="font-size:0.7em;color:#9a8caa">@player.Name@(isWinningCard ? " 🏆" : "")</span>
                     </span>
                 }
@@ -117,7 +117,7 @@
                     var (player, card) = game.CurrentTrick.Plays[i];
                     var isLast = i == game.CurrentTrick.Plays.Count - 1;
                     <span style="display:inline-block;margin:0 6px;text-align:center;padding:3px 6px;border-radius:5px;@(isLast ? "background:#5a4a6a;box-shadow:0 0 0 2px #f7d774" : "")">
-                        <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card)">@card.ToDisplay()</span><br>
+                        <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card)">@card.ToDisplay(Model.Culture)</span><br>
                         <span style="font-size:0.7em;color:#cabbd9">@player.Name@(isLast ? " ◀" : "")</span>
                     </span>
                 }
@@ -125,7 +125,7 @@
             @if (game.LastPlayedCard != null)
             {
                 <p style="text-align:center;margin:0;color:#f7d774;font-size:0.8em">
-                    @GetString("tarot_last_played_label"): <b>@game.LastPlayedCard.ToDisplay()</b>
+                    @GetString("tarot_last_played_label"): <b>@game.LastPlayedCard.ToDisplay(Model.Culture)</b>
                 </p>
             }
         }

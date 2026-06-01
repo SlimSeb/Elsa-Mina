@@ -50,7 +50,7 @@
             @foreach (var suit in new[] { "h", "s", "d", "c" })
             {
                 var king = TarotCard.Parse($"k{suit}");
-                <button class="button" name="send" value="@Action("tarotcall", king)" style="color:@CardColor(king)">@king.ToDisplay()</button>
+                <button class="button" name="send" value="@Action("tarotcall", king)" style="color:@CardColor(king)">@king.ToDisplay(Model.Culture)</button>
             }
         </p>
     }
@@ -64,7 +64,7 @@
     {
         <p style="margin:2px 0;color:#c7b8d6;font-size:0.85em">
             @GetString("tarot_last_played_label"):
-            <b style="color:@CardColor(game.LastPlayedCard)">@game.LastPlayedCard.ToDisplay()</b>
+            <b style="color:@CardColor(game.LastPlayedCard)">@game.LastPlayedCard.ToDisplay(Model.Culture)</b>
         </p>
     }
 
@@ -77,29 +77,29 @@
             {
                 if (card.IsKing || card.IsOudler)
                 {
-                    <span style="@baseStyle;opacity:0.4">@card.ToDisplay()</span>
+                    <span style="@baseStyle;opacity:0.4">@card.ToDisplay(Model.Culture)</span>
                 }
                 else
                 {
                     var selected = game.PendingDiscards.Contains(card);
                     <button name="send" value="@Action("tarotdiscard", card)"
-                            style="@baseStyle;cursor:pointer;@(selected ? "outline:3px solid #f7a000" : "")">@card.ToDisplay()</button>
+                            style="@baseStyle;cursor:pointer;@(selected ? "outline:3px solid #f7a000" : "")">@card.ToDisplay(Model.Culture)</button>
                 }
             }
             else if (game.Phase == TarotPhase.Playing && isViewerTurn)
             {
                 if (Model.ViewerLegalMoves.Contains(card))
                 {
-                    <button name="send" value="@Action("tp", card)" style="@baseStyle;cursor:pointer">@card.ToDisplay()</button>
+                    <button name="send" value="@Action("tp", card)" style="@baseStyle;cursor:pointer">@card.ToDisplay(Model.Culture)</button>
                 }
                 else
                 {
-                    <span style="@baseStyle;opacity:0.35">@card.ToDisplay()</span>
+                    <span style="@baseStyle;opacity:0.35">@card.ToDisplay(Model.Culture)</span>
                 }
             }
             else
             {
-                <span style="@baseStyle">@card.ToDisplay()</span>
+                <span style="@baseStyle">@card.ToDisplay(Model.Culture)</span>
             }
         }
     </p>

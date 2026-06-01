@@ -278,7 +278,7 @@ public class TarotGame : Game, ITarotGame
         }
 
         CalledKing = card;
-        Context.ReplyLocalizedMessage("tarot_king_called", Taker.Name, card.ToDisplay());
+        Context.ReplyLocalizedMessage("tarot_king_called", Taker.Name, card.ToDisplay(Context.Culture));
 
         await ResolveDogAsync();
     }
@@ -294,7 +294,7 @@ public class TarotGame : Game, ITarotGame
             case TarotBid.Petite or TarotBid.Garde:
                 DogRevealed = true;
                 Context.ReplyLocalizedMessage("tarot_dog_revealed",
-                    string.Join(" ", _dog.Select(card => card.ToDisplay())));
+                    string.Join(" ", _dog.Select(card => card.ToDisplay(Context.Culture))));
                 Taker.Hand.AddRange(_dog);
                 SortHand(Taker.Hand);
                 Phase = TarotPhase.Discard;
@@ -392,7 +392,7 @@ public class TarotGame : Game, ITarotGame
         if (discardedTrumps.Count > 0)
         {
             Context.ReplyLocalizedMessage("tarot_discard_trumps_revealed",
-                string.Join(" ", discardedTrumps.Select(card => card.ToDisplay())));
+                string.Join(" ", discardedTrumps.Select(card => card.ToDisplay(Context.Culture))));
         }
 
         await BeginPlayAsync();
