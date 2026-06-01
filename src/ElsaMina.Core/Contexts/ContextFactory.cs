@@ -49,7 +49,9 @@ public class ContextFactory : IContextFactory
 
                 var timestamp = long.Parse(parts[2]);
                 var userId = parts[3].ToLowerAlphaNum();
-                var message = parts[4];
+                // The message is everything after the 4th pipe. Rejoin so that
+                // messages containing '|' are not truncated.
+                var message = string.Join("|", parts[4..]);
                 var (target, command) = GetTargetAndCommand(message);
                 var user = room.Users.GetValueOrDefault(userId);
 
@@ -67,7 +69,9 @@ public class ContextFactory : IContextFactory
             }
             case > 2 when parts[1] == "pm":
             {
-                var message = parts[4];
+                // The message is everything after the 4th pipe. Rejoin so that
+                // messages containing '|' (e.g. form submissions) are not truncated.
+                var message = string.Join("|", parts[4..]);
                 if (message.StartsWith(BOT_MESSAGE_PREFIX))
                 {
                     message = message[BOT_MESSAGE_PREFIX.Length..];

@@ -198,6 +198,30 @@ public class ContextFactoryTest
     }
 
     [Test]
+    public void Test_TryBuildContextFromReceivedMessage_ShouldKeepFullTarget_WhenPmMessageContainsPipes()
+    {
+        // Arrange — the protocol splits the raw line on '|', so a message containing pipes
+        // arrives as several parts. They must be rejoined to keep the full target.
+        string[] parts = ["", "pm", "user1", "xyz", "!submit title", "", "", "description"];
+        var pmUser = Substitute.For<IUser>();
+
+        _pmSendersManager.GetUser("user1").Returns(pmUser);
+        _configuration.Trigger.Returns("!");
+
+        // Act
+        var result = _contextFactory.TryBuildContextFromReceivedMessage(parts);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.TypeOf<PmContext>());
+            var pm = (PmContext)result;
+            Assert.That(pm.Command, Is.EqualTo("submit"));
+            Assert.That(pm.Target, Is.EqualTo("title|||description"));
+        }
+    }
+
+    [Test]
     public void Test_TryBuildContextFromReceivedMessage_ShouldHandlePmMessageWithoutArgs()
     {
         // Arrange
