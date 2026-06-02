@@ -65,6 +65,7 @@ public class ProfileService : IProfileService
             .Include(user => user.VoltorbFlipLevel)
             .Include(user => user.TwentyFortyEightScore)
             .Include(user => user.ConnectFourRating)
+            .AsNoTracking()
             .FirstOrDefaultAsync(user => user.UserId == userId, cancellationToken);
 
         var storedUserData = savedUser?.RoomData.FirstOrDefault();
