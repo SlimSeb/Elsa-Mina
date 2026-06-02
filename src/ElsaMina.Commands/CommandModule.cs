@@ -49,6 +49,7 @@ using ElsaMina.Commands.Games.VoltorbFlip;
 using ElsaMina.Commands.Games.Wordle;
 using ElsaMina.Commands.JoinPhrases;
 using ElsaMina.Commands.Misc;
+using ElsaMina.Commands.Misc.BugReport;
 using ElsaMina.Commands.Misc.Crypto;
 using ElsaMina.Commands.Misc.Dailymotion;
 using ElsaMina.Commands.Misc.Dictionary;
@@ -230,6 +231,7 @@ public partial class CommandModule : Module
         builder.RegisterCommand<YoutubeCommand>();
         builder.RegisterCommand<DictionaryCommand>();
         builder.RegisterCommand<BugReportCommand>();
+        builder.RegisterCommand<SubmitBugReportCommand>();
         builder.RegisterCommand<SetArcadeLevelCommand>();
         builder.RegisterCommand<DisplayArcadeLevelsCommand>();
         builder.RegisterCommand<DeleteArcadeLevelCommand>();
@@ -464,6 +466,7 @@ public partial class CommandModule : Module
         builder.RegisterType<EventRoleMappingService>().As<IEventRoleMappingService>().SingleInstance();
         builder.RegisterType<TourConfigService>().As<ITourConfigService>().SingleInstance();
         builder.RegisterType<TourConfigLauncher>().As<IDynamicCommandProvider>().SingleInstance();
+        builder.RegisterType<GithubIssueService>().As<IGithubIssueService>().SingleInstance();
         builder.RegisterType<WatchlistService>().As<IWatchlistService>().SingleInstance();
         builder.RegisterType<NameColorsService>().As<INameColorsService>().As<IRoomColorsCache>().SingleInstance();
         builder.RegisterType<ElevenLabsAiTextToSpeechProvider>().As<IAiTextToSpeechProvider>().SingleInstance();

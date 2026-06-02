@@ -102,7 +102,12 @@ public abstract class Context : IContext
         }
 
         ReplyLocalizedMessage("command_execution_error");
-        if (!string.IsNullOrWhiteSpace(_configuration.BugReportLink))
+        if (!string.IsNullOrWhiteSpace(_configuration.GithubToken) &&
+            !string.IsNullOrWhiteSpace(_configuration.GithubRepository))
+        {
+            ReplyLocalizedMessage("command_execution_report_bug_command", _configuration.Trigger);
+        }
+        else if (!string.IsNullOrWhiteSpace(_configuration.BugReportLink))
         {
             ReplyLocalizedMessage("command_execution_report_bug", _configuration.BugReportLink);
         }

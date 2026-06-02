@@ -16,6 +16,8 @@ public interface IConfiguration : IS3CredentialsProvider, ILoggingConfiguration
     string Avatar { get; }
     string DefaultRoom { get; }
     string BugReportLink { get; }
+    string GithubToken { get; }
+    string GithubRepository { get; }
     string DefaultLocaleCode { get; }
     string ConnectionString { get; }
     int DatabaseMaxRetries { get; }

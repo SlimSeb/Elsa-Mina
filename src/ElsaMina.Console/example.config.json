@@ -11,6 +11,8 @@
   "Avatar": "",
   "DefaultRoom": "default",
   "BugReportLink": "",
+  "GithubToken": "",
+  "GithubRepository": "",
   "DefaultLocaleCode": "en-US",
   "ConnectionString": "",
   "DatabaseMaxRetries": 5,

@@ -48,6 +48,39 @@
     <data name="bugreport_not_configured" xml:space="preserve">
         <value>Der Link zur Fehlermeldung ist nicht konfiguriert.</value>
     </data>
+    <data name="bugreport_panel_title" xml:space="preserve">
+        <value>Fehler melden</value>
+    </data>
+    <data name="bugreport_panel_intro" xml:space="preserve">
+        <value>Fülle dieses Formular aus, um einen Fehler zu melden. Deine Meldung wird direkt an die Entwickler gesendet.</value>
+    </data>
+    <data name="bugreport_panel_field_title" xml:space="preserve">
+        <value>Titel</value>
+    </data>
+    <data name="bugreport_panel_field_description" xml:space="preserve">
+        <value>Beschreibung</value>
+    </data>
+    <data name="bugreport_panel_title_placeholder" xml:space="preserve">
+        <value>Kurze Zusammenfassung des Problems</value>
+    </data>
+    <data name="bugreport_panel_description_placeholder" xml:space="preserve">
+        <value>Beschreibe den Fehler, wie man ihn reproduziert, was erwartet wurde...</value>
+    </data>
+    <data name="bugreport_panel_submit" xml:space="preserve">
+        <value>Senden</value>
+    </data>
+    <data name="bugreport_missing_title" xml:space="preserve">
+        <value>Du musst einen Titel für die Meldung angeben.</value>
+    </data>
+    <data name="bugreport_issue_reporter" xml:space="preserve">
+        <value>Gemeldet über Showdown von {0}</value>
+    </data>
+    <data name="bugreport_submit_success" xml:space="preserve">
+        <value>Danke! Deine Meldung wurde erstellt (Issue #{0}): {1}</value>
+    </data>
+    <data name="bugreport_submit_error" xml:space="preserve">
+        <value>Beim Erstellen der Meldung ist ein Fehler aufgetreten. Bitte versuche es später erneut.</value>
+    </data>
     <data name="lagtest_result" xml:space="preserve">
         <value>Latenz: {0} ms</value>
     </data>

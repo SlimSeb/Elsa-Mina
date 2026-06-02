@@ -108,6 +108,9 @@
     <data name="command_execution_report_bug" xml:space="preserve">
         <value>Bitte [[melde ein Problem &lt;{0}&gt;]]</value>
     </data>
+    <data name="command_execution_report_bug_command" xml:space="preserve">
+        <value>Bitte melde diesen Fehler mit dem Befehl {0}bugreport</value>
+    </data>
     <data name="command_autocorrect_suggestion" xml:space="preserve">
         <value>Befehl „{0}" nicht gefunden. Meintest du: __{1}__ ?</value>
     </data>

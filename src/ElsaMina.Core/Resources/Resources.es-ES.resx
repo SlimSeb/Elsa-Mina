@@ -113,6 +113,9 @@
     <data name="command_execution_report_bug" xml:space="preserve">
         <value>Por favor, [[reporta un problema &lt;{0}&gt;]]</value>
     </data>
+    <data name="command_execution_report_bug_command" xml:space="preserve">
+        <value>Por favor, reporta este error con el comando {0}bugreport</value>
+    </data>
     <data name="command_autocorrect_suggestion" xml:space="preserve">
         <value>El comando "{0}" no se ha encontrado. ¿Querías decir: __{1}__ ?</value>
     </data>

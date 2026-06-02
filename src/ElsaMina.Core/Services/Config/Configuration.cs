@@ -16,6 +16,8 @@ public class Configuration : IConfiguration
     public string Avatar { get; set; }
     public string DefaultRoom { get; set; }
     public string BugReportLink { get; set; } = string.Empty;
+    public string GithubToken { get; set; } = string.Empty;
+    public string GithubRepository { get; set; } = string.Empty;
     public string DefaultLocaleCode { get; set; }
     public string ConnectionString { get; set; }
     public int DatabaseMaxRetries { get; set; }

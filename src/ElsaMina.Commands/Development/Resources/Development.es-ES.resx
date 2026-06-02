@@ -48,6 +48,39 @@
     <data name="bugreport_not_configured" xml:space="preserve">
         <value>El enlace para reportar errores no está configurado.</value>
     </data>
+    <data name="bugreport_panel_title" xml:space="preserve">
+        <value>Reportar un error</value>
+    </data>
+    <data name="bugreport_panel_intro" xml:space="preserve">
+        <value>Rellena este formulario para reportar un error. Tu reporte será enviado directamente a los desarrolladores.</value>
+    </data>
+    <data name="bugreport_panel_field_title" xml:space="preserve">
+        <value>Título</value>
+    </data>
+    <data name="bugreport_panel_field_description" xml:space="preserve">
+        <value>Descripción</value>
+    </data>
+    <data name="bugreport_panel_title_placeholder" xml:space="preserve">
+        <value>Resumen corto del problema</value>
+    </data>
+    <data name="bugreport_panel_description_placeholder" xml:space="preserve">
+        <value>Describe el error, cómo reproducirlo, qué esperabas...</value>
+    </data>
+    <data name="bugreport_panel_submit" xml:space="preserve">
+        <value>Enviar</value>
+    </data>
+    <data name="bugreport_missing_title" xml:space="preserve">
+        <value>Debes proporcionar un título para el reporte.</value>
+    </data>
+    <data name="bugreport_issue_reporter" xml:space="preserve">
+        <value>Reportado vía Showdown por {0}</value>
+    </data>
+    <data name="bugreport_submit_success" xml:space="preserve">
+        <value>¡Gracias! Tu reporte ha sido creado (issue #{0}): {1}</value>
+    </data>
+    <data name="bugreport_submit_error" xml:space="preserve">
+        <value>Ocurrió un error al crear el reporte. Inténtalo de nuevo más tarde.</value>
+    </data>
     <data name="lagtest_result" xml:space="preserve">
         <value>Latencia: {0} ms</value>
     </data>
