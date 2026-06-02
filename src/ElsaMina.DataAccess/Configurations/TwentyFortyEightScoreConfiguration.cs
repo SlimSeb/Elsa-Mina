@@ -12,8 +12,8 @@ public class TwentyFortyEightScoreConfiguration : IEntityTypeConfiguration<Twent
 
         builder
             .HasOne<SavedUser>()
-            .WithMany()
-            .HasForeignKey(score => score.UserId)
+            .WithOne(user => user.TwentyFortyEightScore)
+            .HasForeignKey<TwentyFortyEightScore>(score => score.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

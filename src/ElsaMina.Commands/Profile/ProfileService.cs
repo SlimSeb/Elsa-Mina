@@ -51,19 +51,23 @@ public class ProfileService : IProfileService
         var registerDateTask = _userDataService.GetRegisterDateAsync(userId, cancellationToken);
         var ranksTask = _showdownRanksProvider.GetRankingDataAsync(userId, cancellationToken);
 
-        var storedUserData = await dbContext.RoomUsers
-            .Include(roomUser => roomUser.Badges)
-            .ThenInclude(badgeHolding => badgeHolding.Badge)
-            .Include(roomUser => roomUser.TournamentRecord)
-            .FirstOrDefaultAsync(userData => userData.Id == userId && userData.RoomId == roomId,
-                cancellationToken);
+        // Foreign keys guarantee that any user-owned row (room data, game scores) points at a Users row,
+        // so the whole profile can be loaded from a single Users query through the navigation properties.
         var savedUser = await dbContext.Users
+            .AsSplitQuery()
+            .Include(user => user.RoomData.Where(roomUser => roomUser.RoomId == roomId))
+            .ThenInclude(roomUser => roomUser.Badges)
+            .ThenInclude(badgeHolding => badgeHolding.Badge)
+            .Include(user => user.RoomData.Where(roomUser => roomUser.RoomId == roomId))
+            .ThenInclude(roomUser => roomUser.TournamentRecord)
+            .Include(user => user.FloodItScore)
+            .Include(user => user.LightsOutScore)
+            .Include(user => user.VoltorbFlipLevel)
+            .Include(user => user.TwentyFortyEightScore)
+            .Include(user => user.ConnectFourRating)
             .FirstOrDefaultAsync(user => user.UserId == userId, cancellationToken);
-        var floodItScore = await dbContext.FloodItScores.FindAsync([userId], cancellationToken);
-        var lightsOutScore = await dbContext.LightsOutScores.FindAsync([userId], cancellationToken);
-        var voltorbFlipLevel = await dbContext.VoltorbFlipLevels.FindAsync([userId], cancellationToken);
-        var twentyFortyEightScore = await dbContext.TwentyFortyEightScores.FindAsync([userId], cancellationToken);
-        var connectFourRating = await dbContext.ConnectFourRatings.FindAsync([userId], cancellationToken);
+
+        var storedUserData = savedUser?.RoomData.FirstOrDefault();
 
         await Task.WhenAll(userDetailsTask, registerDateTask, ranksTask);
 
@@ -83,11 +87,11 @@ public class ProfileService : IProfileService
 
         var gameRecords = new GameRecords
         {
-            FloodIt = floodItScore,
-            LightsOut = lightsOutScore,
-            VoltorbFlip = voltorbFlipLevel,
-            TwentyFortyEight = twentyFortyEightScore,
-            ConnectFour = connectFourRating
+            FloodIt = savedUser?.FloodItScore,
+            LightsOut = savedUser?.LightsOutScore,
+            VoltorbFlip = savedUser?.VoltorbFlipLevel,
+            TwentyFortyEight = savedUser?.TwentyFortyEightScore,
+            ConnectFour = savedUser?.ConnectFourRating
         };
 
         var isOnline = showdownUserDetails?.Rooms != null;

@@ -12,8 +12,8 @@ public class FloodItScoreConfiguration : IEntityTypeConfiguration<FloodItScore>
 
         builder
             .HasOne<SavedUser>()
-            .WithMany()
-            .HasForeignKey(score => score.UserId)
+            .WithOne(user => user.FloodItScore)
+            .HasForeignKey<FloodItScore>(score => score.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -780,8 +780,8 @@ namespace ElsaMina.DataAccess.Migrations
             modelBuilder.Entity("ElsaMina.DataAccess.Models.ConnectFourRating", b =>
                 {
                     b.HasOne("ElsaMina.DataAccess.Models.SavedUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("ConnectFourRating")
+                        .HasForeignKey("ElsaMina.DataAccess.Models.ConnectFourRating", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -789,8 +789,8 @@ namespace ElsaMina.DataAccess.Migrations
             modelBuilder.Entity("ElsaMina.DataAccess.Models.FloodItScore", b =>
                 {
                     b.HasOne("ElsaMina.DataAccess.Models.SavedUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("FloodItScore")
+                        .HasForeignKey("ElsaMina.DataAccess.Models.FloodItScore", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -806,8 +806,8 @@ namespace ElsaMina.DataAccess.Migrations
             modelBuilder.Entity("ElsaMina.DataAccess.Models.LightsOutScore", b =>
                 {
                     b.HasOne("ElsaMina.DataAccess.Models.SavedUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("LightsOutScore")
+                        .HasForeignKey("ElsaMina.DataAccess.Models.LightsOutScore", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -912,8 +912,8 @@ namespace ElsaMina.DataAccess.Migrations
             modelBuilder.Entity("ElsaMina.DataAccess.Models.TwentyFortyEightScore", b =>
                 {
                     b.HasOne("ElsaMina.DataAccess.Models.SavedUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("TwentyFortyEightScore")
+                        .HasForeignKey("ElsaMina.DataAccess.Models.TwentyFortyEightScore", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -930,8 +930,8 @@ namespace ElsaMina.DataAccess.Migrations
             modelBuilder.Entity("ElsaMina.DataAccess.Models.VoltorbFlipLevel", b =>
                 {
                     b.HasOne("ElsaMina.DataAccess.Models.SavedUser", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
+                        .WithOne("VoltorbFlipLevel")
+                        .HasForeignKey("ElsaMina.DataAccess.Models.VoltorbFlipLevel", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -976,7 +976,17 @@ namespace ElsaMina.DataAccess.Migrations
 
             modelBuilder.Entity("ElsaMina.DataAccess.Models.SavedUser", b =>
                 {
+                    b.Navigation("ConnectFourRating");
+
+                    b.Navigation("FloodItScore");
+
+                    b.Navigation("LightsOutScore");
+
                     b.Navigation("RoomData");
+
+                    b.Navigation("TwentyFortyEightScore");
+
+                    b.Navigation("VoltorbFlipLevel");
                 });
 
             modelBuilder.Entity("ElsaMina.DataAccess.Models.Team", b =>
