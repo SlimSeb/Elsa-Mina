@@ -9,5 +9,11 @@ public class ConnectFourRatingConfiguration : IEntityTypeConfiguration<ConnectFo
     public void Configure(EntityTypeBuilder<ConnectFourRating> builder)
     {
         builder.HasKey(rating => rating.UserId);
+
+        builder
+            .HasOne<SavedUser>()
+            .WithMany()
+            .HasForeignKey(rating => rating.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

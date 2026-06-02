@@ -10,6 +10,10 @@ public class LightsOutScoreConfiguration : IEntityTypeConfiguration<LightsOutSco
     {
         builder.HasKey(score => score.UserId);
 
-
+        builder
+            .HasOne<SavedUser>()
+            .WithMany()
+            .HasForeignKey(score => score.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

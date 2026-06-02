@@ -73,6 +73,7 @@ public class ConnectFourRatingService : IConnectFourRatingService
             return rating;
         }
 
+        await dbContext.EnsureUserExistsAsync(userId, cancellationToken);
         rating = new ConnectFourRating
         {
             UserId = userId,

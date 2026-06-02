@@ -309,6 +309,7 @@ public class VoltorbFlipGame : Game, IVoltorbFlipGame
         if (record == null)
         {
             TotalCoins = coinsEarned;
+            await db.EnsureUserExistsAsync(Owner.UserId);
             await db.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel
             {
                 UserId = Owner.UserId,

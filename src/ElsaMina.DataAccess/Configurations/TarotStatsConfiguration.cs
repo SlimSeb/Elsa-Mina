@@ -9,5 +9,11 @@ public class TarotStatsConfiguration : IEntityTypeConfiguration<TarotStats>
     public void Configure(EntityTypeBuilder<TarotStats> builder)
     {
         builder.HasKey(stats => stats.UserId);
+
+        builder
+            .HasOne<SavedUser>()
+            .WithMany()
+            .HasForeignKey(stats => stats.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

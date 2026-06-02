@@ -120,6 +120,7 @@ public class EloHistoryService : IEloHistoryService
         };
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        await dbContext.EnsureUserExistsAsync(trackedUser.UserId, cancellationToken);
         await dbContext.LadderEloSnapshots.AddAsync(snapshot, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 

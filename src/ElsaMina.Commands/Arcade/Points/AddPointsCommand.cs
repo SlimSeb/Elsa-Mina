@@ -44,6 +44,7 @@ public class AddPointsCommand : Command
 
         if (userPoints == null)
         {
+            await dbContext.EnsureUserExistsAsync(user, cancellationToken);
             userPoints = new DataAccess.Models.UserPoints
             {
                 Id = user,

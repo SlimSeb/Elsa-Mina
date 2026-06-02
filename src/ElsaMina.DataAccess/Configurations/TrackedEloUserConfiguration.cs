@@ -9,5 +9,11 @@ public class TrackedEloUserConfiguration : IEntityTypeConfiguration<TrackedEloUs
     public void Configure(EntityTypeBuilder<TrackedEloUser> builder)
     {
         builder.HasKey(entry => new { entry.Format, entry.UserId });
+
+        builder
+            .HasOne<SavedUser>()
+            .WithMany()
+            .HasForeignKey(entry => entry.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

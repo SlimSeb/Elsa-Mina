@@ -298,6 +298,7 @@ public class WordleGame : Game, IWordleGame
             var record = await db.WordleScores.FindAsync(Owner.UserId);
             if (record == null)
             {
+                await db.EnsureUserExistsAsync(Owner.UserId);
                 record = new WordleScore { UserId = Owner.UserId };
                 await db.WordleScores.AddAsync(record);
             }
@@ -326,6 +327,7 @@ public class WordleGame : Game, IWordleGame
             var record = await db.WordleScores.FindAsync(Owner.UserId);
             if (record == null)
             {
+                await db.EnsureUserExistsAsync(Owner.UserId);
                 record = new WordleScore
                 {
                     UserId = Owner.UserId,

@@ -409,6 +409,7 @@ public class FloodItGame : Game, IFloodItGame
         var record = await db.FloodItScores.FindAsync(Owner.UserId);
         if (record == null)
         {
+            await db.EnsureUserExistsAsync(Owner.UserId);
             await db.FloodItScores.AddAsync(new FloodItScore
             {
                 UserId = Owner.UserId,

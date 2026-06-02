@@ -4,16 +4,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ElsaMina.DataAccess.Configurations;
 
-public class FloodItScoreConfiguration : IEntityTypeConfiguration<FloodItScore>
+public class NameColorConfiguration : IEntityTypeConfiguration<NameColor>
 {
-    public void Configure(EntityTypeBuilder<FloodItScore> builder)
+    public void Configure(EntityTypeBuilder<NameColor> builder)
     {
-        builder.HasKey(score => score.UserId);
+        builder.HasKey(nameColor => nameColor.UserId);
 
         builder
             .HasOne<SavedUser>()
             .WithMany()
-            .HasForeignKey(score => score.UserId)
+            .HasForeignKey(nameColor => nameColor.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

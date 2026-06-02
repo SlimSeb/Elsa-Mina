@@ -52,6 +52,7 @@ public class EloProgressionManager : IEloProgressionManager
         }
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        await dbContext.EnsureUserExistsAsync(userId, cancellationToken);
         await dbContext.TrackedEloUsers.AddAsync(new TrackedEloUser { Format = format, UserId = userId },
             cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);

@@ -62,6 +62,7 @@ public class TarotStatsService : ITarotStatsService
             return stats;
         }
 
+        await dbContext.EnsureUserExistsAsync(userId, cancellationToken);
         stats = new TarotStats { UserId = userId };
         dbContext.TarotStats.Add(stats);
         return stats;

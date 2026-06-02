@@ -363,6 +363,7 @@ public class TwentyFortyEightGame : Game, ITwentyFortyEightGame
         var record = await db.TwentyFortyEightScores.FindAsync(Owner.UserId);
         if (record == null)
         {
+            await db.EnsureUserExistsAsync(Owner.UserId);
             await db.TwentyFortyEightScores.AddAsync(new TwentyFortyEightScore
             {
                 UserId = Owner.UserId,

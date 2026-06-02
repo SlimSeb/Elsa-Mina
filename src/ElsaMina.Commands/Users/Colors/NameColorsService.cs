@@ -38,6 +38,7 @@ public class NameColorsService : INameColorsService, IRoomColorsCache
         }
         else
         {
+            await dbContext.EnsureUserExistsAsync(userId, cancellationToken);
             await dbContext.NameColors.AddAsync(new NameColor { UserId = userId, Color = color }, cancellationToken);
         }
 

@@ -220,6 +220,7 @@ public class LightsOutGame : Game, ILightsOutGame
         var record = await db.LightsOutScores.FindAsync(Owner.UserId);
         if (record == null)
         {
+            await db.EnsureUserExistsAsync(Owner.UserId);
             await db.LightsOutScores.AddAsync(new LightsOutScore
             {
                 UserId = Owner.UserId,

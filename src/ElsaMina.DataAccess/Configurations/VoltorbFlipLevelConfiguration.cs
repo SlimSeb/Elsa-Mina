@@ -11,6 +11,10 @@ public class VoltorbFlipLevelConfiguration : IEntityTypeConfiguration<VoltorbFli
         builder
             .HasKey(record => record.UserId);
 
-
+        builder
+            .HasOne<SavedUser>()
+            .WithMany()
+            .HasForeignKey(record => record.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

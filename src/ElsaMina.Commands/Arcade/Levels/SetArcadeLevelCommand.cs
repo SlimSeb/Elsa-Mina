@@ -49,6 +49,7 @@ public class SetArcadeLevelCommand : Command
             var arcadeLevel = await dbContext.ArcadeLevels.FindAsync([user], cancellationToken);
             if (arcadeLevel == null)
             {
+                await dbContext.EnsureUserExistsAsync(user, cancellationToken);
                 await dbContext.ArcadeLevels.AddAsync(new ArcadeLevel
                 {
                     Id = user,

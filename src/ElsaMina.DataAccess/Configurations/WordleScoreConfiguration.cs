@@ -9,5 +9,11 @@ public class WordleScoreConfiguration : IEntityTypeConfiguration<WordleScore>
     public void Configure(EntityTypeBuilder<WordleScore> builder)
     {
         builder.HasKey(score => score.UserId);
+
+        builder
+            .HasOne<SavedUser>()
+            .WithMany()
+            .HasForeignKey(score => score.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

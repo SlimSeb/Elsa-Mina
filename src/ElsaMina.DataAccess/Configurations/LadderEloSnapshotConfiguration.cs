@@ -12,5 +12,11 @@ public class LadderEloSnapshotConfiguration : IEntityTypeConfiguration<LadderElo
         builder.Property(snapshot => snapshot.Id).ValueGeneratedOnAdd();
         builder.HasIndex(snapshot => new { snapshot.UserId, snapshot.Format });
         builder.HasIndex(snapshot => snapshot.RecordedAt);
+
+        builder
+            .HasOne<SavedUser>()
+            .WithMany()
+            .HasForeignKey(snapshot => snapshot.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
