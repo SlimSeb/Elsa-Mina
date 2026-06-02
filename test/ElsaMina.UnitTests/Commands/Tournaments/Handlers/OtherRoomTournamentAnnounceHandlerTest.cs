@@ -12,6 +12,11 @@ namespace ElsaMina.UnitTests.Commands.Tournaments.Handlers;
 
 public class OtherRoomTournamentAnnounceHandlerTest
 {
+    private static readonly string[] RECEIVING_ROOMS = ["receivingroom"];
+    private static readonly string[] MULTIPLE_RECEIVING_ROOMS = ["room1", "room2", "room3"];
+    private static readonly string[] RECEIVER_A = ["receiver-a"];
+    private static readonly string[] RECEIVER_B = ["receiver-b"];
+
     private IConfiguration _configuration;
     private IBot _bot;
     private IFormatsManager _formatsManager;
@@ -83,7 +88,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "tournament", "create", "gen9ou" };
 
@@ -97,7 +102,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "tournament", "create", "gen9ou" };
 
@@ -111,7 +116,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "room1", "room2", "room3" } }
+            { "broadcastroom", MULTIPLE_RECEIVING_ROOMS }
         });
         var parts = new[] { "", "tournament", "create", "gen9ou" };
 
@@ -127,7 +132,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "tournament", "create", "gen9ou" };
 
@@ -145,7 +150,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
         _roomsManager.GetRoom("receivingroom").Returns(room);
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "tournament", "create", "gen9ou" };
 
@@ -161,7 +166,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
         _configuration.DefaultLocaleCode.Returns("en-US");
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "tournament", "create", "gen9ou" };
 
@@ -179,7 +184,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
             .Returns("A tournament in {0} was announced in {1}!");
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "tournament", "create", "gen9ou" };
 
@@ -194,8 +199,8 @@ public class OtherRoomTournamentAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "room-a", new[] { "receiver-a" } },
-            { "room-b", new[] { "receiver-b" } }
+            { "room-a", RECEIVER_A },
+            { "room-b", RECEIVER_B }
         });
         var parts = new[] { "", "tournament", "create", "gen9ou" };
 

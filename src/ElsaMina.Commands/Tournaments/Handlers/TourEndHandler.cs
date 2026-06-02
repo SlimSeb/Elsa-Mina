@@ -129,7 +129,7 @@ public class TourEndHandler : Handler
         {
             var prize = result.Players.Count * PRIZE_PER_PARTICIPANT;
             var prizeMessage = string.Format(
-                _resourcesService.GetString("tournament_winner_prize", room?.Culture), result.Winner, prize);
+                _resourcesService.GetString("tournament_winner_prize", room.Culture), result.Winner, prize);
             _bot.Say(roomId, prizeMessage);
         }
 

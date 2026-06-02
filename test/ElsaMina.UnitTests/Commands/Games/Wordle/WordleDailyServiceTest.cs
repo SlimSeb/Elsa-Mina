@@ -9,8 +9,13 @@ namespace ElsaMina.UnitTests.Commands.Games.Wordle;
 
 public class WordleDailyServiceTest
 {
-    private static readonly CultureInfo English = new("en-US");
-    private static readonly CultureInfo French = new("fr-FR");
+    private static readonly CultureInfo ENGLISH = new("en-US");
+    private static readonly CultureInfo FRENCH = new("fr-FR");
+
+    private static readonly string[] ENGLISH_ANSWERS = ["APPLE", "CRANE", "LEVEL", "GHOST"];
+    private static readonly string[] FRENCH_ANSWERS = ["AVION", "BLANC", "CARTE", "CHAMP"];
+    private static readonly string[] ENGLISH_WORDS = ["apple", "crane", "level", "ghost"];
+    private static readonly string[] FRENCH_WORDS = ["avion", "blanc", "carte", "champ"];
 
     private WordleDailyService _service;
     private IClockService _mockClockService;
@@ -36,8 +41,8 @@ public class WordleDailyServiceTest
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 10, 0, 0, DateTimeKind.Utc));
 
         // Act
-        var first = _service.GetDailyAnswer(English);
-        var second = _service.GetDailyAnswer(English);
+        var first = _service.GetDailyAnswer(ENGLISH);
+        var second = _service.GetDailyAnswer(ENGLISH);
 
         // Assert
         Assert.That(first, Is.EqualTo(second));
@@ -49,11 +54,11 @@ public class WordleDailyServiceTest
     {
         // Arrange
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 0, 1, 0, DateTimeKind.Utc));
-        var morning = _service.GetDailyAnswer(English);
+        var morning = _service.GetDailyAnswer(ENGLISH);
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 23, 59, 0, DateTimeKind.Utc));
 
         // Act
-        var night = _service.GetDailyAnswer(English);
+        var night = _service.GetDailyAnswer(ENGLISH);
 
         // Assert
         Assert.That(morning, Is.EqualTo(night));
@@ -64,11 +69,11 @@ public class WordleDailyServiceTest
     {
         // Arrange
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc));
-        var day1 = _service.GetDailyAnswer(English);
+        var day1 = _service.GetDailyAnswer(ENGLISH);
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 2, 12, 0, 0, DateTimeKind.Utc));
 
         // Act
-        var day2 = _service.GetDailyAnswer(English);
+        var day2 = _service.GetDailyAnswer(ENGLISH);
 
         // Assert
         Assert.That(day1, Is.Not.EqualTo(day2));
@@ -81,11 +86,11 @@ public class WordleDailyServiceTest
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc));
 
         // Act
-        var answer = _service.GetDailyAnswer(English);
+        var answer = _service.GetDailyAnswer(ENGLISH);
 
         // Assert
         Assert.That(answer, Is.EqualTo(answer.ToUpperInvariant()));
-        Assert.That(new[] { "APPLE", "CRANE", "LEVEL", "GHOST" }, Does.Contain(answer));
+        Assert.That(ENGLISH_ANSWERS, Does.Contain(answer));
     }
 
     [Test]
@@ -95,29 +100,29 @@ public class WordleDailyServiceTest
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc));
 
         // Act
-        var answer = _service.GetDailyAnswer(French);
+        var answer = _service.GetDailyAnswer(FRENCH);
 
         // Assert
-        Assert.That(new[] { "AVION", "BLANC", "CARTE", "CHAMP" }, Does.Contain(answer));
+        Assert.That(FRENCH_ANSWERS, Does.Contain(answer));
     }
 
     [Test]
     public void Test_GetWords_ShouldReturnEnglishList_WhenCultureIsNotFrench()
     {
         // Act
-        var words = _service.GetWords(English);
+        var words = _service.GetWords(ENGLISH);
 
         // Assert
-        Assert.That(words, Is.EqualTo(new[] { "apple", "crane", "level", "ghost" }));
+        Assert.That(words, Is.EqualTo(ENGLISH_WORDS));
     }
 
     [Test]
     public void Test_GetWords_ShouldReturnFrenchList_WhenCultureIsFrench()
     {
         // Act
-        var words = _service.GetWords(French);
+        var words = _service.GetWords(FRENCH);
 
         // Assert
-        Assert.That(words, Is.EqualTo(new[] { "avion", "blanc", "carte", "champ" }));
+        Assert.That(words, Is.EqualTo(FRENCH_WORDS));
     }
 }

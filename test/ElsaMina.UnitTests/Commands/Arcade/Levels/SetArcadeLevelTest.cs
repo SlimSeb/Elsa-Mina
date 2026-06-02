@@ -11,6 +11,9 @@ namespace ElsaMina.UnitTests.Commands.Arcade.Levels;
 
 public class SetArcadeLevelCommandTests
 {
+    private static readonly string[] EXPECTED_ALIASES = ["setpalier"];
+    private static readonly string[] EXPECTED_ROOM_RESTRICTION = ["arcade", "botdevelopment"];
+
     private DbContextOptions<BotDbContext> _dbOptions;
     private IBotDbContextFactory _dbContextFactory;
     private IContext _context;
@@ -52,9 +55,9 @@ public class SetArcadeLevelCommandTests
         {
             Assert.That(command, Is.Not.Null);
             Assert.That(command.Name, Is.EqualTo("addpalier"));
-            Assert.That(command.Aliases, Is.EquivalentTo(new[] { "setpalier" }));
+            Assert.That(command.Aliases, Is.EquivalentTo(EXPECTED_ALIASES));
             Assert.That(command.RequiredRank, Is.EqualTo(Rank.Driver));
-            Assert.That(command.RoomRestriction, Is.EqualTo(new[] { "arcade", "botdevelopment" }));
+            Assert.That(command.RoomRestriction, Is.EqualTo(EXPECTED_ROOM_RESTRICTION));
             Assert.That(command.HelpMessageKey, Is.EqualTo("arcade_level_help"));
         }
     }

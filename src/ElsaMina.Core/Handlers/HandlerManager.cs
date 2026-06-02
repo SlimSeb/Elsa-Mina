@@ -21,7 +21,7 @@ public class HandlerManager : IHandlerManager
 
     public bool IsInitialized { get; private set; }
 
-    public IReadOnlyCollection<IHandler> Handlers => _handlers.Values.ToList();
+    public IEnumerable<IHandler> Handlers => _handlers.Values;
 
     public void Initialize()
     {

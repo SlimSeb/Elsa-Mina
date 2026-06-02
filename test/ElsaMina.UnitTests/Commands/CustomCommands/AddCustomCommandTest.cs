@@ -12,6 +12,8 @@ namespace ElsaMina.UnitTests.Commands.CustomCommands;
 
 public class AddCustomCommandTests
 {
+    private static readonly string[] EXPECTED_ALIASES = ["add-custom", "add-command", "addcommand"];
+
     private DbContextOptions<BotDbContext> _dbOptions;
     private IBotDbContextFactory _dbContextFactory;
     private IConfiguration _configuration;
@@ -65,7 +67,7 @@ public class AddCustomCommandTests
         {
             Assert.That(command, Is.Not.Null);
             Assert.That(command.Name, Is.EqualTo("add-custom-command"));
-            Assert.That(command.Aliases, Is.EquivalentTo(new[] { "add-custom", "add-command", "addcommand" }));
+            Assert.That(command.Aliases, Is.EquivalentTo(EXPECTED_ALIASES));
             Assert.That(command.RequiredRank, Is.EqualTo(Rank.Driver));
         }
     }

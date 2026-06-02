@@ -7,6 +7,8 @@ namespace ElsaMina.UnitTests.Commands.Showdown.Ladder.EloHistory;
 
 public class ListTrackedEloProgressionsCommandTest
 {
+    private static readonly string[] EXPECTED_OUTPUT_ORDER = ["bob in gen8ou", "alice in gen9ou", "zelda in gen9ou"];
+
     private IEloProgressionManager _eloProgressionManager;
     private ListTrackedEloProgressionsCommand _command;
     private IContext _context;
@@ -78,12 +80,7 @@ public class ListTrackedEloProgressionsCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(outputOrder, Is.EqualTo(new[]
-        {
-            "bob in gen8ou",
-            "alice in gen9ou",
-            "zelda in gen9ou"
-        }));
+        Assert.That(outputOrder, Is.EqualTo(EXPECTED_OUTPUT_ORDER));
     }
 
     [Test]

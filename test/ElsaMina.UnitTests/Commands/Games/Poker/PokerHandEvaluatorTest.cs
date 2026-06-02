@@ -5,6 +5,23 @@ namespace ElsaMina.UnitTests.Commands.Games.Poker;
 [TestFixture]
 public class PokerHandEvaluatorTest
 {
+    private static readonly int[] ROYAL_FLUSH_TIEBREAKERS = [14];
+    private static readonly int[] WHEEL_STRAIGHT_FLUSH_TIEBREAKERS = [5];
+    private static readonly int[] FOUR_OF_A_KIND_TIEBREAKERS = [9, 13];
+    private static readonly int[] FULL_HOUSE_TIEBREAKERS = [8, 13];
+    private static readonly int[] FLUSH_TIEBREAKERS = [14, 11, 9, 5, 2];
+    private static readonly int[] STRAIGHT_TIEBREAKERS = [9];
+    private static readonly int[] WHEEL_STRAIGHT_TIEBREAKERS = [5];
+    private static readonly int[] THREE_OF_A_KIND_TIEBREAKERS = [12, 9, 2];
+    private static readonly int[] TWO_PAIR_TIEBREAKERS = [14, 7, 13];
+    private static readonly int[] PAIR_TIEBREAKERS = [10, 14, 9, 3];
+    private static readonly int[] HIGH_CARD_TIEBREAKERS = [14, 12, 9, 5, 3];
+    private static readonly int[] BEST_FLUSH_TIEBREAKERS = [14, 13, 9, 5, 2];
+    private static readonly int[] BEST_STRAIGHT_TIEBREAKERS = [9];
+
+    private static readonly string[] BEST_OF_SEVEN_CARDS = ["Ah", "Kh", "9h", "5h", "2h", "9d", "9c"];
+    private static readonly string[] STRAIGHT_OF_SEVEN_CARDS = ["9h", "8d", "5c", "6s", "7h", "2c", "Kd"];
+
     private static PokerCard Card(string token)
     {
         var rank = token[0] switch
@@ -38,7 +55,7 @@ public class PokerHandEvaluatorTest
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.StraightFlush));
             Assert.That(evaluation.IsRoyalFlush, Is.True);
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 14 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(ROYAL_FLUSH_TIEBREAKERS));
         }
     }
 
@@ -51,7 +68,7 @@ public class PokerHandEvaluatorTest
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.StraightFlush));
             Assert.That(evaluation.IsRoyalFlush, Is.False);
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 5 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(WHEEL_STRAIGHT_FLUSH_TIEBREAKERS));
         }
     }
 
@@ -63,7 +80,7 @@ public class PokerHandEvaluatorTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.FourOfAKind));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 9, 13 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(FOUR_OF_A_KIND_TIEBREAKERS));
         }
     }
 
@@ -75,7 +92,7 @@ public class PokerHandEvaluatorTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.FullHouse));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 8, 13 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(FULL_HOUSE_TIEBREAKERS));
         }
     }
 
@@ -87,7 +104,7 @@ public class PokerHandEvaluatorTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.Flush));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 14, 11, 9, 5, 2 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(FLUSH_TIEBREAKERS));
         }
     }
 
@@ -99,7 +116,7 @@ public class PokerHandEvaluatorTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.Straight));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 9 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(STRAIGHT_TIEBREAKERS));
         }
     }
 
@@ -111,7 +128,7 @@ public class PokerHandEvaluatorTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.Straight));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 5 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(WHEEL_STRAIGHT_TIEBREAKERS));
         }
     }
 
@@ -123,7 +140,7 @@ public class PokerHandEvaluatorTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.ThreeOfAKind));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 12, 9, 2 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(THREE_OF_A_KIND_TIEBREAKERS));
         }
     }
 
@@ -135,7 +152,7 @@ public class PokerHandEvaluatorTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.TwoPair));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 14, 7, 13 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(TWO_PAIR_TIEBREAKERS));
         }
     }
 
@@ -147,7 +164,7 @@ public class PokerHandEvaluatorTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.Pair));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 10, 14, 9, 3 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(PAIR_TIEBREAKERS));
         }
     }
 
@@ -159,7 +176,7 @@ public class PokerHandEvaluatorTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.HighCard));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 14, 12, 9, 5, 3 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(HIGH_CARD_TIEBREAKERS));
         }
     }
 
@@ -203,14 +220,14 @@ public class PokerHandEvaluatorTest
     public void Test_EvaluateBest_ShouldPickBestFiveOfSeven()
     {
         // Seven cards containing a flush in hearts plus noise.
-        var cards = new[] { "Ah", "Kh", "9h", "5h", "2h", "9d", "9c" }.Select(Card).ToList();
+        var cards = BEST_OF_SEVEN_CARDS.Select(Card).ToList();
 
         var evaluation = PokerHandEvaluator.EvaluateBest(cards);
 
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.Flush));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 14, 13, 9, 5, 2 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(BEST_FLUSH_TIEBREAKERS));
         }
     }
 
@@ -218,14 +235,14 @@ public class PokerHandEvaluatorTest
     public void Test_EvaluateBest_ShouldFindStraightUsingBothHoleCards()
     {
         // Board 5-6-7 + 2 + K, hole cards 8 and 9 -> straight 5..9.
-        var cards = new[] { "9h", "8d", "5c", "6s", "7h", "2c", "Kd" }.Select(Card).ToList();
+        var cards = STRAIGHT_OF_SEVEN_CARDS.Select(Card).ToList();
 
         var evaluation = PokerHandEvaluator.EvaluateBest(cards);
 
         using (Assert.EnterMultipleScope())
         {
             Assert.That(evaluation.Rank, Is.EqualTo(PokerHandRank.Straight));
-            Assert.That(evaluation.Tiebreakers, Is.EqualTo(new[] { 9 }));
+            Assert.That(evaluation.Tiebreakers, Is.EqualTo(BEST_STRAIGHT_TIEBREAKERS));
         }
     }
 }

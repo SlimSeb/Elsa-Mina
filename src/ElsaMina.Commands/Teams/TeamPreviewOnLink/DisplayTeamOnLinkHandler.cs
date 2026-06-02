@@ -67,7 +67,7 @@ public class DisplayTeamOnLinkHandler : ChatMessageHandler
             return;
         }
 
-        var sharedTeam = await teamLinkMatch.GetTeamExport();
+        var sharedTeam = await teamLinkMatch.GetTeamExport(cancellationToken);
         if (sharedTeam == null)
         {
             Log.Error("An error occurred while fetching team from link {0}",

@@ -11,6 +11,8 @@ namespace ElsaMina.UnitTests.Commands.ChatLog;
 
 public class LinecountCommandTest
 {
+    private static readonly string[] LOG_FILE_KEYS = ["chatlogs/testroom/2026-05-01.txt"];
+
     private IFileSharingService _fileSharingService;
     private ITemplatesManager _templatesManager;
     private LinecountCommand _command;
@@ -108,7 +110,7 @@ public class LinecountCommandTest
     {
         var context = BuildContext("alice, testroom");
         _fileSharingService.ListFilesAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new[] { "chatlogs/testroom/2026-05-01.txt" });
+            .Returns(LOG_FILE_KEYS);
         _fileSharingService.GetFileAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((Stream)null);
 
@@ -128,7 +130,7 @@ public class LinecountCommandTest
             "[12:02:00 UTC] alice: msg2\n";
         var context = BuildContext("alice, testroom");
         _fileSharingService.ListFilesAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new[] { "chatlogs/testroom/2026-05-01.txt" });
+            .Returns(LOG_FILE_KEYS);
         _fileSharingService.GetFileAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(ToStream(content));
 

@@ -10,6 +10,15 @@ namespace ElsaMina.UnitTests.Commands.Games;
 
 public class HangmanAnnounceHandlerTest
 {
+    private static readonly string[] RECEIVING_ROOMS = ["receivingroom"];
+    private static readonly string[] MULTIPLE_RECEIVING_ROOMS = ["room1", "room2", "room3"];
+    private static readonly string[] RECEIVER_A = ["receiver-a"];
+    private static readonly string[] RECEIVER_B = ["receiver-b"];
+    private static readonly string[] HANGMAN_100_PARTS = ["", "uhtml", "hangman100", "<div></div>"];
+    private static readonly string[] HANGMAN_50_PARTS = ["", "uhtml", "hangman50", "<div></div>"];
+    private static readonly string[] HANGMAN_1_PARTS = ["", "uhtml", "hangman1", "<div></div>"];
+    private static readonly string[] HANGMAN_2_PARTS = ["", "uhtml", "hangman2", "<div></div>"];
+
     private IConfiguration _configuration;
     private IBot _bot;
     private IRoomsManager _roomsManager;
@@ -68,7 +77,7 @@ public class HangmanAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "uhtml", "hangman1", "<div></div>" };
 
@@ -82,7 +91,7 @@ public class HangmanAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "uhtml", "hangman2568", "<div></div>" };
 
@@ -97,11 +106,11 @@ public class HangmanAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
 
-        await _handler.HandleReceivedMessageAsync(new[] { "", "uhtml", "hangman100", "<div></div>" }, "broadcastroom");
-        await _handler.HandleReceivedMessageAsync(new[] { "", "uhtml", "hangman50", "<div></div>" }, "broadcastroom");
+        await _handler.HandleReceivedMessageAsync(HANGMAN_100_PARTS, "broadcastroom");
+        await _handler.HandleReceivedMessageAsync(HANGMAN_50_PARTS, "broadcastroom");
 
         _bot.Received(1).Say(Arg.Any<string>(), Arg.Any<string>());
     }
@@ -111,7 +120,7 @@ public class HangmanAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "uhtml", "hangman1", "<div></div>" };
 
@@ -125,7 +134,7 @@ public class HangmanAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "room1", "room2", "room3" } }
+            { "broadcastroom", MULTIPLE_RECEIVING_ROOMS }
         });
         var parts = new[] { "", "uhtml", "hangman1", "<div></div>" };
 
@@ -141,8 +150,8 @@ public class HangmanAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "room-a", new[] { "receiver-a" } },
-            { "room-b", new[] { "receiver-b" } }
+            { "room-a", RECEIVER_A },
+            { "room-b", RECEIVER_B }
         });
         var parts = new[] { "", "uhtml", "hangman1", "<div></div>" };
 
@@ -157,11 +166,11 @@ public class HangmanAnnounceHandlerTest
     {
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
 
-        await _handler.HandleReceivedMessageAsync(new[] { "", "uhtml", "hangman1", "<div></div>" }, "broadcastroom");
-        await _handler.HandleReceivedMessageAsync(new[] { "", "uhtml", "hangman2", "<div></div>" }, "broadcastroom");
+        await _handler.HandleReceivedMessageAsync(HANGMAN_1_PARTS, "broadcastroom");
+        await _handler.HandleReceivedMessageAsync(HANGMAN_2_PARTS, "broadcastroom");
 
         _bot.Received(2).Say("receivingroom", Arg.Any<string>());
     }
@@ -175,7 +184,7 @@ public class HangmanAnnounceHandlerTest
         _roomsManager.GetRoom("receivingroom").Returns(room);
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "uhtml", "hangman1", "<div></div>" };
 
@@ -191,7 +200,7 @@ public class HangmanAnnounceHandlerTest
         _configuration.DefaultLocaleCode.Returns("en-US");
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "uhtml", "hangman1", "<div></div>" };
 
@@ -208,7 +217,7 @@ public class HangmanAnnounceHandlerTest
             .Returns("A new hangman game was created in <<{0}>>");
         _configuration.EventAnnounces.Returns(new Dictionary<string, IEnumerable<string>>
         {
-            { "broadcastroom", new[] { "receivingroom" } }
+            { "broadcastroom", RECEIVING_ROOMS }
         });
         var parts = new[] { "", "uhtml", "hangman1", "<div></div>" };
 

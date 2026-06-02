@@ -94,7 +94,7 @@ public class PlayTimeUpdateService : IPlayTimeUpdateService
         _playTimeUpdateSemaphoreSlim.Release();
     }
 
-    private async Task IncrementUserPlayTime(BotDbContext dbContext, string roomId, string userId, TimeSpan playTime,
+    private static async Task IncrementUserPlayTime(BotDbContext dbContext, string roomId, string userId, TimeSpan playTime,
         CancellationToken cancellationToken = default)
     {
         var roomUser = await dbContext.RoomUsers

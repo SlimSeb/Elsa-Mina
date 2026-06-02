@@ -25,7 +25,7 @@ public class PendingQueryRequestsManager<TKey, TResult>
         if (_pendingRequests.TryRemove(requestKey, out var oldEntry))
         {
             oldEntry.TimeoutCts.Cancel();
-            oldEntry.Tcs.TrySetCanceled();
+            oldEntry.Tcs.TrySetCanceled(cancellationToken);
         }
 
         var tcs = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);

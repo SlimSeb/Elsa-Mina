@@ -7,6 +7,10 @@ namespace ElsaMina.UnitTests.Commands.Games.Poker;
 [TestFixture]
 public class PokerPotCalculatorTest
 {
+    private static readonly string[] ALL_THREE_PLAYERS = ["a", "b", "c"];
+    private static readonly string[] PLAYERS_BAND_C = ["b", "c"];
+    private static readonly string[] PLAYER_B_ONLY = ["b"];
+
     private static PokerPlayer Player(string id, long committed, bool folded = false)
     {
         var user = Substitute.For<IUser>();
@@ -26,7 +30,7 @@ public class PokerPotCalculatorTest
         {
             Assert.That(pots, Has.Count.EqualTo(1));
             Assert.That(pots[0].Amount, Is.EqualTo(150));
-            Assert.That(pots[0].EligiblePlayerIds, Is.EquivalentTo(new[] { "a", "b", "c" }));
+            Assert.That(pots[0].EligiblePlayerIds, Is.EquivalentTo(ALL_THREE_PLAYERS));
         }
     }
 
@@ -41,7 +45,7 @@ public class PokerPotCalculatorTest
         {
             Assert.That(pots, Has.Count.EqualTo(1));
             Assert.That(pots[0].Amount, Is.EqualTo(150));
-            Assert.That(pots[0].EligiblePlayerIds, Is.EquivalentTo(new[] { "b", "c" }));
+            Assert.That(pots[0].EligiblePlayerIds, Is.EquivalentTo(PLAYERS_BAND_C));
         }
     }
 
@@ -57,10 +61,10 @@ public class PokerPotCalculatorTest
             Assert.That(pots, Has.Count.EqualTo(2));
 
             Assert.That(pots[0].Amount, Is.EqualTo(90));
-            Assert.That(pots[0].EligiblePlayerIds, Is.EquivalentTo(new[] { "a", "b", "c" }));
+            Assert.That(pots[0].EligiblePlayerIds, Is.EquivalentTo(ALL_THREE_PLAYERS));
 
             Assert.That(pots[1].Amount, Is.EqualTo(140));
-            Assert.That(pots[1].EligiblePlayerIds, Is.EquivalentTo(new[] { "b", "c" }));
+            Assert.That(pots[1].EligiblePlayerIds, Is.EquivalentTo(PLAYERS_BAND_C));
         }
     }
 
@@ -75,7 +79,7 @@ public class PokerPotCalculatorTest
         {
             Assert.That(pots, Has.Count.EqualTo(1));
             Assert.That(pots[0].Amount, Is.EqualTo(140));
-            Assert.That(pots[0].EligiblePlayerIds, Is.EquivalentTo(new[] { "b" }));
+            Assert.That(pots[0].EligiblePlayerIds, Is.EquivalentTo(PLAYER_B_ONLY));
         }
     }
 
@@ -90,7 +94,7 @@ public class PokerPotCalculatorTest
         {
             Assert.That(pots, Has.Count.EqualTo(1));
             Assert.That(pots[0].Amount, Is.EqualTo(40));
-            Assert.That(pots[0].EligiblePlayerIds, Is.EquivalentTo(new[] { "b", "c" }));
+            Assert.That(pots[0].EligiblePlayerIds, Is.EquivalentTo(PLAYERS_BAND_C));
         }
     }
 }

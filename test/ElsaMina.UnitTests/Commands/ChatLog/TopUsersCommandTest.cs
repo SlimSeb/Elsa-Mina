@@ -12,6 +12,8 @@ namespace ElsaMina.UnitTests.Commands.ChatLog;
 
 public class TopUsersCommandTest
 {
+    private static readonly string[] LOG_FILE_KEYS = ["chatlogs/testroom/2026-05-01.txt"];
+
     private IFileSharingService _fileSharingService;
     private ITemplatesManager _templatesManager;
     private IClockService _clockService;
@@ -100,7 +102,7 @@ public class TopUsersCommandTest
         lines.Add("[12:00:00 UTC] user01: extra");
 
         _fileSharingService.ListFilesAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new[] { "chatlogs/testroom/2026-05-01.txt" });
+            .Returns(LOG_FILE_KEYS);
         _fileSharingService.GetFileAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(ToStream(string.Join("\n", lines)));
 
@@ -124,7 +126,7 @@ public class TopUsersCommandTest
             "[12:02:00 UTC] bob: m1\n";
         var context = BuildContext(string.Empty, "testroom");
         _fileSharingService.ListFilesAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns(new[] { "chatlogs/testroom/2026-05-01.txt" });
+            .Returns(LOG_FILE_KEYS);
         _fileSharingService.GetFileAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(ToStream(content));
 

@@ -11,6 +11,8 @@ public class LagTestHandlerTest
     private ILagTestManager _lagTestManager;
     private LagTestHandler _handler;
 
+    private static readonly string[] EXPECTED_MESSAGE_TYPES = ["c:"];
+
     private const string BOT_NAME = "ElsaMina";
     private const string TEST_ROOM_ID = "testroom";
 
@@ -28,7 +30,7 @@ public class LagTestHandlerTest
     [Test]
     public void Test_HandledMessageTypes_ShouldBeCorrect()
     {
-        Assert.That(_handler.HandledMessageTypes, Is.EqualTo(new[] { "c:" }));
+        Assert.That(_handler.HandledMessageTypes, Is.EqualTo(EXPECTED_MESSAGE_TYPES));
     } 
     
     [Test]

@@ -12,6 +12,9 @@ namespace ElsaMina.UnitTests.Commands.Games.Tarot;
 [TestFixture]
 public class TarotGameTest
 {
+    private static readonly string[] LOW_HEART_DISCARDS = ["2h", "3h", "4h", "5h", "6h", "7h"];
+    private static readonly string[] DISCARDS_INCLUDING_KING = ["kh", "2h", "3h", "4h", "5h", "6h"];
+
     private IRandomService _randomService;
     private ITemplatesManager _templatesManager;
     private IConfiguration _configuration;
@@ -141,7 +144,7 @@ public class TarotGameTest
         await BidInOrderAsync(TarotBid.Petite, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass);
 
         // player1 holds all hearts after the deterministic deal; discard six low hearts.
-        var discards = new[] { "2h", "3h", "4h", "5h", "6h", "7h" }.Select(TarotCard.Parse).ToList();
+        var discards = LOW_HEART_DISCARDS.Select(TarotCard.Parse).ToList();
         await _game.DiscardAsync(_game.Taker.User, discards);
 
         using (Assert.EnterMultipleScope())
@@ -159,7 +162,7 @@ public class TarotGameTest
         await BidInOrderAsync(TarotBid.Petite, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass);
 
         // Includes the king of hearts, which can never be discarded.
-        var discards = new[] { "kh", "2h", "3h", "4h", "5h", "6h" }.Select(TarotCard.Parse).ToList();
+        var discards = DISCARDS_INCLUDING_KING.Select(TarotCard.Parse).ToList();
         await _game.DiscardAsync(_game.Taker.User, discards);
 
         using (Assert.EnterMultipleScope())

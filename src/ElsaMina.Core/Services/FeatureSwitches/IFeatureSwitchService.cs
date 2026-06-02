@@ -7,5 +7,5 @@ public interface IFeatureSwitchService
 
     bool IsFeatureEnabled(string featureName);
     void SetFeature(string featureName, bool enabled);
-    IReadOnlyCollection<string> DisabledFeatures { get; }
+    IEnumerable<string> DisabledFeatures { get; }
 }

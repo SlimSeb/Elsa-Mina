@@ -24,6 +24,7 @@ public class FeatureSwitchService : IFeatureSwitchService
         _featureSwitches[featureName] = enabled;
     }
 
-    public IReadOnlyCollection<string> DisabledFeatures =>
-        _featureSwitches.Where(kv => !kv.Value).Select(kv => kv.Key).ToList();
+    public IEnumerable<string> DisabledFeatures => _featureSwitches
+        .Where(kv => !kv.Value)
+        .Select(kv => kv.Key);
 }
