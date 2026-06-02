@@ -144,6 +144,7 @@ public class TarotGame : Game, ITarotGame
                 return;
             }
 
+            await RenderPublicAsync(forceResend: true);
             await DealAndStartBiddingAsync();
         }
         finally
@@ -737,7 +738,7 @@ public class TarotGame : Game, ITarotGame
     /// Renders the public table as a chat panel so spectators (and players) can follow the game from
     /// the room itself. The lobby and the final result are only ever shown here.
     /// </summary>
-    private async Task RenderPublicAsync()
+    private async Task RenderPublicAsync(bool forceResend = false)
     {
         var templateKey = Phase switch
         {
@@ -747,7 +748,7 @@ public class TarotGame : Game, ITarotGame
         };
 
         var html = await _templatesManager.GetTemplateAsync(templateKey, BuildModel(null));
-        Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), _publicPanelInitialized);
+        Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), forceResend || _publicPanelInitialized);
         _publicPanelInitialized = true;
     }
 
