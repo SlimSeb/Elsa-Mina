@@ -58,4 +58,25 @@
     <data name="markov_not_enough_data" xml:space="preserve">
         <value>No hay suficientes mensajes para generar una frase.</value>
     </data>
+    <data name="activity_heatmap_help" xml:space="preserve">
+        <value>Sintaxis: activityheatmap &lt;usuario&gt;[, &lt;sala&gt;][, &lt;aaaa-MM&gt;] - genera un mapa de calor de la actividad del usuario por día y hora (zona horaria de la sala). El mes predeterminado es el actual.</value>
+    </data>
+    <data name="activity_heatmap_no_logs" xml:space="preserve">
+        <value>No se encontraron registros para el mes actual.</value>
+    </data>
+    <data name="activity_heatmap_no_activity" xml:space="preserve">
+        <value>No se encontró actividad para {0} este mes.</value>
+    </data>
+    <data name="activity_heatmap_upload_failed" xml:space="preserve">
+        <value>No se pudo subir la imagen del mapa de calor.</value>
+    </data>
+    <data name="activity_heatmap_chart_title" xml:space="preserve">
+        <value>Actividad de {0} en {1}</value>
+    </data>
+    <data name="activity_heatmap_x_label" xml:space="preserve">
+        <value>Hora ({0})</value>
+    </data>
+    <data name="activity_heatmap_colorbar_label" xml:space="preserve">
+        <value>Mensajes</value>
+    </data>
 </root>

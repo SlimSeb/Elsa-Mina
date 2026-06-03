@@ -58,4 +58,25 @@
     <data name="markov_not_enough_data" xml:space="preserve">
         <value>Not enough messages to generate a sentence.</value>
     </data>
+    <data name="activity_heatmap_help" xml:space="preserve">
+        <value>Syntax: activityheatmap &lt;user&gt;[, &lt;room&gt;][, &lt;yyyy-MM&gt;] - generates a heatmap of the user's chat activity by day and hour (in the room's time zone). The month defaults to the current one.</value>
+    </data>
+    <data name="activity_heatmap_no_logs" xml:space="preserve">
+        <value>No logs found for the current month.</value>
+    </data>
+    <data name="activity_heatmap_no_activity" xml:space="preserve">
+        <value>No activity found for {0} this month.</value>
+    </data>
+    <data name="activity_heatmap_upload_failed" xml:space="preserve">
+        <value>Failed to upload the heatmap image.</value>
+    </data>
+    <data name="activity_heatmap_chart_title" xml:space="preserve">
+        <value>{0}'s activity in {1}</value>
+    </data>
+    <data name="activity_heatmap_x_label" xml:space="preserve">
+        <value>Hour ({0})</value>
+    </data>
+    <data name="activity_heatmap_colorbar_label" xml:space="preserve">
+        <value>Messages</value>
+    </data>
 </root>

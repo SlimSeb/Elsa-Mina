@@ -328,6 +328,7 @@ public partial class CommandModule : Module
         builder.RegisterCommand<RandomCustomCommand>();
         builder.RegisterCommand<MakeLogRoomCommand>();
         builder.RegisterCommand<DisableLogRoomCommand>();
+        builder.RegisterCommand<ActivityHeatmapCommand>();
         builder.RegisterCommand<DayLineCountCommand>();
         builder.RegisterCommand<LinecountCommand>();
         builder.RegisterCommand<TopUsersCommand>();

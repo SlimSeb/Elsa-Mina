@@ -58,4 +58,25 @@
     <data name="markov_not_enough_data" xml:space="preserve">
         <value>Pas assez de messages pour générer une phrase.</value>
     </data>
+    <data name="activity_heatmap_help" xml:space="preserve">
+        <value>Syntaxe : activityheatmap &lt;pseudo&gt;[, &lt;salon&gt;][, &lt;aaaa-MM&gt;] - génère une carte de chaleur de l'activité du pseudo par jour et par heure (fuseau horaire du salon). Le mois par défaut est le mois en cours.</value>
+    </data>
+    <data name="activity_heatmap_no_logs" xml:space="preserve">
+        <value>Aucun log trouvé pour le mois en cours.</value>
+    </data>
+    <data name="activity_heatmap_no_activity" xml:space="preserve">
+        <value>Aucune activité trouvée pour {0} ce mois-ci.</value>
+    </data>
+    <data name="activity_heatmap_upload_failed" xml:space="preserve">
+        <value>Échec de l'envoi de l'image de la carte de chaleur.</value>
+    </data>
+    <data name="activity_heatmap_chart_title" xml:space="preserve">
+        <value>Activité de {0} dans {1}</value>
+    </data>
+    <data name="activity_heatmap_x_label" xml:space="preserve">
+        <value>Heure ({0})</value>
+    </data>
+    <data name="activity_heatmap_colorbar_label" xml:space="preserve">
+        <value>Messages</value>
+    </data>
 </root>
