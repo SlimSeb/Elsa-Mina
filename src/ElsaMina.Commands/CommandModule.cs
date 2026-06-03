@@ -2,6 +2,7 @@
 using System.Resources;
 using System.Text.RegularExpressions;
 using Autofac;
+using ElsaMina.Commands.Ai.Calc;
 using ElsaMina.Commands.Ai.Chat;
 using ElsaMina.Commands.Ai.LanguageModel;
 using ElsaMina.Commands.Ai.LanguageModel.Google;
@@ -250,6 +251,7 @@ public partial class CommandModule : Module
         builder.RegisterCommand<ConnectFourLeaderboardCommand>();
         builder.RegisterCommand<ConnectFourEloCommand>();
         builder.RegisterCommand<AskElsaCommand>();
+        builder.RegisterCommand<CalcWithAiCommand>();
         builder.RegisterCommand<SpeakCommand>();
         builder.RegisterCommand<RankingCommand>();
         builder.RegisterCommand<SmogonStatsCommand>();
@@ -478,6 +480,7 @@ public partial class CommandModule : Module
         builder.RegisterType<GptNano41Provider>().AsSelf().SingleInstance();
         builder.RegisterType<ConversationHistoryService>().As<IConversationHistoryService>().SingleInstance();
         builder.RegisterType<LanguageModelResolver>().As<ILanguageModelProvider>().SingleInstance();
+        builder.RegisterType<DamageCalculator>().As<IDamageCalculator>().SingleInstance();
         builder.RegisterType<ProfileService>().As<IProfileService>().SingleInstance();
         builder.RegisterType<StreakService>().As<IStreakService>().SingleInstance();
         builder.RegisterType<ShowdownRanksProvider>().As<IShowdownRanksProvider>().SingleInstance();

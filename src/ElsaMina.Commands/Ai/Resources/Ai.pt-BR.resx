@@ -33,4 +33,16 @@
     <data name="ask_elsa_help" xml:space="preserve">
         <value>Faça uma pergunta à Elsa usando IA. Sintaxe : -ask &lt;pergunta&gt;</value>
     </data>
+    <data name="calc_ai_prompt" xml:space="preserve">
+        <value>You convert a natural language Pokémon damage calculation request into a single JSON object and output nothing else: no explanation, no markdown code fences. The schema is: { "gen": int, "attacker": OBJECT, "defender": OBJECT, "move": string, "isCrit": bool, "hits": int, "field": { "gameType": "Singles" or "Doubles", "weather": string, "terrain": string, "attackerSide": SIDE, "defenderSide": SIDE } }. Each Pokémon OBJECT has: "name", "level", "nature", "ability", "item", "status", "teraType", and "evs", "ivs", "boosts" each shaped { "hp", "atk", "def", "spa", "spd", "spe" }. Each SIDE may have "isReflect", "isLightScreen", "isAuroraVeil", "isStealthRock", "spikes", "isHelpingHand", "isTailwind", "isFriendGuard". Rules: use official English names exactly as on Pokémon Showdown (e.g. "Life Orb", "Sludge Bomb", "Eviolite", "Chansey"). EVs range 0 to 252 per stat; "252+" means 252 EVs with a boosting nature, plain "252" means a neutral nature; choose a nature matching the investment (Modest or Timid for special attackers, Adamant or Jolly for physical) and leave nature null when none is implied. boosts are stat stages from -6 to +6, e.g. "+3 Special Attack" means "boosts": { "spa": 3 }. status is one of "brn", "psn", "tox", "par", "slp", "frz" or null. weather is one of "Sun", "Rain", "Sand", "Snow", "Hail" or null. terrain is one of "Electric", "Grassy", "Psychic", "Misty" or null. Default gen is 9 and default level is 100. Omit or set null anything not specified. If the request is not a damage calculation, output { "error": "not a calc" }.</value>
+    </data>
+    <data name="calc_ai_error" xml:space="preserve">
+        <value>Não consegui fazer esse cálculo de dano. Tente reformular.</value>
+    </data>
+    <data name="calc_ai_usage" xml:space="preserve">
+        <value>Uso: -calc-ai &lt;quanto dano X causa em Y com Z&gt;</value>
+    </data>
+    <data name="calc_ai_help" xml:space="preserve">
+        <value>Calcula o dano Pokémon a partir de uma pergunta em linguagem natural usando IA. Sintaxe : -calc-ai &lt;pergunta&gt;</value>
+    </data>
 </root>
