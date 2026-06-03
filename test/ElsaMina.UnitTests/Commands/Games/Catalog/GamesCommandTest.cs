@@ -53,11 +53,37 @@ public class GamesCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReplyHtmlRankAware()
+    public async Task Test_RunAsync_ShouldBroadcastToRoom_WhenStaffInRoom()
     {
+        _context.IsPrivateMessage.Returns(false);
+        _context.HasRankOrHigher(Rank.Voiced).Returns(true);
+
         await _sut.RunAsync(_context);
 
-        _context.Received(1).ReplyHtml(Arg.Any<string>(), Arg.Any<string>(), true);
+        _context.Received(1).ReplyHtml(Arg.Any<string>());
+        _context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldSendPrivatePage_WhenInPrivateMessage()
+    {
+        _context.IsPrivateMessage.Returns(true);
+
+        await _sut.RunAsync(_context);
+
+        _context.Received(1).ReplyHtmlPage("games", Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldSendPrivatePage_WhenRegularInRoom()
+    {
+        _context.IsPrivateMessage.Returns(false);
+        _context.HasRankOrHigher(Rank.Voiced).Returns(false);
+
+        await _sut.RunAsync(_context);
+
+        _context.Received(1).ReplyHtmlPage("games", Arg.Any<string>());
+        _context.DidNotReceive().ReplyHtml(Arg.Any<string>());
     }
 
     [Test]

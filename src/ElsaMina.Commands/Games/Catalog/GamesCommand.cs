@@ -33,6 +33,17 @@ public class GamesCommand : Command
                 Games = GamesCatalog.Games
             });
 
-        context.ReplyHtml(template.RemoveNewlines().CollapseAttributeWhitespace(), rankAware: true);
+        var html = template.RemoveNewlines().CollapseAttributeWhitespace();
+
+        // Staff in a room broadcast the list to everyone; otherwise (PM or a regular
+        // user) send a full private page, which is far more readable than a small infobox.
+        if (!context.IsPrivateMessage && context.HasRankOrHigher(Rank.Voiced))
+        {
+            context.ReplyHtml(html);
+        }
+        else
+        {
+            context.ReplyHtmlPage("games", html);
+        }
     }
 }
