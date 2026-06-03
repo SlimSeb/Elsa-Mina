@@ -408,6 +408,7 @@ public partial class CommandModule : Module
         builder.RegisterCommand<GuessSemantixCommand>();
         builder.RegisterCommand<EndSemantixCommand>();
         builder.RegisterCommand<SemantixLeaderboardCommand>();
+        builder.RegisterCommand<SemantixAnswerCommand>();
         builder.RegisterCommand<GamesCommand>();
 
         builder.RegisterCommand<StartFloodItCommand>();

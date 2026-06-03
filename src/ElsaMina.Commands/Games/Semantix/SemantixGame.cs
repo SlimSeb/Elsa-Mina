@@ -123,23 +123,23 @@ public class SemantixGame : Game, ISemantixGame
         var guess = (word ?? string.Empty).Trim().ToLowerInvariant();
         if (string.IsNullOrEmpty(guess))
         {
-            return SemantixGuessOutcome.EmptyWord;
+            return await RejectAsync(SemantixGuessOutcome.EmptyWord);
         }
 
         var now = _clockService.CurrentUtcDateTimeOffset;
         if (now - _lastGuessTime < SemantixConstants.GUESS_COOLDOWN)
         {
-            return SemantixGuessOutcome.OnCooldown;
+            return await RejectAsync(SemantixGuessOutcome.OnCooldown);
         }
 
         if (!_dailyService.IsValidWord(guess))
         {
-            return SemantixGuessOutcome.NotInWordList;
+            return await RejectAsync(SemantixGuessOutcome.NotInWordList);
         }
 
         if (_guesses.Any(existing => existing.Word == guess))
         {
-            return SemantixGuessOutcome.AlreadyGuessed;
+            return await RejectAsync(SemantixGuessOutcome.AlreadyGuessed);
         }
 
         _lastGuessTime = now;
@@ -171,7 +171,7 @@ public class SemantixGame : Game, ISemantixGame
         var guessVector = await _embeddingService.GetEmbeddingAsync(guess);
         if (guessVector == null)
         {
-            return SemantixGuessOutcome.EmbeddingUnavailable;
+            return await RejectAsync(SemantixGuessOutcome.EmbeddingUnavailable);
         }
 
         var similarity = SemantixMath.CosineSimilarity(guessVector, _targetVector);
@@ -197,6 +197,16 @@ public class SemantixGame : Game, ISemantixGame
         OnEnd();
         await RenderPublicAsync();
         await RenderPrivateAsync();
+    }
+
+    /// <summary>
+    /// Re-renders the private board on a rejected guess so the submission form
+    /// resets (the client locks a form on "Submitted!" until its HTML is updated).
+    /// </summary>
+    private async Task<SemantixGuessOutcome> RejectAsync(SemantixGuessOutcome outcome)
+    {
+        await RenderPrivateAsync();
+        return outcome;
     }
 
     private async Task OnInactivityTimeout()
