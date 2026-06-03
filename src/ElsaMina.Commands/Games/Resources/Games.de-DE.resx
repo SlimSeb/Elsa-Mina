@@ -1110,4 +1110,121 @@
     <data name="games_guessing" xml:space="preserve">
         <value>Ratespiele</value>
     </data>
+    <data name="games_semantix" xml:space="preserve">
+        <value>Semantix</value>
+    </data>
+    <data name="sx_help" xml:space="preserve">
+        <value>Semantix: Errate das französische Wort des Tages über semantische Ähnlichkeit. Im PM: -semantix raumname</value>
+    </data>
+    <data name="sx_pm_missing_room" xml:space="preserve">
+        <value>Bitte gib einen Raum an. Syntax: -semantix raumname</value>
+    </data>
+    <data name="sx_pm_invalid_room" xml:space="preserve">
+        <value>Der angegebene Raum wurde nicht gefunden oder der Bot ist nicht darin.</value>
+    </data>
+    <data name="sx_already_won_today" xml:space="preserve">
+        <value>Du hast das heutige Wort bereits gefunden! Komm morgen wieder.</value>
+    </data>
+    <data name="sx_game_unavailable" xml:space="preserve">
+        <value>Semantix ist derzeit nicht verfügbar.</value>
+    </data>
+    <data name="sx_game_api_unavailable" xml:space="preserve">
+        <value>Der Ähnlichkeitsdienst ist vorübergehend nicht verfügbar, bitte versuche es später erneut.</value>
+    </data>
+    <data name="sx_game_started" xml:space="preserve">
+        <value>Semantix — errate das französische Wort des Tages! Je semantisch näher dein Wort, desto höher die Temperatur.</value>
+    </data>
+    <data name="sx_game_win" xml:space="preserve">
+        <value>🎉 {0} hat das Wort des Tages in {1} Versuch(en) gefunden!</value>
+    </data>
+    <data name="sx_game_timeout" xml:space="preserve">
+        <value>Die Semantix-Sitzung wurde wegen Inaktivität geschlossen. Starte neu mit -semantix.</value>
+    </data>
+    <data name="sx_game_cancelled" xml:space="preserve">
+        <value>Die Semantix-Sitzung wurde geschlossen.</value>
+    </data>
+    <data name="sx_game_no_game" xml:space="preserve">
+        <value>Kein Semantix-Spiel im Gange. Starte eins mit -semantix.</value>
+    </data>
+    <data name="sx_guess_help" xml:space="preserve">
+        <value>Syntax: -sxg wort (im Raum) oder -sxg raum, wort (im PM)</value>
+    </data>
+    <data name="sx_guess_pm_format" xml:space="preserve">
+        <value>Im PM: -sxg raum, wort</value>
+    </data>
+    <data name="sx_guess_round_not_active" xml:space="preserve">
+        <value>Das Spiel ist nicht aktiv.</value>
+    </data>
+    <data name="sx_guess_not_owner" xml:space="preserve">
+        <value>Das ist nicht dein Spiel! Starte dein eigenes mit -semantix.</value>
+    </data>
+    <data name="sx_guess_empty" xml:space="preserve">
+        <value>Bitte gib ein Wort ein.</value>
+    </data>
+    <data name="sx_guess_not_in_list" xml:space="preserve">
+        <value>Dieses Wort ist nicht im Wörterbuch des Spiels.</value>
+    </data>
+    <data name="sx_guess_already_guessed" xml:space="preserve">
+        <value>Du hast dieses Wort bereits versucht.</value>
+    </data>
+    <data name="sx_guess_cooldown" xml:space="preserve">
+        <value>Langsam! Warte ein paar Sekunden zwischen den Versuchen.</value>
+    </data>
+    <data name="sx_panel_title" xml:space="preserve">
+        <value>Semantix</value>
+    </data>
+    <data name="sx_panel_guess_count" xml:space="preserve">
+        <value>Versuch(e)</value>
+    </data>
+    <data name="sx_panel_input_placeholder" xml:space="preserve">
+        <value>Versuche ein Wort...</value>
+    </data>
+    <data name="sx_panel_submit" xml:space="preserve">
+        <value>Raten</value>
+    </data>
+    <data name="sx_panel_answer_was" xml:space="preserve">
+        <value>Das Wort des Tages war: {0}</value>
+    </data>
+    <data name="sx_panel_last_guess" xml:space="preserve">
+        <value>Letzter Versuch</value>
+    </data>
+    <data name="sx_panel_word" xml:space="preserve">
+        <value>Wort</value>
+    </data>
+    <data name="sx_panel_more_guesses" xml:space="preserve">
+        <value>... und {0} kältere(r) Versuch(e)</value>
+    </data>
+    <data name="sx_panel_no_guess_yet" xml:space="preserve">
+        <value>Noch keine Versuche. Probiere ein erstes Wort!</value>
+    </data>
+    <data name="sx_public_player" xml:space="preserve">
+        <value>Spiel von {0}</value>
+    </data>
+    <data name="sx_public_guesses" xml:space="preserve">
+        <value>{0} Versuch(e)</value>
+    </data>
+    <data name="sx_public_best" xml:space="preserve">
+        <value>beste</value>
+    </data>
+    <data name="sx_public_won" xml:space="preserve">
+        <value>in {0} Versuch(en) gefunden!</value>
+    </data>
+    <data name="sx_leaderboard_title" xml:space="preserve">
+        <value>Semantix-Bestenliste</value>
+    </data>
+    <data name="sx_leaderboard_empty" xml:space="preserve">
+        <value>Die Semantix-Bestenliste ist leer.</value>
+    </data>
+    <data name="sx_leaderboard_wins" xml:space="preserve">
+        <value>Siege</value>
+    </data>
+    <data name="sx_leaderboard_streak" xml:space="preserve">
+        <value>Serie</value>
+    </data>
+    <data name="sx_leaderboard_max_streak" xml:space="preserve">
+        <value>Max. Serie</value>
+    </data>
+    <data name="sx_leaderboard_best" xml:space="preserve">
+        <value>Rekord (Versuche)</value>
+    </data>
 </root>

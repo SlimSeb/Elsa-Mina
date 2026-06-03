@@ -1173,4 +1173,121 @@
     <data name="games_guessing" xml:space="preserve">
         <value>Guessing games</value>
     </data>
+    <data name="games_semantix" xml:space="preserve">
+        <value>Semantix</value>
+    </data>
+    <data name="sx_help" xml:space="preserve">
+        <value>Semantix: guess the French word of the day via semantic similarity. In PM: -semantix roomname</value>
+    </data>
+    <data name="sx_pm_missing_room" xml:space="preserve">
+        <value>Please specify a room. Syntax: -semantix roomname</value>
+    </data>
+    <data name="sx_pm_invalid_room" xml:space="preserve">
+        <value>The specified room was not found or the bot is not in it.</value>
+    </data>
+    <data name="sx_already_won_today" xml:space="preserve">
+        <value>You already found today's word! Come back tomorrow.</value>
+    </data>
+    <data name="sx_game_unavailable" xml:space="preserve">
+        <value>Semantix is unavailable at the moment.</value>
+    </data>
+    <data name="sx_game_api_unavailable" xml:space="preserve">
+        <value>The similarity service is temporarily unavailable, please try again later.</value>
+    </data>
+    <data name="sx_game_started" xml:space="preserve">
+        <value>Semantix — guess the French word of the day! The semantically closer your word, the higher the temperature.</value>
+    </data>
+    <data name="sx_game_win" xml:space="preserve">
+        <value>🎉 {0} found the word of the day in {1} guess(es)!</value>
+    </data>
+    <data name="sx_game_timeout" xml:space="preserve">
+        <value>The Semantix session closed due to inactivity. Restart with -semantix (session guesses are lost).</value>
+    </data>
+    <data name="sx_game_cancelled" xml:space="preserve">
+        <value>The Semantix session has been closed.</value>
+    </data>
+    <data name="sx_game_no_game" xml:space="preserve">
+        <value>No Semantix game in progress. Start one with -semantix.</value>
+    </data>
+    <data name="sx_guess_help" xml:space="preserve">
+        <value>Syntax: -sxg word (in room) or -sxg room, word (in PM)</value>
+    </data>
+    <data name="sx_guess_pm_format" xml:space="preserve">
+        <value>In PM, use: -sxg room, word</value>
+    </data>
+    <data name="sx_guess_round_not_active" xml:space="preserve">
+        <value>The game is not active.</value>
+    </data>
+    <data name="sx_guess_not_owner" xml:space="preserve">
+        <value>This is not your game! Start your own with -semantix.</value>
+    </data>
+    <data name="sx_guess_empty" xml:space="preserve">
+        <value>Please submit a word.</value>
+    </data>
+    <data name="sx_guess_not_in_list" xml:space="preserve">
+        <value>This word is not in the game's dictionary.</value>
+    </data>
+    <data name="sx_guess_already_guessed" xml:space="preserve">
+        <value>You already tried that word.</value>
+    </data>
+    <data name="sx_guess_cooldown" xml:space="preserve">
+        <value>Slow down! Wait a few seconds between guesses.</value>
+    </data>
+    <data name="sx_panel_title" xml:space="preserve">
+        <value>Semantix</value>
+    </data>
+    <data name="sx_panel_guess_count" xml:space="preserve">
+        <value>guess(es)</value>
+    </data>
+    <data name="sx_panel_input_placeholder" xml:space="preserve">
+        <value>Try a word...</value>
+    </data>
+    <data name="sx_panel_submit" xml:space="preserve">
+        <value>Guess</value>
+    </data>
+    <data name="sx_panel_answer_was" xml:space="preserve">
+        <value>The word of the day was: {0}</value>
+    </data>
+    <data name="sx_panel_last_guess" xml:space="preserve">
+        <value>Last guess</value>
+    </data>
+    <data name="sx_panel_word" xml:space="preserve">
+        <value>Word</value>
+    </data>
+    <data name="sx_panel_more_guesses" xml:space="preserve">
+        <value>... and {0} colder guess(es)</value>
+    </data>
+    <data name="sx_panel_no_guess_yet" xml:space="preserve">
+        <value>No guesses yet. Try a first word!</value>
+    </data>
+    <data name="sx_public_player" xml:space="preserve">
+        <value>{0}'s game</value>
+    </data>
+    <data name="sx_public_guesses" xml:space="preserve">
+        <value>{0} guess(es)</value>
+    </data>
+    <data name="sx_public_best" xml:space="preserve">
+        <value>best</value>
+    </data>
+    <data name="sx_public_won" xml:space="preserve">
+        <value>found in {0} guess(es)!</value>
+    </data>
+    <data name="sx_leaderboard_title" xml:space="preserve">
+        <value>Semantix Leaderboard</value>
+    </data>
+    <data name="sx_leaderboard_empty" xml:space="preserve">
+        <value>The Semantix leaderboard is empty.</value>
+    </data>
+    <data name="sx_leaderboard_wins" xml:space="preserve">
+        <value>Wins</value>
+    </data>
+    <data name="sx_leaderboard_streak" xml:space="preserve">
+        <value>Streak</value>
+    </data>
+    <data name="sx_leaderboard_max_streak" xml:space="preserve">
+        <value>Max streak</value>
+    </data>
+    <data name="sx_leaderboard_best" xml:space="preserve">
+        <value>Record (guesses)</value>
+    </data>
 </root>

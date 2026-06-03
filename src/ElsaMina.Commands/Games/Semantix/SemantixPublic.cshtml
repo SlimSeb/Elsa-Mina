@@ -1,0 +1,19 @@
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Semantix.SemantixModel>
+
+@{
+    var game = Model.CurrentGame;
+    var bestGuess = game.Guesses.OrderByDescending(guess => guess.Similarity).FirstOrDefault();
+}
+
+<div style="padding: 4px; text-align: center;">
+    <strong>🌡️ @GetString("sx_panel_title")</strong> — @GetString("sx_public_player", game.Owner.Name)<br/>
+    @GetString("sx_public_guesses", game.Guesses.Count)@if (bestGuess != null && !game.IsWon)
+    {
+        <span> — @GetString("sx_public_best") : <strong>@(bestGuess.Temperature)°C</strong></span>
+    }
+    @if (game.IsWon)
+    {
+        <span> — 🎉 <strong>@GetString("sx_public_won", game.Guesses.Count)</strong></span>
+    }
+</div>

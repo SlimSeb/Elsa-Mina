@@ -11,4 +11,6 @@ public interface IDataManager
     ICapitalCitiesGameData CapitalCitiesGameData { get; }
     IReadOnlyList<string> WordleWords { get; }
     IReadOnlyList<string> WordleWordsFr { get; }
+    IReadOnlyList<string> SemantixWordsFr { get; }
+    IReadOnlyList<string> SemantixAnswersFr { get; }
 }

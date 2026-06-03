@@ -41,6 +41,8 @@ public class BotDbContext : DbContext
     public DbSet<TrackedEloUser> TrackedEloUsers { get; set; }
     public DbSet<TarotStats> TarotStats { get; set; }
     public DbSet<WordleScore> WordleScores { get; set; }
+    public DbSet<WordEmbedding> WordEmbeddings { get; set; }
+    public DbSet<SemantixScore> SemantixScores { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

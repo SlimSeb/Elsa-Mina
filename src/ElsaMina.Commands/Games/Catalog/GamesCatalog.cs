@@ -16,6 +16,7 @@ public static class GamesCatalog
         new("games_2048", "2048", Rank.Voiced, GameMode.Solo, IsPlayableInPrivate: true, LeaderboardCommand: "2048lb"),
         new("games_floodit", "floodit", Rank.Voiced, GameMode.Solo, IsPlayableInPrivate: true, LeaderboardCommand: "fil"),
         new("games_wordle", "wordle", Rank.Voiced, GameMode.Solo, IsPlayableInPrivate: true, LeaderboardCommand: "wll"),
+        new("games_semantix", "semantix", Rank.Voiced, GameMode.Solo, IsPlayableInPrivate: true, LeaderboardCommand: "sxl"),
         new("games_blackjack", "blackjack", Rank.Voiced, GameMode.Solo, IsPlayableInPrivate: true),
 
         // Multiplayer / competitive games

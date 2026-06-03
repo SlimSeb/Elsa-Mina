@@ -1,0 +1,114 @@
+@using ElsaMina.Commands.Games.Semantix
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Semantix.SemantixModel>
+
+@{
+    var game = Model.CurrentGame;
+
+    const string headerStyle = $"border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; padding: 4px 8px;";
+
+    string TemperatureColor(int temperature) => temperature switch
+    {
+        >= 100 => "#e91e63",
+        >= 75 => "#e53935",
+        >= 50 => "#f57c00",
+        >= 25 => "#c9a227",
+        >= 10 => "#4a90d9",
+        >= 0 => "#5c8db8",
+        _ => "#7986cb"
+    };
+
+    string TemperatureEmoji(int temperature) => temperature switch
+    {
+        >= 100 => "💥",
+        >= 75 => "🔥",
+        >= 50 => "☀️",
+        >= 25 => "🌡️",
+        >= 10 => "🌬️",
+        >= 0 => "❄️",
+        _ => "🧊"
+    };
+
+    int BarWidth(int temperature) =>
+        Math.Clamp((temperature + 30) * 100 / 130, 2, 100);
+
+    var guessCommand = $"/w {Model.BotName},{Model.Trigger}sxg {Model.RoomId}, {{word}}";
+    var sortedGuesses = game.Guesses.OrderByDescending(guess => guess.Similarity).ToList();
+}
+
+<div style="padding: 6px;">
+    <table style="margin: auto; border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; border-radius: 12px; padding: 4px; border-collapse: collapse; min-width: 320px;">
+        <thead>
+        <tr>
+            <th colspan="4" style="padding: 6px;">🌡️ @GetString("sx_panel_title") — @game.Guesses.Count @GetString("sx_panel_guess_count")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (game.IsRoundActive)
+        {
+            <tr>
+                <td colspan="4" style="padding: 6px; text-align: center;">
+                    <form data-submitsend="@guessCommand">
+                        <input class="textbox" type="text" name="word" placeholder="@GetString("sx_panel_input_placeholder")" style="width: 200px;" required />
+                        <button class="button" type="submit"><strong>@GetString("sx_panel_submit")</strong></button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (Model.ShowAnswer)
+        {
+            <tr>
+                <td colspan="4" style="padding: 6px; text-align: center; font-weight: bold;">
+                    🎉 @GetString("sx_panel_answer_was", game.Answer)
+                </td>
+            </tr>
+        }
+        @if (game.LastGuess != null && !Model.ShowAnswer)
+        {
+            <tr>
+                <td colspan="4" style="padding: 4px 8px; text-align: center; font-size: 0.9em;">
+                    @GetString("sx_panel_last_guess") : <strong>@game.LastGuess.Word</strong>
+                    <span style="color: @TemperatureColor(game.LastGuess.Temperature); font-weight: bold;">@(game.LastGuess.Temperature)°C @TemperatureEmoji(game.LastGuess.Temperature)</span>
+                </td>
+            </tr>
+        }
+        @if (sortedGuesses.Count > 0)
+        {
+            <tr>
+                <th style="@headerStyle">#</th>
+                <th style="@headerStyle">@GetString("sx_panel_word")</th>
+                <th style="@headerStyle">°C</th>
+                <th style="@headerStyle; min-width: 110px;"></th>
+            </tr>
+            foreach (var guess in sortedGuesses.Take(25))
+            {
+                var isLast = game.LastGuess != null && guess.Word == game.LastGuess.Word;
+                <tr style="@(isLast ? $"background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};" : "")">
+                    <td style="padding: 2px 8px; text-align: center; color: #888;">@guess.Order</td>
+                    <td style="padding: 2px 8px; font-weight: @(isLast ? "bold" : "normal");">@guess.Word</td>
+                    <td style="padding: 2px 8px; text-align: center; color: @TemperatureColor(guess.Temperature); font-weight: bold;">@(guess.Temperature)°</td>
+                    <td style="padding: 2px 8px;">
+                        <div style="background-color: #88888833; border-radius: 4px; width: 100px; height: 10px;">
+                            <div style="background-color: @TemperatureColor(guess.Temperature); border-radius: 4px; width: @(BarWidth(guess.Temperature))px; height: 10px;"></div>
+                        </div>
+                    </td>
+                </tr>
+            }
+            if (sortedGuesses.Count > 25)
+            {
+                <tr>
+                    <td colspan="4" style="padding: 2px 8px; text-align: center; color: #888; font-size: 0.85em;">
+                        @GetString("sx_panel_more_guesses", sortedGuesses.Count - 25)
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" style="padding: 6px; text-align: center; color: #888;">@GetString("sx_panel_no_guess_yet")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

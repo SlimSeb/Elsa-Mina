@@ -16,6 +16,8 @@ public class DataManager : IDataManager
     public ICapitalCitiesGameData CapitalCitiesGameData { get; private set; }
     public IReadOnlyList<string> WordleWords { get; private set; }
     public IReadOnlyList<string> WordleWordsFr { get; private set; }
+    public IReadOnlyList<string> SemantixWordsFr { get; private set; }
+    public IReadOnlyList<string> SemantixAnswersFr { get; private set; }
 
     public async Task Initialize()
     {
@@ -30,6 +32,10 @@ public class DataManager : IDataManager
             await GetDataFromFile<List<string>>(Path.Join(DATA_DIRECTORY_NAME, "wordle_words.json"));
         WordleWordsFr =
             await GetDataFromFile<List<string>>(Path.Join(DATA_DIRECTORY_NAME, "wordle_words_fr.json"));
+        SemantixWordsFr =
+            await GetDataFromFile<List<string>>(Path.Join(DATA_DIRECTORY_NAME, "semantix_words_fr.json"));
+        SemantixAnswersFr =
+            await GetDataFromFile<List<string>>(Path.Join(DATA_DIRECTORY_NAME, "semantix_answers_fr.json"));
 
         Log.Information("Fetched countries, capital cities, pokemon descriptions & wordle words.");
     }

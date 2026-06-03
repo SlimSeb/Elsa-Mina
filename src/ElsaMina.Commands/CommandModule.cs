@@ -48,6 +48,7 @@ using ElsaMina.Commands.Games.RockPaperScissors;
 using ElsaMina.Commands.Games.Tarot;
 using ElsaMina.Commands.Games.TwentyFortyEight;
 using ElsaMina.Commands.Games.VoltorbFlip;
+using ElsaMina.Commands.Games.Semantix;
 using ElsaMina.Commands.Games.Wordle;
 using ElsaMina.Commands.JoinPhrases;
 using ElsaMina.Commands.Misc;
@@ -403,6 +404,10 @@ public partial class CommandModule : Module
         builder.RegisterCommand<WordleKeyCommand>();
         builder.RegisterCommand<EndWordleCommand>();
         builder.RegisterCommand<WordleLeaderboardCommand>();
+        builder.RegisterCommand<StartSemantixCommand>();
+        builder.RegisterCommand<GuessSemantixCommand>();
+        builder.RegisterCommand<EndSemantixCommand>();
+        builder.RegisterCommand<SemantixLeaderboardCommand>();
         builder.RegisterCommand<GamesCommand>();
 
         builder.RegisterCommand<StartFloodItCommand>();
@@ -463,6 +468,10 @@ public partial class CommandModule : Module
         builder.RegisterType<WordleGame>().AsSelf();
         builder.RegisterType<WordleGameManager>().As<IWordleGameManager>().SingleInstance();
         builder.RegisterType<WordleDailyService>().As<IWordleDailyService>().SingleInstance();
+        builder.RegisterType<SemantixGame>().AsSelf();
+        builder.RegisterType<SemantixGameManager>().As<ISemantixGameManager>().SingleInstance();
+        builder.RegisterType<SemantixDailyService>().As<ISemantixDailyService>().SingleInstance();
+        builder.RegisterType<GeminiEmbeddingService>().As<IEmbeddingService>().SingleInstance();
         builder.RegisterType<FloodItGame>().AsSelf();
         builder.RegisterType<FloodItGameManager>().As<IFloodItGameManager>().SingleInstance();
         builder.RegisterType<TwentyFortyEightGame>().AsSelf();
