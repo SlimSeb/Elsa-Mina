@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.FeatureSwitches;
@@ -19,13 +18,12 @@ public class FeatureSwitchCommand : DevelopmentCommand
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var featureName = context.Target.Trim();
-        var disabledFeatures = _featureSwitchService.DisabledFeatures.ToImmutableArray();
         if (string.IsNullOrEmpty(featureName))
         {
-            var disabled = _featureSwitchService.DisabledFeatures;
+            var disabledFeatures = _featureSwitchService.DisabledFeatures.ToImmutableArray();
             context.ReplyLocalizedMessage(
                 disabledFeatures.Length == 0 ? "featureswitch_none_disabled" : "featureswitch_disabled_list",
-                string.Join(", ", disabled));
+                string.Join(", ", disabledFeatures));
             return Task.CompletedTask;
         }
 
