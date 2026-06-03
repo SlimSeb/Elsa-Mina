@@ -21,6 +21,7 @@ public class BlackjackGame : Game, IBlackjackGame
     private readonly int _gameId;
     private List<BlackjackCard> _deck;
     private PeriodicTimerRunner _timeoutTimer;
+    private bool _htmlInitialized;
 
     public BlackjackGame(IRandomService randomService, ITemplatesManager templatesManager,
         IConfiguration configuration)
@@ -59,6 +60,7 @@ public class BlackjackGame : Game, IBlackjackGame
             });
 
         Context.SendUpdatableHtml(GameIdentifier, template.RemoveNewlines(), false);
+        _htmlInitialized = true;
     }
 
     public async Task StartGame()
@@ -202,14 +204,17 @@ public class BlackjackGame : Game, IBlackjackGame
                 RoomId = EffectiveRoomId
             });
 
+        var isChanging = _htmlInitialized;
+        _htmlInitialized = true;
+
         if (IsPrivateMode)
         {
             Context.SendPrivateUpdatableHtml(TargetUserId, TargetRoomId, GameIdentifier,
-                template.RemoveNewlines(), true);
+                template.RemoveNewlines(), isChanging);
         }
         else
         {
-            Context.SendUpdatableHtml(GameIdentifier, template.RemoveNewlines(), true);
+            Context.SendUpdatableHtml(GameIdentifier, template.RemoveNewlines(), isChanging);
         }
     }
 

@@ -1,0 +1,80 @@
+@using ElsaMina.Commands.Games.Catalog
+@using ElsaMina.Core.Services.Rooms
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Catalog.GamesViewModel>
+
+@{
+    const string headerStyle = $"border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; padding: 4px 8px;";
+    const string cellStyle = "padding: 3px 8px; text-align: center;";
+    const string sectionStyle = $"text-align: center; padding: 5px; font-weight: bold; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    // Theme-agnostic command style: medium blue is readable on both light and dark PS themes (no background).
+    const string commandStyle = "font-family: monospace; font-weight: 600; color: #4a90d9;";
+
+    string RankSymbol(Rank rank) => rank switch
+    {
+        Rank.Regular => GetString("games_rank_all"),
+        Rank.Voiced => "+",
+        Rank.Driver => "%",
+        Rank.Mod => "@",
+        Rank.RoomOwner => "#",
+        Rank.Leader => "&",
+        Rank.Admin => "~",
+        _ => rank.ToString()
+    };
+
+    var sections = new (GameMode Mode, string TitleKey)[]
+    {
+        (GameMode.Solo, "games_section_solo"),
+        (GameMode.Multiplayer, "games_section_multi"),
+        (GameMode.RoomWide, "games_section_roomwide")
+    };
+}
+
+<div style="max-height: 280px; overflow-y: auto">
+    <table style="margin: auto; border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; border-radius: 12px; padding: 4px; border-collapse: collapse;">
+        <thead>
+        <tr>
+            <th colspan="5" scope="colgroup" style="padding: 6px;">🎮 @GetString("games_panel_title")</th>
+        </tr>
+        <tr>
+            <th scope="col" style="@headerStyle">@GetString("games_col_game")</th>
+            <th scope="col" style="@headerStyle">@GetString("games_col_command")</th>
+            <th scope="col" style="@headerStyle">@GetString("games_col_rank")</th>
+            <th scope="col" style="@headerStyle">@GetString("games_col_pm")</th>
+            <th scope="col" style="@headerStyle">@GetString("games_col_leaderboard")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var section in sections)
+        {
+            var games = Model.Games.Where(game => game.Mode == section.Mode).ToList();
+            if (games.Count == 0)
+            {
+                continue;
+            }
+            <tr>
+                <td colspan="5" style="@sectionStyle">@GetString(section.TitleKey)</td>
+            </tr>
+            @foreach (var game in games)
+            {
+                <tr>
+                    <td style="padding: 3px 8px;">@GetString(game.NameKey)</td>
+                    <td style="@cellStyle"><span style="@commandStyle">@(Model.Trigger)@game.Command</span></td>
+                    <td style="@cellStyle">@RankSymbol(game.RequiredRank)</td>
+                    <td style="@cellStyle">@(game.IsPlayableInPrivate ? GetString("games_pm_yes") : GetString("games_pm_no"))</td>
+                    <td style="@cellStyle">
+                        @if (!string.IsNullOrEmpty(game.LeaderboardCommand))
+                        {
+                            <span style="@commandStyle">@(Model.Trigger)@game.LeaderboardCommand</span>
+                        }
+                        else
+                        {
+                            <span style="color: #888;">—</span>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

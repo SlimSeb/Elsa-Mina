@@ -31,6 +31,7 @@ using ElsaMina.Commands.Development.LagTest;
 using ElsaMina.Commands.Economy;
 using ElsaMina.Commands.Games;
 using ElsaMina.Commands.Games.Blackjack;
+using ElsaMina.Commands.Games.Catalog;
 using ElsaMina.Commands.Games.ConnectFour;
 using ElsaMina.Commands.Games.FloodIt;
 using ElsaMina.Commands.Games.GuessingGame;
@@ -399,6 +400,7 @@ public partial class CommandModule : Module
         builder.RegisterCommand<WordleKeyCommand>();
         builder.RegisterCommand<EndWordleCommand>();
         builder.RegisterCommand<WordleLeaderboardCommand>();
+        builder.RegisterCommand<GamesCommand>();
 
         builder.RegisterCommand<StartFloodItCommand>();
         builder.RegisterCommand<JoinFloodItCommand>();

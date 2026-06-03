@@ -1035,4 +1035,79 @@
     <data name="wordle_panel_not_solved" xml:space="preserve">
         <value>Keine Versuche mehr!</value>
     </data>
+    <data name="games_help" xml:space="preserve">
+        <value>Zeigt die Liste der verfügbaren Spiele an.</value>
+    </data>
+    <data name="games_panel_title" xml:space="preserve">
+        <value>Verfügbare Spiele</value>
+    </data>
+    <data name="games_section_solo" xml:space="preserve">
+        <value>🧩 Einzelspieler-Spiele</value>
+    </data>
+    <data name="games_section_multi" xml:space="preserve">
+        <value>⚔️ Mehrspieler-Spiele</value>
+    </data>
+    <data name="games_section_roomwide" xml:space="preserve">
+        <value>🧠 Raum-Spiele</value>
+    </data>
+    <data name="games_col_game" xml:space="preserve">
+        <value>Spiel</value>
+    </data>
+    <data name="games_col_command" xml:space="preserve">
+        <value>Befehl</value>
+    </data>
+    <data name="games_col_rank" xml:space="preserve">
+        <value>Rang</value>
+    </data>
+    <data name="games_col_pm" xml:space="preserve">
+        <value>PM</value>
+    </data>
+    <data name="games_col_leaderboard" xml:space="preserve">
+        <value>Bestenliste</value>
+    </data>
+    <data name="games_pm_yes" xml:space="preserve">
+        <value>✅</value>
+    </data>
+    <data name="games_pm_no" xml:space="preserve">
+        <value>❌</value>
+    </data>
+    <data name="games_rank_all" xml:space="preserve">
+        <value>alle</value>
+    </data>
+    <data name="games_voltorbflip" xml:space="preserve">
+        <value>Voltorb Flip</value>
+    </data>
+    <data name="games_lightsout" xml:space="preserve">
+        <value>Lights Out</value>
+    </data>
+    <data name="games_2048" xml:space="preserve">
+        <value>2048</value>
+    </data>
+    <data name="games_floodit" xml:space="preserve">
+        <value>Flood It</value>
+    </data>
+    <data name="games_wordle" xml:space="preserve">
+        <value>Wordle</value>
+    </data>
+    <data name="games_tarot" xml:space="preserve">
+        <value>Französisches Tarot</value>
+    </data>
+    <data name="games_poker" xml:space="preserve">
+        <value>Texas Hold'em Poker</value>
+    </data>
+    <data name="games_blackjack" xml:space="preserve">
+        <value>Blackjack</value>
+    </data>
+    <data name="games_connectfour" xml:space="preserve">
+        <value>Vier gewinnt</value>
+    </data>
+    <data name="games_rps" xml:space="preserve">
+        <value>Schere Stein Papier</value>
+    </data>
+    <data name="games_pokerace" xml:space="preserve">
+        <value>PokeRace</value>
+    </data>
+    <data name="games_guessing" xml:space="preserve">
+        <value>Ratespiele</value>
+    </data>
 </root>
