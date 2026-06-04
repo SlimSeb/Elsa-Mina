@@ -73,28 +73,28 @@ public class SemantixMathTest
     [Test]
     public void Test_ToTemperature_ShouldIncrease_WhenSimilarityIncreases()
     {
-        var cold = SemantixMath.ToTemperature(0.70);
-        var warm = SemantixMath.ToTemperature(0.78);
-        var hot = SemantixMath.ToTemperature(0.84);
+        // word2vec scale: unrelated ~0, related ~0.3, close ~0.5.
+        var cold = SemantixMath.ToTemperature(0.10);
+        var warm = SemantixMath.ToTemperature(0.30);
+        var hot = SemantixMath.ToTemperature(0.50);
 
         Assert.That(cold, Is.LessThan(warm));
         Assert.That(warm, Is.LessThan(hot));
     }
 
     [Test]
-    public void Test_ToTemperature_ShouldKeepLooselyRelatedWordsCold()
+    public void Test_ToTemperature_ShouldKeepUnrelatedWordsCold()
     {
-        // LLM embeddings put unrelated words around 0.55-0.65 cosine; the gamma curve
-        // must keep that cluster cold rather than bunched near 70°.
-        var looselyRelated = SemantixMath.ToTemperature(0.62);
+        // With word2vec, unrelated words sit near 0 cosine and must stay cold.
+        var unrelated = SemantixMath.ToTemperature(0.05);
 
-        Assert.That(looselyRelated, Is.LessThan(30));
+        Assert.That(unrelated, Is.LessThan(0));
     }
 
     [Test]
-    public void Test_ToTemperature_ShouldHeatUpOnlyVeryCloseWords()
+    public void Test_ToTemperature_ShouldHeatUpCloseWords()
     {
-        var veryClose = SemantixMath.ToTemperature(0.83);
+        var veryClose = SemantixMath.ToTemperature(0.55);
 
         Assert.That(veryClose, Is.GreaterThan(75));
     }

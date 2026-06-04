@@ -472,7 +472,7 @@ public partial class CommandModule : Module
         builder.RegisterType<SemantixGame>().AsSelf();
         builder.RegisterType<SemantixGameManager>().As<ISemantixGameManager>().SingleInstance();
         builder.RegisterType<SemantixDailyService>().As<ISemantixDailyService>().SingleInstance();
-        builder.RegisterType<GeminiEmbeddingService>().As<IEmbeddingService>().SingleInstance();
+        builder.RegisterType<Word2VecEmbeddingService>().As<IEmbeddingService>().SingleInstance();
         builder.RegisterType<FloodItGame>().AsSelf();
         builder.RegisterType<FloodItGameManager>().As<IFloodItGameManager>().SingleInstance();
         builder.RegisterType<TwentyFortyEightGame>().AsSelf();

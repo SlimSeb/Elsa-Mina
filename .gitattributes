@@ -1,0 +1,3 @@
+# Treat the Semantix word2vec vectors (and any .bin) as binary to avoid
+# line-ending normalization corrupting the float data.
+*.bin binary
