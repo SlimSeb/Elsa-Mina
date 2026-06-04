@@ -27,9 +27,12 @@ public static class SemantixMath
 
     public static int ToTemperature(double similarity)
     {
-        var temperature = (similarity - SemantixConstants.SIMILARITY_FLOOR) * SemantixConstants.TEMPERATURE_SCALE;
-        return (int)Math.Round(Math.Clamp(temperature,
-            SemantixConstants.MIN_TEMPERATURE, SemantixConstants.MAX_TEMPERATURE));
+        var span = SemantixConstants.SIMILARITY_CEILING - SemantixConstants.SIMILARITY_FLOOR;
+        var normalized = Math.Clamp((similarity - SemantixConstants.SIMILARITY_FLOOR) / span, 0, 1);
+        var curved = Math.Pow(normalized, SemantixConstants.TEMPERATURE_GAMMA);
+        var temperature = curved * (SemantixConstants.MAX_TEMPERATURE - SemantixConstants.MIN_TEMPERATURE)
+                          + SemantixConstants.MIN_TEMPERATURE;
+        return (int)Math.Round(temperature);
     }
 
     public static byte[] SerializeVector(float[] vector)

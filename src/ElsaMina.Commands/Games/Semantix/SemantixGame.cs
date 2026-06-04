@@ -165,11 +165,17 @@ public class SemantixGame : Game, ISemantixGame
         }
 
         var similarity = SemantixMath.CosineSimilarity(guessVector, _targetVector);
+        var temperature = SemantixMath.ToTemperature(similarity);
+
+        // Raw similarity logged to help calibrate the temperature curve from real data.
+        Log.Information("Semantix guess '{0}' vs answer: similarity={1:0.0000} temperature={2}",
+            guess, similarity, temperature);
+
         var newGuess = new SemantixGuess
         {
             Word = guess,
             Similarity = similarity,
-            Temperature = SemantixMath.ToTemperature(similarity),
+            Temperature = temperature,
             Order = _guesses.Count + 1
         };
         _guesses.Add(newGuess);

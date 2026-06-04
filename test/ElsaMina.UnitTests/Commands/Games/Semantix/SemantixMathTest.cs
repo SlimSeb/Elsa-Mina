@@ -82,6 +82,24 @@ public class SemantixMathTest
     }
 
     [Test]
+    public void Test_ToTemperature_ShouldKeepLooselyRelatedWordsCold()
+    {
+        // LLM embeddings put unrelated words around 0.55-0.65 cosine; the gamma curve
+        // must keep that cluster cold rather than bunched near 70°.
+        var looselyRelated = SemantixMath.ToTemperature(0.62);
+
+        Assert.That(looselyRelated, Is.LessThan(30));
+    }
+
+    [Test]
+    public void Test_ToTemperature_ShouldHeatUpOnlyVeryCloseWords()
+    {
+        var veryClose = SemantixMath.ToTemperature(0.83);
+
+        Assert.That(veryClose, Is.GreaterThan(75));
+    }
+
+    [Test]
     public void Test_SerializeVector_ShouldRoundTrip()
     {
         float[] vector = [0.1f, -0.5f, 3.14f, 0f];

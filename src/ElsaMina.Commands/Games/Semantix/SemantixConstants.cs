@@ -9,11 +9,19 @@ public static class SemantixConstants
 
     public static readonly TimeSpan INACTIVITY_TIMEOUT = TimeSpan.FromMinutes(5);
 
-    // Cosine similarity → temperature (°C) mapping. With text-embedding-3-small,
-    // unrelated words sit around 0.1-0.25 and near-synonyms around 0.6-0.8.
-    // temperature = (similarity - SIMILARITY_FLOOR) * TEMPERATURE_SCALE, clamped.
-    public const double SIMILARITY_FLOOR = 0.20;
-    public const double TEMPERATURE_SCALE = 160;
+    // Cosine similarity → temperature (°C) mapping.
+    // LLM embeddings (unlike word2vec) keep ALL words in a narrow, high cosine band
+    // (~0.55 for unrelated words up to ~0.85 for very close ones), so a plain linear
+    // scale bunches everything near the top. We normalize the useful band
+    // [FLOOR, CEILING] to [0, 1] then apply a gamma > 1 curve so the large "loosely
+    // related" cluster stays cold and only genuinely close words heat up.
+    //   norm = clamp01((similarity - FLOOR) / (CEILING - FLOOR))
+    //   temperature = norm^GAMMA * (MAX - MIN) + MIN
+    // These three values are the dials to tune from real Gemini data (raw similarity
+    // is logged per guess at Information level).
+    public const double SIMILARITY_FLOOR = 0.45;
+    public const double SIMILARITY_CEILING = 0.85;
+    public const double TEMPERATURE_GAMMA = 1.8;
     public const int MIN_TEMPERATURE = -30;
     public const int MAX_TEMPERATURE = 99;
     public const int WIN_TEMPERATURE = 100;
