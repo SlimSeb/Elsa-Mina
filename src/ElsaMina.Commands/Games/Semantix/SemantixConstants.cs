@@ -19,7 +19,9 @@ public static class SemantixConstants
     //   temperature = norm^GAMMA * (MAX - MIN) + MIN
     // These three values are the dials to tune from real Gemini data (raw similarity
     // is logged per guess at Information level).
-    public const double SIMILARITY_FLOOR = 0.45;
+    // Calibrated from real Gemini data: with gemini-embedding-001, totally unrelated
+    // words sit around 0.67-0.73 cosine, so the floor is high to keep them cold.
+    public const double SIMILARITY_FLOOR = 0.65;
     public const double SIMILARITY_CEILING = 0.85;
     public const double TEMPERATURE_GAMMA = 1.8;
     public const int MIN_TEMPERATURE = -30;

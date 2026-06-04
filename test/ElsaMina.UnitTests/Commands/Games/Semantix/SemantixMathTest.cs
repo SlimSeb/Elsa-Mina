@@ -73,9 +73,9 @@ public class SemantixMathTest
     [Test]
     public void Test_ToTemperature_ShouldIncrease_WhenSimilarityIncreases()
     {
-        var cold = SemantixMath.ToTemperature(0.25);
-        var warm = SemantixMath.ToTemperature(0.5);
-        var hot = SemantixMath.ToTemperature(0.7);
+        var cold = SemantixMath.ToTemperature(0.70);
+        var warm = SemantixMath.ToTemperature(0.78);
+        var hot = SemantixMath.ToTemperature(0.84);
 
         Assert.That(cold, Is.LessThan(warm));
         Assert.That(warm, Is.LessThan(hot));
