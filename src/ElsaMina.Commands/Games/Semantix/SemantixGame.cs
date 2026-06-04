@@ -1,5 +1,4 @@
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
@@ -20,14 +19,12 @@ public class SemantixGame : Game, ISemantixGame
     private readonly ITemplatesManager _templatesManager;
     private readonly IConfiguration _configuration;
     private readonly IBotDbContextFactory _dbContextFactory;
-    private readonly IClockService _clockService;
 
     private readonly int _gameId;
     private readonly List<SemantixGuess> _guesses = [];
     private readonly PeriodicTimerRunner _inactivityTimer;
     private float[] _targetVector;
-    private DateTimeOffset _lastGuessTime = DateTimeOffset.MinValue;
-    private bool _privateInitialized;
+    private int _privateRenderCount;
     private bool _publicInitialized;
     private bool _resultSaved;
 
@@ -35,15 +32,13 @@ public class SemantixGame : Game, ISemantixGame
         ISemantixDailyService dailyService,
         ITemplatesManager templatesManager,
         IConfiguration configuration,
-        IBotDbContextFactory dbContextFactory,
-        IClockService clockService)
+        IBotDbContextFactory dbContextFactory)
     {
         _embeddingService = embeddingService;
         _dailyService = dailyService;
         _templatesManager = templatesManager;
         _configuration = configuration;
         _dbContextFactory = dbContextFactory;
-        _clockService = clockService;
         _inactivityTimer = new PeriodicTimerRunner(SemantixConstants.INACTIVITY_TIMEOUT, OnInactivityTimeout,
             runOnce: true);
 
@@ -64,7 +59,9 @@ public class SemantixGame : Game, ISemantixGame
     public IUser Owner { get; set; }
 
     private string EffectiveRoomId => IsPrivateMode ? TargetRoomId : Context.RoomId;
-    private string PrivatePanelId => $"sx-{EffectiveRoomId}-{_gameId}";
+    // A fresh id on each private render so the board re-appears at the bottom of the PM
+    // instead of updating in place higher up in the conversation.
+    private string PrivatePanelId => $"sx-{EffectiveRoomId}-{_gameId}-{_privateRenderCount}";
     private string PublicPanelId => $"sx-pub-{EffectiveRoomId}-{_gameId}";
 
     public async Task<bool> StartNewRound()
@@ -126,12 +123,6 @@ public class SemantixGame : Game, ISemantixGame
             return await RejectAsync(SemantixGuessOutcome.EmptyWord);
         }
 
-        var now = _clockService.CurrentUtcDateTimeOffset;
-        if (now - _lastGuessTime < SemantixConstants.GUESS_COOLDOWN)
-        {
-            return await RejectAsync(SemantixGuessOutcome.OnCooldown);
-        }
-
         if (!_dailyService.IsValidWord(guess))
         {
             return await RejectAsync(SemantixGuessOutcome.NotInWordList);
@@ -142,7 +133,6 @@ public class SemantixGame : Game, ISemantixGame
             return await RejectAsync(SemantixGuessOutcome.AlreadyGuessed);
         }
 
-        _lastGuessTime = now;
         _inactivityTimer.Restart();
 
         if (guess == Answer)
@@ -282,11 +272,13 @@ public class SemantixGame : Game, ISemantixGame
             return;
         }
 
+        // Use a fresh id each render and always "send" (not "change") so the board
+        // re-appears at the bottom of the PM instead of updating in place above.
+        _privateRenderCount++;
         var template = await _templatesManager.GetTemplateAsync("Games/Semantix/SemantixBoard",
             BuildModel(showAnswer: IsWon));
         Context.SendPrivateUpdatableHtml(Owner.UserId, EffectiveRoomId, PrivatePanelId,
-            template.RemoveNewlines(), _privateInitialized);
-        _privateInitialized = true;
+            template.RemoveNewlines(), isChanging: false);
     }
 
     private async Task RenderPublicAsync()

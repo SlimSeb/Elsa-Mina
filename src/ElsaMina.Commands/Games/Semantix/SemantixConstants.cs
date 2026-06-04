@@ -8,7 +8,6 @@ public static class SemantixConstants
     public const int MAX_DAILY_API_CALLS = 900;
 
     public static readonly TimeSpan INACTIVITY_TIMEOUT = TimeSpan.FromMinutes(5);
-    public static readonly TimeSpan GUESS_COOLDOWN = TimeSpan.FromSeconds(3);
 
     // Cosine similarity → temperature (°C) mapping. With text-embedding-3-small,
     // unrelated words sit around 0.1-0.25 and near-synonyms around 0.6-0.8.

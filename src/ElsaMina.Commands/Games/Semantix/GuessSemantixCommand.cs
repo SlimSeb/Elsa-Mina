@@ -79,9 +79,6 @@ public class GuessSemantixCommand : Command
             case SemantixGuessOutcome.AlreadyGuessed:
                 context.ReplyLocalizedMessage("sx_guess_already_guessed");
                 break;
-            case SemantixGuessOutcome.OnCooldown:
-                context.ReplyLocalizedMessage("sx_guess_cooldown");
-                break;
             case SemantixGuessOutcome.EmbeddingUnavailable:
                 context.ReplyLocalizedMessage("sx_game_api_unavailable");
                 break;

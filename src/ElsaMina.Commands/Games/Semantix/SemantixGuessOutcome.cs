@@ -9,6 +9,5 @@ public enum SemantixGuessOutcome
     EmptyWord,
     NotInWordList,
     AlreadyGuessed,
-    OnCooldown,
     EmbeddingUnavailable
 }
