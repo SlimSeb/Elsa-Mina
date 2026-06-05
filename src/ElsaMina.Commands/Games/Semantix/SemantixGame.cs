@@ -24,7 +24,6 @@ public class SemantixGame : Game, ISemantixGame
     private readonly List<SemantixGuess> _guesses = [];
     private readonly PeriodicTimerRunner _inactivityTimer;
     private float[] _targetVector;
-    private int _privateRenderCount;
     private bool _publicInitialized;
     private bool _resultSaved;
 
@@ -59,9 +58,9 @@ public class SemantixGame : Game, ISemantixGame
     public IUser Owner { get; set; }
 
     private string EffectiveRoomId => IsPrivateMode ? TargetRoomId : Context.RoomId;
-    // A fresh id on each private render so the board re-appears at the bottom of the PM
-    // instead of updating in place higher up in the conversation.
-    private string PrivatePanelId => $"sx-{EffectiveRoomId}-{_gameId}-{_privateRenderCount}";
+    // Stable page name: re-sending the same html page refreshes it in place in the
+    // player's dedicated Semantix tab (no chat clutter, full height for the guess list).
+    private string PrivatePageName => $"semantix-{EffectiveRoomId}";
     private string PublicPanelId => $"sx-pub-{EffectiveRoomId}-{_gameId}";
 
     public async Task<bool> StartNewRound()
@@ -278,13 +277,11 @@ public class SemantixGame : Game, ISemantixGame
             return;
         }
 
-        // Use a fresh id each render and always "send" (not "change") so the board
-        // re-appears at the bottom of the PM instead of updating in place above.
-        _privateRenderCount++;
+        // Send as a dedicated html page; re-sending the same page name refreshes it
+        // in place in the player's Semantix tab.
         var template = await _templatesManager.GetTemplateAsync("Games/Semantix/SemantixBoard",
             BuildModel(showAnswer: IsWon));
-        Context.SendPrivateUpdatableHtml(Owner.UserId, EffectiveRoomId, PrivatePanelId,
-            template.RemoveNewlines(), isChanging: false);
+        Context.SendHtmlPageTo(Owner.UserId, PrivatePageName, template.RemoveNewlines());
     }
 
     private async Task RenderPublicAsync()
