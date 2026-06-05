@@ -595,6 +595,30 @@ public class TarotGame : Game, ITarotGame
         OnEnd();
     }
 
+    public async Task ResendPlayerPageAsync(IUser user)
+    {
+        await _actionLock.WaitAsync();
+        try
+        {
+            if (Phase == TarotPhase.Lobby)
+            {
+                return;
+            }
+
+            var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
+            if (player is null)
+            {
+                return;
+            }
+
+            await RenderPlayerPageAsync(player);
+        }
+        finally
+        {
+            _actionLock.Release();
+        }
+    }
+
     public void Cancel()
     {
         StopTurnTimer();

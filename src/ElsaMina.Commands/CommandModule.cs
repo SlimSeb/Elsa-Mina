@@ -437,6 +437,7 @@ public partial class CommandModule : Module
         builder.RegisterCommand<CallKingTarotCommand>();
         builder.RegisterCommand<DiscardTarotCommand>();
         builder.RegisterCommand<PlayTarotCommand>();
+        builder.RegisterCommand<ResendTarotCommand>();
         builder.RegisterCommand<EndTarotCommand>();
         builder.RegisterCommand<TarotLeaderboardCommand>();
         builder.RegisterCommand<TarotStatsCommand>();

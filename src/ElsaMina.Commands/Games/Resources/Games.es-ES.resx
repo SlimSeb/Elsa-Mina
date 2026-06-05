@@ -828,6 +828,12 @@
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>La partida de Tarot fue cancelada.</value>
     </data>
+    <data name="tarot_resend_not_started" xml:space="preserve">
+        <value>La partida aún no ha comenzado, no hay ninguna página que reenviar.</value>
+    </data>
+    <data name="tarot_resend_not_a_player" xml:space="preserve">
+        <value>No eres jugador de la partida actual.</value>
+    </data>
     <data name="tarot_leaderboard_title" xml:space="preserve">
         <value>Clasificación de Tarot</value>
     </data>

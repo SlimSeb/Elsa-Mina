@@ -828,6 +828,12 @@
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>La partita di Tarocchi è stata annullata.</value>
     </data>
+    <data name="tarot_resend_not_started" xml:space="preserve">
+        <value>La partita non è ancora iniziata, non c'è alcuna pagina da rinviare.</value>
+    </data>
+    <data name="tarot_resend_not_a_player" xml:space="preserve">
+        <value>Non sei un giocatore della partita in corso.</value>
+    </data>
     <data name="tarot_leaderboard_title" xml:space="preserve">
         <value>Classifica di Tarot</value>
     </data>

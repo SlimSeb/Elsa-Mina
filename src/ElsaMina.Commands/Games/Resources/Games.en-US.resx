@@ -834,6 +834,12 @@
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>The French Tarot game was cancelled.</value>
     </data>
+    <data name="tarot_resend_not_started" xml:space="preserve">
+        <value>The game hasn't started yet, there is no page to resend.</value>
+    </data>
+    <data name="tarot_resend_not_a_player" xml:space="preserve">
+        <value>You are not a player in the current game.</value>
+    </data>
     <data name="tarot_leaderboard_title" xml:space="preserve">
         <value>French Tarot Leaderboard</value>
     </data>

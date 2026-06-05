@@ -771,6 +771,12 @@
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>Die Tarot-Partie wurde abgebrochen.</value>
     </data>
+    <data name="tarot_resend_not_started" xml:space="preserve">
+        <value>Die Partie hat noch nicht begonnen, es gibt keine Seite zum erneuten Senden.</value>
+    </data>
+    <data name="tarot_resend_not_a_player" xml:space="preserve">
+        <value>Du nimmst nicht an der aktuellen Partie teil.</value>
+    </data>
     <data name="tarot_leaderboard_title" xml:space="preserve">
         <value>Tarot-Rangliste</value>
     </data>
