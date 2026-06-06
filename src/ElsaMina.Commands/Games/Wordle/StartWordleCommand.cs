@@ -28,7 +28,7 @@ public class StartWordleCommand : Command
         _arcadeEventsService = arcadeEventsService;
     }
 
-    public override Rank RequiredRank => Rank.Voiced;
+    public override Rank RequiredRank => Rank.Regular;
     public override bool IsAllowedInPrivateMessage => true;
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
