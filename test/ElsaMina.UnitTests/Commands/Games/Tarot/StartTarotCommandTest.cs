@@ -1,4 +1,5 @@
 using System.Globalization;
+using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.Tarot;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
@@ -16,6 +17,7 @@ namespace ElsaMina.UnitTests.Commands.Games.Tarot;
 public class StartTarotCommandTest
 {
     private IDependencyContainerService _dependencyContainerService;
+    private IArcadeEventsService _arcadeEventsService;
     private StartTarotCommand _command;
     private IContext _context;
     private IRoom _room;
@@ -25,11 +27,13 @@ public class StartTarotCommandTest
     public void SetUp()
     {
         _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
 
         var sender = MakeUser("starter");
         _context.Room.Returns(_room);
+        _context.RoomId.Returns("test-room");
         _context.Culture.Returns(CultureInfo.InvariantCulture);
         _context.Sender.Returns(sender);
         _room.Game.ReturnsNull();
@@ -45,7 +49,7 @@ public class StartTarotCommandTest
         _game.Context = _context;
         _dependencyContainerService.Resolve<TarotGame>().Returns(_game);
 
-        _command = new StartTarotCommand(_dependencyContainerService);
+        _command = new StartTarotCommand(_dependencyContainerService, _arcadeEventsService);
     }
 
     private static IUser MakeUser(string id)
@@ -60,6 +64,21 @@ public class StartTarotCommandTest
     public void Test_RequiredRank_ShouldBeVoiced()
     {
         Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Voiced));
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyGamesMuted_WhenGamesAreMuted()
+    {
+        _arcadeEventsService.AreGamesMuted("test-room").Returns(true);
+
+        await _command.RunAsync(_context);
+
+        using (Assert.EnterMultipleScope())
+        {
+            _context.Received(1).ReplyLocalizedMessage("games_muted_event");
+            _dependencyContainerService.DidNotReceive().Resolve<TarotGame>();
+            _room.DidNotReceive().Game = Arg.Any<TarotGame>();
+        }
     }
 
     [Test]

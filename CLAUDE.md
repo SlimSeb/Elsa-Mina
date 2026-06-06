@@ -121,6 +121,20 @@ Rooms have configurable parameters (defined in the `Parameter` enum: `Locale`, `
 4. Register in `CommandModule.cs`: `builder.RegisterCommand<MyCommand>();`
 5. Add localization keys to `src/ElsaMina.Commands/{Feature}/Resources/{Feature}.{locale}.resx` for all 6 locales (`en-US`, `fr-FR`, `es-ES`, `it-IT`, `pt-BR`, `de-DE`).
 
+## Adding a New Game
+
+When implementing a new game, the command that starts it must check whether games are muted in the room before starting. Inject `IArcadeEventsService` and, for room (non-PM) starts, bail out early when games are muted:
+
+```csharp
+if (_arcadeEventsService.AreGamesMuted(context.RoomId))
+{
+    context.ReplyLocalizedMessage("games_muted_event");
+    return;
+}
+```
+
+The `games_muted_event` key already exists in the `Games` feature resx files for all 6 locales. Existing games (Tarot, VoltorbFlip, Wordle, Semantix, Blackjack, FloodIt, LightsOut, TwentyFortyEight, Slots) follow this pattern.
+
 ## Adding a New Handler
 
 1. Create a class extending `Handler` in `src/ElsaMina.Commands/` or `src/ElsaMina.Core/Handlers/`.

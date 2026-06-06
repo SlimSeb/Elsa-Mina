@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.DependencyInjection;
@@ -9,10 +10,13 @@ namespace ElsaMina.Commands.Games.Tarot;
 public class StartTarotCommand : Command
 {
     private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly IArcadeEventsService _arcadeEventsService;
 
-    public StartTarotCommand(IDependencyContainerService dependencyContainerService)
+    public StartTarotCommand(IDependencyContainerService dependencyContainerService,
+        IArcadeEventsService arcadeEventsService)
     {
         _dependencyContainerService = dependencyContainerService;
+        _arcadeEventsService = arcadeEventsService;
     }
 
     public override Rank RequiredRank => Rank.Voiced;
@@ -22,6 +26,12 @@ public class StartTarotCommand : Command
     {
         if (context.Room is null)
         {
+            return;
+        }
+
+        if (_arcadeEventsService.AreGamesMuted(context.RoomId))
+        {
+            context.ReplyLocalizedMessage("games_muted_event");
             return;
         }
 
