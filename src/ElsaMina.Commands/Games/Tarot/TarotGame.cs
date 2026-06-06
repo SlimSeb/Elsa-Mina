@@ -671,7 +671,9 @@ public class TarotGame : Game, ITarotGame
 
             player.WantsSub = true;
             Context.ReplyLocalizedMessage("tarot_sub_requested", player.Name);
-            await RenderSubPanelAsync();
+            // Re-post the panel so a fresh request drops to the bottom of the chat instead of staying
+            // stuck high up in the scrollback.
+            await RenderSubPanelAsync(forceResend: true);
             return (true, null, []);
         }
         finally
@@ -725,7 +727,7 @@ public class TarotGame : Game, ITarotGame
         }
     }
 
-    private async Task RenderSubPanelAsync()
+    private async Task RenderSubPanelAsync(bool forceResend = false)
     {
         if (_players.All(player => !player.WantsSub))
         {
@@ -733,8 +735,13 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
+        if (forceResend)
+        {
+            ClearSubPanel();
+        }
+
         var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotSub", BuildModel(null));
-        Context.SendUpdatableHtml(SubPanelId, html.RemoveNewlines(), _subPanelInitialized);
+        Context.SendUpdatableHtml(SubPanelId, html.RemoveNewlines(), isChanging: _subPanelInitialized);
         _subPanelInitialized = true;
     }
 
@@ -745,7 +752,7 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
-        Context.SendUpdatableHtml(SubPanelId, string.Empty, true);
+        Context.SendUpdatableHtml(SubPanelId, string.Empty, isChanging: true);
         _subPanelInitialized = false;
     }
 
