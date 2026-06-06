@@ -30,6 +30,7 @@ public class TarotGame : Game, ITarotGame
     private int _takerIndex = -1;
     private int _partnerIndex = -1;
     private bool _publicPanelInitialized;
+    private bool _subPanelInitialized;
 
     [UsedImplicitly]
     public TarotGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration,
@@ -89,6 +90,7 @@ public class TarotGame : Game, ITarotGame
 
     private string PublicPanelId => $"tarot-{GameId}";
     private string PlayerPageId => $"tarot-{GameId}";
+    private string SubPanelId => $"tarot-{GameId}-sub";
 
     #region Lobby
 
@@ -590,6 +592,7 @@ public class TarotGame : Game, ITarotGame
 
         Phase = TarotPhase.Finished;
         StopTurnTimer();
+        ClearSubPanel();
         await _statsService.RecordDealAsync(_players, ScoreResult);
         await RenderAllAsync();
         OnEnd();
@@ -623,6 +626,7 @@ public class TarotGame : Game, ITarotGame
     {
         StopTurnTimer();
         Phase = TarotPhase.Finished;
+        ClearSubPanel();
         OnEnd();
     }
 
@@ -631,8 +635,118 @@ public class TarotGame : Game, ITarotGame
         StopTurnTimer();
         Phase = TarotPhase.Finished;
         Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
+        ClearSubPanel();
         ClosePlayerPages();
         OnEnd();
+    }
+
+    #endregion
+
+    #region Substitutions
+
+    public async Task<(bool Success, string MessageKey, object[] Args)> RequestSubAsync(IUser user)
+    {
+        await _actionLock.WaitAsync();
+        try
+        {
+            if (Phase is TarotPhase.Lobby or TarotPhase.Finished)
+            {
+                return (false, "tarot_sub_not_active", []);
+            }
+
+            var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
+            if (player is null)
+            {
+                return (false, "tarot_sub_not_a_player", []);
+            }
+
+            // A second request from the same player cancels their pending sub.
+            if (player.WantsSub)
+            {
+                player.WantsSub = false;
+                Context.ReplyLocalizedMessage("tarot_sub_cancelled", player.Name);
+                await RenderSubPanelAsync();
+                return (true, null, []);
+            }
+
+            player.WantsSub = true;
+            Context.ReplyLocalizedMessage("tarot_sub_requested", player.Name);
+            await RenderSubPanelAsync();
+            return (true, null, []);
+        }
+        finally
+        {
+            _actionLock.Release();
+        }
+    }
+
+    public async Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user, string targetPlayerId)
+    {
+        await _actionLock.WaitAsync();
+        try
+        {
+            if (Phase is TarotPhase.Lobby or TarotPhase.Finished)
+            {
+                return (false, "tarot_sub_not_active", []);
+            }
+
+            if (_players.Any(currentPlayer => currentPlayer.UserId == user.UserId))
+            {
+                return (false, "tarot_sub_already_player", []);
+            }
+
+            var pending = _players.Where(currentPlayer => currentPlayer.WantsSub).ToList();
+            if (pending.Count == 0)
+            {
+                return (false, "tarot_sub_none_pending", []);
+            }
+
+            var target = string.IsNullOrWhiteSpace(targetPlayerId)
+                ? pending[0]
+                : pending.FirstOrDefault(currentPlayer => currentPlayer.UserId == targetPlayerId.ToLowerAlphaNum());
+            if (target is null)
+            {
+                return (false, "tarot_sub_invalid_target", []);
+            }
+
+            var leavingUserId = target.UserId;
+            var leavingName = target.Name;
+            Context.CloseHtmlPage(leavingUserId, PlayerPageId);
+            target.SubstituteWith(user);
+
+            Context.ReplyLocalizedMessage("tarot_sub_done", user.Name, leavingName);
+            await RenderAllAsync();
+            await RenderSubPanelAsync();
+            return (true, null, []);
+        }
+        finally
+        {
+            _actionLock.Release();
+        }
+    }
+
+    private async Task RenderSubPanelAsync()
+    {
+        if (_players.All(player => !player.WantsSub))
+        {
+            ClearSubPanel();
+            return;
+        }
+
+        var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotSub", BuildModel(null));
+        Context.SendUpdatableHtml(SubPanelId, html.RemoveNewlines(), _subPanelInitialized);
+        _subPanelInitialized = true;
+    }
+
+    private void ClearSubPanel()
+    {
+        if (!_subPanelInitialized)
+        {
+            return;
+        }
+
+        Context.SendUpdatableHtml(SubPanelId, string.Empty, true);
+        _subPanelInitialized = false;
     }
 
     #endregion

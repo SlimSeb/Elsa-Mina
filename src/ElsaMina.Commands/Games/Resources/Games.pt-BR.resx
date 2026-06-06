@@ -840,6 +840,45 @@
     <data name="tarot_resend_not_a_player" xml:space="preserve">
         <value>Você não é um jogador da partida atual.</value>
     </data>
+    <data name="tarot_sub_not_active" xml:space="preserve">
+        <value>Você só pode pedir um substituto durante uma partida em andamento.</value>
+    </data>
+    <data name="tarot_sub_not_a_player" xml:space="preserve">
+        <value>Você não é um jogador da partida atual.</value>
+    </data>
+    <data name="tarot_sub_already_player" xml:space="preserve">
+        <value>Você já está nesta partida.</value>
+    </data>
+    <data name="tarot_sub_none_pending" xml:space="preserve">
+        <value>Ninguém está procurando um substituto no momento.</value>
+    </data>
+    <data name="tarot_sub_invalid_target" xml:space="preserve">
+        <value>Esse jogador não está procurando um substituto.</value>
+    </data>
+    <data name="tarot_sub_requested" xml:space="preserve">
+        <value>{0} está procurando um substituto! Clique no botão para assumir o lugar.</value>
+    </data>
+    <data name="tarot_sub_cancelled" xml:space="preserve">
+        <value>{0} não precisa mais de um substituto.</value>
+    </data>
+    <data name="tarot_sub_done" xml:space="preserve">
+        <value>{0} assumiu o lugar de {1}.</value>
+    </data>
+    <data name="tarot_sub_panel_title" xml:space="preserve">
+        <value>Substituição</value>
+    </data>
+    <data name="tarot_sub_panel_intro" xml:space="preserve">
+        <value>Estes jogadores querem ser substituídos:</value>
+    </data>
+    <data name="tarot_sub_panel_take" xml:space="preserve">
+        <value>Assumir o lugar de {0}</value>
+    </data>
+    <data name="tarot_sub_request_button" xml:space="preserve">
+        <value>Pedir um substituto</value>
+    </data>
+    <data name="tarot_sub_cancel_button" xml:space="preserve">
+        <value>Cancelar o pedido</value>
+    </data>
     <data name="tarot_leaderboard_title" xml:space="preserve">
         <value>Classificação de Tarot</value>
     </data>

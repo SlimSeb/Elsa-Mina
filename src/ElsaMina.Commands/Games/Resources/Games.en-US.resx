@@ -840,6 +840,45 @@
     <data name="tarot_resend_not_a_player" xml:space="preserve">
         <value>You are not a player in the current game.</value>
     </data>
+    <data name="tarot_sub_not_active" xml:space="preserve">
+        <value>You can only ask for a substitute during a running game.</value>
+    </data>
+    <data name="tarot_sub_not_a_player" xml:space="preserve">
+        <value>You are not a player in the current game.</value>
+    </data>
+    <data name="tarot_sub_already_player" xml:space="preserve">
+        <value>You are already in this game.</value>
+    </data>
+    <data name="tarot_sub_none_pending" xml:space="preserve">
+        <value>Nobody is looking for a substitute right now.</value>
+    </data>
+    <data name="tarot_sub_invalid_target" xml:space="preserve">
+        <value>That player isn't looking for a substitute.</value>
+    </data>
+    <data name="tarot_sub_requested" xml:space="preserve">
+        <value>{0} is looking for a substitute! Click the button to take their seat.</value>
+    </data>
+    <data name="tarot_sub_cancelled" xml:space="preserve">
+        <value>{0} no longer needs a substitute.</value>
+    </data>
+    <data name="tarot_sub_done" xml:space="preserve">
+        <value>{0} has taken {1}'s seat.</value>
+    </data>
+    <data name="tarot_sub_panel_title" xml:space="preserve">
+        <value>Substitution</value>
+    </data>
+    <data name="tarot_sub_panel_intro" xml:space="preserve">
+        <value>These players want to be replaced:</value>
+    </data>
+    <data name="tarot_sub_panel_take" xml:space="preserve">
+        <value>Take {0}'s seat</value>
+    </data>
+    <data name="tarot_sub_request_button" xml:space="preserve">
+        <value>Ask for a sub</value>
+    </data>
+    <data name="tarot_sub_cancel_button" xml:space="preserve">
+        <value>Cancel sub request</value>
+    </data>
     <data name="tarot_leaderboard_title" xml:space="preserve">
         <value>French Tarot Leaderboard</value>
     </data>

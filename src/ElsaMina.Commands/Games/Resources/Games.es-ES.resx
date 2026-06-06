@@ -834,6 +834,45 @@
     <data name="tarot_resend_not_a_player" xml:space="preserve">
         <value>No eres jugador de la partida actual.</value>
     </data>
+    <data name="tarot_sub_not_active" xml:space="preserve">
+        <value>Solo puedes pedir un sustituto durante una partida en curso.</value>
+    </data>
+    <data name="tarot_sub_not_a_player" xml:space="preserve">
+        <value>No eres jugador de la partida actual.</value>
+    </data>
+    <data name="tarot_sub_already_player" xml:space="preserve">
+        <value>Ya estás en esta partida.</value>
+    </data>
+    <data name="tarot_sub_none_pending" xml:space="preserve">
+        <value>Nadie busca un sustituto ahora mismo.</value>
+    </data>
+    <data name="tarot_sub_invalid_target" xml:space="preserve">
+        <value>Ese jugador no busca un sustituto.</value>
+    </data>
+    <data name="tarot_sub_requested" xml:space="preserve">
+        <value>¡{0} busca un sustituto! Pulsa el botón para ocupar su lugar.</value>
+    </data>
+    <data name="tarot_sub_cancelled" xml:space="preserve">
+        <value>{0} ya no necesita un sustituto.</value>
+    </data>
+    <data name="tarot_sub_done" xml:space="preserve">
+        <value>{0} ha ocupado el lugar de {1}.</value>
+    </data>
+    <data name="tarot_sub_panel_title" xml:space="preserve">
+        <value>Sustitución</value>
+    </data>
+    <data name="tarot_sub_panel_intro" xml:space="preserve">
+        <value>Estos jugadores quieren ser sustituidos:</value>
+    </data>
+    <data name="tarot_sub_panel_take" xml:space="preserve">
+        <value>Ocupar el lugar de {0}</value>
+    </data>
+    <data name="tarot_sub_request_button" xml:space="preserve">
+        <value>Pedir un sustituto</value>
+    </data>
+    <data name="tarot_sub_cancel_button" xml:space="preserve">
+        <value>Cancelar la solicitud</value>
+    </data>
     <data name="tarot_leaderboard_title" xml:space="preserve">
         <value>Clasificación de Tarot</value>
     </data>

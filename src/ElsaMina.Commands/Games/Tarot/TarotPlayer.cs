@@ -9,9 +9,23 @@ public sealed class TarotPlayer
         User = user;
     }
 
-    public IUser User { get; }
+    public IUser User { get; private set; }
     public string UserId => User.UserId;
     public string Name => User.Name;
+
+    /// <summary>
+    /// True when this player has asked to be replaced by a substitute.
+    /// </summary>
+    public bool WantsSub { get; set; }
+
+    /// <summary>
+    /// Hands this seat over to another user, keeping the hand, captured pile and game state intact.
+    /// </summary>
+    public void SubstituteWith(IUser user)
+    {
+        User = user;
+        WantsSub = false;
+    }
 
     /// <summary>
     /// Cards currently in hand, sorted for display.

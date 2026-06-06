@@ -39,5 +39,7 @@ public interface ITarotGame : IGame
     Task DiscardAsync(IUser user, IReadOnlyList<TarotCard> cards);
     Task PlayAsync(IUser user, TarotCard card);
     Task ResendPlayerPageAsync(IUser user);
+    Task<(bool Success, string MessageKey, object[] Args)> RequestSubAsync(IUser user);
+    Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user, string targetPlayerId);
     void Cancel();
 }

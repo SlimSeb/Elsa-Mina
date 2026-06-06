@@ -834,6 +834,45 @@
     <data name="tarot_resend_not_a_player" xml:space="preserve">
         <value>Non sei un giocatore della partita in corso.</value>
     </data>
+    <data name="tarot_sub_not_active" xml:space="preserve">
+        <value>Puoi chiedere un sostituto solo durante una partita in corso.</value>
+    </data>
+    <data name="tarot_sub_not_a_player" xml:space="preserve">
+        <value>Non sei un giocatore della partita in corso.</value>
+    </data>
+    <data name="tarot_sub_already_player" xml:space="preserve">
+        <value>Sei già in questa partita.</value>
+    </data>
+    <data name="tarot_sub_none_pending" xml:space="preserve">
+        <value>Al momento nessuno sta cercando un sostituto.</value>
+    </data>
+    <data name="tarot_sub_invalid_target" xml:space="preserve">
+        <value>Quel giocatore non sta cercando un sostituto.</value>
+    </data>
+    <data name="tarot_sub_requested" xml:space="preserve">
+        <value>{0} sta cercando un sostituto! Clicca il pulsante per prendere il suo posto.</value>
+    </data>
+    <data name="tarot_sub_cancelled" xml:space="preserve">
+        <value>{0} non ha più bisogno di un sostituto.</value>
+    </data>
+    <data name="tarot_sub_done" xml:space="preserve">
+        <value>{0} ha preso il posto di {1}.</value>
+    </data>
+    <data name="tarot_sub_panel_title" xml:space="preserve">
+        <value>Sostituzione</value>
+    </data>
+    <data name="tarot_sub_panel_intro" xml:space="preserve">
+        <value>Questi giocatori vogliono essere sostituiti:</value>
+    </data>
+    <data name="tarot_sub_panel_take" xml:space="preserve">
+        <value>Prendi il posto di {0}</value>
+    </data>
+    <data name="tarot_sub_request_button" xml:space="preserve">
+        <value>Chiedi un sostituto</value>
+    </data>
+    <data name="tarot_sub_cancel_button" xml:space="preserve">
+        <value>Annulla la richiesta</value>
+    </data>
     <data name="tarot_leaderboard_title" xml:space="preserve">
         <value>Classifica di Tarot</value>
     </data>

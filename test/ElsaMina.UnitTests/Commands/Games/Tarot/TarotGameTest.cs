@@ -175,6 +175,109 @@ public class TarotGameTest
     }
 
     [Test]
+    public async Task Test_RequestSub_ShouldFail_WhenInLobby()
+    {
+        await _game.JoinAsync(User("player1"));
+
+        var (success, messageKey, _) = await _game.RequestSubAsync(User("player1"));
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.False);
+            Assert.That(messageKey, Is.EqualTo("tarot_sub_not_active"));
+        }
+    }
+
+    [Test]
+    public async Task Test_RequestSub_ShouldFail_WhenNotAPlayer()
+    {
+        await JoinAndStartAsync(4);
+
+        var (success, messageKey, _) = await _game.RequestSubAsync(User("stranger"));
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.False);
+            Assert.That(messageKey, Is.EqualTo("tarot_sub_not_a_player"));
+        }
+    }
+
+    [Test]
+    public async Task Test_RequestSub_ShouldMarkPlayer_WhenPlayerRequests()
+    {
+        var users = await JoinAndStartAsync(4);
+
+        var (success, _, _) = await _game.RequestSubAsync(users[1]);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.True);
+            Assert.That(_game.Players.Single(player => player.UserId == users[1].UserId).WantsSub, Is.True);
+        }
+    }
+
+    [Test]
+    public async Task Test_RequestSub_ShouldToggleOff_WhenRequestedTwice()
+    {
+        var users = await JoinAndStartAsync(4);
+
+        await _game.RequestSubAsync(users[1]);
+        await _game.RequestSubAsync(users[1]);
+
+        Assert.That(_game.Players.Single(player => player.UserId == users[1].UserId).WantsSub, Is.False);
+    }
+
+    [Test]
+    public async Task Test_AcceptSub_ShouldReplacePlayerAndKeepHand()
+    {
+        var users = await JoinAndStartAsync(4);
+        var leaving = _game.Players[1];
+        var handBefore = leaving.Hand.ToList();
+        await _game.RequestSubAsync(users[1]);
+
+        var newUser = User("substitute");
+        var (success, _, _) = await _game.AcceptSubAsync(newUser, users[1].UserId);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.True);
+            Assert.That(_game.Players[1].UserId, Is.EqualTo("substitute"));
+            Assert.That(_game.Players[1].WantsSub, Is.False);
+            Assert.That(_game.Players[1].Hand, Is.EquivalentTo(handBefore));
+            Assert.That(_game.Players.Any(player => player.UserId == users[1].UserId), Is.False);
+        }
+    }
+
+    [Test]
+    public async Task Test_AcceptSub_ShouldFail_WhenAlreadyPlayer()
+    {
+        var users = await JoinAndStartAsync(4);
+        await _game.RequestSubAsync(users[1]);
+
+        var (success, messageKey, _) = await _game.AcceptSubAsync(users[0], users[1].UserId);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.False);
+            Assert.That(messageKey, Is.EqualTo("tarot_sub_already_player"));
+        }
+    }
+
+    [Test]
+    public async Task Test_AcceptSub_ShouldFail_WhenNonePending()
+    {
+        await JoinAndStartAsync(4);
+
+        var (success, messageKey, _) = await _game.AcceptSubAsync(User("substitute"), null);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.False);
+            Assert.That(messageKey, Is.EqualTo("tarot_sub_none_pending"));
+        }
+    }
+
+    [Test]
     public void Test_GetLegalMoves_ShouldReturnWholeHand_WhenLeading()
     {
         var hand = new[] { Card("3h"), Card("10s") };
