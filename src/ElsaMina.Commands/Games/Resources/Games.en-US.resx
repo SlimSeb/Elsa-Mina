@@ -873,6 +873,9 @@
     <data name="tarot_sub_panel_take" xml:space="preserve">
         <value>Take {0}'s seat</value>
     </data>
+    <data name="tarot_options" xml:space="preserve">
+        <value>Options</value>
+    </data>
     <data name="tarot_sub_request_button" xml:space="preserve">
         <value>Ask for a sub</value>
     </data>

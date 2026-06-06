@@ -810,6 +810,9 @@
     <data name="tarot_sub_panel_take" xml:space="preserve">
         <value>Platz von {0} übernehmen</value>
     </data>
+    <data name="tarot_options" xml:space="preserve">
+        <value>Optionen</value>
+    </data>
     <data name="tarot_sub_request_button" xml:space="preserve">
         <value>Ersatz anfordern</value>
     </data>

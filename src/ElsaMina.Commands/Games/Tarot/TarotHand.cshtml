@@ -111,9 +111,12 @@
         </p>
     }
 
-    <p style="margin:8px 0 0 0;text-align:right">
-        <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tarotsub @Model.RoomId" style="font-size:0.8em">
-            @(viewer != null && viewer.WantsSub ? GetString("tarot_sub_cancel_button") : GetString("tarot_sub_request_button"))
-        </button>
-    </p>
+    <details style="margin:8px 0 0 0">
+        <summary style="cursor:pointer;font-size:0.8em;color:#9a8caa">@GetString("tarot_options")</summary>
+        <p style="margin:8px 0 0 0;text-align:right">
+            <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tarotsub @Model.RoomId" style="font-size:0.8em">
+                @(viewer != null && viewer.WantsSub ? GetString("tarot_sub_cancel_button") : GetString("tarot_sub_request_button"))
+            </button>
+        </p>
+    </details>
 </div>
