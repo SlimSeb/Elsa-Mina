@@ -11,7 +11,7 @@ public class ErrorHandler : Handler
     {
         switch (parts.Length)
         {
-            case > 3 when parts[1] == "error":
+            case >= 3 when parts[1] == "error":
                 Log.Error("Received error message from server : {Error}", parts[2]);
                 break;
             case > 2 when parts[1] == "popup":
