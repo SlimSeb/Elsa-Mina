@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="tcg_cards_help" xml:space="preserve">
+        <value>Sintaxis: tcgcards [nombreMazo]. Muestra todas las cartas. Indica el nombre de uno de tus mazos para obtener botones "+" que añaden cartas a él.</value>
+    </data>
+    <data name="tcg_deck_help" xml:space="preserve">
+        <value>Sintaxis: tcgdeck [nombre]. Sin nombre, lista tus mazos; con un nombre, abre el editor de ese mazo.</value>
+    </data>
+    <data name="tcg_decknew_help" xml:space="preserve">
+        <value>Sintaxis: tcgdecknew &lt;nombre&gt;. Crea un mazo nuevo y vacío.</value>
+    </data>
+    <data name="tcg_deckadd_help" xml:space="preserve">
+        <value>Sintaxis: tcgdeckadd &lt;mazo&gt;, &lt;idCarta&gt;. Añade una carta a un mazo.</value>
+    </data>
+    <data name="tcg_deckremove_help" xml:space="preserve">
+        <value>Sintaxis: tcgdeckremove &lt;mazo&gt;, &lt;idCarta&gt;. Quita una carta de un mazo.</value>
+    </data>
+    <data name="tcg_deckenergy_help" xml:space="preserve">
+        <value>Sintaxis: tcgdeckenergy &lt;mazo&gt;, &lt;tipo&gt; [tipo] [tipo]. Define los tipos de energía del mazo (1 a 3).</value>
+    </data>
+    <data name="tcg_deckdelete_help" xml:space="preserve">
+        <value>Sintaxis: tcgdeckdelete &lt;nombre&gt;. Elimina uno de tus mazos.</value>
+    </data>
+
+    <data name="tcg_deck_name_required" xml:space="preserve">
+        <value>Indica un nombre de mazo.</value>
+    </data>
+    <data name="tcg_deck_name_too_long" xml:space="preserve">
+        <value>Los nombres de mazo no pueden superar los {0} caracteres.</value>
+    </data>
+    <data name="tcg_deck_name_no_comma" xml:space="preserve">
+        <value>Los nombres de mazo no pueden contener comas.</value>
+    </data>
+    <data name="tcg_deck_already_exists" xml:space="preserve">
+        <value>Ya tienes un mazo llamado «{0}».</value>
+    </data>
+    <data name="tcg_deck_limit_reached" xml:space="preserve">
+        <value>Has alcanzado el máximo de {0} mazos.</value>
+    </data>
+    <data name="tcg_deck_created" xml:space="preserve">
+        <value>Mazo «{0}» creado.</value>
+    </data>
+    <data name="tcg_deck_unknown_card" xml:space="preserve">
+        <value>No existe ninguna carta con el id «{0}». Usa el catálogo para ver los ids.</value>
+    </data>
+    <data name="tcg_deck_not_found" xml:space="preserve">
+        <value>No tienes ningún mazo llamado «{0}».</value>
+    </data>
+    <data name="tcg_deck_full" xml:space="preserve">
+        <value>Este mazo ya está completo ({0} cartas).</value>
+    </data>
+    <data name="tcg_deck_max_copies" xml:space="preserve">
+        <value>No puedes tener más de {1} copias de {0}.</value>
+    </data>
+    <data name="tcg_deck_card_added" xml:space="preserve">
+        <value>{0} añadida al mazo ({1}/{2}).</value>
+    </data>
+    <data name="tcg_deck_card_not_in_deck" xml:space="preserve">
+        <value>«{0}» no está en este mazo.</value>
+    </data>
+    <data name="tcg_deck_card_removed" xml:space="preserve">
+        <value>{0} quitada del mazo ({1}/{2}).</value>
+    </data>
+    <data name="tcg_deck_invalid_energy_count" xml:space="preserve">
+        <value>Un mazo debe tener entre {0} y {1} tipos de energía.</value>
+    </data>
+    <data name="tcg_deck_energy_set" xml:space="preserve">
+        <value>Tipos de energía actualizados.</value>
+    </data>
+    <data name="tcg_deck_energy_min" xml:space="preserve">
+        <value>Un mazo debe conservar al menos {0} tipo de energía.</value>
+    </data>
+    <data name="tcg_deck_energy_max" xml:space="preserve">
+        <value>Un mazo puede tener como máximo {0} tipos de energía.</value>
+    </data>
+    <data name="tcg_deck_deleted" xml:space="preserve">
+        <value>Mazo «{0}» eliminado.</value>
+    </data>
+
+    <data name="tcg_deckadd_usage" xml:space="preserve">
+        <value>Sintaxis: {0}tcgdeckadd &lt;mazo&gt;, &lt;idCarta&gt;</value>
+    </data>
+    <data name="tcg_deckremove_usage" xml:space="preserve">
+        <value>Sintaxis: {0}tcgdeckremove &lt;mazo&gt;, &lt;idCarta&gt;</value>
+    </data>
+    <data name="tcg_deckenergy_usage" xml:space="preserve">
+        <value>Sintaxis: {0}tcgdeckenergy &lt;mazo&gt;, &lt;tipo&gt; [tipo] [tipo]</value>
+    </data>
+    <data name="tcg_deckdelete_usage" xml:space="preserve">
+        <value>Sintaxis: {0}tcgdeckdelete &lt;mazo&gt;</value>
+    </data>
+    <data name="tcg_deckenergy_unknown_type" xml:space="preserve">
+        <value>Tipo de energía desconocido: «{0}».</value>
+    </data>
+
+    <data name="tcg_deck_invalid_missing" xml:space="preserve">
+        <value>Mazo no encontrado.</value>
+    </data>
+    <data name="tcg_deck_invalid_size" xml:space="preserve">
+        <value>El mazo tiene {0} cartas pero debe tener exactamente {1}.</value>
+    </data>
+    <data name="tcg_deck_invalid_unknown_card" xml:space="preserve">
+        <value>El mazo contiene una carta desconocida: «{0}».</value>
+    </data>
+    <data name="tcg_deck_invalid_too_many_copies" xml:space="preserve">
+        <value>Demasiadas copias de «{0}» (máx {1}).</value>
+    </data>
+
+    <data name="tcg_type_grass" xml:space="preserve">
+        <value>Planta</value>
+    </data>
+    <data name="tcg_type_fire" xml:space="preserve">
+        <value>Fuego</value>
+    </data>
+    <data name="tcg_type_water" xml:space="preserve">
+        <value>Agua</value>
+    </data>
+    <data name="tcg_type_lightning" xml:space="preserve">
+        <value>Rayo</value>
+    </data>
+    <data name="tcg_type_psychic" xml:space="preserve">
+        <value>Psíquico</value>
+    </data>
+    <data name="tcg_type_fighting" xml:space="preserve">
+        <value>Lucha</value>
+    </data>
+    <data name="tcg_type_colorless" xml:space="preserve">
+        <value>Incoloro</value>
+    </data>
+
+    <data name="tcg_browser_title" xml:space="preserve">
+        <value>Catálogo de cartas</value>
+    </data>
+    <data name="tcg_browser_adding_to" xml:space="preserve">
+        <value>Añadiendo cartas a: {0}</value>
+    </data>
+    <data name="tcg_browser_hint" xml:space="preserve">
+        <value>Consejo: {0}tcgcards &lt;nombreMazo&gt; muestra botones «+» para añadir cartas a ese mazo.</value>
+    </data>
+    <data name="tcg_col_card" xml:space="preserve">
+        <value>Carta</value>
+    </data>
+    <data name="tcg_col_hp" xml:space="preserve">
+        <value>PS</value>
+    </data>
+    <data name="tcg_col_type" xml:space="preserve">
+        <value>Tipo</value>
+    </data>
+    <data name="tcg_col_attacks" xml:space="preserve">
+        <value>Ataques</value>
+    </data>
+
+    <data name="tcg_builder_title" xml:space="preserve">
+        <value>Mazo: {0}</value>
+    </data>
+    <data name="tcg_builder_count" xml:space="preserve">
+        <value>Cartas</value>
+    </data>
+    <data name="tcg_builder_legal" xml:space="preserve">
+        <value>Mazo válido</value>
+    </data>
+    <data name="tcg_builder_back" xml:space="preserve">
+        <value>Volver a los mazos</value>
+    </data>
+    <data name="tcg_builder_energy_zone" xml:space="preserve">
+        <value>Zona de energía</value>
+    </data>
+    <data name="tcg_builder_contents" xml:space="preserve">
+        <value>Contenido del mazo</value>
+    </data>
+    <data name="tcg_builder_empty" xml:space="preserve">
+        <value>Este mazo está vacío. Añade cartas desde el catálogo de abajo.</value>
+    </data>
+    <data name="tcg_builder_pool" xml:space="preserve">
+        <value>Catálogo de cartas</value>
+    </data>
+
+    <data name="tcg_list_title" xml:space="preserve">
+        <value>Tus mazos TCG</value>
+    </data>
+    <data name="tcg_list_empty" xml:space="preserve">
+        <value>Todavía no tienes mazos.</value>
+    </data>
+    <data name="tcg_list_col_name" xml:space="preserve">
+        <value>Nombre</value>
+    </data>
+    <data name="tcg_list_col_size" xml:space="preserve">
+        <value>Tamaño</value>
+    </data>
+    <data name="tcg_list_col_status" xml:space="preserve">
+        <value>Válido</value>
+    </data>
+    <data name="tcg_list_open" xml:space="preserve">
+        <value>Editar</value>
+    </data>
+    <data name="tcg_list_delete" xml:space="preserve">
+        <value>Eliminar</value>
+    </data>
+    <data name="tcg_list_new_hint" xml:space="preserve">
+        <value>Crear un mazo: {0}tcgdecknew &lt;nombre&gt;</value>
+    </data>
+    <data name="tcg_list_browse_hint" xml:space="preserve">
+        <value>Ver cartas: {0}tcgcards</value>
+    </data>
+    <data name="tcg_list_capacity" xml:space="preserve">
+        <value>Mazos: {0}/{1}</value>
+    </data>
+</root>

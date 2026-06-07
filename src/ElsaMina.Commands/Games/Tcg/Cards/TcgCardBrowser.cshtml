@@ -1,0 +1,76 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Tcg.Cards.TcgCardBrowserViewModel>
+@using ElsaMina.Commands.Games.Tcg.Cards
+@using ElsaMina.Core.Services.Templates
+
+@{
+    var hasTarget = !string.IsNullOrEmpty(Model.TargetDeckName);
+
+    string EnergyPips(IReadOnlyList<TcgType> cost)
+    {
+        if (cost.Count == 0)
+        {
+            return "<span style=\"color:#888\">—</span>";
+        }
+        var pips = cost.Select(type =>
+            $"<span style=\"display:inline-block;width:15px;height:15px;line-height:15px;text-align:center;border-radius:50%;font-size:0.7em;font-weight:bold;color:#fff;background:{TcgTypeStyle.Color(type)}\">{TcgTypeStyle.Symbol(type)}</span>");
+        return string.Join(" ", pips);
+    }
+}
+
+<div style="border:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;border-radius:10px;padding:8px">
+    <h3 style="margin:0 0 6px 0">🃏 @GetString("tcg_browser_title")</h3>
+    @if (hasTarget)
+    {
+        <p style="margin:2px 0;color:#4a90d9">@GetString("tcg_browser_adding_to", Model.TargetDeckName)</p>
+    }
+    else
+    {
+        <p style="margin:2px 0;color:#888;font-size:0.9em">@GetString("tcg_browser_hint", Model.Trigger)</p>
+    }
+
+    <table style="border-collapse:collapse;width:100%">
+        <thead>
+        <tr>
+            <th style="text-align:left;border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;padding:3px 6px">@GetString("tcg_col_card")</th>
+            <th style="border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;padding:3px 6px">@GetString("tcg_col_hp")</th>
+            <th style="border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;padding:3px 6px">@GetString("tcg_col_type")</th>
+            <th style="text-align:left;border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;padding:3px 6px">@GetString("tcg_col_attacks")</th>
+            @if (hasTarget)
+            {
+                <th style="border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;padding:3px 6px"></th>
+            }
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var card in Model.Cards)
+        {
+            <tr>
+                <td style="padding:3px 6px;white-space:nowrap">
+                    <img src="@card.SpriteUrl" width="40" height="40" style="vertical-align:middle" alt="@card.Name"/>
+                    <b>@card.Name</b>
+                    <code style="color:#888;font-size:0.8em">@card.Id</code>
+                </td>
+                <td style="text-align:center;padding:3px 6px">@card.Hp</td>
+                <td style="text-align:center;padding:3px 6px">
+                    <span style="display:inline-block;padding:1px 6px;border-radius:8px;color:#fff;font-size:0.8em;background:@TcgTypeStyle.Color(card.Type)">@GetString(card.Type.NameKey())</span>
+                </td>
+                <td style="padding:3px 6px">
+                    @foreach (var attack in card.Attacks)
+                    {
+                        <div style="margin:1px 0">
+                            @Raw(EnergyPips(attack.Cost)) <b>@attack.Name</b>
+                            <span style="color:#888">@(attack.Damage > 0 ? attack.Damage.ToString() : "")</span>
+                        </div>
+                    }
+                </td>
+                @if (hasTarget)
+                {
+                    <td style="text-align:center;padding:3px 6px">
+                        <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tcgdeckadd @Model.TargetDeckName, @card.Id">+</button>
+                    </td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

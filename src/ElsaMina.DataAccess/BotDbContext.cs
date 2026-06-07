@@ -43,6 +43,7 @@ public class BotDbContext : DbContext
     public DbSet<WordleScore> WordleScores { get; set; }
     public DbSet<WordEmbedding> WordEmbeddings { get; set; }
     public DbSet<SemantixScore> SemantixScores { get; set; }
+    public DbSet<TcgDeck> TcgDecks { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

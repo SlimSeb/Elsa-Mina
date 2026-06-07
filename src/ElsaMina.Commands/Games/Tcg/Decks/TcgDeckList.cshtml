@@ -1,0 +1,53 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Tcg.Decks.TcgDeckListViewModel>
+@using ElsaMina.Core.Services.Templates
+
+<div style="border:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;border-radius:10px;padding:8px">
+    <h3 style="margin:0 0 6px 0">📚 @GetString("tcg_list_title")</h3>
+
+    @if (Model.Decks.Count == 0)
+    {
+        <p style="color:#888;margin:4px 0"><em>@GetString("tcg_list_empty")</em></p>
+    }
+    else
+    {
+        <table style="border-collapse:collapse;width:100%">
+            <thead>
+            <tr>
+                <th style="text-align:left;border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;padding:3px 6px">@GetString("tcg_list_col_name")</th>
+                <th style="border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;padding:3px 6px">@GetString("tcg_list_col_size")</th>
+                <th style="border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;padding:3px 6px">@GetString("tcg_list_col_status")</th>
+                <th style="border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;padding:3px 6px"></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var deck in Model.Decks)
+            {
+                <tr>
+                    <td style="padding:3px 6px"><b>@deck.Name</b></td>
+                    <td style="text-align:center;padding:3px 6px">@deck.CardCount / @Model.DeckSize</td>
+                    <td style="text-align:center;padding:3px 6px">
+                        @if (deck.IsLegal)
+                        {
+                            <span style="color:#3fa34d;font-weight:bold">✓</span>
+                        }
+                        else
+                        {
+                            <span style="color:#cc2b2b;font-weight:bold">✗</span>
+                        }
+                    </td>
+                    <td style="text-align:right;padding:3px 6px;white-space:nowrap">
+                        <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tcgdeck @deck.Name">@GetString("tcg_list_open")</button>
+                        <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tcgdeckdelete @deck.Name">@GetString("tcg_list_delete")</button>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <p style="margin:8px 0 2px 0;color:#888;font-size:0.9em">
+        @GetString("tcg_list_new_hint", Model.Trigger)<br/>
+        @GetString("tcg_list_browse_hint", Model.Trigger)
+    </p>
+    <p style="margin:2px 0;color:#888;font-size:0.8em">@GetString("tcg_list_capacity", Model.Decks.Count, Model.MaxDecks)</p>
+</div>

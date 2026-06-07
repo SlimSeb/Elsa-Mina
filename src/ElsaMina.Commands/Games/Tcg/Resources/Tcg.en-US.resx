@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="tcg_cards_help" xml:space="preserve">
+        <value>Syntax: tcgcards [deckName]. Shows the full card pool. Pass one of your deck names to get "+" buttons that add cards to it.</value>
+    </data>
+    <data name="tcg_deck_help" xml:space="preserve">
+        <value>Syntax: tcgdeck [name]. With no name, lists your decks; with a name, opens that deck's builder.</value>
+    </data>
+    <data name="tcg_decknew_help" xml:space="preserve">
+        <value>Syntax: tcgdecknew &lt;name&gt;. Creates a new, empty deck.</value>
+    </data>
+    <data name="tcg_deckadd_help" xml:space="preserve">
+        <value>Syntax: tcgdeckadd &lt;deck&gt;, &lt;cardId&gt;. Adds a card to a deck.</value>
+    </data>
+    <data name="tcg_deckremove_help" xml:space="preserve">
+        <value>Syntax: tcgdeckremove &lt;deck&gt;, &lt;cardId&gt;. Removes a card from a deck.</value>
+    </data>
+    <data name="tcg_deckenergy_help" xml:space="preserve">
+        <value>Syntax: tcgdeckenergy &lt;deck&gt;, &lt;type&gt; [type] [type]. Sets the deck's Energy Zone types (1-3).</value>
+    </data>
+    <data name="tcg_deckdelete_help" xml:space="preserve">
+        <value>Syntax: tcgdeckdelete &lt;name&gt;. Deletes one of your decks.</value>
+    </data>
+
+    <data name="tcg_deck_name_required" xml:space="preserve">
+        <value>Please provide a deck name.</value>
+    </data>
+    <data name="tcg_deck_name_too_long" xml:space="preserve">
+        <value>Deck names must be at most {0} characters.</value>
+    </data>
+    <data name="tcg_deck_name_no_comma" xml:space="preserve">
+        <value>Deck names cannot contain commas.</value>
+    </data>
+    <data name="tcg_deck_already_exists" xml:space="preserve">
+        <value>You already have a deck named "{0}".</value>
+    </data>
+    <data name="tcg_deck_limit_reached" xml:space="preserve">
+        <value>You have reached the maximum of {0} decks.</value>
+    </data>
+    <data name="tcg_deck_created" xml:space="preserve">
+        <value>Created deck "{0}".</value>
+    </data>
+    <data name="tcg_deck_unknown_card" xml:space="preserve">
+        <value>There is no card with id "{0}". Use the card browser to find ids.</value>
+    </data>
+    <data name="tcg_deck_not_found" xml:space="preserve">
+        <value>You don't have a deck named "{0}".</value>
+    </data>
+    <data name="tcg_deck_full" xml:space="preserve">
+        <value>This deck is already full ({0} cards).</value>
+    </data>
+    <data name="tcg_deck_max_copies" xml:space="preserve">
+        <value>You can't have more than {1} copies of {0}.</value>
+    </data>
+    <data name="tcg_deck_card_added" xml:space="preserve">
+        <value>Added {0} to the deck ({1}/{2}).</value>
+    </data>
+    <data name="tcg_deck_card_not_in_deck" xml:space="preserve">
+        <value>"{0}" is not in this deck.</value>
+    </data>
+    <data name="tcg_deck_card_removed" xml:space="preserve">
+        <value>Removed {0} from the deck ({1}/{2}).</value>
+    </data>
+    <data name="tcg_deck_invalid_energy_count" xml:space="preserve">
+        <value>A deck must have between {0} and {1} Energy Zone types.</value>
+    </data>
+    <data name="tcg_deck_energy_set" xml:space="preserve">
+        <value>Energy Zone types updated.</value>
+    </data>
+    <data name="tcg_deck_energy_min" xml:space="preserve">
+        <value>A deck must keep at least {0} Energy Zone type.</value>
+    </data>
+    <data name="tcg_deck_energy_max" xml:space="preserve">
+        <value>A deck can have at most {0} Energy Zone types.</value>
+    </data>
+    <data name="tcg_deck_deleted" xml:space="preserve">
+        <value>Deleted deck "{0}".</value>
+    </data>
+
+    <data name="tcg_deckadd_usage" xml:space="preserve">
+        <value>Syntax: {0}tcgdeckadd &lt;deck&gt;, &lt;cardId&gt;</value>
+    </data>
+    <data name="tcg_deckremove_usage" xml:space="preserve">
+        <value>Syntax: {0}tcgdeckremove &lt;deck&gt;, &lt;cardId&gt;</value>
+    </data>
+    <data name="tcg_deckenergy_usage" xml:space="preserve">
+        <value>Syntax: {0}tcgdeckenergy &lt;deck&gt;, &lt;type&gt; [type] [type]</value>
+    </data>
+    <data name="tcg_deckdelete_usage" xml:space="preserve">
+        <value>Syntax: {0}tcgdeckdelete &lt;deck&gt;</value>
+    </data>
+    <data name="tcg_deckenergy_unknown_type" xml:space="preserve">
+        <value>Unknown energy type: "{0}".</value>
+    </data>
+
+    <data name="tcg_deck_invalid_missing" xml:space="preserve">
+        <value>Deck not found.</value>
+    </data>
+    <data name="tcg_deck_invalid_size" xml:space="preserve">
+        <value>Deck has {0} cards but must have exactly {1}.</value>
+    </data>
+    <data name="tcg_deck_invalid_unknown_card" xml:space="preserve">
+        <value>Deck contains an unknown card: "{0}".</value>
+    </data>
+    <data name="tcg_deck_invalid_too_many_copies" xml:space="preserve">
+        <value>Too many copies of "{0}" (max {1}).</value>
+    </data>
+
+    <data name="tcg_type_grass" xml:space="preserve">
+        <value>Grass</value>
+    </data>
+    <data name="tcg_type_fire" xml:space="preserve">
+        <value>Fire</value>
+    </data>
+    <data name="tcg_type_water" xml:space="preserve">
+        <value>Water</value>
+    </data>
+    <data name="tcg_type_lightning" xml:space="preserve">
+        <value>Lightning</value>
+    </data>
+    <data name="tcg_type_psychic" xml:space="preserve">
+        <value>Psychic</value>
+    </data>
+    <data name="tcg_type_fighting" xml:space="preserve">
+        <value>Fighting</value>
+    </data>
+    <data name="tcg_type_colorless" xml:space="preserve">
+        <value>Colorless</value>
+    </data>
+
+    <data name="tcg_browser_title" xml:space="preserve">
+        <value>Card Pool</value>
+    </data>
+    <data name="tcg_browser_adding_to" xml:space="preserve">
+        <value>Adding cards to: {0}</value>
+    </data>
+    <data name="tcg_browser_hint" xml:space="preserve">
+        <value>Tip: {0}tcgcards &lt;deckName&gt; shows "+" buttons to add cards to that deck.</value>
+    </data>
+    <data name="tcg_col_card" xml:space="preserve">
+        <value>Card</value>
+    </data>
+    <data name="tcg_col_hp" xml:space="preserve">
+        <value>HP</value>
+    </data>
+    <data name="tcg_col_type" xml:space="preserve">
+        <value>Type</value>
+    </data>
+    <data name="tcg_col_attacks" xml:space="preserve">
+        <value>Attacks</value>
+    </data>
+
+    <data name="tcg_builder_title" xml:space="preserve">
+        <value>Deck: {0}</value>
+    </data>
+    <data name="tcg_builder_count" xml:space="preserve">
+        <value>Cards</value>
+    </data>
+    <data name="tcg_builder_legal" xml:space="preserve">
+        <value>Legal deck</value>
+    </data>
+    <data name="tcg_builder_back" xml:space="preserve">
+        <value>Back to decks</value>
+    </data>
+    <data name="tcg_builder_energy_zone" xml:space="preserve">
+        <value>Energy Zone</value>
+    </data>
+    <data name="tcg_builder_contents" xml:space="preserve">
+        <value>Deck contents</value>
+    </data>
+    <data name="tcg_builder_empty" xml:space="preserve">
+        <value>This deck is empty. Add cards from the pool below.</value>
+    </data>
+    <data name="tcg_builder_pool" xml:space="preserve">
+        <value>Card pool</value>
+    </data>
+
+    <data name="tcg_list_title" xml:space="preserve">
+        <value>Your TCG Decks</value>
+    </data>
+    <data name="tcg_list_empty" xml:space="preserve">
+        <value>You have no decks yet.</value>
+    </data>
+    <data name="tcg_list_col_name" xml:space="preserve">
+        <value>Name</value>
+    </data>
+    <data name="tcg_list_col_size" xml:space="preserve">
+        <value>Size</value>
+    </data>
+    <data name="tcg_list_col_status" xml:space="preserve">
+        <value>Legal</value>
+    </data>
+    <data name="tcg_list_open" xml:space="preserve">
+        <value>Edit</value>
+    </data>
+    <data name="tcg_list_delete" xml:space="preserve">
+        <value>Delete</value>
+    </data>
+    <data name="tcg_list_new_hint" xml:space="preserve">
+        <value>Create a deck: {0}tcgdecknew &lt;name&gt;</value>
+    </data>
+    <data name="tcg_list_browse_hint" xml:space="preserve">
+        <value>Browse cards: {0}tcgcards</value>
+    </data>
+    <data name="tcg_list_capacity" xml:space="preserve">
+        <value>Decks: {0}/{1}</value>
+    </data>
+</root>
