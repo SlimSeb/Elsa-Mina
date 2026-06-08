@@ -21,8 +21,8 @@ public abstract class GuessingGame : Game, IGuessingGame
 
     private static readonly TimeSpan ANSWER_RATE_LIMIT = TimeSpan.FromSeconds(2);
 
-    private readonly Dictionary<string, int> _scores = new();
-    private readonly Dictionary<string, DateTimeOffset> _lastAnswerTimes = new();
+    private readonly Dictionary<GuessingGamePlayer, int> _scores = new();
+    private readonly Dictionary<GuessingGamePlayer, DateTimeOffset> _lastAnswerTimes = new();
     private readonly IClockService _clockService;
 
     protected GuessingGame(ITemplatesManager templatesManager,
@@ -33,7 +33,7 @@ public abstract class GuessingGame : Game, IGuessingGame
         _clockService = clockService;
     }
 
-    protected IReadOnlyDictionary<string, int> Scores => _scores;
+    protected IReadOnlyDictionary<GuessingGamePlayer, int> Scores => _scores;
 
     protected bool HasRoundBeenWon { get; private set; }
 
@@ -115,11 +115,12 @@ public abstract class GuessingGame : Game, IGuessingGame
         }
 
         var userId = userName.ToLowerAlphaNum();
-        var now = _clockService.CurrentUtcDateTime;
+        var player = new GuessingGamePlayer(userId, userName);
+        var now = _clockService.CurrentUtcDateTimeOffset;
 
         if (HasCooldown)
         {
-            if (_lastAnswerTimes.TryGetValue(userId, out var lastAnswerTime) &&
+            if (_lastAnswerTimes.TryGetValue(player, out var lastAnswerTime) &&
                 now - lastAnswerTime < ANSWER_RATE_LIMIT)
             {
                 var rateLimitMessage = Context.GetString("guessing_game_answer_rate_limit");
@@ -127,7 +128,7 @@ public abstract class GuessingGame : Game, IGuessingGame
                 return;
             }
 
-            _lastAnswerTimes[userId] = now;
+            _lastAnswerTimes[player] = now;
         }
         var maxLevenshteinDistance = answer.Length > MIN_LENGTH_FOR_AUTOCORRECT ? 1 : 0;
         if (!CurrentValidAnswers.Any(validAnswer =>
@@ -139,13 +140,13 @@ public abstract class GuessingGame : Game, IGuessingGame
         }
 
         HasRoundBeenWon = true;
-        _scores.TryAdd(userId, 0);
+        _scores.TryAdd(player, 0);
 
-        _scores[userId] += 1;
+        _scores[player] += 1;
         Context.ReplyLocalizedMessage("guessing_game_round_won",
             userName,
-            _scores[userId],
-            _scores[userId] == 1 ? string.Empty : "s");
+            _scores[player],
+            _scores[player] == 1 ? string.Empty : "s");
         OnCorrectAnswer();
     }
 

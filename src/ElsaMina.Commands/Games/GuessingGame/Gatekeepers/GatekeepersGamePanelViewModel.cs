@@ -9,7 +9,7 @@ public class GatekeepersGamePanelViewModel : LocalizableViewModel
     public IReadOnlyCollection<Pokemon> CurrentOptions { get; set; } = [];
     public bool ShowSilhouettes { get; set; }
     public bool ShowPortraits { get; set; }
-    public IReadOnlyDictionary<string, int> Scores { get; set; }
+    public IReadOnlyDictionary<GuessingGamePlayer, int> Scores { get; set; }
     public int CurrentTurn { get; set; }
     public int TurnsCount { get; set; }
     public TimeSpan RemainingTime { get; set; }

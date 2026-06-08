@@ -64,9 +64,9 @@
                     @if (Model.Scores != null && Model.Scores.Count > 0)
                     {
                         <br/>
-                        @foreach (var score in Model.Scores.OrderByDescending(s => s.Value))
+                        @foreach (var (player, score) in Model.Scores.OrderByDescending(s => s.Value))
                         {
-                            <span>@score.Key: @score.Value</span>
+                            <span>@player.UserName: @score</span>
                             <br/>
                         }
                     }
