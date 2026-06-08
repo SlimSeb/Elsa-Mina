@@ -14,7 +14,7 @@ public class GuessingGameTest
     private IContext _context;
     private TestGuessingGame _game;
 
-    private static readonly DateTime BASE_TIME = new(2024, 1, 1, 12, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTimeOffset BASE_TIME = new(2024, 1, 1, 12, 0, 0, offset: TimeSpan.Zero);
 
     [SetUp]
     public void SetUp()
@@ -25,7 +25,7 @@ public class GuessingGameTest
         _context = Substitute.For<IContext>();
 
         _configuration.Name.Returns("ElsaBot");
-        _clockService.CurrentUtcDateTime.Returns(BASE_TIME);
+        _clockService.CurrentUtcDateTimeOffset.Returns(BASE_TIME);
 
         _game = new TestGuessingGame(_templatesManager, _configuration, _clockService);
         _game.Context = _context;
@@ -94,7 +94,7 @@ public class GuessingGameTest
     {
         _game.SetHasCooldown(true);
         _game.OnAnswer("Player1", "charizard"); // first attempt (wrong, records time)
-        _clockService.CurrentUtcDateTime.Returns(BASE_TIME.AddSeconds(3));
+        _clockService.CurrentUtcDateTimeOffset.Returns(BASE_TIME.AddSeconds(3));
         _game.OnAnswer("Player1", "pikachu");   // second attempt after 3s → allowed
 
         _context.Received(1).ReplyLocalizedMessage("guessing_game_round_won", "Player1", 1, string.Empty);
