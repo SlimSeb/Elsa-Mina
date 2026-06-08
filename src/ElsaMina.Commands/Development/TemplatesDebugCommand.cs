@@ -35,12 +35,12 @@ public class TemplatesDebugCommand : DevelopmentCommand
             "GuessingGame/GuessingGameResult" => new GuessingGameResultViewModel
             {
                 Culture = context.Culture,
-                Scores = new Dictionary<string, int>
+                Scores = new Dictionary<GuessingGamePlayer, int>
                 {
-                    ["speks"] = 14,
-                    ["morsay"] = 12,
-                    ["thylane"] = 7,
-                    ["lionyx"] = 1
+                    [new GuessingGamePlayer("speks", "speks")] = 14,
+                    [new GuessingGamePlayer("morsay", "Morsay")] = 12,
+                    [new GuessingGamePlayer("thylane", "Thylane")] = 7,
+                    [new GuessingGamePlayer("lionyx", "Lionyx")] = 1
                 }
             },
             "Tournaments/Betting/BettingAnnouncement" => new BettingAnnouncementViewModel
