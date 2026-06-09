@@ -1,0 +1,37 @@
+@using ElsaMina.Core.Services.Templates
+@using ElsaMina.Core.Utils
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Belote.BeloteLeaderboardViewModel>
+@{
+    const string headerStyle = $"border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; padding: 4px";
+}
+<div style="max-height: 200px; overflow-y: auto">
+    <table style="margin: auto; border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; border-radius: 12px; padding: 4px">
+        <thead>
+        <tr>
+            <th colspan="6" scope="colgroup">@GetString("belote_leaderboard_title")</th>
+        </tr>
+        <tr>
+            <th scope="col" style="@headerStyle">#</th>
+            <th scope="col" style="@headerStyle">@GetString("leaderboard_user")</th>
+            <th scope="col" style="@headerStyle">@GetString("belote_leaderboard_score")</th>
+            <th scope="col" style="@headerStyle">@GetString("belote_leaderboard_games")</th>
+            <th scope="col" style="@headerStyle">@GetString("belote_leaderboard_wins")</th>
+            <th scope="col" style="@headerStyle">@GetString("belote_leaderboard_taker")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for (int i = 0; i < Model.Leaderboard.Count; i++)
+        {
+            var entry = Model.Leaderboard[i];
+            <tr>
+                <td style="text-align:center">@(i + 1)</td>
+                <td style="color: @entry.UserId.ToColorHexCodeWithCustoms()">@entry.UserId</td>
+                <td style="text-align:center">@entry.TotalScore</td>
+                <td style="text-align:center">@entry.GamesPlayed</td>
+                <td style="text-align:center">@entry.Wins</td>
+                <td style="text-align:center">@(entry.TakerWins)/@(entry.TimesTaker)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

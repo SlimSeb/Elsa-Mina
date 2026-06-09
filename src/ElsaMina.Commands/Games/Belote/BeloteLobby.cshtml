@@ -1,0 +1,31 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Belote.BeloteViewModel>
+@using ElsaMina.Core.Utils
+
+<div style="background:#1f3326;color:white;padding:10px;border-radius:6px">
+    <h3 style="margin:0;text-align:center">🃏 @GetString("belote_title") 🃏</h3>
+    <p style="text-align:center;margin:6px 0">@GetString("belote_lobby_intro")</p>
+
+    <p style="text-align:center;margin:6px 0">
+        <b>@GetString("belote_players_label") (@Model.Game.PlayerCount/@ElsaMina.Commands.Games.Belote.BeloteConstants.PLAYER_COUNT):</b>
+        @if (Model.Game.PlayerCount == 0)
+        {
+            <em>@GetString("belote_lobby_no_players")</em>
+        }
+        else
+        {
+            foreach (var player in Model.Game.Players)
+            {
+                <b style="color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</b>
+                <text>&nbsp;&nbsp;</text>
+            }
+        }
+    </p>
+
+    <p style="text-align:center;margin:6px 0">
+        <button class="button" name="send" value="@(Model.Trigger)belotejoin">@GetString("belote_lobby_join_button")</button>
+        <button class="button" name="send" value="@(Model.Trigger)belotestart">@GetString("belote_lobby_start_button")</button>
+    </p>
+    <p style="text-align:center;color:#bbb;font-size:0.85em;margin:4px 0">
+        @GetString("belote_lobby_hint", Model.Trigger, ElsaMina.Commands.Games.Belote.BeloteConstants.PLAYER_COUNT)
+    </p>
+</div>

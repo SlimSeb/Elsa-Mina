@@ -43,6 +43,7 @@ using ElsaMina.Commands.Games.GuessingGame.PokeCries;
 using ElsaMina.Commands.Games.GuessingGame.PokeDesc;
 using ElsaMina.Commands.Games.LightsOut;
 using ElsaMina.Commands.Games.Poker;
+using ElsaMina.Commands.Games.Belote;
 using ElsaMina.Commands.Games.PokeRace;
 using ElsaMina.Commands.Games.RockPaperScissors;
 using ElsaMina.Commands.Games.Tarot;
@@ -444,6 +445,18 @@ public partial class CommandModule : Module
         builder.RegisterCommand<TarotLeaderboardCommand>();
         builder.RegisterCommand<TarotStatsCommand>();
 
+        builder.RegisterCommand<StartBeloteCommand>();
+        builder.RegisterCommand<JoinBeloteCommand>();
+        builder.RegisterCommand<BeginBeloteCommand>();
+        builder.RegisterCommand<BidBeloteCommand>();
+        builder.RegisterCommand<PlayBeloteCommand>();
+        builder.RegisterCommand<ResendBeloteCommand>();
+        builder.RegisterCommand<RequestBeloteSubCommand>();
+        builder.RegisterCommand<AcceptBeloteSubCommand>();
+        builder.RegisterCommand<EndBeloteCommand>();
+        builder.RegisterCommand<BeloteLeaderboardCommand>();
+        builder.RegisterCommand<BeloteStatsCommand>();
+
         builder.RegisterCommand<StartPokerCommand>();
         builder.RegisterCommand<JoinPokerCommand>();
         builder.RegisterCommand<BeginPokerCommand>();
@@ -462,6 +475,8 @@ public partial class CommandModule : Module
         builder.RegisterType<RpsGame>().AsSelf();
         builder.RegisterType<TarotGame>().AsSelf();
         builder.RegisterType<TarotStatsService>().As<ITarotStatsService>().SingleInstance();
+        builder.RegisterType<BeloteGame>().AsSelf();
+        builder.RegisterType<BeloteStatsService>().As<IBeloteStatsService>().SingleInstance();
         builder.RegisterType<PokerGame>().AsSelf();
         builder.RegisterType<PokeDescGame>().AsSelf();
         builder.RegisterType<PokeCriesGame>().AsSelf();

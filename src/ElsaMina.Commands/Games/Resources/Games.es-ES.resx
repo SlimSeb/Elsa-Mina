@@ -1332,4 +1332,271 @@
     <data name="sx_leaderboard_best" xml:space="preserve">
         <value>Récord (intentos)</value>
     </data>
+    <data name="games_belote" xml:space="preserve">
+        <value>Belote</value>
+    </data>
+    <data name="belote_title" xml:space="preserve">
+        <value>Belote</value>
+    </data>
+    <data name="belote_help" xml:space="preserve">
+        <value>Inicia una partida de Belote para 4 jugadores en dos equipos.</value>
+    </data>
+    <data name="belote_already_running" xml:space="preserve">
+        <value>Ya hay una partida de Belote en curso en esta sala.</value>
+    </data>
+    <data name="belote_other_game_running" xml:space="preserve">
+        <value>Ya hay otro juego en curso en esta sala.</value>
+    </data>
+    <data name="belote_game_created" xml:space="preserve">
+        <value>¡{0} ha iniciado una partida de Belote!</value>
+    </data>
+    <data name="belote_not_running" xml:space="preserve">
+        <value>No hay ninguna partida de Belote en curso en esta sala.</value>
+    </data>
+    <data name="belote_join_already_started" xml:space="preserve">
+        <value>La partida ya ha comenzado, ya no puedes unirte.</value>
+    </data>
+    <data name="belote_join_full" xml:space="preserve">
+        <value>La partida ya está completa (4 jugadores).</value>
+    </data>
+    <data name="belote_join_already_joined" xml:space="preserve">
+        <value>Ya te has unido a esta partida.</value>
+    </data>
+    <data name="belote_join_success" xml:space="preserve">
+        <value>¡{0} se ha unido a la partida!</value>
+    </data>
+    <data name="belote_start_already_started" xml:space="preserve">
+        <value>La partida ya ha comenzado.</value>
+    </data>
+    <data name="belote_start_not_enough_players" xml:space="preserve">
+        <value>La Belote necesita exactamente {0} jugadores para empezar.</value>
+    </data>
+    <data name="belote_bidding_all_passed" xml:space="preserve">
+        <value>Todos han pasado: la mano se cancela.</value>
+    </data>
+    <data name="belote_turn_timeout_warning" xml:space="preserve">
+        <value>⏰ ¡Date prisa! Solo te quedan {0} segundos para jugar antes de ser eliminado por tiempo.</value>
+    </data>
+    <data name="belote_taker_announced" xml:space="preserve">
+        <value>¡{0} toma! El triunfo es {1} {2}.</value>
+    </data>
+    <data name="belote_bid_choose_suit" xml:space="preserve">
+        <value>Debes elegir un palo de triunfo (corazones, picas, diamantes o tréboles).</value>
+    </data>
+    <data name="belote_bid_suit_forbidden" xml:space="preserve">
+        <value>No puedes elegir el palo de la carta levantada en la segunda ronda.</value>
+    </data>
+    <data name="belote_trick_won" xml:space="preserve">
+        <value>{0} gana la baza {1}.</value>
+    </data>
+    <data name="belote_play_not_in_hand" xml:space="preserve">
+        <value>No tienes esa carta en la mano.</value>
+    </data>
+    <data name="belote_play_illegal" xml:space="preserve">
+        <value>No puedes jugar esa carta ahora.</value>
+    </data>
+    <data name="belote_game_cancelled" xml:space="preserve">
+        <value>La partida de Belote ha sido cancelada.</value>
+    </data>
+    <data name="belote_resend_not_started" xml:space="preserve">
+        <value>La partida aún no ha comenzado.</value>
+    </data>
+    <data name="belote_resend_not_a_player" xml:space="preserve">
+        <value>No eres un jugador de esta partida.</value>
+    </data>
+    <data name="belote_sub_not_active" xml:space="preserve">
+        <value>No hay ninguna partida activa para sustituir.</value>
+    </data>
+    <data name="belote_sub_not_a_player" xml:space="preserve">
+        <value>No eres un jugador de esta partida.</value>
+    </data>
+    <data name="belote_sub_already_player" xml:space="preserve">
+        <value>Ya eres un jugador de esta partida.</value>
+    </data>
+    <data name="belote_sub_none_pending" xml:space="preserve">
+        <value>Ningún jugador pide un sustituto.</value>
+    </data>
+    <data name="belote_sub_invalid_target" xml:space="preserve">
+        <value>Ese jugador no pide un sustituto.</value>
+    </data>
+    <data name="belote_sub_requested" xml:space="preserve">
+        <value>{0} pide ser reemplazado. Pulsa el botón para ocupar su lugar.</value>
+    </data>
+    <data name="belote_sub_cancelled" xml:space="preserve">
+        <value>{0} ya no quiere un sustituto.</value>
+    </data>
+    <data name="belote_sub_done" xml:space="preserve">
+        <value>{0} ha reemplazado a {1}.</value>
+    </data>
+    <data name="belote_sub_panel_title" xml:space="preserve">
+        <value>Sustitución</value>
+    </data>
+    <data name="belote_sub_panel_intro" xml:space="preserve">
+        <value>Pulsa un botón para ocupar el lugar de un jugador:</value>
+    </data>
+    <data name="belote_sub_panel_take" xml:space="preserve">
+        <value>Reemplazar a {0}</value>
+    </data>
+    <data name="belote_options" xml:space="preserve">
+        <value>Opciones</value>
+    </data>
+    <data name="belote_sub_request_button" xml:space="preserve">
+        <value>Pedir un sustituto</value>
+    </data>
+    <data name="belote_sub_cancel_button" xml:space="preserve">
+        <value>Cancelar la petición de sustituto</value>
+    </data>
+    <data name="belote_leaderboard_title" xml:space="preserve">
+        <value>Clasificación de Belote</value>
+    </data>
+    <data name="belote_leaderboard_score" xml:space="preserve">
+        <value>Puntuación</value>
+    </data>
+    <data name="belote_leaderboard_games" xml:space="preserve">
+        <value>Partidas</value>
+    </data>
+    <data name="belote_leaderboard_wins" xml:space="preserve">
+        <value>Victorias</value>
+    </data>
+    <data name="belote_leaderboard_taker" xml:space="preserve">
+        <value>Contratos</value>
+    </data>
+    <data name="belote_leaderboard_empty" xml:space="preserve">
+        <value>Aún no se ha registrado ninguna partida de Belote.</value>
+    </data>
+    <data name="belote_stats_not_found" xml:space="preserve">
+        <value>No se han encontrado estadísticas de Belote para {0}.</value>
+    </data>
+    <data name="belote_stats_info" xml:space="preserve">
+        <value>Estadísticas de Belote de {0}: Puntuación {1}, Partidas {2}, Victorias {3}, Veces tomador {4}, Contratos cumplidos {5}.</value>
+    </data>
+    <data name="belote_bid_unknown" xml:space="preserve">
+        <value>Apuesta desconocida. Usa 'tomar', 'paso' o un palo.</value>
+    </data>
+    <data name="belote_card_unknown" xml:space="preserve">
+        <value>Carta desconocida: {0}.</value>
+    </data>
+    <data name="belote_suit_hearts" xml:space="preserve">
+        <value>Corazones</value>
+    </data>
+    <data name="belote_suit_spades" xml:space="preserve">
+        <value>Picas</value>
+    </data>
+    <data name="belote_suit_diamonds" xml:space="preserve">
+        <value>Diamantes</value>
+    </data>
+    <data name="belote_suit_clubs" xml:space="preserve">
+        <value>Tréboles</value>
+    </data>
+    <data name="belote_lobby_intro" xml:space="preserve">
+        <value>¡Una nueva partida de Belote va a comenzar! (4 jugadores, 2 equipos)</value>
+    </data>
+    <data name="belote_players_label" xml:space="preserve">
+        <value>Jugadores</value>
+    </data>
+    <data name="belote_lobby_no_players" xml:space="preserve">
+        <value>aún no hay jugadores</value>
+    </data>
+    <data name="belote_lobby_join_button" xml:space="preserve">
+        <value>Unirse</value>
+    </data>
+    <data name="belote_lobby_start_button" xml:space="preserve">
+        <value>Empezar</value>
+    </data>
+    <data name="belote_lobby_hint" xml:space="preserve">
+        <value>Escribe {0}belotejoin para unirte, {0}belotestart para empezar ({1} jugadores).</value>
+    </data>
+    <data name="belote_bidding_phase" xml:space="preserve">
+        <value>Apuestas - ronda {0}</value>
+    </data>
+    <data name="belote_bidding_thinking" xml:space="preserve">
+        <value>pensando...</value>
+    </data>
+    <data name="belote_bid_passed" xml:space="preserve">
+        <value>paso</value>
+    </data>
+    <data name="belote_turned_card_label" xml:space="preserve">
+        <value>Carta levantada</value>
+    </data>
+    <data name="belote_turned_card_refused" xml:space="preserve">
+        <value>1ª ronda rechazada</value>
+    </data>
+    <data name="belote_team_one" xml:space="preserve">
+        <value>Equipo 1</value>
+    </data>
+    <data name="belote_team_two" xml:space="preserve">
+        <value>Equipo 2</value>
+    </data>
+    <data name="belote_taker_label" xml:space="preserve">
+        <value>Tomador</value>
+    </data>
+    <data name="belote_trump_label" xml:space="preserve">
+        <value>Triunfo</value>
+    </data>
+    <data name="belote_tricks_count" xml:space="preserve">
+        <value>{0} bazas</value>
+    </data>
+    <data name="belote_last_trick_label" xml:space="preserve">
+        <value>Última baza</value>
+    </data>
+    <data name="belote_won_by" xml:space="preserve">
+        <value>ganada por {0}</value>
+    </data>
+    <data name="belote_trick_progress" xml:space="preserve">
+        <value>Baza {0} / {1}</value>
+    </data>
+    <data name="belote_waiting_for" xml:space="preserve">
+        <value>Esperando a</value>
+    </data>
+    <data name="belote_your_hand" xml:space="preserve">
+        <value>Tu mano</value>
+    </data>
+    <data name="belote_your_turn_bid_one" xml:space="preserve">
+        <value>¿Tomar la carta levantada como triunfo ({0}) o pasar?</value>
+    </data>
+    <data name="belote_your_turn_bid_two" xml:space="preserve">
+        <value>Elige un palo de triunfo o pasa:</value>
+    </data>
+    <data name="belote_bid_take_button" xml:space="preserve">
+        <value>Tomar</value>
+    </data>
+    <data name="belote_bid_pass_button" xml:space="preserve">
+        <value>Pasar</value>
+    </data>
+    <data name="belote_last_played_label" xml:space="preserve">
+        <value>Última jugada</value>
+    </data>
+    <data name="belote_result_title" xml:space="preserve">
+        <value>Belote - Resultados</value>
+    </data>
+    <data name="belote_result_no_score" xml:space="preserve">
+        <value>No hay puntuación que mostrar.</value>
+    </data>
+    <data name="belote_result_capot" xml:space="preserve">
+        <value>¡CAPOT!</value>
+    </data>
+    <data name="belote_result_contract_made" xml:space="preserve">
+        <value>¡Contrato cumplido!</value>
+    </data>
+    <data name="belote_result_contract_failed" xml:space="preserve">
+        <value>¡Contrato fallido!</value>
+    </data>
+    <data name="belote_result_card_points" xml:space="preserve">
+        <value>Puntos: Equipo 1 {0} - Equipo 2 {1}</value>
+    </data>
+    <data name="belote_result_belote" xml:space="preserve">
+        <value>Belote-Rebelote: +20 para {0}</value>
+    </data>
+    <data name="belote_result_team_label" xml:space="preserve">
+        <value>Equipo</value>
+    </data>
+    <data name="belote_result_score_label" xml:space="preserve">
+        <value>Puntuación</value>
+    </data>
+    <data name="belote_cards_won_title" xml:space="preserve">
+        <value>Cartas ganadas</value>
+    </data>
+    <data name="belote_cards_won_points" xml:space="preserve">
+        <value>{0} pts</value>
+    </data>
 </root>

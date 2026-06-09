@@ -1,0 +1,15 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Belote.BeloteViewModel>
+@using ElsaMina.Core.Utils
+
+<div style="background:#25323a;color:#e6f2ea;border:1px solid #4a6a6a;border-radius:6px;padding:8px">
+    <h4 style="margin:0 0 6px 0;text-align:center">🔁 @GetString("belote_sub_panel_title")</h4>
+    <p style="text-align:center;margin:4px 0">@GetString("belote_sub_panel_intro")</p>
+    <p style="text-align:center;margin:6px 0">
+        @foreach (var player in Model.Game.Players.Where(currentPlayer => currentPlayer.WantsSub))
+        {
+            <button class="button" name="send" value="@(Model.Trigger)belotesubaccept @player.UserId" style="margin:2px">
+                @GetString("belote_sub_panel_take", player.Name)
+            </button>
+        }
+    </p>
+</div>

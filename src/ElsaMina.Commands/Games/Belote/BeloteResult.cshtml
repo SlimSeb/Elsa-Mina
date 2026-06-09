@@ -1,0 +1,111 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Belote.BeloteViewModel>
+@using ElsaMina.Commands.Games.Belote
+@using ElsaMina.Core.Utils
+
+@{
+    var game = Model.Game;
+    var result = game.ScoreResult;
+    var trump = game.Trump;
+
+    string CardColor(BeloteCard card) =>
+        card.Suit is BeloteSuit.Hearts or BeloteSuit.Diamonds ? "#ff7b7b" : "#ececec";
+
+    string TeamName(int team) => GetString(team == 0 ? "belote_team_one" : "belote_team_two");
+}
+
+<div style="background:#1f3326;color:#e6f2ea;border:1px solid #3f6a4f;border-radius:6px;padding:10px">
+    <h3 style="margin:0 0 8px 0;text-align:center">🃏 @GetString("belote_result_title")</h3>
+
+    @if (result == null || trump == null)
+    {
+        <p style="text-align:center">@GetString("belote_result_no_score")</p>
+    }
+    else
+    {
+        var trumpSuit = trump.Value;
+        <p style="text-align:center;margin:4px 0">
+            <b style="color:@game.Taker?.Name.ToColorHexCodeWithCustoms()">@game.Taker?.Name</b>
+            (@TeamName(result.TakerTeam))
+            &nbsp;|&nbsp; <b>@GetString("belote_trump_label"):</b>
+            <span style="font-weight:bold">@BeloteCard.SuitDisplay(trumpSuit) @GetString($"belote_suit_{trumpSuit.ToString().ToLowerInvariant()}")</span>
+        </p>
+
+        <p style="text-align:center;margin:4px 0;font-size:1.1em">
+            @if (result.IsCapot)
+            {
+                <b style="color:#f7d774">@GetString("belote_result_capot")</b>
+                <text>&nbsp;</text>
+            }
+            @if (result.Made)
+            {
+                <b style="color:#6ddf9a">@GetString("belote_result_contract_made")</b>
+            }
+            else
+            {
+                <b style="color:#ff7b7b">@GetString("belote_result_contract_failed")</b>
+            }
+        </p>
+
+        <p style="text-align:center;margin:4px 0">
+            @GetString("belote_result_card_points",
+                result.Team0CardPoints, result.Team1CardPoints)
+        </p>
+        @if (result.BeloteTeam >= 0)
+        {
+            <p style="text-align:center;margin:4px 0;color:#f7d774">
+                @GetString("belote_result_belote", TeamName(result.BeloteTeam))
+            </p>
+        }
+
+        <table style="margin:8px auto 0 auto;border-collapse:collapse">
+            <tr style="border-bottom:1px solid #3f6a4f">
+                <th style="padding:2px 12px;text-align:left">@GetString("belote_result_team_label")</th>
+                <th style="padding:2px 12px">@GetString("belote_result_score_label")</th>
+            </tr>
+            @for (var team = 0; team < 2; team++)
+            {
+                var score = team == 0 ? result.Team0Score : result.Team1Score;
+                var otherScore = team == 0 ? result.Team1Score : result.Team0Score;
+                var color = score >= otherScore ? "#6ddf9a" : "#ff7b7b";
+                <tr>
+                    <td style="padding:2px 12px">
+                        <b>@TeamName(team)</b>
+                        <span style="color:#9fc4ad;font-size:0.85em">
+                            (@string.Join(", ", game.Players.Where(player => player.Team == team).Select(player => player.Name)))
+                        </span>
+                    </td>
+                    <td style="padding:2px 12px;text-align:center;font-weight:bold;color:@color">+@score</td>
+                </tr>
+            }
+        </table>
+
+        <details style="margin-top:12px">
+            <summary style="cursor:pointer;text-align:center;font-weight:bold">@GetString("belote_cards_won_title")</summary>
+            @foreach (var player in game.Players)
+            {
+                var capturedPoints = player.CapturedPile.Sum(card => card.GetPoints(trumpSuit));
+                var orderedCards = player.CapturedPile
+                    .OrderBy(card => card.Suit)
+                    .ThenBy(card => card.Rank)
+                    .ToList();
+                <div style="margin:6px 0;padding:5px 8px;background:#18271e;border-radius:5px">
+                    <span style="color:@player.Name.ToColorHexCodeWithCustoms();font-weight:bold">@player.Name</span>
+                    <span style="color:#9fc4ad">(@GetString("belote_cards_won_points", capturedPoints))</span>
+                    <div style="margin-top:3px;line-height:1.9em">
+                        @if (orderedCards.Count == 0)
+                        {
+                            <span style="color:#6a8a76">&mdash;</span>
+                        }
+                        else
+                        {
+                            foreach (var card in orderedCards)
+                            {
+                                <span style="color:@CardColor(card);font-weight:bold;font-size:1.15em;margin:0 3px">@card.ToDisplay(Model.Culture)</span>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+        </details>
+    }
+</div>
