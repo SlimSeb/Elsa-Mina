@@ -16,17 +16,20 @@ public class AskElsaCommand : Command
     private readonly IConversationHistoryService _conversationHistory;
     private readonly IConfiguration _configuration;
     private readonly IResourcesService _resourcesService;
+    private readonly IPersonalityService _personalityService;
     private readonly ILanguageModelProvider _languageModelProvider;
     private readonly IAiTextToSpeechProvider _textToSpeechProvider;
 
     public AskElsaCommand(IConfiguration configuration,
         IResourcesService resourcesService,
+        IPersonalityService personalityService,
         ILanguageModelProvider languageModelProvider,
         IAiTextToSpeechProvider textToSpeechProvider,
         IConversationHistoryService conversationHistory)
     {
         _configuration = configuration;
         _resourcesService = resourcesService;
+        _personalityService = personalityService;
         _languageModelProvider = languageModelProvider;
         _textToSpeechProvider = textToSpeechProvider;
         _conversationHistory = conversationHistory;
@@ -39,8 +42,9 @@ public class AskElsaCommand : Command
     {
         var withAudio = context.Command.Contains("audio");
         var room = context.Room;
+        var personality = _personalityService.GetPersonality(context.RoomId);
         var systemPrompt = string.Format(
-            _resourcesService.GetString("ask_prompt", context.Culture),
+            _resourcesService.GetString(BotPersonalities.GetPromptKey(personality), context.Culture),
             context.Sender.Name,
             _configuration.Name,
             room.Name);

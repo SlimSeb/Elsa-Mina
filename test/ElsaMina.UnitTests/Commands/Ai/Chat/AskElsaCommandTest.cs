@@ -14,6 +14,7 @@ public class AskElsaCommandTest
 {
     private IConfiguration _mockConfiguration;
     private IResourcesService _mockResourcesService;
+    private IPersonalityService _mockPersonalityService;
     private ILanguageModelProvider _mockLanguageModelProvider;
     private IAiTextToSpeechProvider _mockTextToSpeechProvider;
     private IConversationHistoryService _mockConversationHistory;
@@ -25,6 +26,8 @@ public class AskElsaCommandTest
         _mockConfiguration = Substitute.For<IConfiguration>();
         _mockConfiguration.Name.Returns("Elsa");
         _mockResourcesService = Substitute.For<IResourcesService>();
+        _mockPersonalityService = Substitute.For<IPersonalityService>();
+        _mockPersonalityService.GetPersonality(Arg.Any<string>()).Returns(BotPersonality.Silly);
         _mockLanguageModelProvider = Substitute.For<ILanguageModelProvider>();
         _mockTextToSpeechProvider = Substitute.For<IAiTextToSpeechProvider>();
         _mockConversationHistory = Substitute.For<IConversationHistoryService>();
@@ -34,6 +37,7 @@ public class AskElsaCommandTest
         _command = new AskElsaCommand(
             _mockConfiguration,
             _mockResourcesService,
+            _mockPersonalityService,
             _mockLanguageModelProvider,
             _mockTextToSpeechProvider,
             _mockConversationHistory
@@ -51,7 +55,7 @@ public class AskElsaCommandTest
     {
         // Arrange
         var mockContext = BuildContext("ask", "What is the weather?");
-        _mockResourcesService.GetString("ask_prompt", Arg.Any<CultureInfo>())
+        _mockResourcesService.GetString("personality_prompt_silly", Arg.Any<CultureInfo>())
             .Returns("{0} asked by {1} in {2}");
         _mockLanguageModelProvider.AskLanguageModelAsync(Arg.Any<LanguageModelRequest>(), Arg.Any<CancellationToken>())
             .Returns("It's sunny.");
@@ -68,7 +72,7 @@ public class AskElsaCommandTest
     {
         // Arrange
         var mockContext = BuildContext("askaudio", "What is the weather?");
-        _mockResourcesService.GetString("ask_prompt", Arg.Any<CultureInfo>())
+        _mockResourcesService.GetString("personality_prompt_silly", Arg.Any<CultureInfo>())
             .Returns("{0} asked by {1} in {2}");
         _mockLanguageModelProvider.AskLanguageModelAsync(Arg.Any<LanguageModelRequest>(), Arg.Any<CancellationToken>())
             .Returns("It's sunny.");
@@ -87,7 +91,7 @@ public class AskElsaCommandTest
     {
         // Arrange
         var mockContext = BuildContext("askaudio", "What is the weather?");
-        _mockResourcesService.GetString("ask_prompt", Arg.Any<CultureInfo>())
+        _mockResourcesService.GetString("personality_prompt_silly", Arg.Any<CultureInfo>())
             .Returns("{0} asked by {1} in {2}");
         _mockLanguageModelProvider.AskLanguageModelAsync(Arg.Any<LanguageModelRequest>(), Arg.Any<CancellationToken>())
             .Returns("It's sunny.");

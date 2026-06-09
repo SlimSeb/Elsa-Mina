@@ -253,6 +253,7 @@ public partial class CommandModule : Module
         builder.RegisterCommand<ConnectFourLeaderboardCommand>();
         builder.RegisterCommand<ConnectFourEloCommand>();
         builder.RegisterCommand<AskElsaCommand>();
+        builder.RegisterCommand<SetPersonalityCommand>();
         builder.RegisterCommand<CalcWithAiCommand>();
         builder.RegisterCommand<SpeakCommand>();
         builder.RegisterCommand<RankingCommand>();
@@ -507,6 +508,7 @@ public partial class CommandModule : Module
         builder.RegisterType<MistralMediumProvider>().AsSelf().SingleInstance();
         builder.RegisterType<GptNano41Provider>().AsSelf().SingleInstance();
         builder.RegisterType<ConversationHistoryService>().As<IConversationHistoryService>().SingleInstance();
+        builder.RegisterType<PersonalityService>().As<IPersonalityService>().SingleInstance();
         builder.RegisterType<LanguageModelResolver>().As<ILanguageModelProvider>().SingleInstance();
         builder.RegisterType<DamageCalculator>().As<IDamageCalculator>().SingleInstance();
         builder.RegisterType<ProfileService>().As<IProfileService>().SingleInstance();
