@@ -6,5 +6,8 @@ public enum BotPersonality
     Helpful,
     Noir,
     Philosopher,
-    Redditor
+    Redditor,
+    Gremlin,
+    Franchouillard,
+    Anxious
 }

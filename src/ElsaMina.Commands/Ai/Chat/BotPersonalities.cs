@@ -17,7 +17,10 @@ public static class BotPersonalities
             [BotPersonality.Helpful] = "personality_prompt_helpful",
             [BotPersonality.Noir] = "personality_prompt_noir",
             [BotPersonality.Philosopher] = "personality_prompt_philosopher",
-            [BotPersonality.Redditor] = "personality_prompt_redditor"
+            [BotPersonality.Redditor] = "personality_prompt_redditor",
+            [BotPersonality.Gremlin] = "personality_prompt_gremlin",
+            [BotPersonality.Franchouillard] = "personality_prompt_franchouillard",
+            [BotPersonality.Anxious] = "personality_prompt_anxious"
         };
 
     private static readonly Dictionary<string, BotPersonality> LOOKUP =
@@ -37,13 +40,24 @@ public static class BotPersonalities
             ["philo"] = BotPersonality.Philosopher,
             ["redditor"] = BotPersonality.Redditor,
             ["reddit"] = BotPersonality.Redditor,
-            ["geek"] = BotPersonality.Redditor
+            ["geek"] = BotPersonality.Redditor,
+            ["gremlin"] = BotPersonality.Gremlin,
+            ["rawr"] = BotPersonality.Gremlin,
+            ["uwu"] = BotPersonality.Gremlin,
+            ["goblin"] = BotPersonality.Gremlin,
+            ["franchouillard"] = BotPersonality.Franchouillard,
+            ["frenchie"] = BotPersonality.Franchouillard,
+            ["beret"] = BotPersonality.Franchouillard,
+            ["baguette"] = BotPersonality.Franchouillard,
+            ["anxious"] = BotPersonality.Anxious,
+            ["nervous"] = BotPersonality.Anxious,
+            ["shy"] = BotPersonality.Anxious
         };
 
     /// <summary>
     /// Comma-separated list of the primary names users can pass to switch personality.
     /// </summary>
-    public static string AvailableNames => "silly, helpful, noir, philosopher, redditor";
+    public static string AvailableNames => "silly, helpful, noir, philosopher, redditor, gremlin, franchouillard, anxious";
 
     public static string GetPromptKey(BotPersonality personality) => PROMPT_KEYS[personality];
 
