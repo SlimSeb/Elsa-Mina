@@ -9,5 +9,10 @@ public enum BotPersonality
     Redditor,
     Gremlin,
     Franchouillard,
-    Anxious
+    Anxious,
+    Boomer,
+    Intern,
+    LinkedInGuru,
+    GymBro,
+    CryptoBro
 }

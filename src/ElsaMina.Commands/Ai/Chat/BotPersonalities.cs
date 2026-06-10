@@ -20,7 +20,12 @@ public static class BotPersonalities
             [BotPersonality.Redditor] = "personality_prompt_redditor",
             [BotPersonality.Gremlin] = "personality_prompt_gremlin",
             [BotPersonality.Franchouillard] = "personality_prompt_franchouillard",
-            [BotPersonality.Anxious] = "personality_prompt_anxious"
+            [BotPersonality.Anxious] = "personality_prompt_anxious",
+            [BotPersonality.Boomer] = "personality_prompt_boomer",
+            [BotPersonality.Intern] = "personality_prompt_intern",
+            [BotPersonality.LinkedInGuru] = "personality_prompt_linkedin",
+            [BotPersonality.GymBro] = "personality_prompt_gymbro",
+            [BotPersonality.CryptoBro] = "personality_prompt_cryptobro"
         };
 
     private static readonly Dictionary<string, BotPersonality> LOOKUP =
@@ -51,13 +56,28 @@ public static class BotPersonalities
             ["baguette"] = BotPersonality.Franchouillard,
             ["anxious"] = BotPersonality.Anxious,
             ["nervous"] = BotPersonality.Anxious,
-            ["shy"] = BotPersonality.Anxious
+            ["shy"] = BotPersonality.Anxious,
+            ["boomer"] = BotPersonality.Boomer,
+            ["reac"] = BotPersonality.Boomer,
+            ["grumpy"] = BotPersonality.Boomer,
+            ["intern"] = BotPersonality.Intern,
+            ["stagiaire"] = BotPersonality.Intern,
+            ["stage"] = BotPersonality.Intern,
+            ["linkedin"] = BotPersonality.LinkedInGuru,
+            ["guru"] = BotPersonality.LinkedInGuru,
+            ["hustle"] = BotPersonality.LinkedInGuru,
+            ["gymbro"] = BotPersonality.GymBro,
+            ["gym"] = BotPersonality.GymBro,
+            ["bro"] = BotPersonality.GymBro,
+            ["cryptobro"] = BotPersonality.CryptoBro,
+            ["crypto"] = BotPersonality.CryptoBro,
+            ["hodl"] = BotPersonality.CryptoBro
         };
 
     /// <summary>
     /// Comma-separated list of the primary names users can pass to switch personality.
     /// </summary>
-    public static string AvailableNames => "silly, helpful, noir, philosopher, redditor, gremlin, franchouillard, anxious";
+    public static string AvailableNames => "silly, helpful, noir, philosopher, redditor, gremlin, franchouillard, anxious, boomer, intern, linkedin, gymbro, cryptobro";
 
     public static string GetPromptKey(BotPersonality personality) => PROMPT_KEYS[personality];
 
