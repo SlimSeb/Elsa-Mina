@@ -4,5 +4,7 @@ public enum BotPersonality
 {
     Silly,
     Helpful,
-    Noir
+    Noir,
+    Philosopher,
+    Redditor
 }

@@ -10,16 +10,18 @@ public static class BotPersonalities
 {
     public const BotPersonality DEFAULT = BotPersonality.Silly;
 
-    private static readonly IReadOnlyDictionary<BotPersonality, string> PROMPT_KEYS =
-        new Dictionary<BotPersonality, string>
+    private static readonly Dictionary<BotPersonality, string> PROMPT_KEYS =
+        new()
         {
             [BotPersonality.Silly] = "personality_prompt_silly",
             [BotPersonality.Helpful] = "personality_prompt_helpful",
-            [BotPersonality.Noir] = "personality_prompt_noir"
+            [BotPersonality.Noir] = "personality_prompt_noir",
+            [BotPersonality.Philosopher] = "personality_prompt_philosopher",
+            [BotPersonality.Redditor] = "personality_prompt_redditor"
         };
 
-    private static readonly IReadOnlyDictionary<string, BotPersonality> LOOKUP =
-        new Dictionary<string, BotPersonality>(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, BotPersonality> LOOKUP =
+        new(StringComparer.OrdinalIgnoreCase)
         {
             ["silly"] = BotPersonality.Silly,
             ["default"] = BotPersonality.Silly,
@@ -29,13 +31,19 @@ public static class BotPersonalities
             ["smart"] = BotPersonality.Helpful,
             ["noir"] = BotPersonality.Noir,
             ["detective"] = BotPersonality.Noir,
-            ["gumshoe"] = BotPersonality.Noir
+            ["gumshoe"] = BotPersonality.Noir,
+            ["philosopher"] = BotPersonality.Philosopher,
+            ["philosophe"] = BotPersonality.Philosopher,
+            ["philo"] = BotPersonality.Philosopher,
+            ["redditor"] = BotPersonality.Redditor,
+            ["reddit"] = BotPersonality.Redditor,
+            ["geek"] = BotPersonality.Redditor
         };
 
     /// <summary>
     /// Comma-separated list of the primary names users can pass to switch personality.
     /// </summary>
-    public static string AvailableNames => "silly, helpful, noir";
+    public static string AvailableNames => "silly, helpful, noir, philosopher, redditor";
 
     public static string GetPromptKey(BotPersonality personality) => PROMPT_KEYS[personality];
 
