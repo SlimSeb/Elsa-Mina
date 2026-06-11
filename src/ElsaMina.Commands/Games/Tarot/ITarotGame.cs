@@ -41,5 +41,5 @@ public interface ITarotGame : IGame
     Task ResendPlayerPageAsync(IUser user);
     Task<(bool Success, string MessageKey, object[] Args)> RequestSubAsync(IUser user);
     Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user, string targetPlayerId);
-    void Cancel();
+    Task CancelAsync();
 }

@@ -9,16 +9,15 @@ public class EndTarotCommand : Command
 {
     public override Rank RequiredRank => Rank.Voiced;
 
-    public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
+    public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (context.Room?.Game is not ITarotGame game)
         {
             context.ReplyLocalizedMessage("tarot_not_running");
-            return Task.CompletedTask;
+            return;
         }
 
-        game.Cancel();
+        await game.CancelAsync();
         context.ReplyLocalizedMessage("tarot_game_cancelled");
-        return Task.CompletedTask;
     }
 }

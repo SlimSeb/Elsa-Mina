@@ -43,7 +43,7 @@ public class TarotGameTest
     }
 
     [TearDown]
-    public void TearDown() => _game.Cancel();
+    public async Task TearDown() => await _game.CancelAsync();
 
     private static IUser User(string id)
     {
@@ -186,6 +186,37 @@ public class TarotGameTest
             Assert.That(success, Is.False);
             Assert.That(messageKey, Is.EqualTo("tarot_sub_not_active"));
         }
+    }
+
+    [Test]
+    public async Task Test_Cancel_ShouldRenderCancelledPanel_WhenInLobby()
+    {
+        await _game.BeginJoinPhaseAsync();
+        await _game.JoinAsync(User("player1"));
+        _templatesManager.ClearReceivedCalls();
+        _context.ClearReceivedCalls();
+
+        await _game.CancelAsync();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Phase, Is.EqualTo(TarotPhase.Finished));
+            await _templatesManager.Received(1)
+                .GetTemplateAsync("Games/Tarot/TarotCancelled", Arg.Any<object>());
+            _context.Received(1).SendUpdatableHtml($"tarot-{_game.GameId}", Arg.Any<string>(), true);
+        }
+    }
+
+    [Test]
+    public async Task Test_Cancel_ShouldNotRenderCancelledPanel_WhenAlreadyPlaying()
+    {
+        await JoinAndStartAsync(4);
+        _templatesManager.ClearReceivedCalls();
+
+        await _game.CancelAsync();
+
+        await _templatesManager.DidNotReceive()
+            .GetTemplateAsync("Games/Tarot/TarotCancelled", Arg.Any<object>());
     }
 
     [Test]

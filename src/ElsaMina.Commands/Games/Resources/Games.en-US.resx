@@ -930,6 +930,9 @@
     <data name="tarot_lobby_intro" xml:space="preserve">
         <value>A new game of French Tarot is starting! (3-5 players)</value>
     </data>
+    <data name="tarot_lobby_cancelled" xml:space="preserve">
+        <value>The game was cancelled before it started.</value>
+    </data>
     <data name="tarot_players_label" xml:space="preserve">
         <value>Players</value>
     </data>

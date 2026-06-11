@@ -867,6 +867,9 @@
     <data name="tarot_lobby_intro" xml:space="preserve">
         <value>Eine neue Tarot-Partie beginnt! (3 bis 5 Spieler)</value>
     </data>
+    <data name="tarot_lobby_cancelled" xml:space="preserve">
+        <value>Das Spiel wurde abgebrochen, bevor es begonnen hat.</value>
+    </data>
     <data name="tarot_players_label" xml:space="preserve">
         <value>Spieler</value>
     </data>

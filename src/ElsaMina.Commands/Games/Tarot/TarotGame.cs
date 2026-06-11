@@ -622,9 +622,17 @@ public class TarotGame : Game, ITarotGame
         }
     }
 
-    public void Cancel()
+    public async Task CancelAsync()
     {
         StopTurnTimer();
+
+        // Cancelled while still gathering players: replace the lobby panel (with its join/start buttons)
+        // by a clear "cancelled" notice so the public panel does not look like it is still open.
+        if (Phase == TarotPhase.Lobby)
+        {
+            await RenderCancelledPublicAsync();
+        }
+
         Phase = TarotPhase.Finished;
         ClearSubPanel();
         OnEnd();
@@ -894,6 +902,13 @@ public class TarotGame : Game, ITarotGame
 
         var html = await _templatesManager.GetTemplateAsync(templateKey, BuildModel(null));
         Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), forceResend || _publicPanelInitialized);
+        _publicPanelInitialized = true;
+    }
+
+    private async Task RenderCancelledPublicAsync()
+    {
+        var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotCancelled", BuildModel(null));
+        Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), _publicPanelInitialized);
         _publicPanelInitialized = true;
     }
 

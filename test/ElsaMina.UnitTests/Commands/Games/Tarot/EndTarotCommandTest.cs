@@ -47,10 +47,7 @@ public class EndTarotCommandTest
 
         await _command.RunAsync(_context);
 
-        using (Assert.EnterMultipleScope())
-        {
-            game.Received(1).Cancel();
-            _context.Received(1).ReplyLocalizedMessage("tarot_game_cancelled");
-        }
+        await game.Received(1).CancelAsync();
+        _context.Received(1).ReplyLocalizedMessage("tarot_game_cancelled");
     }
 }
