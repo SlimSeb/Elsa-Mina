@@ -35,7 +35,7 @@ public class AskElsaCommand : Command
         _conversationHistory = conversationHistory;
     }
 
-    public override Rank RequiredRank => Rank.Voiced;
+    public override Rank RequiredRank => Rank.Driver;
     public override string HelpMessageKey => "ask_elsa_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
