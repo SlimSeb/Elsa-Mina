@@ -40,7 +40,7 @@ public class BeloteGameTest
     }
 
     [TearDown]
-    public void TearDown() => _game.Cancel();
+    public async Task TearDown() => await _game.CancelAsync();
 
     private static IUser User(string id)
     {
@@ -191,6 +191,37 @@ public class BeloteGameTest
         }
 
         _context.Received().ReplyLocalizedMessage("belote_bid_suit_forbidden");
+    }
+
+    [Test]
+    public async Task Test_Cancel_ShouldRenderCancelledPanel_WhenInLobby()
+    {
+        await _game.BeginJoinPhaseAsync();
+        await _game.JoinAsync(User("player1"));
+        _templatesManager.ClearReceivedCalls();
+        _context.ClearReceivedCalls();
+
+        await _game.CancelAsync();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Phase, Is.EqualTo(BelotePhase.Finished));
+            await _templatesManager.Received(1)
+                .GetTemplateAsync("Games/Belote/BeloteCancelled", Arg.Any<object>());
+            _context.Received(1).SendUpdatableHtml($"belote-{_game.GameId}", Arg.Any<string>(), true);
+        }
+    }
+
+    [Test]
+    public async Task Test_Cancel_ShouldNotRenderCancelledPanel_WhenAlreadyPlaying()
+    {
+        await JoinAndStartAsync();
+        _templatesManager.ClearReceivedCalls();
+
+        await _game.CancelAsync();
+
+        await _templatesManager.DidNotReceive()
+            .GetTemplateAsync("Games/Belote/BeloteCancelled", Arg.Any<object>());
     }
 
     [Test]

@@ -1500,6 +1500,9 @@
     <data name="belote_lobby_intro" xml:space="preserve">
         <value>A new game of Belote is starting! (4 players, 2 teams)</value>
     </data>
+    <data name="belote_lobby_cancelled" xml:space="preserve">
+        <value>The game was cancelled before it started.</value>
+    </data>
     <data name="belote_players_label" xml:space="preserve">
         <value>Players</value>
     </data>

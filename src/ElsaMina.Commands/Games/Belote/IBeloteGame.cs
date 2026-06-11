@@ -38,5 +38,5 @@ public interface IBeloteGame : IGame
     Task<(bool Success, string MessageKey, object[] Args)> RequestSubAsync(IUser user);
     Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user, string targetPlayerId);
     IReadOnlyCollection<BeloteCard> GetLegalMoves(BelotePlayer player);
-    void Cancel();
+    Task CancelAsync();
 }

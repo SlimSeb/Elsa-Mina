@@ -1494,6 +1494,9 @@
     <data name="belote_lobby_intro" xml:space="preserve">
         <value>Sta per iniziare una nuova partita di Belote! (4 giocatori, 2 squadre)</value>
     </data>
+    <data name="belote_lobby_cancelled" xml:space="preserve">
+        <value>La partita è stata annullata prima di iniziare.</value>
+    </data>
     <data name="belote_players_label" xml:space="preserve">
         <value>Giocatori</value>
     </data>
