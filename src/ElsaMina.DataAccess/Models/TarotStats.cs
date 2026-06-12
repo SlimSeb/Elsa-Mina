@@ -6,6 +6,7 @@ namespace ElsaMina.DataAccess.Models;
 public class TarotStats
 {
     public string UserId { get; set; }
+    public string UserName { get; set; }
 
     /// <summary>
     /// Cumulative net score across every deal, stored in half-points (real value × 2) to stay an exact integer.
