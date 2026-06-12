@@ -20,9 +20,10 @@
         _ => emptyStyle
     };
 
-    const string keyRow1 = "QWERTYUIOP";
-    const string keyRow2 = "ASDFGHJKL";
-    const string keyRow3 = "ZXCVBNM";
+    var isAzerty = Model.Culture.TwoLetterISOLanguageName == "fr";
+    var keyRow1 = isAzerty ? "AZERTYUIOP" : "QWERTYUIOP";
+    var keyRow2 = isAzerty ? "QSDFGHJKLM" : "ASDFGHJKL";
+    var keyRow3 = isAzerty ? "WXCVBN" : "ZXCVBNM";
 
     var keyCommand = $"/botmsg {Model.BotName},{Model.Trigger}wlkey {Model.RoomId}, ";
 }
