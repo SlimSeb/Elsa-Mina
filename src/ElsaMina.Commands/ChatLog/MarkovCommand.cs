@@ -16,7 +16,7 @@ public class MarkovCommand : Command
     private const int STATE_SIZE = 2;
     private const int MAX_WORDS = 40;
     private const int TRIES = 50;
-    private const double TEMPERATURE = 1.385;
+    private const double TEMPERATURE = 1.75;
 
     private readonly IFileSharingService _fileSharingService;
     private readonly IClockService _clockService;

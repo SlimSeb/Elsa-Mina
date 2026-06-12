@@ -4,7 +4,7 @@ public enum BotPersonality
 {
     Silly,
     Helpful,
-    Noir,
+    Detective,
     Philosopher,
     Redditor,
     Gremlin,

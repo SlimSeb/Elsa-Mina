@@ -15,7 +15,7 @@ public static class BotPersonalities
         {
             [BotPersonality.Silly] = "personality_prompt_silly",
             [BotPersonality.Helpful] = "personality_prompt_helpful",
-            [BotPersonality.Noir] = "personality_prompt_noir",
+            [BotPersonality.Detective] = "personality_prompt_noir",
             [BotPersonality.Philosopher] = "personality_prompt_philosopher",
             [BotPersonality.Redditor] = "personality_prompt_redditor",
             [BotPersonality.Gremlin] = "personality_prompt_gremlin",
@@ -37,9 +37,8 @@ public static class BotPersonalities
             ["assistant"] = BotPersonality.Helpful,
             ["helper"] = BotPersonality.Helpful,
             ["smart"] = BotPersonality.Helpful,
-            ["noir"] = BotPersonality.Noir,
-            ["detective"] = BotPersonality.Noir,
-            ["gumshoe"] = BotPersonality.Noir,
+            ["detective"] = BotPersonality.Detective,
+            ["gumshoe"] = BotPersonality.Detective,
             ["philosopher"] = BotPersonality.Philosopher,
             ["philosophe"] = BotPersonality.Philosopher,
             ["philo"] = BotPersonality.Philosopher,
@@ -77,7 +76,7 @@ public static class BotPersonalities
     /// <summary>
     /// Comma-separated list of the primary names users can pass to switch personality.
     /// </summary>
-    public static string AvailableNames => "silly, helpful, noir, philosopher, redditor, gremlin, franchouillard, anxious, boomer, intern, linkedin, gymbro, cryptobro";
+    public static string AvailableNames => "silly, helpful, detective, philosopher, redditor, gremlin, franchouillard, anxious, boomer, intern, linkedin, gymbro, cryptobro";
 
     public static string GetPromptKey(BotPersonality personality) => PROMPT_KEYS[personality];
 

@@ -70,7 +70,7 @@
         <value>Stelle Elsa eine Frage mit KI. Syntax: -ask &lt;Frage&gt;</value>
     </data>
     <data name="personality_help" xml:space="preserve">
-        <value>Ändert die KI-Persönlichkeit für diesen Raum oder zeigt die aktuelle an. Syntax: -personality [silly|helpful|noir|philosopher|redditor|gremlin|franchouillard|anxious|boomer|intern|linkedin|gymbro|cryptobro]</value>
+        <value>Ändert die KI-Persönlichkeit für diesen Raum oder zeigt die aktuelle an. Syntax: -personality [silly|helpful|detective|philosopher|redditor|gremlin|franchouillard|anxious|boomer|intern|linkedin|gymbro|cryptobro]</value>
     </data>
     <data name="personality_current" xml:space="preserve">
         <value>Aktuelle KI-Persönlichkeit: {0}. Verfügbar: {1}.</value>

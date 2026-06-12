@@ -70,7 +70,7 @@
         <value>Faça uma pergunta à Elsa usando IA. Sintaxe : -ask &lt;pergunta&gt;</value>
     </data>
     <data name="personality_help" xml:space="preserve">
-        <value>Altera a personalidade da IA nesta sala, ou mostra a atual. Sintaxe: -personality [silly|helpful|noir|philosopher|redditor|gremlin|franchouillard|anxious|boomer|intern|linkedin|gymbro|cryptobro]</value>
+        <value>Altera a personalidade da IA nesta sala, ou mostra a atual. Sintaxe: -personality [silly|helpful|detective|philosopher|redditor|gremlin|franchouillard|anxious|boomer|intern|linkedin|gymbro|cryptobro]</value>
     </data>
     <data name="personality_current" xml:space="preserve">
         <value>Personalidade da IA atual: {0}. Disponíveis: {1}.</value>
