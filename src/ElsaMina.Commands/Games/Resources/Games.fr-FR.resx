@@ -1098,8 +1098,8 @@
     <data name="wordle_panel_player" xml:space="preserve">
         <value>Joueur : {0}</value>
     </data>
-    <data name="wordle_panel_how_to_guess" xml:space="preserve">
-        <value>Tapez votre proposition :</value>
+    <data name="wordle_panel_spoiler_warning" xml:space="preserve">
+        <value>Utilisez le clavier ci-dessous pour jouer. N'écrivez pas le mot dans le chat pour ne pas le divulgâcher aux autres !</value>
     </data>
     <data name="wordle_panel_solved" xml:space="preserve">
         <value>Résolu en {0} essais !</value>

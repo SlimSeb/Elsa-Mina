@@ -1092,8 +1092,8 @@
     <data name="wordle_panel_player" xml:space="preserve">
         <value>Jugador: {0}</value>
     </data>
-    <data name="wordle_panel_how_to_guess" xml:space="preserve">
-        <value>Escribe tu intento:</value>
+    <data name="wordle_panel_spoiler_warning" xml:space="preserve">
+        <value>Usa el teclado de abajo para jugar. ¡No escribas la palabra en el chat para no estropearla a los demás!</value>
     </data>
     <data name="wordle_panel_solved" xml:space="preserve">
         <value>¡Resuelto en {0} intentos!</value>

@@ -402,7 +402,6 @@ public partial class CommandModule : Module
         builder.RegisterCommand<LightsOutLeaderboardCommand>();
 
         builder.RegisterCommand<StartWordleCommand>();
-        builder.RegisterCommand<GuessWordleCommand>();
         builder.RegisterCommand<WordleKeyCommand>();
         builder.RegisterCommand<EndWordleCommand>();
         builder.RegisterCommand<WordleLeaderboardCommand>();

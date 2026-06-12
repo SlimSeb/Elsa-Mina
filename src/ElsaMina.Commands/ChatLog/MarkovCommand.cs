@@ -16,6 +16,7 @@ public class MarkovCommand : Command
     private const int STATE_SIZE = 2;
     private const int MAX_WORDS = 40;
     private const int TRIES = 50;
+    private const double TEMPERATURE = 1.385;
 
     private readonly IFileSharingService _fileSharingService;
     private readonly IClockService _clockService;
@@ -86,7 +87,7 @@ public class MarkovCommand : Command
         // Each chat message is treated as its own sentence, so NewlineText (which splits
         // on line boundaries rather than punctuation) is the right model for chat logs
         var corpus = string.Join('\n', messages);
-        var model = new NewlineText(corpus, stateSize: STATE_SIZE);
+        var model = new NewlineText(corpus, stateSize: STATE_SIZE, normalize: true, temperature: TEMPERATURE);
         var sentence = model.MakeSentence(tries: TRIES, testOutput: false, maxWords: MAX_WORDS);
 
         if (string.IsNullOrWhiteSpace(sentence))
@@ -97,7 +98,7 @@ public class MarkovCommand : Command
 
         context.Reply(sentence);
     }
-
+    
     private bool IsUsableMessage(string message)
     {
         if (string.IsNullOrWhiteSpace(message))

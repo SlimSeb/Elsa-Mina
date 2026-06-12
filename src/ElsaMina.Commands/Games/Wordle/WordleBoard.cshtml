@@ -24,10 +24,6 @@
     const string keyRow2 = "ASDFGHJKL";
     const string keyRow3 = "ZXCVBNM";
 
-    var guessCommand = Model.IsPrivateMode
-        ? $"/botmsg {Model.BotName},{Model.Trigger}wlg {Model.RoomId}, "
-        : $"{Model.Trigger}wlg ";
-
     var keyCommand = $"/botmsg {Model.BotName},{Model.Trigger}wlkey {Model.RoomId}, ";
 }
 
@@ -81,8 +77,7 @@
                 <br/>
                 @if (game.IsRoundActive)
                 {
-                    <span>@GetString("wordle_panel_how_to_guess")</span><br/>
-                    <code>@guessCommand@(new string('?', game.WordLength))</code><br/>
+                    <span style="color: #c04a4a; font-weight: bold;">@GetString("wordle_panel_spoiler_warning")</span><br/>
                 }
                 else if (game.IsWon)
                 {
