@@ -58,6 +58,15 @@
     <data name="markov_not_enough_data" xml:space="preserve">
         <value>Nicht genügend Nachrichten, um einen Satz zu erzeugen.</value>
     </data>
+    <data name="markov_start_help" xml:space="preserve">
+        <value>Syntax: markovstart &lt;Wörter&gt; - erzeugt einen zufälligen Satz aus den Logs des Monats, der mit den angegebenen Wörtern beginnt.</value>
+    </data>
+    <data name="markov_start_no_words" xml:space="preserve">
+        <value>Bitte gib einige Wörter an, mit denen der Satz beginnen soll.</value>
+    </data>
+    <data name="markov_start_not_found" xml:space="preserve">
+        <value>Es konnte kein Satz erzeugt werden, der mit diesen Wörtern beginnt.</value>
+    </data>
     <data name="activity_heatmap_help" xml:space="preserve">
         <value>Syntax: activityheatmap &lt;Benutzer&gt;[, &lt;Raum&gt;][, &lt;JJJJ-MM&gt;] - erstellt eine Heatmap der Chat-Aktivität des Benutzers nach Tag und Stunde (Zeitzone des Raums). Standardmäßig der aktuelle Monat.</value>
     </data>

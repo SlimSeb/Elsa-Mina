@@ -58,6 +58,15 @@
     <data name="markov_not_enough_data" xml:space="preserve">
         <value>Pas assez de messages pour générer une phrase.</value>
     </data>
+    <data name="markov_start_help" xml:space="preserve">
+        <value>Syntaxe : markovstart &lt;mots&gt; - génère une phrase aléatoire à partir des logs du mois qui commence par les mots donnés.</value>
+    </data>
+    <data name="markov_start_no_words" xml:space="preserve">
+        <value>Merci d'indiquer quelques mots pour commencer la phrase.</value>
+    </data>
+    <data name="markov_start_not_found" xml:space="preserve">
+        <value>Impossible de générer une phrase commençant par ces mots.</value>
+    </data>
     <data name="activity_heatmap_help" xml:space="preserve">
         <value>Syntaxe : activityheatmap &lt;pseudo&gt;[, &lt;salon&gt;][, &lt;aaaa-MM&gt;] - génère une carte de chaleur de l'activité du pseudo par jour et par heure (fuseau horaire du salon). Le mois par défaut est le mois en cours.</value>
     </data>

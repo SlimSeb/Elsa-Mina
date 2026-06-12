@@ -338,6 +338,7 @@ public partial class CommandModule : Module
         builder.RegisterCommand<LinecountCommand>();
         builder.RegisterCommand<TopUsersCommand>();
         builder.RegisterCommand<MarkovCommand>();
+        builder.RegisterCommand<MarkovStartCommand>();
 
         RegisterRandomImagesCommands(builder);
         RegisterTournamentCommands(builder);

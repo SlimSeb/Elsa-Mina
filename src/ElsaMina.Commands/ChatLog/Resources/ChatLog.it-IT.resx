@@ -58,6 +58,15 @@
     <data name="markov_not_enough_data" xml:space="preserve">
         <value>Messaggi insufficienti per generare una frase.</value>
     </data>
+    <data name="markov_start_help" xml:space="preserve">
+        <value>Sintassi: markovstart &lt;parole&gt; - genera una frase casuale dai log del mese che inizia con le parole indicate.</value>
+    </data>
+    <data name="markov_start_no_words" xml:space="preserve">
+        <value>Indica alcune parole con cui iniziare la frase.</value>
+    </data>
+    <data name="markov_start_not_found" xml:space="preserve">
+        <value>Impossibile generare una frase che inizi con quelle parole.</value>
+    </data>
     <data name="activity_heatmap_help" xml:space="preserve">
         <value>Sintassi: activityheatmap &lt;utente&gt;[, &lt;stanza&gt;][, &lt;aaaa-MM&gt;] - genera una mappa di calore dell'attività dell'utente per giorno e ora (fuso orario della stanza). Il mese predefinito è quello corrente.</value>
     </data>
