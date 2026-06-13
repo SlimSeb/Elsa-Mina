@@ -14,7 +14,7 @@ public class OldElsaCommand : Command
         _oldElsaModelService = oldElsaModelService;
     }
 
-    public override Rank RequiredRank => Rank.Voiced;
+    public override Rank RequiredRank => Rank.Admin;
     public override string HelpMessageKey => "old_elsa_help";
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
