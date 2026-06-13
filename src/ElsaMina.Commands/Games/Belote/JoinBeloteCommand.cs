@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Belote;
 
-[NamedCommand("belotejoin", Aliases = ["bj"])]
+[NamedCommand("belotejoin")]
 public class JoinBeloteCommand : Command
 {
     public override Rank RequiredRank => Rank.Regular;

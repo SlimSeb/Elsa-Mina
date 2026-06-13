@@ -166,5 +166,7 @@ public class GamesModule : Module
         builder.RegisterType<TwentyFortyEightGame>().AsSelf();
         builder.RegisterType<TwentyFortyEightGameManager>().As<ITwentyFortyEightGameManager>().SingleInstance();
         builder.RegisterType<VoltorbFlipGameManager>().As<IVoltorbFlipGameManager>().SingleInstance();
+        builder.RegisterType<BlackjackGame>().AsSelf();
+        builder.RegisterType<BlackjackGameManager>().As<IBlackjackGameManager>().SingleInstance();
     }
 }

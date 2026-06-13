@@ -67,6 +67,21 @@
     <data name="markov_start_not_found" xml:space="preserve">
         <value>Es konnte kein Satz erzeugt werden, der mit diesen Wörtern beginnt.</value>
     </data>
+    <data name="old_elsa_help" xml:space="preserve">
+        <value>Syntax: oldelsa - erzeugt einen zufälligen Satz, der den alten Elsa-Bot imitiert.</value>
+    </data>
+    <data name="old_elsa_not_found" xml:space="preserve">
+        <value>Es konnte kein Satz erzeugt werden.</value>
+    </data>
+    <data name="old_elsa_start_help" xml:space="preserve">
+        <value>Syntax: oldelsastart &lt;Wörter&gt; - erzeugt einen Satz, der den alten Elsa-Bot imitiert und mit den angegebenen Wörtern beginnt.</value>
+    </data>
+    <data name="old_elsa_start_no_words" xml:space="preserve">
+        <value>Bitte gib einige Wörter an, mit denen der Satz beginnen soll.</value>
+    </data>
+    <data name="old_elsa_start_not_found" xml:space="preserve">
+        <value>Es konnte kein Satz erzeugt werden, der mit diesen Wörtern beginnt.</value>
+    </data>
     <data name="activity_heatmap_help" xml:space="preserve">
         <value>Syntax: activityheatmap &lt;Benutzer&gt;[, &lt;Raum&gt;][, &lt;JJJJ-MM&gt;] - erstellt eine Heatmap der Chat-Aktivität des Benutzers nach Tag und Stunde (Zeitzone des Raums). Standardmäßig der aktuelle Monat.</value>
     </data>

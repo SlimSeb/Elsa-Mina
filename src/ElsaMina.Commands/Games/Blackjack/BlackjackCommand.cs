@@ -6,7 +6,7 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Blackjack;
 
-[NamedCommand("blackjack", Aliases = ["bj"])]
+[NamedCommand("blackjack")]
 public class BlackjackCommand : Command
 {
     private readonly IDependencyContainerService _dependencyContainerService;

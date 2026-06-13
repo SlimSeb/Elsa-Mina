@@ -48,6 +48,10 @@ public class RoomsModule : Module
         builder.RegisterCommand<TopUsersCommand>();
         builder.RegisterCommand<MarkovCommand>();
         builder.RegisterCommand<MarkovStartCommand>();
+        builder.RegisterCommand<OldElsaCommand>();
+        builder.RegisterCommand<OldElsaStartCommand>();
+
+        builder.RegisterType<OldElsaModelService>().As<IOldElsaModelService>().SingleInstance();
 
         builder.RegisterHandler<JoinPhraseHandler>();
         builder.RegisterHandler<PollEndHandler>();

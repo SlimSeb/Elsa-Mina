@@ -67,6 +67,21 @@
     <data name="markov_start_not_found" xml:space="preserve">
         <value>Impossible de générer une phrase commençant par ces mots.</value>
     </data>
+    <data name="old_elsa_help" xml:space="preserve">
+        <value>Syntaxe : oldelsa - génère une phrase aléatoire imitant l'ancien bot Elsa.</value>
+    </data>
+    <data name="old_elsa_not_found" xml:space="preserve">
+        <value>Impossible de générer une phrase.</value>
+    </data>
+    <data name="old_elsa_start_help" xml:space="preserve">
+        <value>Syntaxe : oldelsastart &lt;mots&gt; - génère une phrase imitant l'ancien bot Elsa commençant par les mots donnés.</value>
+    </data>
+    <data name="old_elsa_start_no_words" xml:space="preserve">
+        <value>Veuillez fournir des mots pour commencer la phrase.</value>
+    </data>
+    <data name="old_elsa_start_not_found" xml:space="preserve">
+        <value>Impossible de générer une phrase commençant par ces mots.</value>
+    </data>
     <data name="activity_heatmap_help" xml:space="preserve">
         <value>Syntaxe : activityheatmap &lt;pseudo&gt;[, &lt;salon&gt;][, &lt;aaaa-MM&gt;] - génère une carte de chaleur de l'activité du pseudo par jour et par heure (fuseau horaire du salon). Le mois par défaut est le mois en cours.</value>
     </data>
