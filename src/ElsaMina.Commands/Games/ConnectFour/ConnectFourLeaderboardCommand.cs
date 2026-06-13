@@ -29,6 +29,7 @@ public class ConnectFourLeaderboardCommand : Command
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var leaderboard = await dbContext.ConnectFourRatings
+            .Include(entry => entry.User)
             .OrderByDescending(entry => entry.Rating)
             .Take(MAX_COUNT)
             .ToListAsync(cancellationToken);

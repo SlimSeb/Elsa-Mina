@@ -6,6 +6,7 @@ namespace ElsaMina.DataAccess.Models;
 public class ConnectFourRating
 {
     public string UserId { get; set; }
+    public SavedUser User { get; set; }
     public int Rating { get; set; }
     public int Wins { get; set; }
     public int Losses { get; set; }

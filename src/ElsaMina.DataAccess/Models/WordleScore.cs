@@ -6,6 +6,7 @@ namespace ElsaMina.DataAccess.Models;
 public class WordleScore
 {
     public string UserId { get; set; }
+    public SavedUser User { get; set; }
     public int GamesPlayed { get; set; }
     public int Wins { get; set; }
     public int CurrentStreak { get; set; }

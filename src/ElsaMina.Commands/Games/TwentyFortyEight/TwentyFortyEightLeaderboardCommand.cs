@@ -29,6 +29,7 @@ public class TwentyFortyEightLeaderboardCommand : Command
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var leaderboard = await dbContext.TwentyFortyEightScores
+            .Include(entry => entry.User)
             .OrderByDescending(entry => entry.BestScore)
             .ThenByDescending(entry => entry.Wins)
             .Take(MAX_COUNT)

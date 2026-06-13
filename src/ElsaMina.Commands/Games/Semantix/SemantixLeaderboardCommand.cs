@@ -29,6 +29,7 @@ public class SemantixLeaderboardCommand : Command
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var leaderboard = await dbContext.SemantixScores
+            .Include(entry => entry.User)
             .AsNoTracking()
             .OrderByDescending(entry => entry.Wins)
             .ThenByDescending(entry => entry.MaxStreak)

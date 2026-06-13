@@ -63,6 +63,7 @@ public class ConnectFourLeaderboardCommandTest
     {
         await using (var setupContext = new BotDbContext(_dbOptions))
         {
+            setupContext.Users.Add(new SavedUser { UserId = "alice", UserName = "Alice" });
             setupContext.ConnectFourRatings.Add(new ConnectFourRating { UserId = "alice", Rating = 1100 });
             await setupContext.SaveChangesAsync();
         }
@@ -79,6 +80,9 @@ public class ConnectFourLeaderboardCommandTest
     {
         await using (var setupContext = new BotDbContext(_dbOptions))
         {
+            setupContext.Users.Add(new SavedUser { UserId = "alice", UserName = "Alice" });
+            setupContext.Users.Add(new SavedUser { UserId = "bob", UserName = "Bob" });
+            setupContext.Users.Add(new SavedUser { UserId = "carol", UserName = "Carol" });
             setupContext.ConnectFourRatings.Add(new ConnectFourRating { UserId = "alice", Rating = 900 });
             setupContext.ConnectFourRatings.Add(new ConnectFourRating { UserId = "bob", Rating = 1200 });
             setupContext.ConnectFourRatings.Add(new ConnectFourRating { UserId = "carol", Rating = 1050 });
@@ -102,6 +106,7 @@ public class ConnectFourLeaderboardCommandTest
         {
             for (var i = 0; i < 25; i++)
             {
+                setupContext.Users.Add(new SavedUser { UserId = $"user{i}", UserName = $"User{i}" });
                 setupContext.ConnectFourRatings.Add(new ConnectFourRating
                 {
                     UserId = $"user{i}", Rating = 1000 + i
@@ -122,6 +127,7 @@ public class ConnectFourLeaderboardCommandTest
     {
         await using (var setupContext = new BotDbContext(_dbOptions))
         {
+            setupContext.Users.Add(new SavedUser { UserId = "alice", UserName = "Alice" });
             setupContext.ConnectFourRatings.Add(new ConnectFourRating { UserId = "alice", Rating = 1000 });
             await setupContext.SaveChangesAsync();
         }

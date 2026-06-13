@@ -12,7 +12,7 @@ public class VoltorbFlipLevelConfiguration : IEntityTypeConfiguration<VoltorbFli
             .HasKey(record => record.UserId);
 
         builder
-            .HasOne<SavedUser>()
+            .HasOne(record => record.User)
             .WithOne(user => user.VoltorbFlipLevel)
             .HasForeignKey<VoltorbFlipLevel>(record => record.UserId)
             .OnDelete(DeleteBehavior.Cascade);

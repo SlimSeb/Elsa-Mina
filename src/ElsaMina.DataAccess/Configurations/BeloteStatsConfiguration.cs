@@ -11,7 +11,7 @@ public class BeloteStatsConfiguration : IEntityTypeConfiguration<BeloteStats>
         builder.HasKey(stats => stats.UserId);
 
         builder
-            .HasOne<SavedUser>()
+            .HasOne(stats => stats.User)
             .WithMany()
             .HasForeignKey(stats => stats.UserId)
             .OnDelete(DeleteBehavior.Cascade);

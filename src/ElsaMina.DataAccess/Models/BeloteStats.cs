@@ -6,6 +6,7 @@ namespace ElsaMina.DataAccess.Models;
 public class BeloteStats
 {
     public string UserId { get; set; }
+    public SavedUser User { get; set; }
 
     /// <summary>
     /// Cumulative round score across every deal (whole points).

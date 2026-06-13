@@ -29,6 +29,7 @@ public class FloodItLeaderboardCommand : Command
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var leaderboard = await dbContext.FloodItScores
+            .Include(entry => entry.User)
             .OrderByDescending(entry => entry.Level)
             .ThenByDescending(entry => entry.TotalStars)
             .ThenBy(entry => entry.BestMoves)

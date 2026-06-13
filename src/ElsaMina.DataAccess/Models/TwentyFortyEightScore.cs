@@ -6,6 +6,7 @@ namespace ElsaMina.DataAccess.Models;
 public class TwentyFortyEightScore
 {
     public string UserId { get; set; }
+    public SavedUser User { get; set; }
     public int Wins { get; set; }
     public int BestScore { get; set; }
 

@@ -11,7 +11,7 @@ public class ConnectFourRatingConfiguration : IEntityTypeConfiguration<ConnectFo
         builder.HasKey(rating => rating.UserId);
 
         builder
-            .HasOne<SavedUser>()
+            .HasOne(rating => rating.User)
             .WithOne(user => user.ConnectFourRating)
             .HasForeignKey<ConnectFourRating>(rating => rating.UserId)
             .OnDelete(DeleteBehavior.Cascade);

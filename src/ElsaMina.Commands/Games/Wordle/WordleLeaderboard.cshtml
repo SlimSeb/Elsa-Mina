@@ -24,7 +24,7 @@
             var entry = Model.Leaderboard[i];
             <tr>
                 <td style="text-align:center">@(i + 1)</td>
-                <td style="color: @entry.UserId.ToColorHexCodeWithCustoms()">@entry.UserId</td>
+                <td style="color: @entry.UserId.ToColorHexCodeWithCustoms()">@(entry.User?.UserName ?? entry.UserId)</td>
                 <td style="text-align:center">@entry.MaxStreak</td>
                 <td style="text-align:center">@entry.Wins</td>
                 <td style="text-align:center">@entry.GamesPlayed</td>

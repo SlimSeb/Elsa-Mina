@@ -11,7 +11,7 @@ public class WordleScoreConfiguration : IEntityTypeConfiguration<WordleScore>
         builder.HasKey(score => score.UserId);
 
         builder
-            .HasOne<SavedUser>()
+            .HasOne(score => score.User)
             .WithMany()
             .HasForeignKey(score => score.UserId)
             .OnDelete(DeleteBehavior.Cascade);

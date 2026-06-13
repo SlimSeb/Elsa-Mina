@@ -29,6 +29,7 @@ public class TarotLeaderboardCommand : Command
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var leaderboard = await dbContext.TarotStats
+            .Include(entry => entry.User)
             .OrderByDescending(entry => entry.TotalScoreHalfPoints)
             .Take(MAX_COUNT)
             .ToListAsync(cancellationToken);

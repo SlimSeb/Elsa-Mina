@@ -29,6 +29,7 @@ public class BeloteLeaderboardCommand : Command
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var leaderboard = await dbContext.BeloteStats
+            .Include(entry => entry.User)
             .OrderByDescending(entry => entry.TotalScore)
             .Take(MAX_COUNT)
             .ToListAsync(cancellationToken);

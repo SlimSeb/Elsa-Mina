@@ -29,6 +29,7 @@ public class WordleLeaderboardCommand : Command
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var leaderboard = await dbContext.WordleScores
+            .Include(entry => entry.User)
             .OrderByDescending(entry => entry.MaxStreak)
             .ThenByDescending(entry => entry.Wins)
             .ThenByDescending(entry => entry.CurrentStreak)

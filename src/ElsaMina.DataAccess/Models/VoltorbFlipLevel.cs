@@ -6,4 +6,5 @@ public class VoltorbFlipLevel
     public int MaxLevel { get; set; }
     public int Coins { get; set; }
     public string UserId { get; set; }
+    public SavedUser User { get; set; }
 }

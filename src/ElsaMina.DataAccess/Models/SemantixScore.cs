@@ -6,6 +6,7 @@ namespace ElsaMina.DataAccess.Models;
 public class SemantixScore
 {
     public string UserId { get; set; }
+    public SavedUser User { get; set; }
     public int GamesPlayed { get; set; }
     public int Wins { get; set; }
     public int TotalGuesses { get; set; }

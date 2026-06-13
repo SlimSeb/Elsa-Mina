@@ -67,6 +67,9 @@ public class VoltorbFlipLeaderboardCommandTest
     {
         using (var setupContext = new BotDbContext(_dbOptions))
         {
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user1", UserName = "User1" });
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user2", UserName = "User2" });
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user3", UserName = "User3" });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user1", Level = 3, MaxLevel = 5, Coins = 150 });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user2", Level = 5, MaxLevel = 7, Coins = 300 });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user3", Level = 1, MaxLevel = 3, Coins = 50 });
@@ -86,6 +89,9 @@ public class VoltorbFlipLeaderboardCommandTest
     {
         using (var setupContext = new BotDbContext(_dbOptions))
         {
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user1", UserName = "User1" });
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user2", UserName = "User2" });
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user3", UserName = "User3" });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user1", Level = 2, MaxLevel = 2, Coins = 100 });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user2", Level = 5, MaxLevel = 5, Coins = 500 });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user3", Level = 3, MaxLevel = 3, Coins = 250 });
@@ -111,6 +117,7 @@ public class VoltorbFlipLeaderboardCommandTest
         {
             for (int i = 1; i <= 25; i++)
             {
+                await setupContext.Users.AddAsync(new SavedUser { UserId = $"user{i}", UserName = $"User{i}" });
                 await setupContext.VoltorbFlipLevels.AddAsync(
                     new VoltorbFlipLevel { UserId = $"user{i}", Level = i, MaxLevel = i, Coins = i * 10 });
             }
@@ -131,6 +138,7 @@ public class VoltorbFlipLeaderboardCommandTest
     {
         using (var setupContext = new BotDbContext(_dbOptions))
         {
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user1", UserName = "User1" });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user1", Level = 3, MaxLevel = 3, Coins = 100 });
             await setupContext.SaveChangesAsync();
         }
@@ -148,6 +156,7 @@ public class VoltorbFlipLeaderboardCommandTest
     {
         using (var setupContext = new BotDbContext(_dbOptions))
         {
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user1", UserName = "User1" });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user1", Level = 1, MaxLevel = 1, Coins = 10 });
             await setupContext.SaveChangesAsync();
         }
@@ -164,6 +173,7 @@ public class VoltorbFlipLeaderboardCommandTest
     {
         using (var setupContext = new BotDbContext(_dbOptions))
         {
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user1", UserName = "User1" });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user1", Level = 2, MaxLevel = 2, Coins = 100 });
             await setupContext.SaveChangesAsync();
         }
@@ -195,6 +205,7 @@ public class VoltorbFlipLeaderboardCommandTest
     {
         using (var setupContext = new BotDbContext(_dbOptions))
         {
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "onlyuser", UserName = "OnlyUser" });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "onlyuser", Level = 7, MaxLevel = 8, Coins = 999 });
             await setupContext.SaveChangesAsync();
         }
@@ -218,6 +229,8 @@ public class VoltorbFlipLeaderboardCommandTest
     {
         using (var setupContext = new BotDbContext(_dbOptions))
         {
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user1", UserName = "User1" });
+            await setupContext.Users.AddAsync(new SavedUser { UserId = "user2", UserName = "User2" });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user1", Level = 3, MaxLevel = 6, Coins = 200 });
             await setupContext.VoltorbFlipLevels.AddAsync(new VoltorbFlipLevel { UserId = "user2", Level = 1, MaxLevel = 8, Coins = 400 });
             await setupContext.SaveChangesAsync();

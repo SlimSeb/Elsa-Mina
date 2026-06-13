@@ -11,7 +11,7 @@ public class TwentyFortyEightScoreConfiguration : IEntityTypeConfiguration<Twent
         builder.HasKey(score => score.UserId);
 
         builder
-            .HasOne<SavedUser>()
+            .HasOne(score => score.User)
             .WithOne(user => user.TwentyFortyEightScore)
             .HasForeignKey<TwentyFortyEightScore>(score => score.UserId)
             .OnDelete(DeleteBehavior.Cascade);

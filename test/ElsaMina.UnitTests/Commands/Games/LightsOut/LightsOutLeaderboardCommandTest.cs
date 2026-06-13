@@ -66,6 +66,7 @@ public class LightsOutLeaderboardCommandTest
     {
         await using (var db = new BotDbContext(_dbOptions))
         {
+            db.Users.Add(new SavedUser { UserId = "user1", UserName = "User1" });
             db.LightsOutScores.Add(new LightsOutScore
             {
                 UserId = "user1", Level = 5, BestMoves = 10, TotalStars = 12
@@ -85,6 +86,12 @@ public class LightsOutLeaderboardCommandTest
     {
         await using (var db = new BotDbContext(_dbOptions))
         {
+            db.Users.AddRange(
+                new SavedUser { UserId = "a", UserName = "A" },
+                new SavedUser { UserId = "b", UserName = "B" },
+                new SavedUser { UserId = "c", UserName = "C" },
+                new SavedUser { UserId = "d", UserName = "D" }
+            );
             db.LightsOutScores.AddRange(
                 new LightsOutScore { UserId = "a", Level = 3, BestMoves = 5, TotalStars = 10 },
                 new LightsOutScore { UserId = "b", Level = 5, BestMoves = 8, TotalStars = 20 },
@@ -117,6 +124,7 @@ public class LightsOutLeaderboardCommandTest
         {
             for (var i = 0; i < 25; i++)
             {
+                db.Users.Add(new SavedUser { UserId = $"user{i}", UserName = $"User{i}" });
                 db.LightsOutScores.Add(new LightsOutScore
                 {
                     UserId = $"user{i}", Level = i + 1, BestMoves = 5, TotalStars = i

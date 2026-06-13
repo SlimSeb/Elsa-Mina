@@ -30,6 +30,7 @@ public class VoltorbFlipLeaderboardCommand : Command
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var leaderboard = await dbContext.VoltorbFlipLevels
+            .Include(entry => entry.User)
             .OrderByDescending(entry => entry.Coins)
             .Take(MAX_COUNT)
             .ToListAsync(cancellationToken);
