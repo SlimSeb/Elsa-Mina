@@ -2,6 +2,7 @@
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Handlers.DefaultHandlers;
@@ -11,6 +12,7 @@ public abstract class CommandMessageHandler : MessageHandler
     private readonly IRoomsManager _roomsManager;
     private readonly IConfiguration _configuration;
     private readonly ICommandExecutor _commandExecutor;
+    private readonly string _botUserId;
     
     protected CommandMessageHandler(IContextFactory contextFactory,
         IRoomsManager roomsManager,
@@ -20,6 +22,7 @@ public abstract class CommandMessageHandler : MessageHandler
         _roomsManager = roomsManager;
         _configuration = configuration;
         _commandExecutor = commandExecutor;
+        _botUserId = configuration.Name.ToLowerAlphaNum();
     }
 
     public override async Task HandleMessageAsync(IContext context, CancellationToken cancellationToken = default)
@@ -34,6 +37,11 @@ public abstract class CommandMessageHandler : MessageHandler
         }
 
         if (context.Command == null)
+        {
+            return;
+        }
+
+        if (context.Sender.UserId == _botUserId)
         {
             return;
         }
