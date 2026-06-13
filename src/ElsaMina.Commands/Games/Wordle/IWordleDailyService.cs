@@ -12,9 +12,10 @@ public interface IWordleDailyService
     IReadOnlyList<string> GetWords(CultureInfo culture);
 
     /// <summary>
-    /// The answer of the day, identical for every player of the same language and changing once per UTC day.
+    /// The answer of the day, identical for every player of the same language in the same room and
+    /// changing once per day, where the day boundary is computed in the given timezone.
     /// </summary>
-    string GetDailyAnswer(CultureInfo culture);
+    string GetDailyAnswer(CultureInfo culture, TimeZoneInfo timeZone);
 
     Task<bool> HasPlayedTodayAsync(string userId, CancellationToken cancellationToken = default);
 }

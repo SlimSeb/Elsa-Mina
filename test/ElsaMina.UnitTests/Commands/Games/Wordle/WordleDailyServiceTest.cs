@@ -17,6 +17,10 @@ public class WordleDailyServiceTest
     private static readonly string[] ENGLISH_WORDS = ["apple", "crane", "level", "ghost"];
     private static readonly string[] FRENCH_WORDS = ["avion", "blanc", "carte", "champ"];
 
+    // UTC+14, the earliest timezone, so a UTC instant late in the day can already be the next day there.
+    private static readonly TimeZoneInfo AHEAD_TIMEZONE =
+        TimeZoneInfo.CreateCustomTimeZone("ahead", TimeSpan.FromHours(14), "ahead", "ahead");
+
     private WordleDailyService _service;
     private IClockService _mockClockService;
     private IDataManager _mockDataManager;
@@ -41,8 +45,8 @@ public class WordleDailyServiceTest
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 10, 0, 0, DateTimeKind.Utc));
 
         // Act
-        var first = _service.GetDailyAnswer(ENGLISH);
-        var second = _service.GetDailyAnswer(ENGLISH);
+        var first = _service.GetDailyAnswer(ENGLISH, TimeZoneInfo.Utc);
+        var second = _service.GetDailyAnswer(ENGLISH, TimeZoneInfo.Utc);
 
         // Assert
         Assert.That(first, Is.EqualTo(second));
@@ -54,11 +58,11 @@ public class WordleDailyServiceTest
     {
         // Arrange
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 0, 1, 0, DateTimeKind.Utc));
-        var morning = _service.GetDailyAnswer(ENGLISH);
+        var morning = _service.GetDailyAnswer(ENGLISH, TimeZoneInfo.Utc);
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 23, 59, 0, DateTimeKind.Utc));
 
         // Act
-        var night = _service.GetDailyAnswer(ENGLISH);
+        var night = _service.GetDailyAnswer(ENGLISH, TimeZoneInfo.Utc);
 
         // Assert
         Assert.That(morning, Is.EqualTo(night));
@@ -69,14 +73,42 @@ public class WordleDailyServiceTest
     {
         // Arrange
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc));
-        var day1 = _service.GetDailyAnswer(ENGLISH);
+        var day1 = _service.GetDailyAnswer(ENGLISH, TimeZoneInfo.Utc);
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 2, 12, 0, 0, DateTimeKind.Utc));
 
         // Act
-        var day2 = _service.GetDailyAnswer(ENGLISH);
+        var day2 = _service.GetDailyAnswer(ENGLISH, TimeZoneInfo.Utc);
 
         // Assert
         Assert.That(day1, Is.Not.EqualTo(day2));
+    }
+
+    [Test]
+    public void Test_GetDailyAnswer_ShouldTakeRoomTimezoneIntoAccount()
+    {
+        // Arrange: late on June 1st UTC is already June 2nd in a UTC+14 timezone.
+        _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 23, 0, 0, DateTimeKind.Utc));
+
+        // Act
+        var utcAnswer = _service.GetDailyAnswer(ENGLISH, TimeZoneInfo.Utc);
+        var aheadAnswer = _service.GetDailyAnswer(ENGLISH, AHEAD_TIMEZONE);
+
+        // Assert
+        Assert.That(utcAnswer, Is.Not.EqualTo(aheadAnswer));
+    }
+
+    [Test]
+    public void Test_GetDailyAnswer_ShouldReturnEmpty_WhenNoWordsAvailable()
+    {
+        // Arrange
+        _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc));
+        _mockDataManager.WordleWords.Returns(new List<string>());
+
+        // Act
+        var answer = _service.GetDailyAnswer(ENGLISH, TimeZoneInfo.Utc);
+
+        // Assert
+        Assert.That(answer, Is.Empty);
     }
 
     [Test]
@@ -86,7 +118,7 @@ public class WordleDailyServiceTest
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc));
 
         // Act
-        var answer = _service.GetDailyAnswer(ENGLISH);
+        var answer = _service.GetDailyAnswer(ENGLISH, TimeZoneInfo.Utc);
 
         // Assert
         Assert.That(answer, Is.EqualTo(answer.ToUpperInvariant()));
@@ -100,7 +132,7 @@ public class WordleDailyServiceTest
         _mockClockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc));
 
         // Act
-        var answer = _service.GetDailyAnswer(FRENCH);
+        var answer = _service.GetDailyAnswer(FRENCH, TimeZoneInfo.Utc);
 
         // Assert
         Assert.That(FRENCH_ANSWERS, Does.Contain(answer));

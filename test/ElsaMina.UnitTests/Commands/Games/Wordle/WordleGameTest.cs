@@ -56,7 +56,8 @@ public class WordleGameTest
             "about", "fight", "joker", "mound", "vivid", "stomp", "cabin"
         };
         _mockDailyService.GetWords(Arg.Any<CultureInfo>()).Returns(vocabulary);
-        _mockDailyService.GetDailyAnswer(Arg.Any<CultureInfo>()).Returns(answer.ToUpperInvariant());
+        _mockDailyService.GetDailyAnswer(Arg.Any<CultureInfo>(), Arg.Any<TimeZoneInfo>())
+            .Returns(answer.ToUpperInvariant());
         await _game.StartNewRound();
     }
 

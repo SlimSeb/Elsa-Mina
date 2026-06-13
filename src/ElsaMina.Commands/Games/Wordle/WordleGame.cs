@@ -71,7 +71,7 @@ public class WordleGame : Game, IWordleGame
         _validWords = _dailyService.GetWords(Context.Culture)
             .Select(word => word.ToUpperInvariant())
             .ToHashSet();
-        Answer = _dailyService.GetDailyAnswer(Context.Culture);
+        Answer = _dailyService.GetDailyAnswer(Context.Culture, Context.Room?.TimeZone ?? TimeZoneInfo.Utc);
         _guesses.Clear();
         _keyboardStates.Clear();
         CurrentInput = string.Empty;
