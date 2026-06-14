@@ -1,5 +1,4 @@
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
@@ -18,7 +17,6 @@ public class WordleGame : Game, IWordleGame
     private readonly IConfiguration _configuration;
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly IWordleDailyService _dailyService;
-    private readonly IClockService _clockService;
 
     private readonly int _gameId;
     private readonly PeriodicTimerRunner _inactivityTimer;
@@ -32,14 +30,12 @@ public class WordleGame : Game, IWordleGame
     public WordleGame(ITemplatesManager templatesManager,
         IConfiguration configuration,
         IBotDbContextFactory dbContextFactory,
-        IWordleDailyService dailyService,
-        IClockService clockService)
+        IWordleDailyService dailyService)
     {
         _templatesManager = templatesManager;
         _configuration = configuration;
         _dbContextFactory = dbContextFactory;
         _dailyService = dailyService;
-        _clockService = clockService;
         _inactivityTimer = new PeriodicTimerRunner(WordleConstants.INACTIVITY_TIMEOUT, OnInactivityTimeout, runOnce: true);
 
         _gameId = NextGameId++;
@@ -65,13 +61,14 @@ public class WordleGame : Game, IWordleGame
     private string EffectiveRoomId => IsPrivateMode ? TargetRoomId : Context.RoomId;
     private string PublicPanelId => $"wordle-{EffectiveRoomId}-{_gameId}";
     private string PrivatePanelId => $"wordle-panel-{EffectiveRoomId}-{_gameId}";
+    private TimeZoneInfo RoomTimeZone => Context.Room?.TimeZone ?? TimeZoneInfo.Utc;
 
     public async Task StartNewRound()
     {
         _validWords = _dailyService.GetWords(Context.Culture)
             .Select(word => word.ToUpperInvariant())
             .ToHashSet();
-        Answer = _dailyService.GetDailyAnswer(Context.Culture, Context.Room?.TimeZone ?? TimeZoneInfo.Utc);
+        Answer = _dailyService.GetDailyAnswer(Context.Culture, RoomTimeZone);
         _guesses.Clear();
         _keyboardStates.Clear();
         CurrentInput = string.Empty;
@@ -304,7 +301,7 @@ public class WordleGame : Game, IWordleGame
             }
 
             record.GamesPlayed++;
-            record.LastPlayedDate = DateOnly.FromDateTime(_clockService.CurrentUtcDateTime);
+            record.LastPlayedDate = _dailyService.GetToday(RoomTimeZone);
             await db.SaveChangesAsync();
         }
         catch
@@ -331,7 +328,7 @@ public class WordleGame : Game, IWordleGame
                 record = new WordleScore
                 {
                     UserId = Owner.UserId,
-                    LastPlayedDate = DateOnly.FromDateTime(_clockService.CurrentUtcDateTime)
+                    LastPlayedDate = _dailyService.GetToday(RoomTimeZone)
                 };
                 await db.WordleScores.AddAsync(record);
             }

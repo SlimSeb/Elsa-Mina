@@ -1,7 +1,6 @@
 using System.Globalization;
 using ElsaMina.Commands.Games.Wordle;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
@@ -17,7 +16,6 @@ public class WordleGameTest
     private IConfiguration _configuration;
     private IBotDbContextFactory _mockDbContextFactory;
     private IWordleDailyService _mockDailyService;
-    private IClockService _mockClockService;
     private IContext _context;
     private IUser _owner;
 
@@ -28,7 +26,6 @@ public class WordleGameTest
         _configuration = Substitute.For<IConfiguration>();
         _mockDbContextFactory = Substitute.For<IBotDbContextFactory>();
         _mockDailyService = Substitute.For<IWordleDailyService>();
-        _mockClockService = Substitute.For<IClockService>();
         _context = Substitute.For<IContext>();
 
         _configuration.Name.Returns("Bot");
@@ -41,7 +38,7 @@ public class WordleGameTest
         _owner.Name.Returns("Player");
 
         _game = new WordleGame(_mockTemplatesManager, _configuration,
-            _mockDbContextFactory, _mockDailyService, _mockClockService)
+            _mockDbContextFactory, _mockDailyService)
         {
             Context = _context,
             Owner = _owner

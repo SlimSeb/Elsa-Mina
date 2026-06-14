@@ -4,8 +4,6 @@ namespace ElsaMina.Commands.Games.Wordle;
 
 public interface IWordleDailyService
 {
-    DateOnly Today { get; }
-
     /// <summary>
     /// The word list for the given culture (French when the culture is French, English otherwise).
     /// </summary>
@@ -17,5 +15,11 @@ public interface IWordleDailyService
     /// </summary>
     string GetDailyAnswer(CultureInfo culture, TimeZoneInfo timeZone);
 
-    Task<bool> HasPlayedTodayAsync(string userId, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// The current calendar day in the given timezone, used as the wordle "day".
+    /// </summary>
+    DateOnly GetToday(TimeZoneInfo timeZone);
+
+    Task<bool> HasPlayedTodayAsync(string userId, TimeZoneInfo timeZone,
+        CancellationToken cancellationToken = default);
 }

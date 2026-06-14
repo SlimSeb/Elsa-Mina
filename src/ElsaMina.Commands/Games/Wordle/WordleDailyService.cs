@@ -20,7 +20,12 @@ public class WordleDailyService : IWordleDailyService
         _dbContextFactory = dbContextFactory;
     }
 
-    public DateOnly Today => DateOnly.FromDateTime(_clockService.CurrentUtcDateTime);
+    public DateOnly GetToday(TimeZoneInfo timeZone)
+    {
+        var localDateTime = TimeZoneInfo.ConvertTimeFromUtc(_clockService.CurrentUtcDateTime,
+            timeZone ?? TimeZoneInfo.Utc);
+        return DateOnly.FromDateTime(localDateTime);
+    }
 
     public IReadOnlyList<string> GetWords(CultureInfo culture)
     {
@@ -42,24 +47,17 @@ public class WordleDailyService : IWordleDailyService
 
         // Seed the picker with the current calendar day in the room timezone so the answer is the
         // same for every player in that room and only changes once a day.
-        var localDate = TodayIn(timeZone);
-        var index = new Random(localDate.DayNumber).Next(words.Count);
+        var index = new Random(GetToday(timeZone).DayNumber).Next(words.Count);
         return words[index].ToUpperInvariant();
     }
 
-    public async Task<bool> HasPlayedTodayAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<bool> HasPlayedTodayAsync(string userId, TimeZoneInfo timeZone,
+        CancellationToken cancellationToken = default)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var record = await dbContext.WordleScores
             .AsNoTracking()
             .FirstOrDefaultAsync(score => score.UserId == userId, cancellationToken);
-        return record?.LastPlayedDate == Today;
-    }
-
-    private DateOnly TodayIn(TimeZoneInfo timeZone)
-    {
-        var localDateTime = TimeZoneInfo.ConvertTimeFromUtc(_clockService.CurrentUtcDateTime,
-            timeZone ?? TimeZoneInfo.Utc);
-        return DateOnly.FromDateTime(localDateTime);
+        return record?.LastPlayedDate == GetToday(timeZone);
     }
 }

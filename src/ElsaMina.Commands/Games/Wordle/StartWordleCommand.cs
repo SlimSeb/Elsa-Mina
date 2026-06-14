@@ -77,7 +77,8 @@ public class StartWordleCommand : Command
             return;
         }
 
-        if (await _dailyService.HasPlayedTodayAsync(userId, cancellationToken))
+        var timeZone = _roomsManager.GetRoom(roomId)?.TimeZone ?? TimeZoneInfo.Utc;
+        if (await _dailyService.HasPlayedTodayAsync(userId, timeZone, cancellationToken))
         {
             context.ReplyLocalizedMessage("wordle_already_played_today");
             return;
