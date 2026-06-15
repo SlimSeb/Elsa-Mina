@@ -24,11 +24,15 @@ public class TarotGame : Game, ITarotGame
     private readonly List<TarotPlayer> _players = [];
     private readonly List<TarotCard> _dog = [];
     private readonly List<TarotCard> _pendingDiscards = [];
+    private readonly List<(TarotPlayer Player, int Tier)> _declaredPoignees = [];
 
     private int _currentTurnIndex;
     private int _firstLeaderIndex;
     private int _takerIndex = -1;
     private int _partnerIndex = -1;
+    private int _takerSideTrickWins;
+    private int _cardsPlayedTotal;
+    private bool _slamAnnounced;
     private bool _publicPanelInitialized;
     private bool _subPanelInitialized;
 
@@ -87,6 +91,9 @@ public class TarotGame : Game, ITarotGame
     public int TotalTricks => _players.Count > 0 ? TarotConstants.HAND_SIZE[_players.Count] : 0;
 
     public TarotScoreResult ScoreResult { get; private set; }
+
+    public bool SlamAnnounced => _slamAnnounced;
+    public IReadOnlyList<(TarotPlayer Player, int Tier)> DeclaredPoignees => _declaredPoignees;
 
     private string PublicPanelId => $"tarot-{GameId}";
     private string PlayerPageId => $"tarot-{GameId}";
@@ -272,9 +279,11 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
-        if (card is null || !card.IsKing)
+        // A taker holding all four kings must instead call a queen to find their partner.
+        var mustCallQueen = TakerHoldsAllKings();
+        if (card is null || (mustCallQueen ? !card.IsQueen : !card.IsKing))
         {
-            Context.ReplyLocalizedMessage("tarot_call_must_be_king");
+            Context.ReplyLocalizedMessage(mustCallQueen ? "tarot_call_must_be_queen" : "tarot_call_must_be_king");
             return;
         }
 
@@ -381,6 +390,16 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
+        // Trumps may only be buried when there are not enough other cards to fill the dog, and even
+        // then only the minimum number that is forced.
+        var freelyDiscardable = Taker.Hand.Count(card => !card.IsKing && !card.IsOudler && !card.IsTrump);
+        var allowedTrumps = Math.Max(0, dogSize - freelyDiscardable);
+        if (cards.Count(card => card.IsTrump) > allowedTrumps)
+        {
+            Context.ReplyLocalizedMessage("tarot_discard_trump_not_allowed");
+            return;
+        }
+
         foreach (var card in cards)
         {
             Taker.Hand.Remove(card);
@@ -412,6 +431,8 @@ public class TarotGame : Game, ITarotGame
 
         Phase = TarotPhase.Playing;
         TrickNumber = 1;
+        _takerSideTrickWins = 0;
+        _cardsPlayedTotal = 0;
         CurrentTrick = new TarotTrick();
         _currentTurnIndex = _firstLeaderIndex;
 
@@ -453,6 +474,8 @@ public class TarotGame : Game, ITarotGame
 
         player.Hand.Remove(card);
         CurrentTrick.Add(player, card);
+        player.HasPlayed = true;
+        _cardsPlayedTotal++;
 
         if (CalledKing is not null && card == CalledKing && player.IsPartner)
         {
@@ -474,6 +497,8 @@ public class TarotGame : Game, ITarotGame
     private async Task ResolveTrickAsync()
     {
         var winner = CurrentTrick.DetermineWinner();
+        var winnerIsTakerSide = winner.IsTaker || winner.IsPartner;
+        var isLastTrick = _players.All(player => player.Hand.Count == 0);
         var (excuseOwner, excusePlayCard) = CurrentTrick.Plays.FirstOrDefault(play => play.Card.IsExcuse);
 
         foreach (var (_, card) in CurrentTrick.Plays.Where(play => !play.Card.IsExcuse))
@@ -483,17 +508,12 @@ public class TarotGame : Game, ITarotGame
 
         if (excusePlayCard is not null)
         {
-            excuseOwner.CapturedPile.Add(excusePlayCard);
+            HandleExcuseCapture(excuseOwner, excusePlayCard, winner, winnerIsTakerSide, isLastTrick);
+        }
 
-            if (excuseOwner != winner)
-            {
-                var lowCard = excuseOwner.CapturedPile.FirstOrDefault(card => !card.IsExcuse && card.HalfPoints == 1);
-                if (lowCard is not null)
-                {
-                    excuseOwner.CapturedPile.Remove(lowCard);
-                    winner.CapturedPile.Add(lowCard);
-                }
-            }
+        if (winnerIsTakerSide)
+        {
+            _takerSideTrickWins++;
         }
 
         Context.ReplyLocalizedMessage("tarot_trick_won", winner.Name, TrickNumber);
@@ -518,6 +538,37 @@ public class TarotGame : Game, ITarotGame
         CurrentTrick = new TarotTrick();
         await RenderAllAsync();
         RestartTurnTimer();
+    }
+
+    /// <summary>
+    /// Assigns the Excuse once a trick is resolved. On ordinary tricks the owner keeps it and pays a
+    /// low card to the trick winner. On the last trick the Excuse goes to the trick winner instead,
+    /// unless the side that played it has just made a slam (then it stays, and wins).
+    /// </summary>
+    private void HandleExcuseCapture(TarotPlayer excuseOwner, TarotCard excuseCard, TarotPlayer winner,
+        bool winnerIsTakerSide, bool isLastTrick)
+    {
+        if (isLastTrick)
+        {
+            var takerSideWins = _takerSideTrickWins + (winnerIsTakerSide ? 1 : 0);
+            var excuseOwnerIsTakerSide = excuseOwner.IsTaker || excuseOwner.IsPartner;
+            var ownerSlam = excuseOwnerIsTakerSide ? takerSideWins == TotalTricks : takerSideWins == 0;
+
+            (ownerSlam ? excuseOwner : winner).CapturedPile.Add(excuseCard);
+            return;
+        }
+
+        excuseOwner.CapturedPile.Add(excuseCard);
+
+        if (excuseOwner != winner)
+        {
+            var lowCard = excuseOwner.CapturedPile.FirstOrDefault(card => !card.IsExcuse && card.HalfPoints == 1);
+            if (lowCard is not null)
+            {
+                excuseOwner.CapturedPile.Remove(lowCard);
+                winner.CapturedPile.Add(lowCard);
+            }
+        }
     }
 
     /// <summary>
@@ -579,6 +630,133 @@ public class TarotGame : Game, ITarotGame
 
     #endregion
 
+    #region Declarations (poignée & chelem)
+
+    /// <summary>
+    /// The poignée tier (1 single, 2 double, 3 triple, 0 none) the player could declare with their
+    /// current hand. The Excuse may stand in for a missing trump to reach a tier.
+    /// </summary>
+    public int GetDeclarablePoigneeTier(TarotPlayer player)
+    {
+        if (player is null || _players.Count == 0)
+        {
+            return 0;
+        }
+
+        var thresholds = TarotConstants.POIGNEE_THRESHOLDS[_players.Count];
+        var trumpCount = player.Hand.Count(card => card.IsTrump);
+        var hasExcuse = player.Hand.Any(card => card.IsExcuse);
+
+        var tier = TierForTrumpCount(trumpCount, thresholds);
+        if (hasExcuse)
+        {
+            tier = Math.Max(tier, TierForTrumpCount(trumpCount + 1, thresholds));
+        }
+
+        return tier;
+    }
+
+    private static int TierForTrumpCount(int count, IReadOnlyList<int> thresholds)
+    {
+        if (count >= thresholds[2])
+        {
+            return 3;
+        }
+
+        if (count >= thresholds[1])
+        {
+            return 2;
+        }
+
+        return count >= thresholds[0] ? 1 : 0;
+    }
+
+    public bool CanDeclarePoignee(TarotPlayer player) =>
+        Phase == TarotPhase.Playing && player is { HasPlayed: false, HasDeclaredPoignee: false }
+        && GetDeclarablePoigneeTier(player) > 0;
+
+    public bool CanAnnounceSlam(TarotPlayer player) =>
+        Phase == TarotPhase.Playing && _cardsPlayedTotal == 0 && !_slamAnnounced && player is { IsTaker: true };
+
+    public Task DeclarePoigneeAsync(IUser user) => RunActionAsync(() => DeclarePoigneeCoreAsync(user));
+
+    private async Task DeclarePoigneeCoreAsync(IUser user)
+    {
+        if (Phase != TarotPhase.Playing)
+        {
+            return;
+        }
+
+        var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
+        if (player is null || player.HasPlayed || player.HasDeclaredPoignee)
+        {
+            return;
+        }
+
+        var tier = GetDeclarablePoigneeTier(player);
+        if (tier == 0)
+        {
+            Context.ReplyLocalizedMessage("tarot_poignee_not_enough");
+            return;
+        }
+
+        player.HasDeclaredPoignee = true;
+        player.PoigneeTier = tier;
+        _declaredPoignees.Add((player, tier));
+
+        var trumps = player.Hand
+            .Where(card => card.IsTrump || card.IsExcuse)
+            .OrderBy(card => card.IsExcuse ? 0 : card.Rank)
+            .Select(card => card.ToDisplay(Context.Culture));
+        Context.ReplyLocalizedMessage("tarot_poignee_declared", player.Name,
+            Context.GetString($"tarot_poignee_tier_{tier}"), string.Join(" ", trumps));
+
+        await RenderAllAsync();
+    }
+
+    public Task AnnounceSlamAsync(IUser user) => RunActionAsync(() => AnnounceSlamCoreAsync(user));
+
+    private async Task AnnounceSlamCoreAsync(IUser user)
+    {
+        if (Phase != TarotPhase.Playing || _cardsPlayedTotal > 0 || _slamAnnounced)
+        {
+            return;
+        }
+
+        if (Taker?.UserId != user.UserId)
+        {
+            Context.ReplyLocalizedMessage("tarot_slam_taker_only");
+            return;
+        }
+
+        _slamAnnounced = true;
+        Context.ReplyLocalizedMessage("tarot_slam_announced", Taker.Name);
+        await RenderAllAsync();
+    }
+
+    private int ComputePetitAuBoutSide()
+    {
+        if (LastTrick is null || LastTrickWinner is null)
+        {
+            return 0;
+        }
+
+        var petitInLastTrick = LastTrick.Plays
+            .Any(play => play.Card.IsTrump && play.Card.Rank == TarotCard.PETIT);
+        if (!petitInLastTrick)
+        {
+            return 0;
+        }
+
+        return LastTrickWinner.IsTaker || LastTrickWinner.IsPartner ? 1 : -1;
+    }
+
+    private bool TakerHoldsAllKings() =>
+        Taker is not null && new[] { TarotSuit.Hearts, TarotSuit.Spades, TarotSuit.Diamonds, TarotSuit.Clubs }
+            .All(suit => Taker.Hand.Contains(new TarotCard(suit, TarotCard.KING)));
+
+    #endregion
+
     #region Scoring & ending
 
     private async Task FinishAsync()
@@ -587,8 +765,13 @@ public class TarotGame : Game, ITarotGame
         var takerHalfPoints = takerSide.Sum(player => player.CapturedPile.Sum(card => card.HalfPoints));
         var oudlerCount = takerSide.Sum(player => player.CapturedPile.Count(card => card.IsOudler));
 
+        var petitAuBoutSide = ComputePetitAuBoutSide();
+        var poigneeHalfPoints = _declaredPoignees.Sum(declaration => TarotConstants.POIGNEE_HALF_POINTS[declaration.Tier]);
+        var slamWinnerSide = _takerSideTrickWins == TotalTricks ? 1 : _takerSideTrickWins == 0 ? -1 : 0;
+
         ScoreResult = TarotScorer.Compute(takerHalfPoints, oudlerCount, HighestBid,
-            _players.Count, _takerIndex, _partnerIndex);
+            _players.Count, _takerIndex, _partnerIndex,
+            petitAuBoutSide, poigneeHalfPoints, slamWinnerSide, _slamAnnounced);
 
         Phase = TarotPhase.Finished;
         StopTurnTimer();
@@ -810,10 +993,13 @@ public class TarotGame : Game, ITarotGame
 
     private TarotCard ChooseAutoKing()
     {
-        var kings = new[] { TarotSuit.Hearts, TarotSuit.Spades, TarotSuit.Diamonds, TarotSuit.Clubs }
-            .Select(suit => new TarotCard(suit, TarotCard.KING))
-            .ToList();
-        return kings.FirstOrDefault(king => !Taker.Hand.Contains(king)) ?? kings[0];
+        var suits = new[] { TarotSuit.Hearts, TarotSuit.Spades, TarotSuit.Diamonds, TarotSuit.Clubs };
+
+        // With all four kings in hand, a queen must be called instead. Otherwise call a king the taker
+        // does not hold, so a partner is found.
+        var rank = TakerHoldsAllKings() ? TarotCard.QUEEN : TarotCard.KING;
+        var candidates = suits.Select(suit => new TarotCard(suit, rank)).ToList();
+        return candidates.FirstOrDefault(card => !Taker.Hand.Contains(card)) ?? candidates[0];
     }
 
     private List<TarotCard> ChooseAutoDiscards()

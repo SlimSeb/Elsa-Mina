@@ -89,6 +89,23 @@
             </p>
         }
 
+        @if (game.SlamAnnounced)
+        {
+            <p style="text-align:center;margin:4px 0;color:#f7d774;font-weight:bold">
+                @GetString("tarot_slam_banner", game.Taker?.Name)
+            </p>
+        }
+
+        @if (game.DeclaredPoignees.Count > 0)
+        {
+            <p style="text-align:center;margin:4px 0;color:#cabbd9;font-size:0.85em">
+                @foreach (var declaration in game.DeclaredPoignees)
+                {
+                    <text>@GetString("tarot_poignee_banner", declaration.Player.Name, GetString($"tarot_poignee_tier_{declaration.Tier}")) </text>
+                }
+            </p>
+        }
+
         @if (game.LastTrick != null && game.LastTrickWinner != null)
         {
             <p style="text-align:center;margin:8px 0 2px 0;color:#b9a9c9;font-size:0.85em">

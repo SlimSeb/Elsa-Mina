@@ -20,6 +20,9 @@
     }
 
     string CardSize(TarotCard card) => card.IsExcuse ? "1.45em" : "1.15em";
+
+    string SideLabel(int side) => GetString(side >= 0 ? "tarot_side_attack" : "tarot_side_defense");
+    string Points(int halfPoints) => (Math.Abs(halfPoints) / 2.0).ToString("0.#", Model.Culture);
 }
 
 <div style="background:#2d2535;color:#ece7f2;border:1px solid #5a4a6a;border-radius:6px;padding:10px">
@@ -63,6 +66,32 @@
                 result.Multiplier,
                 (result.ContractValueHalfPoints / 2.0).ToString("0.#", Model.Culture))
         </p>
+
+        @if (result.PetitAuBoutSide != 0)
+        {
+            <p style="text-align:center;margin:2px 0;color:#f7d774;font-size:0.9em">
+                @GetString("tarot_result_petit_au_bout", Points(result.PetitAuBoutHalfPoints), SideLabel(result.PetitAuBoutSide))
+            </p>
+        }
+        @if (result.PoigneeHalfPoints > 0)
+        {
+            <p style="text-align:center;margin:2px 0;color:#f7d774;font-size:0.9em">
+                @GetString("tarot_result_poignee", Points(result.PoigneeHalfPoints), SideLabel(result.Made ? 1 : -1))
+            </p>
+        }
+        @if (result.SlamWinnerSide != 0 || result.SlamAnnounced)
+        {
+            <p style="text-align:center;margin:2px 0;color:#f7d774;font-size:0.9em">
+                @if (result.SlamWinnerSide != 0)
+                {
+                    <text>@GetString("tarot_result_slam_made", Points(result.SlamHalfPoints), SideLabel(result.SlamWinnerSide))</text>
+                }
+                else
+                {
+                    <text>@GetString("tarot_result_slam_failed", Points(result.SlamHalfPoints))</text>
+                }
+            </p>
+        }
 
         <table style="margin:8px auto 0 auto;border-collapse:collapse">
             <tr style="border-bottom:1px solid #5a4a6a">

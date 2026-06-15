@@ -53,6 +53,37 @@ public static class TarotConstants
     };
 
     /// <summary>
+    /// Bonus, in half-points (10 points × 2), awarded to the side that wins the Petit in the last trick.
+    /// Added before the contract multiplier is applied.
+    /// </summary>
+    public const int PETIT_AU_BOUT_HALF_POINTS = 20;
+
+    /// <summary>
+    /// Minimum number of trumps a player must hold to declare a poignée (handful), keyed by player count.
+    /// Index 0 = single, 1 = double, 2 = triple.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<int, int[]> POIGNEE_THRESHOLDS = new Dictionary<int, int[]>
+    {
+        [3] = [13, 15, 18],
+        [4] = [10, 13, 15],
+        [5] = [8, 10, 13]
+    };
+
+    /// <summary>
+    /// Flat poignée bonus in half-points (20/30/40 points × 2) for single/double/triple. Index 0 is unused.
+    /// Awarded to the side that wins the deal, regardless of which side declared it.
+    /// </summary>
+    public static readonly int[] POIGNEE_HALF_POINTS = [0, 40, 60, 80];
+
+    /// <summary>
+    /// Chelem (slam) bonus in half-points (× 2): announced &amp; achieved, achieved without announcing,
+    /// and announced but failed.
+    /// </summary>
+    public const int SLAM_ANNOUNCED_HALF_POINTS = 800;
+    public const int SLAM_UNANNOUNCED_HALF_POINTS = 400;
+    public const int SLAM_FAILED_HALF_POINTS = 400;
+
+    /// <summary>
     /// Builds a full, ordered 78-card French Tarot deck (56 suit cards + 21 trumps + the Excuse).
     /// </summary>
     public static List<TarotCard> BuildDeck()

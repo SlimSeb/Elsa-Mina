@@ -68,6 +68,20 @@
         </p>
     }
 
+    @if (game.Phase == TarotPhase.Playing && (game.CanDeclarePoignee(viewer) || game.CanAnnounceSlam(viewer)))
+    {
+        <p style="margin:4px 0">
+            @if (game.CanAnnounceSlam(viewer))
+            {
+                <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tarotchelem @Model.RoomId,">@GetString("tarot_announce_slam_button")</button>
+            }
+            @if (game.CanDeclarePoignee(viewer))
+            {
+                <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tarotpoignee @Model.RoomId,">@GetString("tarot_declare_poignee_button", GetString($"tarot_poignee_tier_{game.GetDeclarablePoigneeTier(viewer)}"))</button>
+            }
+        </p>
+    }
+
     <p style="margin:6px 0;line-height:2.4em">
         @foreach (var card in Model.ViewerHand)
         {

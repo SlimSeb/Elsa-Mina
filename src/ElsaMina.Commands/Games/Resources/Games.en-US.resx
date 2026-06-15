@@ -1029,6 +1029,63 @@
     <data name="tarot_last_played_label" xml:space="preserve">
         <value>Last card played</value>
     </data>
+    <data name="tarot_call_must_be_queen" xml:space="preserve">
+        <value>You hold all four kings, so you must call a queen.</value>
+    </data>
+    <data name="tarot_discard_trump_not_allowed" xml:space="preserve">
+        <value>You can only discard trumps when you have no other choice.</value>
+    </data>
+    <data name="tarot_poignee_not_enough" xml:space="preserve">
+        <value>You don't have enough trumps to declare a poignée.</value>
+    </data>
+    <data name="tarot_poignee_declared" xml:space="preserve">
+        <value>{0} declares a {1} poignée: {2}</value>
+    </data>
+    <data name="tarot_poignee_tier_1" xml:space="preserve">
+        <value>single</value>
+    </data>
+    <data name="tarot_poignee_tier_2" xml:space="preserve">
+        <value>double</value>
+    </data>
+    <data name="tarot_poignee_tier_3" xml:space="preserve">
+        <value>triple</value>
+    </data>
+    <data name="tarot_slam_taker_only" xml:space="preserve">
+        <value>Only the taker can announce a chelem.</value>
+    </data>
+    <data name="tarot_slam_announced" xml:space="preserve">
+        <value>{0} announces a chelem (slam)!</value>
+    </data>
+    <data name="tarot_slam_banner" xml:space="preserve">
+        <value>Chelem announced by {0}!</value>
+    </data>
+    <data name="tarot_poignee_banner" xml:space="preserve">
+        <value>{0}: {1} poignée</value>
+    </data>
+    <data name="tarot_declare_poignee_button" xml:space="preserve">
+        <value>Declare {0} poignée</value>
+    </data>
+    <data name="tarot_announce_slam_button" xml:space="preserve">
+        <value>Announce chelem</value>
+    </data>
+    <data name="tarot_side_attack" xml:space="preserve">
+        <value>attackers</value>
+    </data>
+    <data name="tarot_side_defense" xml:space="preserve">
+        <value>defenders</value>
+    </data>
+    <data name="tarot_result_petit_au_bout" xml:space="preserve">
+        <value>Petit au bout: +{0} pts for the {1}</value>
+    </data>
+    <data name="tarot_result_poignee" xml:space="preserve">
+        <value>Poignée: +{0} pts for the {1}</value>
+    </data>
+    <data name="tarot_result_slam_made" xml:space="preserve">
+        <value>Chelem: +{0} pts for the {1}</value>
+    </data>
+    <data name="tarot_result_slam_failed" xml:space="preserve">
+        <value>Chelem failed: -{0} pts</value>
+    </data>
     <data name="wordle_game_started" xml:space="preserve">
         <value>Wordle started! Guess the {0}-letter word. You have {1} tries.</value>
     </data>

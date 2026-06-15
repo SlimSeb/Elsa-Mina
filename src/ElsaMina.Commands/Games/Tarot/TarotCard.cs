@@ -20,6 +20,7 @@ public sealed record TarotCard(TarotSuit Suit, int Rank)
     public bool IsTrump => Suit == TarotSuit.Trump;
     public bool IsExcuse => Suit == TarotSuit.Excuse;
     public bool IsKing => !IsTrump && !IsExcuse && Rank == KING;
+    public bool IsQueen => !IsTrump && !IsExcuse && Rank == QUEEN;
 
     /// <summary>
     /// The three oudlers (bouts): the Petit (trump 1), the Monde (trump 21) and the Excuse.

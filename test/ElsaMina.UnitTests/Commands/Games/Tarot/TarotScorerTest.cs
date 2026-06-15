@@ -46,7 +46,7 @@ public class TarotScorerTest
     [Test]
     public void Test_Distribute_ShouldBeZeroSumForFourPlayers_WhenContractMade()
     {
-        var deltas = TarotScorer.Distribute(100, made: true, playerCount: 4, takerIndex: 0, partnerIndex: -1);
+        var deltas = TarotScorer.Distribute(100, playerCount: 4, takerIndex: 0, partnerIndex: -1);
 
         using (Assert.EnterMultipleScope())
         {
@@ -58,7 +58,7 @@ public class TarotScorerTest
     [Test]
     public void Test_Distribute_ShouldFlipSigns_WhenContractFailed()
     {
-        var deltas = TarotScorer.Distribute(100, made: false, playerCount: 4, takerIndex: 0, partnerIndex: -1);
+        var deltas = TarotScorer.Distribute(-100, playerCount: 4, takerIndex: 0, partnerIndex: -1);
 
         using (Assert.EnterMultipleScope())
         {
@@ -70,7 +70,7 @@ public class TarotScorerTest
     [Test]
     public void Test_Distribute_ShouldGiveTakerTwoSharesAndPartnerOne_ForFivePlayers()
     {
-        var deltas = TarotScorer.Distribute(100, made: true, playerCount: 5, takerIndex: 0, partnerIndex: 1);
+        var deltas = TarotScorer.Distribute(100, playerCount: 5, takerIndex: 0, partnerIndex: 1);
 
         using (Assert.EnterMultipleScope())
         {
@@ -82,7 +82,7 @@ public class TarotScorerTest
     [Test]
     public void Test_Distribute_ShouldGiveTakerFourShares_ForFivePlayersWithoutPartner()
     {
-        var deltas = TarotScorer.Distribute(100, made: true, playerCount: 5, takerIndex: 2, partnerIndex: -1);
+        var deltas = TarotScorer.Distribute(100, playerCount: 5, takerIndex: 2, partnerIndex: -1);
 
         using (Assert.EnterMultipleScope())
         {
@@ -94,12 +94,74 @@ public class TarotScorerTest
     [Test]
     public void Test_Distribute_ShouldBeZeroSumForThreePlayers()
     {
-        var deltas = TarotScorer.Distribute(100, made: true, playerCount: 3, takerIndex: 1, partnerIndex: -1);
+        var deltas = TarotScorer.Distribute(100, playerCount: 3, takerIndex: 1, partnerIndex: -1);
 
         using (Assert.EnterMultipleScope())
         {
             Assert.That(deltas, Is.EqualTo(new[] { -100, 200, -100 }));
             Assert.That(deltas.Sum(), Is.Zero);
+        }
+    }
+
+    [Test]
+    public void Test_Compute_ShouldAddPetitAuBout_FollowingTheMultiplier()
+    {
+        // 2 oudlers -> target 82; taker has 120 (diff 38). Garde (×2). Petit won by the taker side.
+        var result = TarotScorer.Compute(120, 2, TarotBid.Garde, 4, 0, -1, petitAuBoutSide: 1);
+
+        using (Assert.EnterMultipleScope())
+        {
+            // (50 + 38) × 2 = 176 contract, + 20 × 2 = 40 petit au bout = 216 per defender.
+            Assert.That(result.PetitAuBoutHalfPoints, Is.EqualTo(40));
+            Assert.That(result.PerDefenderHalfPoints, Is.EqualTo(216));
+            Assert.That(result.Deltas, Is.EqualTo(new[] { 648, -216, -216, -216 }));
+            Assert.That(result.Deltas.Sum(), Is.Zero);
+        }
+    }
+
+    [Test]
+    public void Test_Compute_ShouldGivePetitAuBoutToDefenders_EvenWhenContractFailed()
+    {
+        // Failed contract, but the defenders won the Petit at the end: the bonus goes their way.
+        var result = TarotScorer.Compute(70, 2, TarotBid.Petite, 4, 0, -1, petitAuBoutSide: -1);
+
+        using (Assert.EnterMultipleScope())
+        {
+            // -(50 + 12) × 1 = -62, minus the 20 petit au bout = -82 per defender.
+            Assert.That(result.Made, Is.False);
+            Assert.That(result.PerDefenderHalfPoints, Is.EqualTo(-82));
+            Assert.That(result.Deltas.Sum(), Is.Zero);
+        }
+    }
+
+    [Test]
+    public void Test_Compute_ShouldAddPoigneeToTheDealWinner_RegardlessOfDeclarer()
+    {
+        var made = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1, poigneeHalfPoints: 40);
+        var failed = TarotScorer.Compute(60, 2, TarotBid.Petite, 4, 0, -1, poigneeHalfPoints: 40);
+
+        using (Assert.EnterMultipleScope())
+        {
+            // Made: (50 + 38) + 40 = 128 to the taker side.
+            Assert.That(made.PerDefenderHalfPoints, Is.EqualTo(128));
+            // Failed: -(50 + 22) - 40 = -112; the poignée now benefits the defenders.
+            Assert.That(failed.PerDefenderHalfPoints, Is.EqualTo(-112));
+        }
+    }
+
+    [Test]
+    public void Test_Compute_ShouldAddSlamBonus()
+    {
+        var announced = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1,
+            slamWinnerSide: 1, slamAnnounced: true);
+        var unannounced = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1, slamWinnerSide: 1);
+        var failed = TarotScorer.Compute(60, 2, TarotBid.Petite, 4, 0, -1, slamAnnounced: true);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(announced.SlamHalfPoints, Is.EqualTo(800));
+            Assert.That(unannounced.SlamHalfPoints, Is.EqualTo(400));
+            Assert.That(failed.SlamHalfPoints, Is.EqualTo(-400));
         }
     }
 }

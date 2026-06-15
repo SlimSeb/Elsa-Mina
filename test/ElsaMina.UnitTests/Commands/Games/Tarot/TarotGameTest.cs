@@ -175,6 +175,63 @@ public class TarotGameTest
     }
 
     [Test]
+    public async Task Test_DeclarePoignee_ShouldRecordDeclaration_ForPlayerWithManyTrumps()
+    {
+        await JoinAndStartAsync(4);
+        await BidInOrderAsync(TarotBid.GardeSans, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass);
+
+        // In the deterministic deal, players[3] is dealt 16 trumps -> a triple poignée.
+        var poigneePlayer = _game.Players[3];
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Phase, Is.EqualTo(TarotPhase.Playing));
+            Assert.That(_game.GetDeclarablePoigneeTier(poigneePlayer), Is.EqualTo(3));
+            Assert.That(_game.CanDeclarePoignee(poigneePlayer), Is.True);
+        }
+
+        await _game.DeclarePoigneeAsync(poigneePlayer.User);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.DeclaredPoignees, Has.Count.EqualTo(1));
+            Assert.That(_game.DeclaredPoignees[0].Player, Is.EqualTo(poigneePlayer));
+            Assert.That(_game.DeclaredPoignees[0].Tier, Is.EqualTo(3));
+            Assert.That(poigneePlayer.HasDeclaredPoignee, Is.True);
+        }
+    }
+
+    [Test]
+    public async Task Test_AnnounceSlam_ShouldBeAllowedForTaker_BeforeFirstCard()
+    {
+        await JoinAndStartAsync(4);
+        await BidInOrderAsync(TarotBid.GardeSans, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass);
+
+        var taker = _game.Taker;
+        Assert.That(_game.CanAnnounceSlam(taker), Is.True);
+
+        await _game.AnnounceSlamAsync(taker.User);
+
+        Assert.That(_game.SlamAnnounced, Is.True);
+    }
+
+    [Test]
+    public async Task Test_AnnounceSlam_ShouldBeRejected_ForNonTaker()
+    {
+        var users = await JoinAndStartAsync(4);
+        await BidInOrderAsync(TarotBid.GardeSans, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass);
+
+        var defender = _game.Players.First(player => !player.IsTaker);
+        await _game.AnnounceSlamAsync(defender.User);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.SlamAnnounced, Is.False);
+            _context.Received().ReplyLocalizedMessage("tarot_slam_taker_only");
+        }
+    }
+
+    [Test]
     public async Task Test_RequestSub_ShouldFail_WhenInLobby()
     {
         await _game.JoinAsync(User("player1"));

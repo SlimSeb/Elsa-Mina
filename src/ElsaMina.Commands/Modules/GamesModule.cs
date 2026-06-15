@@ -106,6 +106,8 @@ public class GamesModule : Module
         builder.RegisterCommand<CallKingTarotCommand>();
         builder.RegisterCommand<DiscardTarotCommand>();
         builder.RegisterCommand<PlayTarotCommand>();
+        builder.RegisterCommand<DeclarePoigneeTarotCommand>();
+        builder.RegisterCommand<AnnounceSlamTarotCommand>();
         builder.RegisterCommand<ResendTarotCommand>();
         builder.RegisterCommand<RequestTarotSubCommand>();
         builder.RegisterCommand<AcceptTarotSubCommand>();

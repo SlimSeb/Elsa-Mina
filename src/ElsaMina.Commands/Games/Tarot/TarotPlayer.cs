@@ -46,4 +46,19 @@ public sealed class TarotPlayer
     /// True when this player holds the king called by the taker (5-player partner). Secret until revealed.
     /// </summary>
     public bool IsPartner { get; set; }
+
+    /// <summary>
+    /// True once this player has played their first card of the deal. A poignée can only be declared before then.
+    /// </summary>
+    public bool HasPlayed { get; set; }
+
+    /// <summary>
+    /// True once this player has declared a poignée (handful) for the deal.
+    /// </summary>
+    public bool HasDeclaredPoignee { get; set; }
+
+    /// <summary>
+    /// The declared poignée tier: 1 = single, 2 = double, 3 = triple, 0 = none.
+    /// </summary>
+    public int PoigneeTier { get; set; }
 }
