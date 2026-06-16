@@ -730,7 +730,7 @@
         <value>{0}, dein Gebot muss höher als das aktuelle sein.</value>
     </data>
     <data name="tarot_bidding_all_passed" xml:space="preserve">
-        <value>Alle haben gepasst. Die Runde wird abgebrochen.</value>
+        <value>Alle haben gepasst. Es wird neu gegeben.</value>
     </data>
     <data name="tarot_turn_timeout_warning" xml:space="preserve">
         <value>⏰ Beeil dich! Du hast nur noch {0} Sekunden Zeit zu spielen, bevor du wegen Zeitüberschreitung ausscheidest.</value>

@@ -793,7 +793,7 @@
         <value>{0}, your bid must be higher than the current one.</value>
     </data>
     <data name="tarot_bidding_all_passed" xml:space="preserve">
-        <value>Everyone passed. The deal is cancelled.</value>
+        <value>Everyone passed. Redealing a new hand.</value>
     </data>
     <data name="tarot_turn_timeout_warning" xml:space="preserve">
         <value>⏰ Hurry up! You have only {0} seconds left to play before you are timed out.</value>

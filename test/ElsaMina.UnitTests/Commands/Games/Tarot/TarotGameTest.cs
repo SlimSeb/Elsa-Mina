@@ -90,7 +90,7 @@ public class TarotGameTest
     }
 
     [Test]
-    public async Task Test_Bidding_ShouldEndGame_WhenEveryonePasses()
+    public async Task Test_Bidding_ShouldRedeal_WhenEveryonePasses()
     {
         await JoinAndStartAsync(4);
 
@@ -98,8 +98,13 @@ public class TarotGameTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_game.IsEnded, Is.True);
+            Assert.That(_game.IsEnded, Is.False);
+            Assert.That(_game.Phase, Is.EqualTo(TarotPhase.Bidding));
             Assert.That(_game.Taker, Is.Null);
+            Assert.That(_game.HighestBid, Is.EqualTo(TarotBid.Pass));
+            Assert.That(_game.Players.All(player => !player.HasBid), Is.True);
+            Assert.That(_game.Players.All(player => player.Hand.Count == 18), Is.True);
+            Assert.That(_game.Dog, Has.Count.EqualTo(6));
         }
 
         _context.Received().ReplyLocalizedMessage("tarot_bidding_all_passed");

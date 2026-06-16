@@ -172,6 +172,17 @@ public class TarotGame : Game, ITarotGame
 
         _randomService.ShuffleInPlace(_players);
 
+        await DealNewHandAsync();
+    }
+
+    /// <summary>
+    /// Resets all per-deal state and deals a fresh hand, opening a new bidding phase. Used both for the
+    /// first deal and to redeal (keeping the same seating) when every player passes.
+    /// </summary>
+    private async Task DealNewHandAsync()
+    {
+        ResetDealState();
+
         var deck = TarotConstants.BuildDeck();
         _randomService.ShuffleInPlace(deck);
 
@@ -200,6 +211,46 @@ public class TarotGame : Game, ITarotGame
 
         await RenderAllAsync();
         RestartTurnTimer();
+    }
+
+    /// <summary>
+    /// Clears every piece of per-deal state so a fresh hand can be dealt over the same set of players.
+    /// </summary>
+    private void ResetDealState()
+    {
+        foreach (var player in _players)
+        {
+            player.Hand.Clear();
+            player.CapturedPile.Clear();
+            player.Bid = TarotBid.Pass;
+            player.HasBid = false;
+            player.IsTaker = false;
+            player.IsPartner = false;
+            player.HasPlayed = false;
+            player.HasDeclaredPoignee = false;
+            player.PoigneeTier = 0;
+        }
+
+        _dog.Clear();
+        _pendingDiscards.Clear();
+        _declaredPoignees.Clear();
+
+        HighestBid = TarotBid.Pass;
+        _takerIndex = -1;
+        _partnerIndex = -1;
+        _takerSideTrickWins = 0;
+        _cardsPlayedTotal = 0;
+        _slamAnnounced = false;
+
+        CalledKing = null;
+        DogRevealed = false;
+        PartnerRevealed = false;
+
+        CurrentTrick = new TarotTrick();
+        LastTrick = null;
+        LastTrickWinner = null;
+        TrickNumber = 0;
+        ScoreResult = null;
     }
 
     public Task BidAsync(IUser user, TarotBid bid) => RunActionAsync(() => BidCoreAsync(user, bid));
@@ -245,7 +296,7 @@ public class TarotGame : Game, ITarotGame
         if (HighestBid == TarotBid.Pass)
         {
             Context.ReplyLocalizedMessage("tarot_bidding_all_passed");
-            EndGame();
+            await DealNewHandAsync();
             return;
         }
 

@@ -793,7 +793,7 @@
         <value>{0}, sua aposta deve ser maior que a atual.</value>
     </data>
     <data name="tarot_bidding_all_passed" xml:space="preserve">
-        <value>Todos passaram. A mão foi cancelada.</value>
+        <value>Todos passaram. Distribuindo uma nova mão.</value>
     </data>
     <data name="tarot_turn_timeout_warning" xml:space="preserve">
         <value>⏰ Depressa! Você tem apenas {0} segundos para jogar antes de perder por tempo esgotado.</value>

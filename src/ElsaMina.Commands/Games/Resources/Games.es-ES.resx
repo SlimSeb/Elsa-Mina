@@ -787,7 +787,7 @@
         <value>{0}, tu apuesta debe ser mayor que la actual.</value>
     </data>
     <data name="tarot_bidding_all_passed" xml:space="preserve">
-        <value>Todos pasaron. La mano se cancela.</value>
+        <value>Todos pasaron. Se reparte una nueva mano.</value>
     </data>
     <data name="tarot_turn_timeout_warning" xml:space="preserve">
         <value>⏰ ¡Date prisa! Solo te quedan {0} segundos para jugar antes de quedar eliminado por tiempo.</value>

@@ -787,7 +787,7 @@
         <value>{0}, la tua puntata deve essere superiore a quella attuale.</value>
     </data>
     <data name="tarot_bidding_all_passed" xml:space="preserve">
-        <value>Tutti hanno passato. La mano è annullata.</value>
+        <value>Tutti hanno passato. Si distribuisce una nuova mano.</value>
     </data>
     <data name="tarot_turn_timeout_warning" xml:space="preserve">
         <value>⏰ Sbrigati! Hai solo {0} secondi per giocare prima di essere eliminato per tempo scaduto.</value>
