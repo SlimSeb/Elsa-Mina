@@ -30,9 +30,17 @@
         <details>
             <summary>@GetString("battleship_game_log")</summary>
             <div style="max-height:160px;overflow-y:auto;margin-top:4px;font-size:11px">
-                @foreach (var entry in Model.Log.AsEnumerable().Reverse())
+                @{ var logEntries = Model.Log.AsEnumerable().Reverse().ToList(); }
+                @for (var index = 0; index < logEntries.Count; index++)
                 {
-                    <div style="padding:1px 0;border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR">@entry</div>
+                    if (index == 0)
+                    {
+                        <div style="padding:2px 4px;border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;font-weight:bold;color:#f5c518">➤ @logEntries[index]</div>
+                    }
+                    else
+                    {
+                        <div style="padding:1px 0;border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR">@logEntries[index]</div>
+                    }
                 }
             </div>
         </details>

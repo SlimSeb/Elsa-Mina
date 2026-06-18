@@ -26,9 +26,5 @@ public class JoinBattleshipCommand : Command
         }
 
         await battleship.JoinGame(context.Sender);
-        if (!battleship.IsStarted)
-        {
-            await battleship.DisplayAnnounce(); // Gets updated
-        }
     }
 }

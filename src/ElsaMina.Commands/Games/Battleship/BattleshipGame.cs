@@ -119,6 +119,10 @@ public class BattleshipGame : Game, IBattleshipGame
             {
                 await BeginPlacementPhase();
             }
+            else
+            {
+                await DisplayAnnounce(); // Refresh the join panel with the updated player list
+            }
         }
         finally
         {
