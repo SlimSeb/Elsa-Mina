@@ -1,4 +1,6 @@
+@using System.Linq
 @using ElsaMina.Commands.Games.Battleship
+@using ElsaMina.Core.Services.Templates
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Battleship.BattleshipModel>
 
 @{
@@ -129,6 +131,26 @@
             }
         </table>
     </div>
+
+    @if (Model.Log.Count > 0)
+    {
+        <br/><br/>
+        <div style="font-weight:bold;font-size:12px;margin-bottom:4px;">@GetString("battleship_game_log")</div>
+        <div style="max-height:160px;overflow-y:auto;font-size:11px;border:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;border-radius:6px;padding:4px 8px;">
+            @{ var logEntries = Model.Log.AsEnumerable().Reverse().ToList(); }
+            @for (var index = 0; index < logEntries.Count; index++)
+            {
+                if (index == 0)
+                {
+                    <div style="padding:2px 4px;border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;font-weight:bold;color:#f5c518">➤ @logEntries[index]</div>
+                }
+                else
+                {
+                    <div style="padding:1px 0;border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR">@logEntries[index]</div>
+                }
+            }
+        </div>
+    }
 
     <br/><br/>
     @if (!ended)
