@@ -6,8 +6,9 @@
     const string cellBase = "width:22px;height:22px;text-align:center;border:1px solid #68a;font-size:11px;padding:0;";
     const string waterStyle = cellBase + "background-color:#bfe3f2;";
     const string shipStyle = cellBase + "background-color:#4a4a4a;color:#fff;";
-    const string hitStyle = cellBase + "background-color:#d9534f;color:#fff;font-weight:bold;";
-    const string missStyle = cellBase + "background-color:#bfe3f2;color:#36546a;";
+    const string hitStyle = cellBase + "background-color:#d9534f;color:#fff;font-weight:bold;font-size:15px;line-height:1;";
+    const string missStyle = cellBase + "background-color:#bfe3f2;color:#1d3b4d;font-weight:bold;font-size:20px;line-height:1;";
+    const string lastShotStyle = "border:3px solid #f5c518;";
     const string labelStyle = "width:22px;height:22px;text-align:center;font-size:11px;font-weight:bold;";
 
     var viewer = Model.Viewer;
@@ -53,13 +54,14 @@
                     {
                         var shot = ownBoard.Shots[row, column];
                         var hasShip = ownBoard.ShipGrid[row, column] is not null;
+                        var isLast = ownBoard.LastShot.Row == row && ownBoard.LastShot.Column == column;
                         if (shot == CellShotState.Hit)
                         {
-                            <td style="@hitStyle">✸</td>
+                            <td style="@hitStyle@(isLast ? lastShotStyle : "")">✸</td>
                         }
                         else if (shot == CellShotState.Miss)
                         {
-                            <td style="@missStyle">·</td>
+                            <td style="@missStyle@(isLast ? lastShotStyle : "")">•</td>
                         }
                         else if (hasShip)
                         {
@@ -93,13 +95,14 @@
                     {
                         var shot = enemyBoard.Shots[row, column];
                         var hasShip = enemyBoard.ShipGrid[row, column] is not null;
+                        var isLast = enemyBoard.LastShot.Row == row && enemyBoard.LastShot.Column == column;
                         if (shot == CellShotState.Hit)
                         {
-                            <td style="@hitStyle">✸</td>
+                            <td style="@hitStyle@(isLast ? lastShotStyle : "")">✸</td>
                         }
                         else if (shot == CellShotState.Miss)
                         {
-                            <td style="@missStyle">·</td>
+                            <td style="@missStyle@(isLast ? lastShotStyle : "")">•</td>
                         }
                         else if (ended && hasShip)
                         {
