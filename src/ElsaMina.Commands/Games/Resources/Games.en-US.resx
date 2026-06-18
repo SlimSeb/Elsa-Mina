@@ -1668,4 +1668,151 @@
     <data name="belote_cards_won_points" xml:space="preserve">
         <value>{0} pts</value>
     </data>
+    <data name="battleship_game_name" xml:space="preserve">
+        <value>Battleship</value>
+    </data>
+    <data name="battleship_game_over" xml:space="preserve">
+        <value>Game over!</value>
+    </data>
+    <data name="battleship_your_turn" xml:space="preserve">
+        <value>It's your turn! Click a cell in the enemy waters to fire.</value>
+    </data>
+    <data name="battleship_opponent_turn" xml:space="preserve">
+        <value>Waiting for {0} to fire...</value>
+    </data>
+    <data name="battleship_turn" xml:space="preserve">
+        <value>Turn: {0}</value>
+    </data>
+    <data name="battleship_how_to_fire" xml:space="preserve">
+        <value>Click a cell in the enemy waters to fire at it.</value>
+    </data>
+    <data name="battleship_your_fleet" xml:space="preserve">
+        <value>Your fleet</value>
+    </data>
+    <data name="battleship_enemy_waters" xml:space="preserve">
+        <value>Enemy waters</value>
+    </data>
+    <data name="battleship_options" xml:space="preserve">
+        <value>Options</value>
+    </data>
+    <data name="battleship_forfeit" xml:space="preserve">
+        <value>Forfeit</value>
+    </data>
+    <data name="battleship_panel_title" xml:space="preserve">
+        <value>A Battleship game has been created!</value>
+    </data>
+    <data name="battleship_panel_players" xml:space="preserve">
+        <value>Registered players: {0}</value>
+    </data>
+    <data name="battleship_panel_join" xml:space="preserve">
+        <value>Join the game</value>
+    </data>
+    <data name="battleship_game_start_already_exist" xml:space="preserve">
+        <value>A game is already ongoing.</value>
+    </data>
+    <data name="battleship_game_cancelled" xml:space="preserve">
+        <value>The game has been cancelled.</value>
+    </data>
+    <data name="battleship_game_ongoing_game" xml:space="preserve">
+        <value>There's no game currently ongoing.</value>
+    </data>
+    <data name="battleship_shot_miss" xml:space="preserve">
+        <value>{0} fired at {1}: miss!</value>
+    </data>
+    <data name="battleship_shot_hit" xml:space="preserve">
+        <value>{0} fired at {1}: hit!</value>
+    </data>
+    <data name="battleship_shot_sunk" xml:space="preserve">
+        <value>{0} sank {1}'s {2}!</value>
+    </data>
+    <data name="battleship_player_forfeited" xml:space="preserve">
+        <value>{0} forfeited.</value>
+    </data>
+    <data name="battleship_on_timeout" xml:space="preserve">
+        <value>{0} was disqualified for not firing in time.</value>
+    </data>
+    <data name="battleship_win_message" xml:space="preserve">
+        <value>{0} won the game!</value>
+    </data>
+    <data name="battleship_rating_update" xml:space="preserve">
+        <value>{0}: {1} → {2} ({3:+0;-0;+0}) | {4}: {5} → {6} ({7:+0;-0;+0})</value>
+    </data>
+    <data name="battleship_leaderboard_title" xml:space="preserve">
+        <value>Battleship - ELO Leaderboard</value>
+    </data>
+    <data name="battleship_leaderboard_rating" xml:space="preserve">
+        <value>Rating</value>
+    </data>
+    <data name="battleship_leaderboard_wins" xml:space="preserve">
+        <value>Wins</value>
+    </data>
+    <data name="battleship_leaderboard_losses" xml:space="preserve">
+        <value>Losses</value>
+    </data>
+    <data name="battleship_leaderboard_empty" xml:space="preserve">
+        <value>No ratings found yet. Play some games first!</value>
+    </data>
+    <data name="battleship_elo_info" xml:space="preserve">
+        <value>{0}'s Battleship ELO: {1} ({2}W / {3}L)</value>
+    </data>
+    <data name="battleship_elo_not_found" xml:space="preserve">
+        <value>No rating found for {0}.</value>
+    </data>
+    <data name="battleship_ship_carrier" xml:space="preserve">
+        <value>Carrier</value>
+    </data>
+    <data name="battleship_ship_battleship" xml:space="preserve">
+        <value>Battleship</value>
+    </data>
+    <data name="battleship_ship_cruiser" xml:space="preserve">
+        <value>Cruiser</value>
+    </data>
+    <data name="battleship_ship_submarine" xml:space="preserve">
+        <value>Submarine</value>
+    </data>
+    <data name="battleship_ship_destroyer" xml:space="preserve">
+        <value>Destroyer</value>
+    </data>
+    <data name="games_battleship" xml:space="preserve">
+        <value>Battleship</value>
+    </data>
+    <data name="battleship_place_instruction" xml:space="preserve">
+        <value>Place your {0} (size {1}). Click a cell to set its bow.</value>
+    </data>
+    <data name="battleship_placement_waiting" xml:space="preserve">
+        <value>Fleet ready! Waiting for your opponent to finish placing...</value>
+    </data>
+    <data name="battleship_orientation" xml:space="preserve">
+        <value>Orientation: {0}</value>
+    </data>
+    <data name="battleship_orientation_horizontal" xml:space="preserve">
+        <value>horizontal</value>
+    </data>
+    <data name="battleship_orientation_vertical" xml:space="preserve">
+        <value>vertical</value>
+    </data>
+    <data name="battleship_rotate" xml:space="preserve">
+        <value>Rotate</value>
+    </data>
+    <data name="battleship_random_placement" xml:space="preserve">
+        <value>Place randomly</value>
+    </data>
+    <data name="battleship_reset_placement" xml:space="preserve">
+        <value>Reset</value>
+    </data>
+    <data name="battleship_placement_timeout" xml:space="preserve">
+        <value>Placement time is up! Remaining ships were placed randomly.</value>
+    </data>
+    <data name="battleship_game_log" xml:space="preserve">
+        <value>Game log</value>
+    </data>
+    <data name="battleship_status_placement" xml:space="preserve">
+        <value>Players are placing their ships...</value>
+    </data>
+    <data name="battleship_status_turn" xml:space="preserve">
+        <value>{0}'s turn (turn {1})</value>
+    </data>
+    <data name="battleship_status_finished" xml:space="preserve">
+        <value>Game over! {0} won.</value>
+    </data>
 </root>

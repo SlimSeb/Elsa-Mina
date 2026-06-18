@@ -1,0 +1,144 @@
+@using ElsaMina.Commands.Games.Battleship
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Battleship.BattleshipModel>
+
+@{
+    const int size = BattleshipConstants.BOARD_SIZE;
+    const string cellBase = "width:22px;height:22px;text-align:center;border:1px solid #68a;font-size:11px;padding:0;";
+    const string waterStyle = cellBase + "background-color:#bfe3f2;";
+    const string shipStyle = cellBase + "background-color:#4a4a4a;color:#fff;";
+    const string hitStyle = cellBase + "background-color:#d9534f;color:#fff;font-weight:bold;";
+    const string missStyle = cellBase + "background-color:#bfe3f2;color:#36546a;";
+    const string labelStyle = "width:22px;height:22px;text-align:center;font-size:11px;font-weight:bold;";
+
+    var viewer = Model.Viewer;
+    var ownBoard = viewer.Board;
+    var enemyBoard = Model.Opponent.Board;
+    var ended = Model.CurrentGame.IsEnded;
+    var isMyTurn = !ended && Equals(Model.CurrentGame.PlayerCurrentlyPlaying, viewer.User);
+}
+
+<div>
+    <h3>@GetString("battleship_game_name")</h3>
+    @if (ended)
+    {
+        <span style="font-weight:bold;">@GetString("battleship_game_over")</span>
+    }
+    else if (isMyTurn)
+    {
+        <span style="font-weight:bold;color:#0B0;">@GetString("battleship_your_turn")</span>
+    }
+    else
+    {
+        <span>@GetString("battleship_opponent_turn", Model.Opponent.User.Name)</span>
+    }
+    <br/>
+    <span>@GetString("battleship_turn", Model.CurrentGame.TurnCount)</span><br/>
+    <span>@GetString("battleship_how_to_fire")</span><br/><br/>
+
+    <div style="display:inline-block;vertical-align:top;margin-right:18px;">
+        <div style="text-align:center;font-weight:bold;margin-bottom:4px;">@GetString("battleship_your_fleet")</div>
+        <table style="border-collapse:collapse;margin:auto;">
+            <tr>
+                <td style="@labelStyle"></td>
+                @for (var column = 0; column < size; column++)
+                {
+                    <td style="@labelStyle">@BattleshipConstants.ColumnLabel(column)</td>
+                }
+            </tr>
+            @for (var row = 0; row < size; row++)
+            {
+                <tr>
+                    <td style="@labelStyle">@(row + 1)</td>
+                    @for (var column = 0; column < size; column++)
+                    {
+                        var shot = ownBoard.Shots[row, column];
+                        var hasShip = ownBoard.ShipGrid[row, column] is not null;
+                        if (shot == CellShotState.Hit)
+                        {
+                            <td style="@hitStyle">✸</td>
+                        }
+                        else if (shot == CellShotState.Miss)
+                        {
+                            <td style="@missStyle">·</td>
+                        }
+                        else if (hasShip)
+                        {
+                            <td style="@shipStyle">&nbsp;</td>
+                        }
+                        else
+                        {
+                            <td style="@waterStyle">&nbsp;</td>
+                        }
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+
+    <div style="display:inline-block;vertical-align:top;">
+        <div style="text-align:center;font-weight:bold;margin-bottom:4px;">@GetString("battleship_enemy_waters")</div>
+        <table style="border-collapse:collapse;margin:auto;">
+            <tr>
+                <td style="@labelStyle"></td>
+                @for (var column = 0; column < size; column++)
+                {
+                    <td style="@labelStyle">@BattleshipConstants.ColumnLabel(column)</td>
+                }
+            </tr>
+            @for (var row = 0; row < size; row++)
+            {
+                <tr>
+                    <td style="@labelStyle">@(row + 1)</td>
+                    @for (var column = 0; column < size; column++)
+                    {
+                        var shot = enemyBoard.Shots[row, column];
+                        var hasShip = enemyBoard.ShipGrid[row, column] is not null;
+                        if (shot == CellShotState.Hit)
+                        {
+                            <td style="@hitStyle">✸</td>
+                        }
+                        else if (shot == CellShotState.Miss)
+                        {
+                            <td style="@missStyle">·</td>
+                        }
+                        else if (ended && hasShip)
+                        {
+                            <td style="@shipStyle">&nbsp;</td>
+                        }
+                        else if (isMyTurn)
+                        {
+                            <td style="@waterStyle">
+                                <button
+                                    class="button"
+                                    name="send"
+                                    value="/w @Model.BotName,@(Model.Trigger)bsf @Model.RoomId, @BattleshipConstants.FormatCoordinate(row, column)"
+                                    style="width:100%;height:100%;padding:0;background:none;border:none;box-shadow:none;cursor:pointer;">
+                                    &nbsp;
+                                </button>
+                            </td>
+                        }
+                        else
+                        {
+                            <td style="@waterStyle">&nbsp;</td>
+                        }
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+
+    <br/><br/>
+    @if (!ended)
+    {
+        <details>
+            <summary>@GetString("battleship_options")</summary>
+            <br/>
+            <button
+                class="button"
+                name="send"
+                value="/w @Model.BotName,@(Model.Trigger)bsff @Model.RoomId">
+                @GetString("battleship_forfeit")
+            </button>
+        </details>
+    }
+</div>

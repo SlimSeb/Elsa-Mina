@@ -37,6 +37,7 @@ public class BotDbContext : DbContext
     public DbSet<FloodItScore> FloodItScores { get; set; }
     public DbSet<TwentyFortyEightScore> TwentyFortyEightScores { get; set; }
     public DbSet<ConnectFourRating> ConnectFourRatings { get; set; }
+    public DbSet<BattleshipRating> BattleshipRatings { get; set; }
     public DbSet<LadderEloSnapshot> LadderEloSnapshots { get; set; }
     public DbSet<TrackedEloUser> TrackedEloUsers { get; set; }
     public DbSet<TarotStats> TarotStats { get; set; }

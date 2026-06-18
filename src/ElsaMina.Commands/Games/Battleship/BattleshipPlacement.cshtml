@@ -1,0 +1,83 @@
+@using ElsaMina.Commands.Games.Battleship
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Battleship.BattleshipModel>
+
+@{
+    const int size = BattleshipConstants.BOARD_SIZE;
+    const string cellBase = "width:22px;height:22px;text-align:center;border:1px solid #68a;font-size:11px;padding:0;";
+    const string waterStyle = cellBase + "background-color:#bfe3f2;";
+    const string shipStyle = cellBase + "background-color:#4a4a4a;color:#fff;";
+    const string labelStyle = "width:22px;height:22px;text-align:center;font-size:11px;font-weight:bold;";
+
+    var viewer = Model.Viewer;
+    var ownBoard = viewer.Board;
+    var ready = Model.ViewerHasPlacedAllShips;
+    var orientationKey = Model.ViewerIsHorizontal ? "battleship_orientation_horizontal" : "battleship_orientation_vertical";
+}
+
+<div>
+    <h3>@GetString("battleship_game_name")</h3>
+    @if (ready)
+    {
+        <span style="font-weight:bold;color:#0B0;">@GetString("battleship_placement_waiting")</span>
+    }
+    else
+    {
+        <span style="font-weight:bold;">@GetString("battleship_place_instruction", GetString($"battleship_ship_{Model.ViewerNextShip.NameKey}"), Model.ViewerNextShip.Size)</span><br/>
+        <span>@GetString("battleship_orientation", GetString(orientationKey))</span>
+    }
+    <br/><br/>
+
+    <table style="border-collapse:collapse;margin:auto;">
+        <tr>
+            <td style="@labelStyle"></td>
+            @for (var column = 0; column < size; column++)
+            {
+                <td style="@labelStyle">@BattleshipConstants.ColumnLabel(column)</td>
+            }
+        </tr>
+        @for (var row = 0; row < size; row++)
+        {
+            <tr>
+                <td style="@labelStyle">@(row + 1)</td>
+                @for (var column = 0; column < size; column++)
+                {
+                    var hasShip = ownBoard.ShipGrid[row, column] is not null;
+                    if (hasShip)
+                    {
+                        <td style="@shipStyle">&nbsp;</td>
+                    }
+                    else if (!ready)
+                    {
+                        <td style="@waterStyle">
+                            <button
+                                class="button"
+                                name="send"
+                                value="/w @Model.BotName,@(Model.Trigger)bsplace @Model.RoomId, @BattleshipConstants.FormatCoordinate(row, column)"
+                                style="width:100%;height:100%;padding:0;background:none;border:none;box-shadow:none;cursor:pointer;">
+                                &nbsp;
+                            </button>
+                        </td>
+                    }
+                    else
+                    {
+                        <td style="@waterStyle">&nbsp;</td>
+                    }
+                }
+            </tr>
+        }
+    </table>
+
+    <br/>
+    @if (!ready)
+    {
+        <button class="button" name="send" value="/w @Model.BotName,@(Model.Trigger)bsrotate @Model.RoomId">
+            @GetString("battleship_rotate")
+        </button>
+        <button class="button" name="send" value="/w @Model.BotName,@(Model.Trigger)bsrandom @Model.RoomId">
+            @GetString("battleship_random_placement")
+        </button>
+    }
+    <button class="button" name="send" value="/w @Model.BotName,@(Model.Trigger)bsreset @Model.RoomId">
+        @GetString("battleship_reset_placement")
+    </button>
+</div>

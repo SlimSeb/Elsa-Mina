@@ -1,0 +1,16 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Battleship.BattleshipModel>
+
+<div>
+    <h3>
+        @GetString("battleship_panel_title")
+    </h3>
+
+    <span>@GetString("battleship_panel_players", Model.CurrentGame.PlayerNames)</span><br /><br />
+
+    <button
+        class="button"
+        name="send"
+        value="/w @Model.BotName,@(Model.Trigger)bsj @Model.RoomId">
+        @GetString("battleship_panel_join")
+    </button>
+</div>

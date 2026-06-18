@@ -724,7 +724,7 @@ public class TarotGame : Game, ITarotGame
 
     public bool CanDeclarePoignee(TarotPlayer player) =>
         Phase == TarotPhase.Playing && player is { HasPlayed: false, HasDeclaredPoignee: false }
-        && GetDeclarablePoigneeTier(player) > 0;
+                                    && GetDeclarablePoigneeTier(player) > 0;
 
     public bool CanAnnounceSlam(TarotPlayer player) =>
         Phase == TarotPhase.Playing && _cardsPlayedTotal == 0 && !_slamAnnounced && player is { IsTaker: true };
@@ -817,7 +817,8 @@ public class TarotGame : Game, ITarotGame
         var oudlerCount = takerSide.Sum(player => player.CapturedPile.Count(card => card.IsOudler));
 
         var petitAuBoutSide = ComputePetitAuBoutSide();
-        var poigneeHalfPoints = _declaredPoignees.Sum(declaration => TarotConstants.POIGNEE_HALF_POINTS[declaration.Tier]);
+        var poigneeHalfPoints =
+            _declaredPoignees.Sum(declaration => TarotConstants.POIGNEE_HALF_POINTS[declaration.Tier]);
         var slamWinnerSide = _takerSideTrickWins == TotalTricks ? 1 : _takerSideTrickWins == 0 ? -1 : 0;
 
         ScoreResult = TarotScorer.Compute(takerHalfPoints, oudlerCount, HighestBid,
@@ -924,7 +925,8 @@ public class TarotGame : Game, ITarotGame
         }
     }
 
-    public async Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user, string targetPlayerId)
+    public async Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user,
+        string targetPlayerId)
     {
         await _actionLock.WaitAsync();
         try

@@ -1662,4 +1662,151 @@
     <data name="belote_cards_won_points" xml:space="preserve">
         <value>{0} pti</value>
     </data>
+    <data name="battleship_game_name" xml:space="preserve">
+        <value>Battaglia navale</value>
+    </data>
+    <data name="battleship_game_over" xml:space="preserve">
+        <value>Partita terminata!</value>
+    </data>
+    <data name="battleship_your_turn" xml:space="preserve">
+        <value>È il tuo turno! Clicca su una casella delle acque nemiche per sparare.</value>
+    </data>
+    <data name="battleship_opponent_turn" xml:space="preserve">
+        <value>In attesa che {0} spari...</value>
+    </data>
+    <data name="battleship_turn" xml:space="preserve">
+        <value>Turno: {0}</value>
+    </data>
+    <data name="battleship_how_to_fire" xml:space="preserve">
+        <value>Clicca su una casella delle acque nemiche per spararci.</value>
+    </data>
+    <data name="battleship_your_fleet" xml:space="preserve">
+        <value>La tua flotta</value>
+    </data>
+    <data name="battleship_enemy_waters" xml:space="preserve">
+        <value>Acque nemiche</value>
+    </data>
+    <data name="battleship_options" xml:space="preserve">
+        <value>Opzioni</value>
+    </data>
+    <data name="battleship_forfeit" xml:space="preserve">
+        <value>Arrenditi</value>
+    </data>
+    <data name="battleship_panel_title" xml:space="preserve">
+        <value>È stata creata una partita di battaglia navale!</value>
+    </data>
+    <data name="battleship_panel_players" xml:space="preserve">
+        <value>Giocatori iscritti: {0}</value>
+    </data>
+    <data name="battleship_panel_join" xml:space="preserve">
+        <value>Unisciti alla partita</value>
+    </data>
+    <data name="battleship_game_start_already_exist" xml:space="preserve">
+        <value>Una partita è già in corso.</value>
+    </data>
+    <data name="battleship_game_cancelled" xml:space="preserve">
+        <value>La partita è stata annullata.</value>
+    </data>
+    <data name="battleship_game_ongoing_game" xml:space="preserve">
+        <value>Non c'è nessuna partita in corso.</value>
+    </data>
+    <data name="battleship_shot_miss" xml:space="preserve">
+        <value>{0} ha sparato in {1}: mancato!</value>
+    </data>
+    <data name="battleship_shot_hit" xml:space="preserve">
+        <value>{0} ha sparato in {1}: colpito!</value>
+    </data>
+    <data name="battleship_shot_sunk" xml:space="preserve">
+        <value>{0} ha affondato il {2} di {1}!</value>
+    </data>
+    <data name="battleship_player_forfeited" xml:space="preserve">
+        <value>{0} si è arreso.</value>
+    </data>
+    <data name="battleship_on_timeout" xml:space="preserve">
+        <value>{0} è stato squalificato per non aver sparato in tempo.</value>
+    </data>
+    <data name="battleship_win_message" xml:space="preserve">
+        <value>{0} ha vinto la partita!</value>
+    </data>
+    <data name="battleship_rating_update" xml:space="preserve">
+        <value>{0}: {1} → {2} ({3:+0;-0;+0}) | {4}: {5} → {6} ({7:+0;-0;+0})</value>
+    </data>
+    <data name="battleship_leaderboard_title" xml:space="preserve">
+        <value>Battaglia navale - Classifica ELO</value>
+    </data>
+    <data name="battleship_leaderboard_rating" xml:space="preserve">
+        <value>Punteggio</value>
+    </data>
+    <data name="battleship_leaderboard_wins" xml:space="preserve">
+        <value>Vittorie</value>
+    </data>
+    <data name="battleship_leaderboard_losses" xml:space="preserve">
+        <value>Sconfitte</value>
+    </data>
+    <data name="battleship_leaderboard_empty" xml:space="preserve">
+        <value>Ancora nessuna classifica. Gioca prima qualche partita!</value>
+    </data>
+    <data name="battleship_elo_info" xml:space="preserve">
+        <value>ELO di {0} a battaglia navale: {1} ({2}V / {3}S)</value>
+    </data>
+    <data name="battleship_elo_not_found" xml:space="preserve">
+        <value>Nessuna classifica trovata per {0}.</value>
+    </data>
+    <data name="battleship_ship_carrier" xml:space="preserve">
+        <value>Portaerei</value>
+    </data>
+    <data name="battleship_ship_battleship" xml:space="preserve">
+        <value>Corazzata</value>
+    </data>
+    <data name="battleship_ship_cruiser" xml:space="preserve">
+        <value>Incrociatore</value>
+    </data>
+    <data name="battleship_ship_submarine" xml:space="preserve">
+        <value>Sottomarino</value>
+    </data>
+    <data name="battleship_ship_destroyer" xml:space="preserve">
+        <value>Cacciatorpediniere</value>
+    </data>
+    <data name="games_battleship" xml:space="preserve">
+        <value>Battaglia navale</value>
+    </data>
+    <data name="battleship_place_instruction" xml:space="preserve">
+        <value>Posiziona la tua {0} (dimensione {1}). Clicca su una casella per collocarne la prua.</value>
+    </data>
+    <data name="battleship_placement_waiting" xml:space="preserve">
+        <value>Flotta pronta! In attesa che l'avversario finisca di posizionare...</value>
+    </data>
+    <data name="battleship_orientation" xml:space="preserve">
+        <value>Orientamento: {0}</value>
+    </data>
+    <data name="battleship_orientation_horizontal" xml:space="preserve">
+        <value>orizzontale</value>
+    </data>
+    <data name="battleship_orientation_vertical" xml:space="preserve">
+        <value>verticale</value>
+    </data>
+    <data name="battleship_rotate" xml:space="preserve">
+        <value>Ruota</value>
+    </data>
+    <data name="battleship_random_placement" xml:space="preserve">
+        <value>Posiziona a caso</value>
+    </data>
+    <data name="battleship_reset_placement" xml:space="preserve">
+        <value>Reimposta</value>
+    </data>
+    <data name="battleship_placement_timeout" xml:space="preserve">
+        <value>Tempo di posizionamento scaduto! Le navi rimanenti sono state posizionate a caso.</value>
+    </data>
+    <data name="battleship_game_log" xml:space="preserve">
+        <value>Registro della partita</value>
+    </data>
+    <data name="battleship_status_placement" xml:space="preserve">
+        <value>I giocatori stanno posizionando le navi...</value>
+    </data>
+    <data name="battleship_status_turn" xml:space="preserve">
+        <value>Turno di {0} (turno {1})</value>
+    </data>
+    <data name="battleship_status_finished" xml:space="preserve">
+        <value>Partita terminata! Ha vinto {0}.</value>
+    </data>
 </root>
