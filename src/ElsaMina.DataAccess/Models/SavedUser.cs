@@ -18,4 +18,5 @@ public class SavedUser
     public VoltorbFlipLevel VoltorbFlipLevel { get; set; }
     public TwentyFortyEightScore TwentyFortyEightScore { get; set; }
     public ConnectFourRating ConnectFourRating { get; set; }
+    public BattleshipRating BattleshipRating { get; set; }
 }

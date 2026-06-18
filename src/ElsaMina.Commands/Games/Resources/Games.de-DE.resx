@@ -1605,4 +1605,115 @@
     <data name="belote_cards_won_points" xml:space="preserve">
         <value>{0} Pkt.</value>
     </data>
+    <data name="battleship_game_name" xml:space="preserve">
+        <value>Schiffe versenken</value>
+    </data>
+    <data name="battleship_game_over" xml:space="preserve">
+        <value>Spiel beendet!</value>
+    </data>
+    <data name="battleship_your_turn" xml:space="preserve">
+        <value>Du bist am Zug! Klicke auf ein Feld in den feindlichen Gewässern, um zu feuern.</value>
+    </data>
+    <data name="battleship_opponent_turn" xml:space="preserve">
+        <value>Warte darauf, dass {0} feuert...</value>
+    </data>
+    <data name="battleship_turn" xml:space="preserve">
+        <value>Zug: {0}</value>
+    </data>
+    <data name="battleship_how_to_fire" xml:space="preserve">
+        <value>Klicke auf ein Feld in den feindlichen Gewässern, um darauf zu feuern.</value>
+    </data>
+    <data name="battleship_your_fleet" xml:space="preserve">
+        <value>Deine Flotte</value>
+    </data>
+    <data name="battleship_enemy_waters" xml:space="preserve">
+        <value>Feindliche Gewässer</value>
+    </data>
+    <data name="battleship_options" xml:space="preserve">
+        <value>Optionen</value>
+    </data>
+    <data name="battleship_forfeit" xml:space="preserve">
+        <value>Aufgeben</value>
+    </data>
+    <data name="battleship_panel_title" xml:space="preserve">
+        <value>Ein Spiel Schiffe versenken wurde erstellt!</value>
+    </data>
+    <data name="battleship_panel_players" xml:space="preserve">
+        <value>Angemeldete Spieler: {0}</value>
+    </data>
+    <data name="battleship_panel_join" xml:space="preserve">
+        <value>Dem Spiel beitreten</value>
+    </data>
+    <data name="battleship_panel_ongoing_game" xml:space="preserve">
+        <value>Ein Spiel Schiffe versenken läuft... Spieler: {0}</value>
+    </data>
+    <data name="battleship_game_start_already_exist" xml:space="preserve">
+        <value>Es läuft bereits ein Spiel.</value>
+    </data>
+    <data name="battleship_game_cancelled" xml:space="preserve">
+        <value>Das Spiel wurde abgebrochen.</value>
+    </data>
+    <data name="battleship_game_ongoing_game" xml:space="preserve">
+        <value>Es läuft derzeit kein Spiel.</value>
+    </data>
+    <data name="battleship_shot_miss" xml:space="preserve">
+        <value>{0} hat auf {1} gefeuert: daneben!</value>
+    </data>
+    <data name="battleship_shot_hit" xml:space="preserve">
+        <value>{0} hat auf {1} gefeuert: Treffer!</value>
+    </data>
+    <data name="battleship_shot_sunk" xml:space="preserve">
+        <value>{0} hat das {2} von {1} versenkt!</value>
+    </data>
+    <data name="battleship_player_forfeited" xml:space="preserve">
+        <value>{0} hat aufgegeben.</value>
+    </data>
+    <data name="battleship_on_timeout" xml:space="preserve">
+        <value>{0} wurde disqualifiziert, weil nicht rechtzeitig gefeuert wurde.</value>
+    </data>
+    <data name="battleship_win_message" xml:space="preserve">
+        <value>{0} hat das Spiel gewonnen!</value>
+    </data>
+    <data name="battleship_rating_update" xml:space="preserve">
+        <value>{0}: {1} → {2} ({3:+0;-0;+0}) | {4}: {5} → {6} ({7:+0;-0;+0})</value>
+    </data>
+    <data name="battleship_leaderboard_title" xml:space="preserve">
+        <value>Schiffe versenken - ELO-Bestenliste</value>
+    </data>
+    <data name="battleship_leaderboard_rating" xml:space="preserve">
+        <value>Wertung</value>
+    </data>
+    <data name="battleship_leaderboard_wins" xml:space="preserve">
+        <value>Siege</value>
+    </data>
+    <data name="battleship_leaderboard_losses" xml:space="preserve">
+        <value>Niederlagen</value>
+    </data>
+    <data name="battleship_leaderboard_empty" xml:space="preserve">
+        <value>Noch keine Wertungen vorhanden. Spiel zuerst ein paar Partien!</value>
+    </data>
+    <data name="battleship_elo_info" xml:space="preserve">
+        <value>{0}s Schiffe-versenken-ELO: {1} ({2}S / {3}N)</value>
+    </data>
+    <data name="battleship_elo_not_found" xml:space="preserve">
+        <value>Keine Wertung für {0} gefunden.</value>
+    </data>
+    <data name="battleship_ship_carrier" xml:space="preserve">
+        <value>Flugzeugträger</value>
+    </data>
+    <data name="battleship_ship_battleship" xml:space="preserve">
+        <value>Schlachtschiff</value>
+    </data>
+    <data name="battleship_ship_cruiser" xml:space="preserve">
+        <value>Kreuzer</value>
+    </data>
+    <data name="battleship_ship_submarine" xml:space="preserve">
+        <value>U-Boot</value>
+    </data>
+    <data name="battleship_ship_destroyer" xml:space="preserve">
+        <value>Zerstörer</value>
+    </data>
+    <data name="games_battleship" xml:space="preserve">
+        <value>Schiffe versenken</value>
+    </data>
 </root>

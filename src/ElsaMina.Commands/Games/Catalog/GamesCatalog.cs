@@ -24,6 +24,7 @@ public static class GamesCatalog
         new("games_belote", "belote", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false, LeaderboardCommand: "belotelb"),
         new("games_poker", "poker", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false),
         new("games_connectfour", "connectfour", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false, LeaderboardCommand: "c4lb"),
+        new("games_battleship", "battleship", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false, LeaderboardCommand: "bslb"),
         new("games_rps", "rps", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false),
         new("games_pokerace", "pokerace", Rank.Driver, GameMode.Multiplayer, IsPlayableInPrivate: false),
 

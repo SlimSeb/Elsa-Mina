@@ -1,5 +1,6 @@
 using Autofac;
 using ElsaMina.Commands.Games;
+using ElsaMina.Commands.Games.Battleship;
 using ElsaMina.Commands.Games.Belote;
 using ElsaMina.Commands.Games.Blackjack;
 using ElsaMina.Commands.Games.Catalog;
@@ -47,6 +48,14 @@ public class GamesModule : Module
         builder.RegisterCommand<ForfeitConnectFourCommand>();
         builder.RegisterCommand<ConnectFourLeaderboardCommand>();
         builder.RegisterCommand<ConnectFourEloCommand>();
+
+        builder.RegisterCommand<CreateBattleshipCommand>();
+        builder.RegisterCommand<JoinBattleshipCommand>();
+        builder.RegisterCommand<FireBattleshipCommand>();
+        builder.RegisterCommand<EndBattleshipCommand>();
+        builder.RegisterCommand<ForfeitBattleshipCommand>();
+        builder.RegisterCommand<BattleshipLeaderboardCommand>();
+        builder.RegisterCommand<BattleshipEloCommand>();
 
         builder.RegisterCommand<StartVoltorbFlipCommand>();
         builder.RegisterCommand<JoinVoltorbFlipCommand>();
@@ -143,6 +152,8 @@ public class GamesModule : Module
         builder.RegisterType<CapitalCitiesGame>().AsSelf();
         builder.RegisterType<ConnectFourGame>().AsSelf();
         builder.RegisterType<ConnectFourRatingService>().As<IConnectFourRatingService>().SingleInstance();
+        builder.RegisterType<BattleshipGame>().AsSelf();
+        builder.RegisterType<BattleshipRatingService>().As<IBattleshipRatingService>().SingleInstance();
         builder.RegisterType<VoltorbFlipGame>().AsSelf();
         builder.RegisterType<PokeRaceGame>().AsSelf();
         builder.RegisterType<RpsGame>().AsSelf();

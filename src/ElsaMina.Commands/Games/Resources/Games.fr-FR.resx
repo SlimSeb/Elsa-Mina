@@ -1668,4 +1668,115 @@
     <data name="belote_cards_won_points" xml:space="preserve">
         <value>{0} pts</value>
     </data>
+    <data name="battleship_game_name" xml:space="preserve">
+        <value>Bataille navale</value>
+    </data>
+    <data name="battleship_game_over" xml:space="preserve">
+        <value>Partie terminée !</value>
+    </data>
+    <data name="battleship_your_turn" xml:space="preserve">
+        <value>C'est votre tour ! Cliquez sur une case des eaux ennemies pour tirer.</value>
+    </data>
+    <data name="battleship_opponent_turn" xml:space="preserve">
+        <value>En attente du tir de {0}...</value>
+    </data>
+    <data name="battleship_turn" xml:space="preserve">
+        <value>Tour : {0}</value>
+    </data>
+    <data name="battleship_how_to_fire" xml:space="preserve">
+        <value>Cliquez sur une case des eaux ennemies pour y tirer.</value>
+    </data>
+    <data name="battleship_your_fleet" xml:space="preserve">
+        <value>Votre flotte</value>
+    </data>
+    <data name="battleship_enemy_waters" xml:space="preserve">
+        <value>Eaux ennemies</value>
+    </data>
+    <data name="battleship_options" xml:space="preserve">
+        <value>Options</value>
+    </data>
+    <data name="battleship_forfeit" xml:space="preserve">
+        <value>Abandonner</value>
+    </data>
+    <data name="battleship_panel_title" xml:space="preserve">
+        <value>Une partie de bataille navale a été créée !</value>
+    </data>
+    <data name="battleship_panel_players" xml:space="preserve">
+        <value>Joueurs inscrits : {0}</value>
+    </data>
+    <data name="battleship_panel_join" xml:space="preserve">
+        <value>Rejoindre la partie</value>
+    </data>
+    <data name="battleship_panel_ongoing_game" xml:space="preserve">
+        <value>Une partie de bataille navale est en cours... Joueurs : {0}</value>
+    </data>
+    <data name="battleship_game_start_already_exist" xml:space="preserve">
+        <value>Une partie est déjà en cours.</value>
+    </data>
+    <data name="battleship_game_cancelled" xml:space="preserve">
+        <value>La partie a été annulée.</value>
+    </data>
+    <data name="battleship_game_ongoing_game" xml:space="preserve">
+        <value>Aucune partie n'est en cours.</value>
+    </data>
+    <data name="battleship_shot_miss" xml:space="preserve">
+        <value>{0} a tiré en {1} : manqué !</value>
+    </data>
+    <data name="battleship_shot_hit" xml:space="preserve">
+        <value>{0} a tiré en {1} : touché !</value>
+    </data>
+    <data name="battleship_shot_sunk" xml:space="preserve">
+        <value>{0} a coulé le {2} de {1} !</value>
+    </data>
+    <data name="battleship_player_forfeited" xml:space="preserve">
+        <value>{0} a abandonné.</value>
+    </data>
+    <data name="battleship_on_timeout" xml:space="preserve">
+        <value>{0} a été disqualifié(e) pour ne pas avoir tiré à temps.</value>
+    </data>
+    <data name="battleship_win_message" xml:space="preserve">
+        <value>{0} a gagné la partie !</value>
+    </data>
+    <data name="battleship_rating_update" xml:space="preserve">
+        <value>{0}: {1} → {2} ({3:+0;-0;+0}) | {4}: {5} → {6} ({7:+0;-0;+0})</value>
+    </data>
+    <data name="battleship_leaderboard_title" xml:space="preserve">
+        <value>Bataille navale - Classement ELO</value>
+    </data>
+    <data name="battleship_leaderboard_rating" xml:space="preserve">
+        <value>Score</value>
+    </data>
+    <data name="battleship_leaderboard_wins" xml:space="preserve">
+        <value>Victoires</value>
+    </data>
+    <data name="battleship_leaderboard_losses" xml:space="preserve">
+        <value>Défaites</value>
+    </data>
+    <data name="battleship_leaderboard_empty" xml:space="preserve">
+        <value>Aucun classement pour le moment. Jouez quelques parties d'abord !</value>
+    </data>
+    <data name="battleship_elo_info" xml:space="preserve">
+        <value>ELO de {0} à la bataille navale : {1} ({2}V / {3}D)</value>
+    </data>
+    <data name="battleship_elo_not_found" xml:space="preserve">
+        <value>Aucun classement trouvé pour {0}.</value>
+    </data>
+    <data name="battleship_ship_carrier" xml:space="preserve">
+        <value>Porte-avions</value>
+    </data>
+    <data name="battleship_ship_battleship" xml:space="preserve">
+        <value>Cuirassé</value>
+    </data>
+    <data name="battleship_ship_cruiser" xml:space="preserve">
+        <value>Croiseur</value>
+    </data>
+    <data name="battleship_ship_submarine" xml:space="preserve">
+        <value>Sous-marin</value>
+    </data>
+    <data name="battleship_ship_destroyer" xml:space="preserve">
+        <value>Torpilleur</value>
+    </data>
+    <data name="games_battleship" xml:space="preserve">
+        <value>Bataille navale</value>
+    </data>
 </root>
