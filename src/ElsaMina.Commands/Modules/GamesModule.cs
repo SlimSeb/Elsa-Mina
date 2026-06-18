@@ -51,6 +51,10 @@ public class GamesModule : Module
 
         builder.RegisterCommand<CreateBattleshipCommand>();
         builder.RegisterCommand<JoinBattleshipCommand>();
+        builder.RegisterCommand<PlaceBattleshipCommand>();
+        builder.RegisterCommand<RotateBattleshipCommand>();
+        builder.RegisterCommand<RandomBattleshipCommand>();
+        builder.RegisterCommand<ResetBattleshipCommand>();
         builder.RegisterCommand<FireBattleshipCommand>();
         builder.RegisterCommand<EndBattleshipCommand>();
         builder.RegisterCommand<ForfeitBattleshipCommand>();

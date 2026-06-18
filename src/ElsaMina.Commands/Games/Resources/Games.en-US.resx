@@ -1707,9 +1707,6 @@
     <data name="battleship_panel_join" xml:space="preserve">
         <value>Join the game</value>
     </data>
-    <data name="battleship_panel_ongoing_game" xml:space="preserve">
-        <value>A Battleship game is ongoing... Players: {0}</value>
-    </data>
     <data name="battleship_game_start_already_exist" xml:space="preserve">
         <value>A game is already ongoing.</value>
     </data>
@@ -1778,5 +1775,44 @@
     </data>
     <data name="games_battleship" xml:space="preserve">
         <value>Battleship</value>
+    </data>
+    <data name="battleship_place_instruction" xml:space="preserve">
+        <value>Place your {0} (size {1}). Click a cell to set its bow.</value>
+    </data>
+    <data name="battleship_placement_waiting" xml:space="preserve">
+        <value>Fleet ready! Waiting for your opponent to finish placing...</value>
+    </data>
+    <data name="battleship_orientation" xml:space="preserve">
+        <value>Orientation: {0}</value>
+    </data>
+    <data name="battleship_orientation_horizontal" xml:space="preserve">
+        <value>horizontal</value>
+    </data>
+    <data name="battleship_orientation_vertical" xml:space="preserve">
+        <value>vertical</value>
+    </data>
+    <data name="battleship_rotate" xml:space="preserve">
+        <value>Rotate</value>
+    </data>
+    <data name="battleship_random_placement" xml:space="preserve">
+        <value>Place randomly</value>
+    </data>
+    <data name="battleship_reset_placement" xml:space="preserve">
+        <value>Reset</value>
+    </data>
+    <data name="battleship_placement_timeout" xml:space="preserve">
+        <value>Placement time is up! Remaining ships were placed randomly.</value>
+    </data>
+    <data name="battleship_game_log" xml:space="preserve">
+        <value>Game log</value>
+    </data>
+    <data name="battleship_status_placement" xml:space="preserve">
+        <value>Players are placing their ships...</value>
+    </data>
+    <data name="battleship_status_turn" xml:space="preserve">
+        <value>{0}'s turn (turn {1})</value>
+    </data>
+    <data name="battleship_status_finished" xml:space="preserve">
+        <value>Game over! {0} won.</value>
     </data>
 </root>

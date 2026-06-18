@@ -44,37 +44,26 @@ public class BattleshipGameTest
         _mockUser2.Name.Returns("Player2");
     }
 
-    private BattleshipGame CreateGame(TimeSpan? timeout = null)
+    private BattleshipGame CreateGame(TimeSpan? turnTimeout = null, TimeSpan? placementTimeout = null)
     {
         var game = new BattleshipGame(_randomService, _mockTemplatesManager, _configuration, _mockRatingService,
-            timeout ?? TimeSpan.FromMinutes(5));
+            turnTimeout ?? TimeSpan.FromMinutes(5), placementTimeout ?? TimeSpan.FromMinutes(5));
         game.Context = _context;
         return game;
     }
 
-    [Test]
-    public async Task Test_JoinGame_ShouldAddPlayersAndStart_WhenTwoPlayersJoin()
+    private async Task<BattleshipGame> CreatePlayingGameAsync(TimeSpan? turnTimeout = null)
     {
-        // Arrange
-        var game = CreateGame();
-
-        // Act
+        var game = CreateGame(turnTimeout);
         await game.JoinGame(_mockUser1);
         await game.JoinGame(_mockUser2);
-
-        // Assert
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(game.Players.Select(player => player.User), Has.Member(_mockUser1));
-            Assert.That(game.Players.Select(player => player.User), Has.Member(_mockUser2));
-            Assert.That(game.IsStarted, Is.True);
-            Assert.That(game.TurnCount, Is.EqualTo(1));
-            Assert.That(game.Players, Has.Count.EqualTo(2));
-        }
+        await game.RandomPlaceRemaining(_mockUser1);
+        await game.RandomPlaceRemaining(_mockUser2); // Both fleets ready: playing phase begins.
+        return game;
     }
 
     [Test]
-    public async Task Test_StartGame_ShouldPlaceFullFleetForEachPlayer()
+    public async Task Test_JoinGame_ShouldEnterPlacementPhase_WhenTwoPlayersJoin()
     {
         // Arrange
         var game = CreateGame();
@@ -84,14 +73,12 @@ public class BattleshipGameTest
         await game.JoinGame(_mockUser2);
 
         // Assert
-        var expectedCells = BattleshipConstants.FLEET.Sum(ship => ship.Size);
         using (Assert.EnterMultipleScope())
         {
-            foreach (var player in game.Players)
-            {
-                Assert.That(player.Board.Ships, Has.Count.EqualTo(BattleshipConstants.FLEET.Count));
-                Assert.That(CountShipCells(player.Board), Is.EqualTo(expectedCells));
-            }
+            Assert.That(game.Players, Has.Count.EqualTo(2));
+            Assert.That(game.IsPlacementPhase, Is.True);
+            Assert.That(game.IsStarted, Is.False);
+            Assert.That(game.TurnCount, Is.EqualTo(0));
         }
     }
 
@@ -114,12 +101,125 @@ public class BattleshipGameTest
     }
 
     [Test]
-    public async Task Test_Fire_ShouldBeIgnored_WhenNotPlayersTurn()
+    public async Task Test_PlaceShip_ShouldPlaceCurrentShipAndAdvance_WhenPlacementIsValid()
     {
         // Arrange
         var game = CreateGame();
         await game.JoinGame(_mockUser1);
         await game.JoinGame(_mockUser2);
+        var player = game.Players.First(candidate => Equals(candidate.User, _mockUser1));
+
+        // Act: first ship is the carrier (size 5), default horizontal orientation, placed from A1.
+        await game.PlaceShip(_mockUser1, "A1");
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(player.Board.Ships, Has.Count.EqualTo(1));
+            Assert.That(player.NextShipIndex, Is.EqualTo(1));
+            for (var column = 0; column < BattleshipConstants.FLEET[0].Size; column++)
+            {
+                Assert.That(player.Board.ShipGrid[0, column], Is.Not.Null);
+            }
+        }
+    }
+
+    [Test]
+    public async Task Test_PlaceShip_ShouldBeIgnored_WhenShipsOverlap()
+    {
+        // Arrange
+        var game = CreateGame();
+        await game.JoinGame(_mockUser1);
+        await game.JoinGame(_mockUser2);
+        var player = game.Players.First(candidate => Equals(candidate.User, _mockUser1));
+        await game.PlaceShip(_mockUser1, "A1"); // Carrier on row 0
+
+        // Act: next ship overlaps the carrier
+        await game.PlaceShip(_mockUser1, "A1");
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(player.Board.Ships, Has.Count.EqualTo(1));
+            Assert.That(player.NextShipIndex, Is.EqualTo(1));
+        }
+    }
+
+    [Test]
+    public async Task Test_ToggleOrientation_ShouldFlipPlacementOrientation()
+    {
+        // Arrange
+        var game = CreateGame();
+        await game.JoinGame(_mockUser1);
+        await game.JoinGame(_mockUser2);
+        var player = game.Players.First(candidate => Equals(candidate.User, _mockUser1));
+        var initial = player.IsHorizontalPlacement;
+
+        // Act
+        await game.ToggleOrientation(_mockUser1);
+
+        // Assert
+        Assert.That(player.IsHorizontalPlacement, Is.EqualTo(!initial));
+    }
+
+    [Test]
+    public async Task Test_RandomPlaceRemaining_ShouldPlaceFullFleet()
+    {
+        // Arrange
+        var game = CreateGame();
+        await game.JoinGame(_mockUser1);
+        await game.JoinGame(_mockUser2);
+        var player = game.Players.First(candidate => Equals(candidate.User, _mockUser1));
+
+        // Act
+        await game.RandomPlaceRemaining(_mockUser1);
+
+        // Assert
+        var expectedCells = BattleshipConstants.FLEET.Sum(ship => ship.Size);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(player.HasPlacedAllShips, Is.True);
+            Assert.That(player.Board.Ships, Has.Count.EqualTo(BattleshipConstants.FLEET.Count));
+            Assert.That(CountShipCells(player.Board), Is.EqualTo(expectedCells));
+            Assert.That(game.IsStarted, Is.False); // opponent has not placed yet
+        }
+    }
+
+    [Test]
+    public async Task Test_Game_ShouldStartPlaying_WhenBothPlayersHavePlacedFleets()
+    {
+        // Arrange & Act
+        var game = await CreatePlayingGameAsync();
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(game.IsStarted, Is.True);
+            Assert.That(game.IsPlacementPhase, Is.False);
+            Assert.That(game.TurnCount, Is.EqualTo(1));
+        }
+    }
+
+    [Test]
+    public async Task Test_Fire_ShouldBeIgnored_DuringPlacementPhase()
+    {
+        // Arrange
+        var game = CreateGame();
+        await game.JoinGame(_mockUser1);
+        await game.JoinGame(_mockUser2);
+
+        // Act
+        await game.Fire(_mockUser1, "A1");
+
+        // Assert
+        Assert.That(game.TurnCount, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task Test_Fire_ShouldBeIgnored_WhenNotPlayersTurn()
+    {
+        // Arrange
+        var game = await CreatePlayingGameAsync();
         var notCurrent = game.Players.First(player => !Equals(player.User, game.PlayerCurrentlyPlaying));
 
         // Act
@@ -133,10 +233,7 @@ public class BattleshipGameTest
     public async Task Test_Fire_ShouldMarkMiss_WhenCellHasNoShip()
     {
         // Arrange
-        var game = CreateGame();
-        await game.JoinGame(_mockUser1);
-        await game.JoinGame(_mockUser2);
-
+        var game = await CreatePlayingGameAsync();
         var current = CurrentPlayer(game);
         var opponent = Opponent(game, current);
         var waterCell = FindWaterCell(opponent.Board);
@@ -156,10 +253,7 @@ public class BattleshipGameTest
     public async Task Test_Fire_ShouldMarkHit_WhenCellHasShip()
     {
         // Arrange
-        var game = CreateGame();
-        await game.JoinGame(_mockUser1);
-        await game.JoinGame(_mockUser2);
-
+        var game = await CreatePlayingGameAsync();
         var current = CurrentPlayer(game);
         var opponent = Opponent(game, current);
         var shipCell = FindShipCell(opponent.Board);
@@ -175,9 +269,7 @@ public class BattleshipGameTest
     public async Task Test_Game_ShouldDeclareWinner_WhenAllOpponentShipsAreSunk()
     {
         // Arrange
-        var game = CreateGame();
-        await game.JoinGame(_mockUser1);
-        await game.JoinGame(_mockUser2);
+        var game = await CreatePlayingGameAsync();
 
         // Act: Player1 hits every turn, Player2 always misses, so Player1 wins.
         await PlayUntilWinnerAsync(game, _mockUser1);
@@ -186,7 +278,7 @@ public class BattleshipGameTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(game.IsEnded, Is.True);
-            _context.Received(1).ReplyLocalizedMessage("battleship_win_message", _mockUser1.Name);
+            Assert.That(game.WinnerName, Is.EqualTo(_mockUser1.Name));
         }
 
         await _mockRatingService.Received(1)
@@ -194,7 +286,7 @@ public class BattleshipGameTest
     }
 
     [Test]
-    public async Task Test_Forfeit_ShouldMakeOpponentWin()
+    public async Task Test_Forfeit_ShouldMakeOpponentWin_DuringPlacement()
     {
         // Arrange
         var game = CreateGame();
@@ -208,8 +300,31 @@ public class BattleshipGameTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(game.IsEnded, Is.True);
-            _context.Received(1).ReplyLocalizedMessage("battleship_player_forfeited", _mockUser1.Name);
-            _context.Received(1).ReplyLocalizedMessage("battleship_win_message", _mockUser2.Name);
+            Assert.That(game.WinnerName, Is.EqualTo(_mockUser2.Name));
+        }
+    }
+
+    [Test]
+    public async Task Test_PlacementTimeout_ShouldAutoPlaceFleetsAndStart_WhenDelayElapses()
+    {
+        // Arrange
+        var game = CreateGame(placementTimeout: TimeSpan.FromMilliseconds(40));
+        await game.JoinGame(_mockUser1);
+        await game.JoinGame(_mockUser2);
+
+        // Act
+        await Task.Delay(150);
+
+        // Assert
+        var expectedCells = BattleshipConstants.FLEET.Sum(ship => ship.Size);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(game.IsStarted, Is.True);
+            Assert.That(game.IsPlacementPhase, Is.False);
+            foreach (var player in game.Players)
+            {
+                Assert.That(CountShipCells(player.Board), Is.EqualTo(expectedCells));
+            }
         }
     }
 
@@ -217,9 +332,7 @@ public class BattleshipGameTest
     public async Task Test_Timeout_ShouldDisqualifyCurrentPlayer_WhenDelayElapses()
     {
         // Arrange
-        var game = CreateGame(TimeSpan.FromMilliseconds(40));
-        await game.JoinGame(_mockUser1);
-        await game.JoinGame(_mockUser2);
+        var game = await CreatePlayingGameAsync(turnTimeout: TimeSpan.FromMilliseconds(40));
         var current = game.PlayerCurrentlyPlaying;
 
         // Act
@@ -229,7 +342,7 @@ public class BattleshipGameTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(game.IsEnded, Is.True);
-            _context.Received(1).ReplyLocalizedMessage("battleship_on_timeout", current.Name);
+            Assert.That(game.WinnerName, Is.Not.EqualTo(current.Name)); // the timed-out player loses
         }
     }
 
@@ -237,16 +350,14 @@ public class BattleshipGameTest
     public async Task Test_Timeout_ShouldBeCancelled_WhenGameIsCancelled()
     {
         // Arrange
-        var game = CreateGame(TimeSpan.FromMilliseconds(40));
-        await game.JoinGame(_mockUser1);
-        await game.JoinGame(_mockUser2);
+        var game = await CreatePlayingGameAsync(turnTimeout: TimeSpan.FromMilliseconds(40));
 
         // Act
         game.Cancel();
         await Task.Delay(150);
 
-        // Assert
-        _context.DidNotReceive().ReplyLocalizedMessage("battleship_on_timeout", Arg.Any<string>());
+        // Assert: the turn timeout must not have fired (no winner was declared by timeout)
+        Assert.That(game.WinnerName, Is.Null);
     }
 
     private async Task PlayUntilWinnerAsync(BattleshipGame game, IUser intendedWinner)

@@ -10,8 +10,13 @@ public interface IBattleshipGame : IGame
     int TurnCount { get; }
     int GameId { get; }
     string PlayerNames { get; }
+    bool IsPlacementPhase { get; }
     Task DisplayAnnounce();
     Task JoinGame(IUser user);
+    Task PlaceShip(IUser user, string coordinate);
+    Task ToggleOrientation(IUser user);
+    Task RandomPlaceRemaining(IUser user);
+    Task ResetPlacement(IUser user);
     Task Fire(IUser user, string coordinate);
     Task Forfeit(IUser user);
     void Cancel();

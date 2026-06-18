@@ -1701,9 +1701,6 @@
     <data name="battleship_panel_join" xml:space="preserve">
         <value>Unisciti alla partita</value>
     </data>
-    <data name="battleship_panel_ongoing_game" xml:space="preserve">
-        <value>Una partita di battaglia navale è in corso... Giocatori: {0}</value>
-    </data>
     <data name="battleship_game_start_already_exist" xml:space="preserve">
         <value>Una partita è già in corso.</value>
     </data>
@@ -1772,5 +1769,44 @@
     </data>
     <data name="games_battleship" xml:space="preserve">
         <value>Battaglia navale</value>
+    </data>
+    <data name="battleship_place_instruction" xml:space="preserve">
+        <value>Posiziona la tua {0} (dimensione {1}). Clicca su una casella per collocarne la prua.</value>
+    </data>
+    <data name="battleship_placement_waiting" xml:space="preserve">
+        <value>Flotta pronta! In attesa che l'avversario finisca di posizionare...</value>
+    </data>
+    <data name="battleship_orientation" xml:space="preserve">
+        <value>Orientamento: {0}</value>
+    </data>
+    <data name="battleship_orientation_horizontal" xml:space="preserve">
+        <value>orizzontale</value>
+    </data>
+    <data name="battleship_orientation_vertical" xml:space="preserve">
+        <value>verticale</value>
+    </data>
+    <data name="battleship_rotate" xml:space="preserve">
+        <value>Ruota</value>
+    </data>
+    <data name="battleship_random_placement" xml:space="preserve">
+        <value>Posiziona a caso</value>
+    </data>
+    <data name="battleship_reset_placement" xml:space="preserve">
+        <value>Reimposta</value>
+    </data>
+    <data name="battleship_placement_timeout" xml:space="preserve">
+        <value>Tempo di posizionamento scaduto! Le navi rimanenti sono state posizionate a caso.</value>
+    </data>
+    <data name="battleship_game_log" xml:space="preserve">
+        <value>Registro della partita</value>
+    </data>
+    <data name="battleship_status_placement" xml:space="preserve">
+        <value>I giocatori stanno posizionando le navi...</value>
+    </data>
+    <data name="battleship_status_turn" xml:space="preserve">
+        <value>Turno di {0} (turno {1})</value>
+    </data>
+    <data name="battleship_status_finished" xml:space="preserve">
+        <value>Partita terminata! Ha vinto {0}.</value>
     </data>
 </root>

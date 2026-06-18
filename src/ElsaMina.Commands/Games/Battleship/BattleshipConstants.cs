@@ -6,6 +6,7 @@ public static class BattleshipConstants
     public const int MAX_PLAYERS_COUNT = 2;
 
     public static readonly TimeSpan TIMEOUT_DELAY = TimeSpan.FromSeconds(45);
+    public static readonly TimeSpan PLACEMENT_TIMEOUT_DELAY = TimeSpan.FromSeconds(120);
 
     public static readonly IReadOnlyList<BattleshipShipType> FLEET =
     [

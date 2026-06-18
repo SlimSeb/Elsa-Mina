@@ -1,0 +1,40 @@
+@using System.Linq
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Battleship.BattleshipModel>
+
+@{
+    var game = Model.CurrentGame;
+    var players = string.Join(" vs ", game.Players.Select(player => player.User.Name));
+}
+
+<div style="border:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;border-radius:10px;padding:8px 12px;background-color:@StyleConstants.PRIMARY_BACKGROUND_COLOR">
+    <span style="font-size:13px;font-weight:bold">🚢 @GetString("battleship_game_name")</span>
+    <span style="float:right">@players</span>
+    <br/>
+    @if (game.IsEnded)
+    {
+        <span style="font-weight:bold;color:#0B0">@GetString("battleship_status_finished", Model.WinnerName)</span>
+    }
+    else if (Model.IsPlacementPhase)
+    {
+        <span>@GetString("battleship_status_placement")</span>
+    }
+    else
+    {
+        <span>@GetString("battleship_status_turn", game.PlayerCurrentlyPlaying.Name, game.TurnCount)</span>
+    }
+
+    @if (Model.Log.Count > 0)
+    {
+        <br/>
+        <details>
+            <summary>@GetString("battleship_game_log")</summary>
+            <div style="max-height:160px;overflow-y:auto;margin-top:4px;font-size:11px">
+                @foreach (var entry in Model.Log.AsEnumerable().Reverse())
+                {
+                    <div style="padding:1px 0;border-bottom:1px solid @StyleConstants.PRIMARY_BORDER_COLOR">@entry</div>
+                }
+            </div>
+        </details>
+    }
+</div>

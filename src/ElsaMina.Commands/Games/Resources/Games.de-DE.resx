@@ -1644,9 +1644,6 @@
     <data name="battleship_panel_join" xml:space="preserve">
         <value>Dem Spiel beitreten</value>
     </data>
-    <data name="battleship_panel_ongoing_game" xml:space="preserve">
-        <value>Ein Spiel Schiffe versenken läuft... Spieler: {0}</value>
-    </data>
     <data name="battleship_game_start_already_exist" xml:space="preserve">
         <value>Es läuft bereits ein Spiel.</value>
     </data>
@@ -1715,5 +1712,44 @@
     </data>
     <data name="games_battleship" xml:space="preserve">
         <value>Schiffe versenken</value>
+    </data>
+    <data name="battleship_place_instruction" xml:space="preserve">
+        <value>Platziere dein {0} (Größe {1}). Klicke auf ein Feld, um den Bug zu setzen.</value>
+    </data>
+    <data name="battleship_placement_waiting" xml:space="preserve">
+        <value>Flotte bereit! Warte darauf, dass dein Gegner mit dem Platzieren fertig wird...</value>
+    </data>
+    <data name="battleship_orientation" xml:space="preserve">
+        <value>Ausrichtung: {0}</value>
+    </data>
+    <data name="battleship_orientation_horizontal" xml:space="preserve">
+        <value>horizontal</value>
+    </data>
+    <data name="battleship_orientation_vertical" xml:space="preserve">
+        <value>vertikal</value>
+    </data>
+    <data name="battleship_rotate" xml:space="preserve">
+        <value>Drehen</value>
+    </data>
+    <data name="battleship_random_placement" xml:space="preserve">
+        <value>Zufällig platzieren</value>
+    </data>
+    <data name="battleship_reset_placement" xml:space="preserve">
+        <value>Zurücksetzen</value>
+    </data>
+    <data name="battleship_placement_timeout" xml:space="preserve">
+        <value>Die Platzierungszeit ist abgelaufen! Verbleibende Schiffe wurden zufällig platziert.</value>
+    </data>
+    <data name="battleship_game_log" xml:space="preserve">
+        <value>Spielprotokoll</value>
+    </data>
+    <data name="battleship_status_placement" xml:space="preserve">
+        <value>Die Spieler platzieren ihre Schiffe...</value>
+    </data>
+    <data name="battleship_status_turn" xml:space="preserve">
+        <value>{0} ist am Zug (Zug {1})</value>
+    </data>
+    <data name="battleship_status_finished" xml:space="preserve">
+        <value>Spiel beendet! {0} hat gewonnen.</value>
     </data>
 </root>
