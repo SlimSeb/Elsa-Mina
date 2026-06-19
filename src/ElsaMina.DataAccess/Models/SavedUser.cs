@@ -19,4 +19,5 @@ public class SavedUser
     public TwentyFortyEightScore TwentyFortyEightScore { get; set; }
     public ConnectFourRating ConnectFourRating { get; set; }
     public BattleshipRating BattleshipRating { get; set; }
+    public ChessRating ChessRating { get; set; }
 }

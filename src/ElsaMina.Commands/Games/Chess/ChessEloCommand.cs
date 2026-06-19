@@ -1,0 +1,41 @@
+using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.Rooms;
+using ElsaMina.DataAccess;
+using Microsoft.EntityFrameworkCore;
+
+namespace ElsaMina.Commands.Games.Chess;
+
+[NamedCommand("chesselo", Aliases = ["chessrating"])]
+public class ChessEloCommand : Command
+{
+    private readonly IBotDbContextFactory _dbContextFactory;
+
+    public ChessEloCommand(IBotDbContextFactory dbContextFactory)
+    {
+        _dbContextFactory = dbContextFactory;
+    }
+
+    public override Rank RequiredRank => Rank.Regular;
+    public override bool IsAllowedInPrivateMessage => true;
+
+    public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
+    {
+        var userId = string.IsNullOrWhiteSpace(context.Target)
+            ? context.Sender.UserId
+            : context.Target.Trim().ToLowerInvariant().Replace(" ", "");
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var rating = await dbContext.ChessRatings
+            .FirstOrDefaultAsync(r => r.UserId == userId, cancellationToken);
+
+        if (rating is null)
+        {
+            context.ReplyLocalizedMessage("chess_elo_not_found", userId);
+            return;
+        }
+
+        context.ReplyLocalizedMessage("chess_elo_info", rating.UserId, rating.Rating, rating.Wins, rating.Losses,
+            rating.Draws);
+    }
+}

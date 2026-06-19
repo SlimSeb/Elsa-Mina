@@ -1,0 +1,96 @@
+@using ElsaMina.Commands.Games.Chess
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Chess.ChessModel>
+
+@{
+    const string lightColor = "#f0d9b5";
+    const string darkColor = "#b58863";
+    const string selectedColor = "#f4f47a";
+    const string destinationColor = "#a9d18e";
+    const string lastMoveColor = "#cdd26a";
+
+    var board = Model.CurrentGame.Board;
+    var selected = Model.CurrentGame.SelectedSquare;
+    var destinations = Model.CurrentGame.SelectedSquareDestinations;
+    var lastMove = board.LastMove;
+
+    const string cellStyle = "width: 34px; height: 34px; text-align: center; font-size: 26px; line-height: 34px; padding: 0;";
+    const string buttonStyle = "background: none; border: none; box-shadow: none; width: 34px; height: 34px; font-size: 26px; line-height: 34px; padding: 0; cursor: pointer;";
+    const string labelStyle = "width: 16px; text-align: center; font-size: 11px; color: #888;";
+}
+
+<table style="margin: auto; border-collapse: collapse">
+    @for (var row = 0; row < ChessConstants.BOARD_SIZE; row++)
+    {
+        <tr>
+            <td style="@labelStyle">@(8 - row)</td>
+            @for (var column = 0; column < ChessConstants.BOARD_SIZE; column++)
+            {
+                var piece = board.Squares[row, column];
+                var glyph = ChessGlyphs.GetGlyph(piece);
+
+                var isSelected = selected == (row, column);
+                var isDestination = destinations.Contains((row, column));
+                var isLastMove = lastMove != null
+                                 && ((lastMove.FromRow == row && lastMove.FromColumn == column)
+                                     || (lastMove.ToRow == row && lastMove.ToColumn == column));
+
+                var backgroundColor = (row + column) % 2 == 0 ? lightColor : darkColor;
+                if (isLastMove)
+                {
+                    backgroundColor = lastMoveColor;
+                }
+                if (isDestination)
+                {
+                    backgroundColor = destinationColor;
+                }
+                if (isSelected)
+                {
+                    backgroundColor = selectedColor;
+                }
+
+                var ownPiece = piece != ChessBoard.EMPTY && ChessBoard.IsWhite(piece) == board.WhiteToMove;
+                string argument = null;
+                if (selected == null)
+                {
+                    if (ownPiece)
+                    {
+                        argument = ChessBoard.ToSquareName(row, column);
+                    }
+                }
+                else if (isSelected)
+                {
+                    argument = ChessBoard.ToSquareName(row, column);
+                }
+                else if (isDestination)
+                {
+                    argument = ChessBoard.ToSquareName(selected.Value.Row, selected.Value.Column)
+                               + ChessBoard.ToSquareName(row, column);
+                }
+
+                <td style="@cellStyle background-color: @backgroundColor;">
+                    @if (argument != null)
+                    {
+                        <button
+                            class="button"
+                            name="send"
+                            value="/botmsg @Model.BotName,@(Model.Trigger)chessplay @Model.RoomId, @argument"
+                            style="@buttonStyle">
+                            @glyph
+                        </button>
+                    }
+                    else
+                    {
+                        <span>@glyph</span>
+                    }
+                </td>
+            }
+        </tr>
+    }
+    <tr>
+        <td style="@labelStyle"></td>
+        @for (var column = 0; column < ChessConstants.BOARD_SIZE; column++)
+        {
+            <td style="@labelStyle">@((char)('a' + column))</td>
+        }
+    </tr>
+</table>

@@ -1,0 +1,16 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Chess.ChessModel>
+
+<div>
+    <h3>
+        @GetString("chess_panel_title")
+    </h3>
+
+    <span>@GetString("chess_panel_players", Model.CurrentGame.PlayerNames)</span><br /><br />
+
+    <button
+        class="button"
+        name="send"
+        value="/botmsg @Model.BotName,@(Model.Trigger)chessj @Model.RoomId">
+        @GetString("chess_panel_join")
+    </button>
+</div>

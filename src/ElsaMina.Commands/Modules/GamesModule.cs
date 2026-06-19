@@ -4,6 +4,7 @@ using ElsaMina.Commands.Games.Battleship;
 using ElsaMina.Commands.Games.Belote;
 using ElsaMina.Commands.Games.Blackjack;
 using ElsaMina.Commands.Games.Catalog;
+using ElsaMina.Commands.Games.Chess;
 using ElsaMina.Commands.Games.ConnectFour;
 using ElsaMina.Commands.Games.FloodIt;
 using ElsaMina.Commands.Games.GuessingGame;
@@ -48,6 +49,14 @@ public class GamesModule : Module
         builder.RegisterCommand<ForfeitConnectFourCommand>();
         builder.RegisterCommand<ConnectFourLeaderboardCommand>();
         builder.RegisterCommand<ConnectFourEloCommand>();
+
+        builder.RegisterCommand<CreateChessCommand>();
+        builder.RegisterCommand<JoinChessCommand>();
+        builder.RegisterCommand<PlayChessCommand>();
+        builder.RegisterCommand<EndChessCommand>();
+        builder.RegisterCommand<ForfeitChessCommand>();
+        builder.RegisterCommand<ChessLeaderboardCommand>();
+        builder.RegisterCommand<ChessEloCommand>();
 
         builder.RegisterCommand<CreateBattleshipCommand>();
         builder.RegisterCommand<JoinBattleshipCommand>();
@@ -156,6 +165,8 @@ public class GamesModule : Module
         builder.RegisterType<CapitalCitiesGame>().AsSelf();
         builder.RegisterType<ConnectFourGame>().AsSelf();
         builder.RegisterType<ConnectFourRatingService>().As<IConnectFourRatingService>().SingleInstance();
+        builder.RegisterType<ChessGame>().AsSelf();
+        builder.RegisterType<ChessRatingService>().As<IChessRatingService>().SingleInstance();
         builder.RegisterType<BattleshipGame>().AsSelf();
         builder.RegisterType<BattleshipRatingService>().As<IBattleshipRatingService>().SingleInstance();
         builder.RegisterType<VoltorbFlipGame>().AsSelf();

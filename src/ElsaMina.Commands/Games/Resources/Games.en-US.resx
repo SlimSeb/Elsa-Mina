@@ -1815,4 +1815,100 @@
     <data name="battleship_status_finished" xml:space="preserve">
         <value>Game over! {0} won.</value>
     </data>
+  <data name="chess_game_name" xml:space="preserve">
+    <value>Chess</value>
+  </data>
+  <data name="chess_game_white" xml:space="preserve">
+    <value>White: {0}</value>
+  </data>
+  <data name="chess_game_black" xml:space="preserve">
+    <value>Black: {0}</value>
+  </data>
+  <data name="chess_game_current_turn" xml:space="preserve">
+    <value>It's {0}'s turn!</value>
+  </data>
+  <data name="chess_game_check" xml:space="preserve">
+    <value>Check!</value>
+  </data>
+  <data name="chess_game_how_to_play" xml:space="preserve">
+    <value>Click a piece, then its destination to move.</value>
+  </data>
+  <data name="chess_game_timeout" xml:space="preserve">
+    <value>(You have {0} seconds to play)</value>
+  </data>
+  <data name="chess_game_turn" xml:space="preserve">
+    <value>Move: {0}</value>
+  </data>
+  <data name="chess_game_party_id" xml:space="preserve">
+    <value>Game: {0}</value>
+  </data>
+  <data name="chess_game_draw_end" xml:space="preserve">
+    <value>The game ended in a draw.</value>
+  </data>
+  <data name="chess_game_win_message" xml:space="preserve">
+    <value>{0} won the game!</value>
+  </data>
+  <data name="chess_game_on_timeout" xml:space="preserve">
+    <value>{0} was disqualified because they could not play in time.</value>
+  </data>
+  <data name="chess_game_start_already_exist" xml:space="preserve">
+    <value>A game is already ongoing.</value>
+  </data>
+  <data name="chess_game_cancelled" xml:space="preserve">
+    <value>The game has been cancelled.</value>
+  </data>
+  <data name="chess_game_ongoing_game" xml:space="preserve">
+    <value>There's no game currently ongoing.</value>
+  </data>
+  <data name="chess_panel_title" xml:space="preserve">
+    <value>A chess game has been created!</value>
+  </data>
+  <data name="chess_panel_players" xml:space="preserve">
+    <value>Registered players: {0}</value>
+  </data>
+  <data name="chess_panel_join" xml:space="preserve">
+    <value>Join the game</value>
+  </data>
+  <data name="chess_panel_ongoing_game" xml:space="preserve">
+    <value>A chess game is ongoing... Players: {0}</value>
+  </data>
+  <data name="chess_game_player_forfeited" xml:space="preserve">
+    <value>{0} forfeited.</value>
+  </data>
+  <data name="chess_game_forfeit" xml:space="preserve">
+    <value>Forfeit</value>
+  </data>
+  <data name="chess_game_options" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="chess_leaderboard_title" xml:space="preserve">
+    <value>Chess - ELO Leaderboard</value>
+  </data>
+  <data name="chess_leaderboard_rating" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="chess_leaderboard_wins" xml:space="preserve">
+    <value>Wins</value>
+  </data>
+  <data name="chess_leaderboard_losses" xml:space="preserve">
+    <value>Losses</value>
+  </data>
+  <data name="chess_leaderboard_draws" xml:space="preserve">
+    <value>Draws</value>
+  </data>
+  <data name="chess_leaderboard_empty" xml:space="preserve">
+    <value>No ratings found yet. Play some games first!</value>
+  </data>
+  <data name="chess_elo_info" xml:space="preserve">
+    <value>{0}'s Chess ELO: {1} ({2}W / {3}L / {4}D)</value>
+  </data>
+  <data name="chess_elo_not_found" xml:space="preserve">
+    <value>No rating found for {0}.</value>
+  </data>
+  <data name="chess_rating_update" xml:space="preserve">
+    <value>{0}: {1} → {2} ({3:+0;-0;+0}) | {4}: {5} → {6} ({7:+0;-0;+0})</value>
+  </data>
+  <data name="games_chess" xml:space="preserve">
+    <value>Chess</value>
+  </data>
 </root>

@@ -1,0 +1,57 @@
+@using ElsaMina.Commands.Games.Chess
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Chess.ChessModel>
+
+@{
+    const string cellStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string cellStyleWithBg = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+
+    var game = Model.CurrentGame;
+    var board = game.Board;
+    var isCurrentPlayerInCheck = board.IsInCheck(board.WhiteToMove);
+}
+<table style="border-collapse: collapse; width: 100%">
+    <thead>
+    <tr>
+        <th style="@cellStyleWithBg">
+            @GetString("chess_game_name")
+        </th>
+        <th style="@cellStyleWithBg">
+            @GetString("chess_game_options")
+        </th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr>
+        <td style="@cellStyle">
+            @{ await IncludeAsync("Games/Chess/ChessGrid", Model); }
+        </td>
+        <td style="padding: 20px; @cellStyle">
+            <span style="font-weight: bold;">@GetString("chess_game_name")</span><br/>
+            <span>@GetString("chess_game_white", game.WhitePlayer?.Name)</span><br/>
+            <span>@GetString("chess_game_black", game.BlackPlayer?.Name)</span><br/>
+            <span>@GetString("chess_game_current_turn", game.PlayerCurrentlyPlaying?.Name)</span><br/>
+            @if (isCurrentPlayerInCheck)
+            {
+                <span style="color: #C00; font-weight: bold;">@GetString("chess_game_check")</span><br/>
+            }
+            <span>@GetString("chess_game_how_to_play")</span><br/>
+            <span>@GetString("chess_game_timeout", ChessConstants.TIMEOUT_DELAY.TotalSeconds)</span><br/>
+            <span>@GetString("chess_game_turn", game.TurnCount)</span><br/>
+            <span>@GetString("chess_game_party_id", game.GameId)</span>
+            <br/><br/>
+            <details>
+                <summary>@GetString("chess_game_options")</summary>
+                <br/>
+                <button
+                    class="button"
+                    value="/botmsg @Model.BotName,@(Model.Trigger)chessff @Model.RoomId"
+                    name="send">
+                    @GetString("chess_game_forfeit")
+                </button>
+            </details>
+        </td>
+    </tr>
+    </tbody>
+</table>

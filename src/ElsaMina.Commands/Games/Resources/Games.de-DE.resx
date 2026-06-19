@@ -1752,4 +1752,100 @@
     <data name="battleship_status_finished" xml:space="preserve">
         <value>Spiel beendet! {0} hat gewonnen.</value>
     </data>
+  <data name="chess_game_name" xml:space="preserve">
+    <value>Schach</value>
+  </data>
+  <data name="chess_game_white" xml:space="preserve">
+    <value>Weiß: {0}</value>
+  </data>
+  <data name="chess_game_black" xml:space="preserve">
+    <value>Schwarz: {0}</value>
+  </data>
+  <data name="chess_game_current_turn" xml:space="preserve">
+    <value>{0} ist am Zug!</value>
+  </data>
+  <data name="chess_game_check" xml:space="preserve">
+    <value>Schach!</value>
+  </data>
+  <data name="chess_game_how_to_play" xml:space="preserve">
+    <value>Klicke auf eine Figur und dann auf das Zielfeld, um zu ziehen.</value>
+  </data>
+  <data name="chess_game_timeout" xml:space="preserve">
+    <value>(Du hast {0} Sekunden Zeit zu ziehen)</value>
+  </data>
+  <data name="chess_game_turn" xml:space="preserve">
+    <value>Zug: {0}</value>
+  </data>
+  <data name="chess_game_party_id" xml:space="preserve">
+    <value>Spiel: {0}</value>
+  </data>
+  <data name="chess_game_draw_end" xml:space="preserve">
+    <value>Das Spiel endete unentschieden.</value>
+  </data>
+  <data name="chess_game_win_message" xml:space="preserve">
+    <value>{0} hat das Spiel gewonnen!</value>
+  </data>
+  <data name="chess_game_on_timeout" xml:space="preserve">
+    <value>{0} wurde disqualifiziert, weil nicht rechtzeitig gezogen wurde.</value>
+  </data>
+  <data name="chess_game_start_already_exist" xml:space="preserve">
+    <value>Es läuft bereits ein Spiel.</value>
+  </data>
+  <data name="chess_game_cancelled" xml:space="preserve">
+    <value>Das Spiel wurde abgebrochen.</value>
+  </data>
+  <data name="chess_game_ongoing_game" xml:space="preserve">
+    <value>Es läuft derzeit kein Spiel.</value>
+  </data>
+  <data name="chess_panel_title" xml:space="preserve">
+    <value>Ein Schachspiel wurde erstellt!</value>
+  </data>
+  <data name="chess_panel_players" xml:space="preserve">
+    <value>Angemeldete Spieler: {0}</value>
+  </data>
+  <data name="chess_panel_join" xml:space="preserve">
+    <value>Spiel beitreten</value>
+  </data>
+  <data name="chess_panel_ongoing_game" xml:space="preserve">
+    <value>Ein Schachspiel läuft... Spieler: {0}</value>
+  </data>
+  <data name="chess_game_player_forfeited" xml:space="preserve">
+    <value>{0} hat aufgegeben.</value>
+  </data>
+  <data name="chess_game_forfeit" xml:space="preserve">
+    <value>Aufgeben</value>
+  </data>
+  <data name="chess_game_options" xml:space="preserve">
+    <value>Optionen</value>
+  </data>
+  <data name="chess_leaderboard_title" xml:space="preserve">
+    <value>Schach - ELO-Rangliste</value>
+  </data>
+  <data name="chess_leaderboard_rating" xml:space="preserve">
+    <value>Wertung</value>
+  </data>
+  <data name="chess_leaderboard_wins" xml:space="preserve">
+    <value>Siege</value>
+  </data>
+  <data name="chess_leaderboard_losses" xml:space="preserve">
+    <value>Niederlagen</value>
+  </data>
+  <data name="chess_leaderboard_draws" xml:space="preserve">
+    <value>Remis</value>
+  </data>
+  <data name="chess_leaderboard_empty" xml:space="preserve">
+    <value>Noch keine Wertungen vorhanden. Spiele zuerst ein paar Partien!</value>
+  </data>
+  <data name="chess_elo_info" xml:space="preserve">
+    <value>{0}s Schach-ELO: {1} ({2}S / {3}N / {4}R)</value>
+  </data>
+  <data name="chess_elo_not_found" xml:space="preserve">
+    <value>Keine Wertung für {0} gefunden.</value>
+  </data>
+  <data name="chess_rating_update" xml:space="preserve">
+    <value>{0}: {1} → {2} ({3:+0;-0;+0}) | {4}: {5} → {6} ({7:+0;-0;+0})</value>
+  </data>
+  <data name="games_chess" xml:space="preserve">
+    <value>Schach</value>
+  </data>
 </root>
