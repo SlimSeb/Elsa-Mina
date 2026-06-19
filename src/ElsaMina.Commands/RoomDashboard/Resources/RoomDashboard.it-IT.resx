@@ -57,6 +57,15 @@
     <data name="room_config_failure" xml:space="preserve">
         <value>Si è verificato un errore durante l'aggiornamento della configurazione: {0}</value>
     </data>
+    <data name="room_config_unknown_parameter" xml:space="preserve">
+        <value>Parametro sconosciuto '{0}'.</value>
+    </data>
+    <data name="room_config_invalid_pair" xml:space="preserve">
+        <value>Voce di configurazione non valida '{0}', formato previsto parametro=valore.</value>
+    </data>
+    <data name="room_config_invalid_value" xml:space="preserve">
+        <value>Valore non valido '{0}' per il parametro '{1}'.</value>
+    </data>
     <data name="room_config_room_not_found" xml:space="preserve">
         <value>Impossibile trovare la sala '{0}'</value>
     </data>

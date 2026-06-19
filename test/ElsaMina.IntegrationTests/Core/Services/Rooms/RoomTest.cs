@@ -50,8 +50,7 @@ public class RoomTest
         dependencyContainerService.Resolve<IRoomParameterStore>()
             .Returns(_ => new EfRoomParameterStore(_dbContextFactory, parametersFactory));
 
-        var roomFactory = new RoomFactory(configuration, parametersFactory, _dbContextFactory,
-            dependencyContainerService);
+        var roomFactory = new RoomFactory(configuration, _dbContextFactory, dependencyContainerService);
 
         _roomsManager = new RoomsManager(roomFactory);
 

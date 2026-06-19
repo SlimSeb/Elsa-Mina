@@ -14,18 +14,15 @@ public class RoomFactory : IRoomFactory
     private readonly IConfiguration _configuration;
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly IDependencyContainerService _dependencyContainerService;
-    private readonly IReadOnlyDictionary<Parameter, IParameterDefinition> _parametersDefinitions;
 
     public RoomFactory(
         IConfiguration configuration,
-        IParametersDefinitionFactory parametersDefinitionFactory,
         IBotDbContextFactory dbContextFactory,
         IDependencyContainerService dependencyContainerService)
     {
         _configuration = configuration;
         _dbContextFactory = dbContextFactory;
         _dependencyContainerService = dependencyContainerService;
-        _parametersDefinitions = parametersDefinitionFactory.GetParametersDefinitions();
     }
 
     public async Task<IRoom> CreateRoomAsync(string roomId, string[] lines,
@@ -53,8 +50,7 @@ public class RoomFactory : IRoomFactory
             roomId,
             new CultureInfo(localeCode ?? _configuration.DefaultLocaleCode),
             hasTimeZone ? timeZone : TimeZoneInfo.Local,
-            parameterStore,
-            _parametersDefinitions);
+            parameterStore);
 
         parameterStore.Room = room;
         room.AddUsers(users ?? []);

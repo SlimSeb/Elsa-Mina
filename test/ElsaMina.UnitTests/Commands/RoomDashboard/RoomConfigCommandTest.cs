@@ -96,11 +96,77 @@ public class RoomConfigCommandTest
             { Parameter.Locale, localeDef },
             { Parameter.TimeZone, timeZoneDef }
         });
+        room.SetParameterValueAsync(Arg.Any<Parameter>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(true);
 
         await _command.RunAsync(_context);
 
         await room.Received(1).SetParameterValueAsync(Parameter.Locale, "fr-FR", Arg.Any<CancellationToken>());
         await room.Received(1).SetParameterValueAsync(Parameter.TimeZone, "Europe/Paris", Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyUnknownParameter_AndNotSetValue_WhenIdentifierDoesNotMatch()
+    {
+        var room = Substitute.For<IRoom>();
+        _context.Target.Returns("testroom,Unknown=foo");
+        _roomsManager.GetRoom("testroom").Returns(room);
+
+        var localeDef = Substitute.For<IParameterDefinition>();
+        localeDef.Identifier.Returns("Locale");
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
+        {
+            { Parameter.Locale, localeDef }
+        });
+
+        await _command.RunAsync(_context);
+
+        _context.Received(1).ReplyLocalizedMessage("room_config_unknown_parameter", "Unknown");
+        await room.DidNotReceive()
+            .SetParameterValueAsync(Arg.Any<Parameter>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        _context.DidNotReceive().ReplyLocalizedMessage("room_config_success", Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyInvalidValue_WhenSetParameterValueReturnsFalse()
+    {
+        var room = Substitute.For<IRoom>();
+        _context.Target.Returns("testroom,Locale=invalid");
+        _roomsManager.GetRoom("testroom").Returns(room);
+
+        var localeDef = Substitute.For<IParameterDefinition>();
+        localeDef.Identifier.Returns("Locale");
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
+        {
+            { Parameter.Locale, localeDef }
+        });
+        room.SetParameterValueAsync(Parameter.Locale, "invalid", Arg.Any<CancellationToken>()).Returns(false);
+
+        await _command.RunAsync(_context);
+
+        _context.Received(1).ReplyLocalizedMessage("room_config_invalid_value", "invalid", "Locale");
+        _context.DidNotReceive().ReplyLocalizedMessage("room_config_success", Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyInvalidPair_WhenPairHasNoValue()
+    {
+        var room = Substitute.For<IRoom>();
+        _context.Target.Returns("testroom,Locale");
+        _roomsManager.GetRoom("testroom").Returns(room);
+
+        var localeDef = Substitute.For<IParameterDefinition>();
+        localeDef.Identifier.Returns("Locale");
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
+        {
+            { Parameter.Locale, localeDef }
+        });
+
+        await _command.RunAsync(_context);
+
+        _context.Received(1).ReplyLocalizedMessage("room_config_invalid_pair", "Locale");
+        await room.DidNotReceive()
+            .SetParameterValueAsync(Arg.Any<Parameter>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]

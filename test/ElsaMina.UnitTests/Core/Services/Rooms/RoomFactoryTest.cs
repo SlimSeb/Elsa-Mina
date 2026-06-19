@@ -13,7 +13,6 @@ public class RoomFactoryTest
 {
     private RoomFactory _sut;
     private IConfiguration _configuration;
-    private IParametersDefinitionFactory _parametersDefinitionFactory;
     private IBotDbContextFactory _dbContextFactory;
     private IDependencyContainerService _dependencyContainerService;
     private IRoomParameterStore _roomParameterStore;
@@ -37,10 +36,6 @@ public class RoomFactoryTest
         _configuration = Substitute.For<IConfiguration>();
         _configuration.DefaultLocaleCode.Returns("en-US");
 
-        _parametersDefinitionFactory = Substitute.For<IParametersDefinitionFactory>();
-        _parametersDefinitionFactory.GetParametersDefinitions()
-            .Returns(new Dictionary<Parameter, IParameterDefinition>());
-
         _dbContextFactory = CreateFactory(_dbContextOptions);
 
         _roomParameterStore = Substitute.For<IRoomParameterStore>();
@@ -52,8 +47,7 @@ public class RoomFactoryTest
         _dependencyContainerService = Substitute.For<IDependencyContainerService>();
         _dependencyContainerService.Resolve<IRoomParameterStore>().Returns(_roomParameterStore);
 
-        _sut = new RoomFactory(_configuration, _parametersDefinitionFactory, _dbContextFactory,
-            _dependencyContainerService);
+        _sut = new RoomFactory(_configuration, _dbContextFactory, _dependencyContainerService);
     }
 
     [Test]

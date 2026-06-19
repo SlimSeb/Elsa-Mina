@@ -15,12 +15,10 @@ public class Room : IRoom
     private readonly Queue<Tuple<string, string>> _lastMessages = new(MESSAGE_QUEUE_LENGTH);
     private readonly ConcurrentDictionary<string, IUser> _users = new();
     private readonly IRoomParameterStore _roomParameterStore;
-    private readonly IReadOnlyDictionary<Parameter, IParameterDefinition> _parametersDefinitions;
     private IGame _game;
 
     public Room(string roomTitle, string roomId, CultureInfo culture, TimeZoneInfo timeZoneInfo,
-        IRoomParameterStore roomParameterStore,
-        IReadOnlyDictionary<Parameter, IParameterDefinition> parametersDefinitions)
+        IRoomParameterStore roomParameterStore)
     {
         RoomId = roomId ?? roomTitle.ToLowerAlphaNum();
         Name = roomTitle;
@@ -28,7 +26,6 @@ public class Room : IRoom
         TimeZone = timeZoneInfo;
 
         _roomParameterStore = roomParameterStore;
-        _parametersDefinitions = parametersDefinitions;
     }
 
     public string RoomId { get; }
@@ -55,11 +52,10 @@ public class Room : IRoom
         }
     }
 
-    public async Task<string> GetParameterValueAsync(Parameter parameter, CancellationToken cancellationToken = default)
+    public Task<string> GetParameterValueAsync(Parameter parameter, CancellationToken cancellationToken = default)
     {
-        var parameterDefinition = _parametersDefinitions[parameter];
-        return await _roomParameterStore.GetValueAsync(parameter, cancellationToken) ??
-               parameterDefinition.DefaultValue;
+        // The store already falls back to the parameter's default value, so it never returns null.
+        return _roomParameterStore.GetValueAsync(parameter, cancellationToken);
     }
 
     public async Task<bool> SetParameterValueAsync(Parameter parameter, string value,

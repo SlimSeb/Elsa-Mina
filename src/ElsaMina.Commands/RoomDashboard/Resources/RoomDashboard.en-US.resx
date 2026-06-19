@@ -57,6 +57,15 @@
     <data name="room_config_failure" xml:space="preserve">
         <value>An error occurred while updating the configuration : {0}</value>
     </data>
+    <data name="room_config_unknown_parameter" xml:space="preserve">
+        <value>Unknown parameter '{0}'.</value>
+    </data>
+    <data name="room_config_invalid_pair" xml:space="preserve">
+        <value>Invalid configuration entry '{0}', expected format parameter=value.</value>
+    </data>
+    <data name="room_config_invalid_value" xml:space="preserve">
+        <value>Invalid value '{0}' for parameter '{1}'.</value>
+    </data>
     <data name="room_config_room_not_found" xml:space="preserve">
         <value>Could not find room '{0}'</value>
     </data>

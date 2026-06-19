@@ -40,12 +40,28 @@ public class RoomConfigCommand : Command
             foreach (var pair in parts.Skip(1))
             {
                 var items = pair.Split('=');
-                var parameterId = items[0];
-                var value = items[1];
-                var parameter = roomParameters
-                    .FirstOrDefault(kvp => kvp.Value.Identifier == parameterId)
-                    .Key;
-                await room.SetParameterValueAsync(parameter, value, cancellationToken);
+                if (items.Length != 2)
+                {
+                    context.ReplyLocalizedMessage("room_config_invalid_pair", pair);
+                    return;
+                }
+
+                var parameterId = items[0].Trim();
+                var value = items[1].Trim();
+                var match = roomParameters
+                    .FirstOrDefault(kvp => kvp.Value.Identifier == parameterId);
+                if (match.Value == null)
+                {
+                    context.ReplyLocalizedMessage("room_config_unknown_parameter", parameterId);
+                    return;
+                }
+
+                var success = await room.SetParameterValueAsync(match.Key, value, cancellationToken);
+                if (!success)
+                {
+                    context.ReplyLocalizedMessage("room_config_invalid_value", value, parameterId);
+                    return;
+                }
             }
 
             context.ReplyLocalizedMessage("room_config_success", roomId);

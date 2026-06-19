@@ -9,6 +9,7 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
 {
     private readonly IConfiguration _configuration;
     private readonly IResourcesService _resourcesService;
+    private IReadOnlyDictionary<Parameter, IParameterDefinition> _cachedDefinitions;
 
     public ParametersDefinitionFactory(IConfiguration configuration,
         IResourcesService resourcesService)
@@ -18,6 +19,9 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
     }
 
     public IReadOnlyDictionary<Parameter, IParameterDefinition> GetParametersDefinitions() =>
+        _cachedDefinitions ??= BuildParametersDefinitions();
+
+    private IReadOnlyDictionary<Parameter, IParameterDefinition> BuildParametersDefinitions() =>
         new Dictionary<Parameter, IParameterDefinition>
         {
             [Parameter.Locale] = new ParameterDefinition
