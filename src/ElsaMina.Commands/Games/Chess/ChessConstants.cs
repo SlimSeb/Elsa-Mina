@@ -4,5 +4,8 @@ public static class ChessConstants
 {
     public const int BOARD_SIZE = 8;
     public const int MAX_PLAYERS_COUNT = 2;
-    public static readonly TimeSpan TIMEOUT_DELAY = TimeSpan.FromSeconds(90);
+
+    // Blitz time control: each player gets a 3 minute clock with a 2 second increment per move.
+    public static readonly TimeSpan INITIAL_CLOCK = TimeSpan.FromMinutes(3);
+    public static readonly TimeSpan CLOCK_INCREMENT = TimeSpan.FromSeconds(2);
 }

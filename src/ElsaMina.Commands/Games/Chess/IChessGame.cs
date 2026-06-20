@@ -12,6 +12,8 @@ public interface IChessGame : IGame
     IUser BlackPlayer { get; }
     IUser PlayerCurrentlyPlaying { get; }
     int TurnCount { get; }
+    TimeSpan WhiteTimeRemaining { get; }
+    TimeSpan BlackTimeRemaining { get; }
     int GameId { get; }
     string PlayerNames { get; }
     (int Row, int Column)? SelectedSquare { get; }

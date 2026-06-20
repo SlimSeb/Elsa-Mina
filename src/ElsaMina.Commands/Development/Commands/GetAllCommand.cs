@@ -53,6 +53,6 @@ public class GetAllCommand : Command
             });
 
         context.ReplyHtmlPage("all-commands",
-            template.RemoveNewlines().CollapseAttributeWhitespace());
+            template.RemoveNewlines().CollapseAttributeWhitespace().RemoveWhitespacesBetweenTags());
     }
 }

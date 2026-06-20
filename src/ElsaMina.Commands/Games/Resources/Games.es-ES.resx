@@ -1827,8 +1827,8 @@
   <data name="chess_game_how_to_play" xml:space="preserve">
     <value>Haz clic en una pieza y luego en su destino para mover.</value>
   </data>
-  <data name="chess_game_timeout" xml:space="preserve">
-    <value>(Tienes {0} segundos para jugar)</value>
+  <data name="chess_game_time_control" xml:space="preserve">
+    <value>Blitz: {0} min + {1} s de incremento por jugada</value>
   </data>
   <data name="chess_game_turn" xml:space="preserve">
     <value>Jugada: {0}</value>

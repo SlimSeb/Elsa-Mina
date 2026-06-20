@@ -36,7 +36,7 @@ public class CreateChessCommandTest
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>())
             .Returns(Task.FromResult(string.Empty));
         _game = new ChessGame(Substitute.For<IRandomService>(), _templatesManager,
-            _configuration, Substitute.For<IChessRatingService>(), ChessConstants.TIMEOUT_DELAY);
+            _configuration, Substitute.For<IChessRatingService>(), ChessConstants.INITIAL_CLOCK);
 
         _context.RoomId.Returns("room-id");
         _context.Room.Returns(_room);

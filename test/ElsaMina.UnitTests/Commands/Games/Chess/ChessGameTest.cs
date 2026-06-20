@@ -45,7 +45,7 @@ public class ChessGameTest
             .Returns(Task.FromResult<(ChessRatingChange, ChessRatingChange)>(
                 (new ChessRatingChange(1000, 1000), new ChessRatingChange(1000, 1000))));
         _game = new ChessGame(_mockRandomService, _mockTemplatesManager, _configuration,
-            _mockRatingService, ChessConstants.TIMEOUT_DELAY);
+            _mockRatingService, ChessConstants.INITIAL_CLOCK);
         _game.Context = _context;
 
         _mockUser1 = Substitute.For<IUser>();

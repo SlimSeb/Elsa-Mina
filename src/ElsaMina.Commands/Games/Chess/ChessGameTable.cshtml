@@ -9,6 +9,8 @@
     var game = Model.CurrentGame;
     var board = game.Board;
     var isCurrentPlayerInCheck = board.IsInCheck(board.WhiteToMove);
+
+    string FormatClock(TimeSpan time) => $"{(int)time.TotalMinutes:00}:{time.Seconds:00}";
 }
 <table style="border-collapse: collapse; width: 100%">
     <thead>
@@ -29,15 +31,15 @@
         </td>
         <td style="padding: 20px; @cellStyle">
             <span style="font-weight: bold;">@GetString("chess_game_name")</span><br/>
-            <span>@GetString("chess_game_white", game.WhitePlayer?.Name)</span><br/>
-            <span>@GetString("chess_game_black", game.BlackPlayer?.Name)</span><br/>
+            <span>@GetString("chess_game_white", game.WhitePlayer?.Name) <span style="font-weight: bold;">⏱ @FormatClock(game.WhiteTimeRemaining)</span></span><br/>
+            <span>@GetString("chess_game_black", game.BlackPlayer?.Name) <span style="font-weight: bold;">⏱ @FormatClock(game.BlackTimeRemaining)</span></span><br/>
             <span>@GetString("chess_game_current_turn", game.PlayerCurrentlyPlaying?.Name)</span><br/>
             @if (isCurrentPlayerInCheck)
             {
                 <span style="color: #C00; font-weight: bold;">@GetString("chess_game_check")</span><br/>
             }
             <span>@GetString("chess_game_how_to_play")</span><br/>
-            <span>@GetString("chess_game_timeout", ChessConstants.TIMEOUT_DELAY.TotalSeconds)</span><br/>
+            <span>@GetString("chess_game_time_control", (int)ChessConstants.INITIAL_CLOCK.TotalMinutes, (int)ChessConstants.CLOCK_INCREMENT.TotalSeconds)</span><br/>
             <span>@GetString("chess_game_turn", game.TurnCount)</span><br/>
             <span>@GetString("chess_game_party_id", game.GameId)</span>
             <br/><br/>

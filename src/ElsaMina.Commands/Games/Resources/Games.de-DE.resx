@@ -1770,8 +1770,8 @@
   <data name="chess_game_how_to_play" xml:space="preserve">
     <value>Klicke auf eine Figur und dann auf das Zielfeld, um zu ziehen.</value>
   </data>
-  <data name="chess_game_timeout" xml:space="preserve">
-    <value>(Du hast {0} Sekunden Zeit zu ziehen)</value>
+  <data name="chess_game_time_control" xml:space="preserve">
+    <value>Blitz: {0} Min + {1} s Inkrement pro Zug</value>
   </data>
   <data name="chess_game_turn" xml:space="preserve">
     <value>Zug: {0}</value>

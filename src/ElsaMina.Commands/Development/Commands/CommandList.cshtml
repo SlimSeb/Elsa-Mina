@@ -18,7 +18,7 @@
     };
 
     string FlagBadge(string text, string bg, string fg = "#fff") =>
-        $"<span style=\"display:inline-block;padding:1px 6px;border-radius:3px;font-size:0.78rem;background:{bg};color:{fg};margin-left:4px;\">{text}</span>";
+        $"<span style=\"display:inline-block;padding:1px 6px;border-radius:3px;font-size:0.8em;background:{bg};color:{fg};margin-left:4px;\">{text}</span>";
 
     string NavCommand(int index) => $"/w {Model.BotName},{Model.Trigger}allcommands {index}";
     string MenuCommand() => $"/w {Model.BotName},{Model.Trigger}allcommands";

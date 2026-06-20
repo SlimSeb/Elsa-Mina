@@ -1833,8 +1833,8 @@
   <data name="chess_game_how_to_play" xml:space="preserve">
     <value>Click a piece, then its destination to move.</value>
   </data>
-  <data name="chess_game_timeout" xml:space="preserve">
-    <value>(You have {0} seconds to play)</value>
+  <data name="chess_game_time_control" xml:space="preserve">
+    <value>Blitz: {0} min + {1} s increment per move</value>
   </data>
   <data name="chess_game_turn" xml:space="preserve">
     <value>Move: {0}</value>

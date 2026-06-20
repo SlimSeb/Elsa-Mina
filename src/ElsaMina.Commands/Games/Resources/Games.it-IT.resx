@@ -1827,8 +1827,8 @@
   <data name="chess_game_how_to_play" xml:space="preserve">
     <value>Clicca su un pezzo, poi sulla destinazione per muovere.</value>
   </data>
-  <data name="chess_game_timeout" xml:space="preserve">
-    <value>(Hai {0} secondi per giocare)</value>
+  <data name="chess_game_time_control" xml:space="preserve">
+    <value>Blitz: {0} min + {1} s di incremento per mossa</value>
   </data>
   <data name="chess_game_turn" xml:space="preserve">
     <value>Mossa: {0}</value>

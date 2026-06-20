@@ -18,9 +18,15 @@ public class ChessGame : Game, IChessGame
     private readonly IConfiguration _configuration;
     private readonly IChessRatingService _ratingService;
 
-    private readonly PeriodicTimerRunner _turnTimeoutTimer;
     private readonly SemaphoreSlim _joinSemaphore = new(1, 1);
     private readonly List<IUser> _players = [];
+    private readonly TimeSpan _initialClock;
+    private readonly TimeSpan _increment;
+
+    private PeriodicTimerRunner _turnTimeoutTimer;
+    private TimeSpan _whiteTimeRemaining;
+    private TimeSpan _blackTimeRemaining;
+    private DateTime _turnStartedAtUtc;
     private bool _ended;
     private int _renderCount;
 
@@ -29,7 +35,7 @@ public class ChessGame : Game, IChessGame
         ITemplatesManager templatesManager,
         IConfiguration configuration,
         IChessRatingService ratingService) : this(randomService, templatesManager, configuration,
-        ratingService, ChessConstants.TIMEOUT_DELAY)
+        ratingService, ChessConstants.INITIAL_CLOCK)
     {
     }
 
@@ -37,13 +43,14 @@ public class ChessGame : Game, IChessGame
         ITemplatesManager templatesManager,
         IConfiguration configuration,
         IChessRatingService ratingService,
-        TimeSpan timeoutDelay)
+        TimeSpan initialClock)
     {
         _randomService = randomService;
         _templatesManager = templatesManager;
         _configuration = configuration;
         _ratingService = ratingService;
-        _turnTimeoutTimer = new PeriodicTimerRunner(timeoutDelay, OnTimeout, runOnce: true);
+        _initialClock = initialClock;
+        _increment = ChessConstants.CLOCK_INCREMENT;
 
         GameId = NextGameId++;
     }
@@ -61,6 +68,10 @@ public class ChessGame : Game, IChessGame
     public IUser PlayerCurrentlyPlaying => Board.WhiteToMove ? WhitePlayer : BlackPlayer;
 
     public int TurnCount { get; private set; }
+
+    public TimeSpan WhiteTimeRemaining => GetTimeRemaining(forWhite: true);
+
+    public TimeSpan BlackTimeRemaining => GetTimeRemaining(forWhite: false);
 
     public int GameId { get; }
 
@@ -147,6 +158,7 @@ public class ChessGame : Game, IChessGame
             return;
         }
 
+        DeductElapsedTime();
         Board.ApplyMove(move);
         SelectedSquare = null;
         SelectedSquareDestinations = [];
@@ -167,7 +179,7 @@ public class ChessGame : Game, IChessGame
         }
 
         await SendBoardToPlayers();
-        _turnTimeoutTimer.Restart();
+        ScheduleTurnTimeout();
     }
 
     public async Task Forfeit(IUser user)
@@ -189,6 +201,15 @@ public class ChessGame : Game, IChessGame
             return;
         }
 
+        if (Board.WhiteToMove)
+        {
+            _whiteTimeRemaining = TimeSpan.Zero;
+        }
+        else
+        {
+            _blackTimeRemaining = TimeSpan.Zero;
+        }
+
         Context.ReplyLocalizedMessage("chess_game_on_timeout", PlayerCurrentlyPlaying.Name);
         var loser = PlayerCurrentlyPlaying;
         var winner = _players.FirstOrDefault(player => !Equals(player, loser));
@@ -198,7 +219,7 @@ public class ChessGame : Game, IChessGame
     public void Cancel()
     {
         OnEnd();
-        _turnTimeoutTimer.Stop();
+        _turnTimeoutTimer?.Stop();
     }
 
     #endregion
@@ -275,8 +296,49 @@ public class ChessGame : Game, IChessGame
         Board.Initialize();
         OnStart();
         _randomService.ShuffleInPlace(_players);
+        _whiteTimeRemaining = _initialClock;
+        _blackTimeRemaining = _initialClock;
         await SendBoardToPlayers();
-        _turnTimeoutTimer.Restart();
+        ScheduleTurnTimeout();
+    }
+
+    private void DeductElapsedTime()
+    {
+        var elapsed = DateTime.UtcNow - _turnStartedAtUtc;
+        if (Board.WhiteToMove)
+        {
+            _whiteTimeRemaining = _whiteTimeRemaining - elapsed + _increment;
+        }
+        else
+        {
+            _blackTimeRemaining = _blackTimeRemaining - elapsed + _increment;
+        }
+    }
+
+    private void ScheduleTurnTimeout()
+    {
+        _turnTimeoutTimer?.Stop();
+
+        var remaining = Board.WhiteToMove ? _whiteTimeRemaining : _blackTimeRemaining;
+        if (remaining <= TimeSpan.Zero)
+        {
+            remaining = TimeSpan.FromMilliseconds(1);
+        }
+
+        _turnStartedAtUtc = DateTime.UtcNow;
+        _turnTimeoutTimer = new PeriodicTimerRunner(remaining, OnTimeout, runOnce: true);
+        _turnTimeoutTimer.Start();
+    }
+
+    private TimeSpan GetTimeRemaining(bool forWhite)
+    {
+        var remaining = forWhite ? _whiteTimeRemaining : _blackTimeRemaining;
+        if (IsStarted && !IsEnded && Board.WhiteToMove == forWhite && _turnStartedAtUtc != default)
+        {
+            remaining -= DateTime.UtcNow - _turnStartedAtUtc;
+        }
+
+        return remaining < TimeSpan.Zero ? TimeSpan.Zero : remaining;
     }
 
     private async Task OnWin(IUser winner, IUser loser)
