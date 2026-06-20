@@ -50,7 +50,7 @@ public abstract class Context : IContext
 
     public void ReplyHtmlPage(string pageName, string html)
     {
-        Bot.Say(_configuration.DefaultRoom, $"/sendhtmlpage {Sender.UserId}, {pageName}, {html}");
+        Bot.Say(RoomId, $"/sendhtmlpage {Sender.UserId}, {pageName}, {html}");
     }
 
     public void SendMessageIn(string roomId, string message)
@@ -60,12 +60,12 @@ public abstract class Context : IContext
 
     public void SendHtmlPageTo(string userId, string pageName, string html)
     {
-        Bot.Say(_configuration.DefaultRoom, $"/sendhtmlpage {userId}, {pageName}, {html}");
+        Bot.Say(RoomId, $"/sendhtmlpage {userId}, {pageName}, {html}");
     }
 
     public void CloseHtmlPage(string userId, string pageName)
     {
-        Bot.Say(_configuration.DefaultRoom, $"/closehtmlpage {userId}, {pageName}");
+        Bot.Say(RoomId, $"/closehtmlpage {userId}, {pageName}");
     }
 
     public string GetString(string key)
