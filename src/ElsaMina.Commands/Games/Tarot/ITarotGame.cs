@@ -1,4 +1,3 @@
-using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
 
@@ -6,8 +5,6 @@ namespace ElsaMina.Commands.Games.Tarot;
 
 public interface ITarotGame : IGame
 {
-    IContext Context { get; set; }
-
     IReadOnlyList<TarotPlayer> Players { get; }
     int PlayerCount { get; }
     TarotPhase Phase { get; }
@@ -37,8 +34,8 @@ public interface ITarotGame : IGame
     bool CanDeclarePoignee(TarotPlayer player);
     bool CanAnnounceSlam(TarotPlayer player);
 
-    Task BeginJoinPhaseAsync();
     Task<(bool Success, string MessageKey, object[] Args)> JoinAsync(IUser user);
+    Task<(bool Success, string MessageKey, object[] Args)> LeaveAsync(IUser user);
     Task StartAsync(IUser user);
     Task BidAsync(IUser user, TarotBid bid);
     Task CallKingAsync(IUser user, TarotCard card);

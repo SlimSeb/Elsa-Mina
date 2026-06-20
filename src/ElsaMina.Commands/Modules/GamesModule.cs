@@ -123,6 +123,7 @@ public class GamesModule : Module
 
         builder.RegisterCommand<StartTarotCommand>();
         builder.RegisterCommand<JoinTarotCommand>();
+        builder.RegisterCommand<QuitTarotCommand>();
         builder.RegisterCommand<BeginTarotCommand>();
         builder.RegisterCommand<BidTarotCommand>();
         builder.RegisterCommand<CallKingTarotCommand>();

@@ -780,6 +780,15 @@
     <data name="tarot_join_success" xml:space="preserve">
         <value>{0} joined the game.</value>
     </data>
+    <data name="tarot_quit_success" xml:space="preserve">
+        <value>{0} left the game.</value>
+    </data>
+    <data name="tarot_quit_not_joined" xml:space="preserve">
+        <value>You have not joined the game.</value>
+    </data>
+    <data name="tarot_quit_already_started" xml:space="preserve">
+        <value>The game has already started.</value>
+    </data>
     <data name="tarot_start_already_started" xml:space="preserve">
         <value>The game has already started.</value>
     </data>
@@ -944,6 +953,9 @@
     </data>
     <data name="tarot_lobby_start_button" xml:space="preserve">
         <value>Start</value>
+    </data>
+    <data name="tarot_lobby_leave_button" xml:space="preserve">
+        <value>Leave</value>
     </data>
     <data name="tarot_lobby_hint" xml:space="preserve">
         <value>Type {0}tarotjoin to join, {0}tarotstart to begin ({1}+ players).</value>

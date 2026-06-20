@@ -136,6 +136,32 @@ public class TarotGame : Game, ITarotGame
         }
     }
 
+    public async Task<(bool Success, string MessageKey, object[] Args)> LeaveAsync(IUser user)
+    {
+        await _actionLock.WaitAsync();
+        try
+        {
+            if (Phase != TarotPhase.Lobby)
+            {
+                return (false, "tarot_quit_already_started", []);
+            }
+
+            var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
+            if (player is null)
+            {
+                return (false, "tarot_quit_not_joined", []);
+            }
+
+            _players.Remove(player);
+            await RenderPublicAsync();
+            return (true, "tarot_quit_success", [player.Name]);
+        }
+        finally
+        {
+            _actionLock.Release();
+        }
+    }
+
     public async Task StartAsync(IUser user)
     {
         await _actionLock.WaitAsync();
@@ -208,6 +234,10 @@ public class TarotGame : Game, ITarotGame
         Phase = TarotPhase.Bidding;
         _firstLeaderIndex = 0;
         _currentTurnIndex = 0;
+
+        // Re-post the public chat panel so each fresh deal (the first one and any redeal after every
+        // player passed) drops back to the bottom of the chat instead of staying stuck in the scrollback.
+        ResendPublicPanel();
 
         await RenderAllAsync();
         RestartTurnTimer();
@@ -582,8 +612,7 @@ public class TarotGame : Game, ITarotGame
         // Force re-post the public chat panel so it drops back to the bottom of the chat instead of
         // staying stuck high up in the scrollback. Player hands and tables live in HTML pages that
         // update in place, so they need no such workaround.
-        Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
-        _publicPanelInitialized = false;
+        ResendPublicPanel();
 
         TrickNumber++;
         CurrentTrick = new TarotTrick();
@@ -1142,6 +1171,21 @@ public class TarotGame : Game, ITarotGame
         var html = await _templatesManager.GetTemplateAsync(templateKey, BuildModel(null));
         Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), forceResend || _publicPanelInitialized);
         _publicPanelInitialized = true;
+    }
+
+    /// <summary>
+    /// Clears the public chat panel so the next render re-posts it at the bottom of the chat instead of
+    /// updating it in place high up in the scrollback.
+    /// </summary>
+    private void ResendPublicPanel()
+    {
+        if (!_publicPanelInitialized)
+        {
+            return;
+        }
+
+        Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
+        _publicPanelInitialized = false;
     }
 
     private async Task RenderCancelledPublicAsync()
