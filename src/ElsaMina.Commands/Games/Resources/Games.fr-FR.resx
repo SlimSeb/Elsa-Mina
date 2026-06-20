@@ -867,6 +867,18 @@
     <data name="tarot_sub_requested" xml:space="preserve">
         <value>{0} cherche un remplaçant ! Clique sur le bouton pour prendre sa place.</value>
     </data>
+    <data name="tarot_sub_force_requested" xml:space="preserve">
+        <value>{0} a été mis en remplacement par le staff ! Clique sur le bouton pour prendre sa place.</value>
+    </data>
+    <data name="tarot_sub_force_no_target" xml:space="preserve">
+        <value>Indique le joueur à mettre en remplacement.</value>
+    </data>
+    <data name="tarot_sub_force_not_a_player" xml:space="preserve">
+        <value>Ce joueur ne participe pas à la partie en cours.</value>
+    </data>
+    <data name="tarot_sub_force_already" xml:space="preserve">
+        <value>{0} cherche déjà un remplaçant.</value>
+    </data>
     <data name="tarot_sub_cancelled" xml:space="preserve">
         <value>{0} n'a plus besoin de remplaçant.</value>
     </data>

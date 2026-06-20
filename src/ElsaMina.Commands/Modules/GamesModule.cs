@@ -133,6 +133,7 @@ public class GamesModule : Module
         builder.RegisterCommand<AnnounceSlamTarotCommand>();
         builder.RegisterCommand<ResendTarotCommand>();
         builder.RegisterCommand<RequestTarotSubCommand>();
+        builder.RegisterCommand<ForceRequestTarotSubCommand>();
         builder.RegisterCommand<AcceptTarotSubCommand>();
         builder.RegisterCommand<EndTarotCommand>();
         builder.RegisterCommand<TarotLeaderboardCommand>();

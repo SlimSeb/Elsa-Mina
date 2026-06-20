@@ -954,6 +954,50 @@ public class TarotGame : Game, ITarotGame
         }
     }
 
+    /// <summary>
+    /// Lets staff put a player up for substitution on their behalf, marking that seat as looking for a
+    /// replacement without the player having to ask themselves.
+    /// </summary>
+    public async Task<(bool Success, string MessageKey, object[] Args)> ForceRequestSubAsync(string targetPlayerId)
+    {
+        await _actionLock.WaitAsync();
+        try
+        {
+            if (Phase is TarotPhase.Lobby or TarotPhase.Finished)
+            {
+                return (false, "tarot_sub_not_active", []);
+            }
+
+            if (string.IsNullOrWhiteSpace(targetPlayerId))
+            {
+                return (false, "tarot_sub_force_no_target", []);
+            }
+
+            var player = _players.FirstOrDefault(
+                currentPlayer => currentPlayer.UserId == targetPlayerId.ToLowerAlphaNum());
+            if (player is null)
+            {
+                return (false, "tarot_sub_force_not_a_player", []);
+            }
+
+            if (player.WantsSub)
+            {
+                return (false, "tarot_sub_force_already", [player.Name]);
+            }
+
+            player.WantsSub = true;
+            Context.ReplyLocalizedMessage("tarot_sub_force_requested", player.Name);
+            // Re-post the panel so a fresh request drops to the bottom of the chat instead of staying
+            // stuck high up in the scrollback.
+            await RenderSubPanelAsync(forceResend: true);
+            return (true, null, []);
+        }
+        finally
+        {
+            _actionLock.Release();
+        }
+    }
+
     public async Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user,
         string targetPlayerId)
     {

@@ -861,6 +861,18 @@
     <data name="tarot_sub_requested" xml:space="preserve">
         <value>¡{0} busca un sustituto! Pulsa el botón para ocupar su lugar.</value>
     </data>
+    <data name="tarot_sub_force_requested" xml:space="preserve">
+        <value>¡El staff puso a {0} en sustitución! Pulsa el botón para ocupar su lugar.</value>
+    </data>
+    <data name="tarot_sub_force_no_target" xml:space="preserve">
+        <value>Indica el jugador que se pondrá en sustitución.</value>
+    </data>
+    <data name="tarot_sub_force_not_a_player" xml:space="preserve">
+        <value>Ese jugador no está en la partida actual.</value>
+    </data>
+    <data name="tarot_sub_force_already" xml:space="preserve">
+        <value>{0} ya está buscando un sustituto.</value>
+    </data>
     <data name="tarot_sub_cancelled" xml:space="preserve">
         <value>{0} ya no necesita un sustituto.</value>
     </data>

@@ -45,6 +45,7 @@ public interface ITarotGame : IGame
     Task AnnounceSlamAsync(IUser user);
     Task ResendPlayerPageAsync(IUser user);
     Task<(bool Success, string MessageKey, object[] Args)> RequestSubAsync(IUser user);
+    Task<(bool Success, string MessageKey, object[] Args)> ForceRequestSubAsync(string targetPlayerId);
     Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user, string targetPlayerId);
     Task CancelAsync();
 }

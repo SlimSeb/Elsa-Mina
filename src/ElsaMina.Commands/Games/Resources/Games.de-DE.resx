@@ -804,6 +804,18 @@
     <data name="tarot_sub_requested" xml:space="preserve">
         <value>{0} sucht einen Ersatz! Klicke auf die Schaltfläche, um den Platz zu übernehmen.</value>
     </data>
+    <data name="tarot_sub_force_requested" xml:space="preserve">
+        <value>{0} wurde vom Staff zum Austausch freigegeben! Klicke auf die Schaltfläche, um den Platz zu übernehmen.</value>
+    </data>
+    <data name="tarot_sub_force_no_target" xml:space="preserve">
+        <value>Gib den Spieler an, der ersetzt werden soll.</value>
+    </data>
+    <data name="tarot_sub_force_not_a_player" xml:space="preserve">
+        <value>Dieser Spieler nimmt nicht an der aktuellen Partie teil.</value>
+    </data>
+    <data name="tarot_sub_force_already" xml:space="preserve">
+        <value>{0} sucht bereits einen Ersatz.</value>
+    </data>
     <data name="tarot_sub_cancelled" xml:space="preserve">
         <value>{0} braucht keinen Ersatz mehr.</value>
     </data>
