@@ -52,6 +52,8 @@ public class ChessGameTest
         _mockUser2 = Substitute.For<IUser>();
         _mockUser1.Name.Returns("Player1");
         _mockUser2.Name.Returns("Player2");
+        _mockUser1.UserId.Returns("player1");
+        _mockUser2.UserId.Returns("player2");
     }
 
     [TearDown]
@@ -216,6 +218,60 @@ public class ChessGameTest
         );
 
         Assert.That(_game.Players, Has.Count.EqualTo(ChessConstants.MAX_PLAYERS_COUNT));
+    }
+
+    [Test]
+    public async Task Test_StartGame_ShouldRenderPublicBoardAndPlayerPages()
+    {
+        await _game.JoinGame(_mockUser1);
+        await _game.JoinGame(_mockUser2);
+
+        using (Assert.EnterMultipleScope())
+        {
+            // The public, spectator-only board is sent to the room as an updatable panel.
+            _context.Received().SendUpdatableHtml(
+                Arg.Is<string>(id => id.Contains("chess-game")), Arg.Any<string>(), Arg.Any<bool>());
+            // Each player gets a private HTML page.
+            _context.Received().SendHtmlPageTo("player1", Arg.Any<string>(), Arg.Any<string>());
+            _context.Received().SendHtmlPageTo("player2", Arg.Any<string>(), Arg.Any<string>());
+        }
+    }
+
+    [Test]
+    public async Task Test_PlayerPages_ShouldBeRenderedWithOpposingViewerColors()
+    {
+        ChessModel whiteModel = null;
+        ChessModel blackModel = null;
+        _mockTemplatesManager
+            .GetTemplateAsync("Games/Chess/ChessGameTable", Arg.Do<object>(model =>
+            {
+                if (model is not ChessModel chessModel)
+                {
+                    return;
+                }
+
+                switch (chessModel.ViewerColor)
+                {
+                    case ChessColor.White:
+                        whiteModel = chessModel;
+                        break;
+                    case ChessColor.Black:
+                        blackModel = chessModel;
+                        break;
+                }
+            }))
+            .Returns(Task.FromResult(string.Empty));
+
+        await _game.JoinGame(_mockUser1);
+        await _game.JoinGame(_mockUser2);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(whiteModel, Is.Not.Null);
+            Assert.That(blackModel, Is.Not.Null);
+            Assert.That(whiteModel.ViewerColor, Is.EqualTo(ChessColor.White));
+            Assert.That(blackModel.ViewerColor, Is.EqualTo(ChessColor.Black));
+        }
     }
 
     private ChessGame CreateGameWithTimeout(TimeSpan timeoutDelay)

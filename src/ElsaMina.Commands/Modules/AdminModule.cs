@@ -22,6 +22,7 @@ public class AdminModule : Module
         builder.RegisterCommand<LagTestCommand>();
         builder.RegisterCommand<SetLocaleCommand>();
         builder.RegisterCommand<HelpCommand>();
+        builder.RegisterCommand<CommandInfoCommand>();
         builder.RegisterCommand<ShowRoomDashboard>();
         builder.RegisterCommand<RoomConfigCommand>();
         builder.RegisterCommand<KillCommand>();

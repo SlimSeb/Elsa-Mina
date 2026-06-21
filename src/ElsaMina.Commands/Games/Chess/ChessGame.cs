@@ -87,7 +87,9 @@ public class ChessGame : Game, IChessGame
 
     private string AnnounceId => $"chess-announce-{GameId}";
 
-    private string BoardId => $"chess-game-{Context.RoomId}-{GameId}";
+    private string PublicBoardId => $"chess-game-{Context.RoomId}-{GameId}";
+
+    private string PlayerPageId => $"chess-{GameId}";
 
     #endregion
 
@@ -148,7 +150,7 @@ public class ChessGame : Game, IChessGame
         if (ChessBoard.TryParseSquare(input, out var selectedRow, out var selectedColumn))
         {
             UpdateSelection(selectedRow, selectedColumn);
-            await SendBoardToPlayers();
+            await RenderBoard();
             return;
         }
 
@@ -178,7 +180,7 @@ public class ChessGame : Game, IChessGame
             return;
         }
 
-        await SendBoardToPlayers();
+        await RenderBoard();
         ScheduleTurnTimeout();
     }
 
@@ -298,7 +300,7 @@ public class ChessGame : Game, IChessGame
         _randomService.ShuffleInPlace(_players);
         _whiteTimeRemaining = _initialClock;
         _blackTimeRemaining = _initialClock;
-        await SendBoardToPlayers();
+        await RenderBoard();
         ScheduleTurnTimeout();
     }
 
@@ -349,7 +351,7 @@ public class ChessGame : Game, IChessGame
         }
 
         _ended = true;
-        await SendBoardToPlayers();
+        await RenderBoard();
 
         Context.ReplyLocalizedMessage("chess_game_win_message", winner.Name);
         var (winnerChange, loserChange) = await _ratingService.UpdateRatingsOnWinAsync(winner, loser);
@@ -368,7 +370,7 @@ public class ChessGame : Game, IChessGame
         }
 
         _ended = true;
-        await SendBoardToPlayers();
+        await RenderBoard();
 
         Context.ReplyLocalizedMessage("chess_game_draw_end");
         var (change1, change2) = await _ratingService.UpdateRatingsOnDrawAsync(WhitePlayer, BlackPlayer);
@@ -379,21 +381,57 @@ public class ChessGame : Game, IChessGame
         Cancel();
     }
 
-    private async Task SendBoardToPlayers()
+    private async Task RenderBoard()
+    {
+        await RenderPublicBoard();
+        await RenderPlayerPages();
+    }
+
+    /// <summary>
+    /// Renders the public, spectator-only board as a chat panel in the room. It is shown from White's
+    /// perspective and has no clickable squares.
+    /// </summary>
+    private async Task RenderPublicBoard()
     {
         _renderCount++;
         var template = await _templatesManager.GetTemplateAsync("Games/Chess/ChessGameTable",
-            new ChessModel
-            {
-                Culture = Context.Culture,
-                RoomId = Context.RoomId,
-                CurrentGame = this,
-                BotName = _configuration.Name,
-                Trigger = _configuration.Trigger
-            });
+            BuildModel(viewerColor: null));
 
-        Context.SendUpdatableHtml(BoardId, template.RemoveNewlines(), _renderCount > 1 || _ended);
+        Context.SendUpdatableHtml(PublicBoardId, template.RemoveNewlines(), _renderCount > 1 || _ended);
     }
+
+    /// <summary>
+    /// Renders each player's private HTML page with the board oriented so their own pieces sit at the
+    /// bottom. Only the player to move gets clickable squares.
+    /// </summary>
+    private async Task RenderPlayerPages()
+    {
+        await RenderPlayerPage(WhitePlayer, ChessColor.White);
+        await RenderPlayerPage(BlackPlayer, ChessColor.Black);
+    }
+
+    private async Task RenderPlayerPage(IUser player, ChessColor color)
+    {
+        if (player is null)
+        {
+            return;
+        }
+
+        var template = await _templatesManager.GetTemplateAsync("Games/Chess/ChessGameTable",
+            BuildModel(color));
+
+        Context.SendHtmlPageTo(player.UserId, PlayerPageId, template.RemoveNewlines());
+    }
+
+    private ChessModel BuildModel(ChessColor? viewerColor) => new()
+    {
+        Culture = Context.Culture,
+        RoomId = Context.RoomId,
+        CurrentGame = this,
+        BotName = _configuration.Name,
+        Trigger = _configuration.Trigger,
+        ViewerColor = viewerColor
+    };
 
     #endregion
 }

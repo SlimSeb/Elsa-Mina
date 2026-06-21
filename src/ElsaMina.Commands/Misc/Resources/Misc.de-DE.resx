@@ -378,4 +378,37 @@
     <data name="help_handler_greeting" xml:space="preserve">
         <value>Hallo! Ich bin {0}, ein von Panure erstellter Bot. Tippe {1}allcommands, um alles zu sehen, was ich kann, oder schau dir meinen Quellcode auf {2} an</value>
     </data>
+    <data name="command_info_help" xml:space="preserve">
+        <value>Zeigt Informationen zu einem Befehl an. Verwendung: command [Befehlsname]</value>
+    </data>
+    <data name="command_info_usage" xml:space="preserve">
+        <value>Verwendung: {0}command [Befehlsname]</value>
+    </data>
+    <data name="command_info_not_found" xml:space="preserve">
+        <value>Kein Befehl mit dem Namen „{0}" gefunden.</value>
+    </data>
+    <data name="command_info_no_description" xml:space="preserve">
+        <value>Keine Beschreibung verfügbar.</value>
+    </data>
+    <data name="command_info_aliases" xml:space="preserve">
+        <value>Aliase</value>
+    </data>
+    <data name="command_info_category" xml:space="preserve">
+        <value>Kategorie</value>
+    </data>
+    <data name="command_info_rank" xml:space="preserve">
+        <value>Erforderlicher Rang</value>
+    </data>
+    <data name="command_info_available_in_pm" xml:space="preserve">
+        <value>In PN verfügbar</value>
+    </data>
+    <data name="command_info_whitelist_only" xml:space="preserve">
+        <value>Nur Whitelist</value>
+    </data>
+    <data name="command_info_yes" xml:space="preserve">
+        <value>Ja</value>
+    </data>
+    <data name="command_info_no" xml:space="preserve">
+        <value>Nein</value>
+    </data>
 </root>

@@ -13,17 +13,30 @@
     var destinations = Model.CurrentGame.SelectedSquareDestinations;
     var lastMove = board.LastMove;
 
+    // Black sees the board flipped so its own pieces sit at the bottom; the public board uses White's view.
+    var flip = Model.ViewerColor == ChessColor.Black;
+    var viewerIsWhite = Model.ViewerColor == ChessColor.White;
+    var isInteractive = Model.ViewerColor != null && board.WhiteToMove == viewerIsWhite;
+
+    var rowOrder = Enumerable.Range(0, ChessConstants.BOARD_SIZE).ToArray();
+    var columnOrder = Enumerable.Range(0, ChessConstants.BOARD_SIZE).ToArray();
+    if (flip)
+    {
+        Array.Reverse(rowOrder);
+        Array.Reverse(columnOrder);
+    }
+
     const string cellStyle = "width: 34px; height: 34px; text-align: center; font-size: 26px; line-height: 34px; padding: 0; color: black;";
     const string buttonStyle = "background: none; border: none; box-shadow: none; width: 34px; height: 34px; font-size: 26px; line-height: 34px; padding: 0; cursor: pointer; color: black;";
     const string labelStyle = "width: 16px; text-align: center; font-size: 11px; color: #888;";
 }
 
 <table style="margin: auto; border-collapse: collapse">
-    @for (var row = 0; row < ChessConstants.BOARD_SIZE; row++)
+    @foreach (var row in rowOrder)
     {
         <tr>
             <td style="@labelStyle">@(8 - row)</td>
-            @for (var column = 0; column < ChessConstants.BOARD_SIZE; column++)
+            @foreach (var column in columnOrder)
             {
                 var piece = board.Squares[row, column];
                 var glyph = ChessGlyphs.GetGlyph(piece);
@@ -50,21 +63,24 @@
 
                 var ownPiece = piece != ChessBoard.EMPTY && ChessBoard.IsWhite(piece) == board.WhiteToMove;
                 string argument = null;
-                if (selected == null)
+                if (isInteractive)
                 {
-                    if (ownPiece)
+                    if (selected == null)
+                    {
+                        if (ownPiece)
+                        {
+                            argument = ChessBoard.ToSquareName(row, column);
+                        }
+                    }
+                    else if (isSelected)
                     {
                         argument = ChessBoard.ToSquareName(row, column);
                     }
-                }
-                else if (isSelected)
-                {
-                    argument = ChessBoard.ToSquareName(row, column);
-                }
-                else if (isDestination)
-                {
-                    argument = ChessBoard.ToSquareName(selected.Value.Row, selected.Value.Column)
-                               + ChessBoard.ToSquareName(row, column);
+                    else if (isDestination)
+                    {
+                        argument = ChessBoard.ToSquareName(selected.Value.Row, selected.Value.Column)
+                                   + ChessBoard.ToSquareName(row, column);
+                    }
                 }
 
                 <td style="@cellStyle background-color: @backgroundColor;">
@@ -88,7 +104,7 @@
     }
     <tr>
         <td style="@labelStyle"></td>
-        @for (var column = 0; column < ChessConstants.BOARD_SIZE; column++)
+        @foreach (var column in columnOrder)
         {
             <td style="@labelStyle">@((char)('a' + column))</td>
         }

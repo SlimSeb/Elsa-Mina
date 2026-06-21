@@ -1,0 +1,57 @@
+@using ElsaMina.Core.Services.Rooms
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Misc.Help.CommandInfoViewModel>
+
+@{
+    const string border = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string labelStyle = $"{border} padding: 4px 10px; text-align: left; white-space: nowrap; font-weight: bold; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string valueStyle = $"{border} padding: 4px 10px; text-align: left;";
+
+    var command = Model.Command;
+    var aliases = command.Aliases.ToList();
+    var description = string.IsNullOrEmpty(command.HelpMessageKey)
+        ? GetString("command_info_no_description")
+        : GetString(command.HelpMessageKey);
+}
+
+<div class="infobox" style="padding: 6px;">
+    <div style="font-size: 1.05rem; font-weight: bold; margin-bottom: 4px;">
+        @(Model.Trigger)@command.Name
+    </div>
+    <div style="font-style: italic; margin-bottom: 8px;">@description</div>
+    <table style="border-collapse: collapse;">
+        @if (aliases.Any())
+        {
+            <tr>
+                <td style="@labelStyle">@GetString("command_info_aliases")</td>
+                <td style="@valueStyle">@string.Join(", ", aliases)</td>
+            </tr>
+        }
+        @if (!string.IsNullOrEmpty(command.Category))
+        {
+            <tr>
+                <td style="@labelStyle">@GetString("command_info_category")</td>
+                <td style="@valueStyle">@command.Category</td>
+            </tr>
+        }
+        <tr>
+            <td style="@labelStyle">@GetString("command_info_rank")</td>
+            <td style="@valueStyle">@command.RequiredRank</td>
+        </tr>
+        <tr>
+            <td style="@labelStyle">@GetString("command_info_available_in_pm")</td>
+            <td style="@valueStyle">
+                @(command.IsAllowedInPrivateMessage || command.IsPrivateMessageOnly
+                    ? GetString("command_info_yes")
+                    : GetString("command_info_no"))
+            </td>
+        </tr>
+        @if (command.IsWhitelistOnly)
+        {
+            <tr>
+                <td style="@labelStyle">@GetString("command_info_whitelist_only")</td>
+                <td style="@valueStyle">@GetString("command_info_yes")</td>
+            </tr>
+        }
+    </table>
+</div>

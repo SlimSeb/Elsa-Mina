@@ -42,17 +42,20 @@
             <span>@GetString("chess_game_time_control", (int)ChessConstants.INITIAL_CLOCK.TotalMinutes, (int)ChessConstants.CLOCK_INCREMENT.TotalSeconds)</span><br/>
             <span>@GetString("chess_game_turn", game.TurnCount)</span><br/>
             <span>@GetString("chess_game_party_id", game.GameId)</span>
-            <br/><br/>
-            <details>
-                <summary>@GetString("chess_game_options")</summary>
-                <br/>
-                <button
-                    class="button"
-                    value="/botmsg @Model.BotName,@(Model.Trigger)chessff @Model.RoomId"
-                    name="send">
-                    @GetString("chess_game_forfeit")
-                </button>
-            </details>
+            @if (Model.ViewerColor != null)
+            {
+                <br/><br/>
+                <details>
+                    <summary>@GetString("chess_game_options")</summary>
+                    <br/>
+                    <button
+                        class="button"
+                        value="/botmsg @Model.BotName,@(Model.Trigger)chessff @Model.RoomId"
+                        name="send">
+                        @GetString("chess_game_forfeit")
+                    </button>
+                </details>
+            }
         </td>
     </tr>
     </tbody>
