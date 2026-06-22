@@ -1854,6 +1854,9 @@
   <data name="chess_game_check" xml:space="preserve">
     <value>Échec !</value>
   </data>
+  <data name="chess_clock_title" xml:space="preserve">
+    <value>Pendule</value>
+  </data>
   <data name="chess_game_how_to_play" xml:space="preserve">
     <value>Cliquez sur une pièce, puis sur sa destination pour jouer.</value>
   </data>

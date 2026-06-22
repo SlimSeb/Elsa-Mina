@@ -1,0 +1,27 @@
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Chess.ChessModel>
+
+@{
+    var game = Model.CurrentGame;
+    var whiteActive = game.Board.WhiteToMove;
+
+    string FormatClock(TimeSpan time) => $"{(int)time.TotalMinutes:00}:{time.Seconds:00}";
+
+    const string cellStyle = "padding: 4px 12px; text-align: center; font-size: 16px;";
+    var activeStyle = $"{cellStyle} font-weight: bold; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+}
+<table style="border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; border-collapse: collapse; margin: auto;">
+    <tr>
+        <th colspan="2" style="@cellStyle background-color: @StyleConstants.PRIMARY_BACKGROUND_COLOR;">
+            @GetString("chess_clock_title")
+        </th>
+    </tr>
+    <tr>
+        <td style="@(whiteActive ? activeStyle : cellStyle)">
+            ⏱ @GetString("chess_game_white", game.WhitePlayer?.Name) @FormatClock(game.WhiteTimeRemaining)
+        </td>
+        <td style="@(!whiteActive ? activeStyle : cellStyle)">
+            ⏱ @GetString("chess_game_black", game.BlackPlayer?.Name) @FormatClock(game.BlackTimeRemaining)
+        </td>
+    </tr>
+</table>

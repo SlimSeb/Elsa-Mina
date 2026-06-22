@@ -1791,6 +1791,9 @@
   <data name="chess_game_check" xml:space="preserve">
     <value>Schach!</value>
   </data>
+  <data name="chess_clock_title" xml:space="preserve">
+    <value>Uhr</value>
+  </data>
   <data name="chess_game_how_to_play" xml:space="preserve">
     <value>Klicke auf eine Figur und dann auf das Zielfeld, um zu ziehen.</value>
   </data>

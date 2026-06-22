@@ -1854,6 +1854,9 @@
   <data name="chess_game_check" xml:space="preserve">
     <value>Check!</value>
   </data>
+  <data name="chess_clock_title" xml:space="preserve">
+    <value>Clock</value>
+  </data>
   <data name="chess_game_how_to_play" xml:space="preserve">
     <value>Click a piece, then its destination to move.</value>
   </data>

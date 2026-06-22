@@ -274,6 +274,54 @@ public class ChessGameTest
         }
     }
 
+    [Test]
+    public async Task Test_Clock_ShouldRefreshPeriodically_WhileGameRuns()
+    {
+        var game = CreateGameWithClockRefresh(TimeSpan.FromMilliseconds(30));
+        await game.JoinGame(_mockUser1);
+        await game.JoinGame(_mockUser2);
+
+        var before = CountClockRenders();
+        await Task.Delay(150);
+
+        Assert.That(CountClockRenders(), Is.GreaterThan(before));
+    }
+
+    [Test]
+    public async Task Test_Clock_ShouldStopRefreshing_WhenGameEnds()
+    {
+        var game = CreateGameWithClockRefresh(TimeSpan.FromMilliseconds(30));
+        await game.JoinGame(_mockUser1);
+        await game.JoinGame(_mockUser2);
+
+        await Task.Delay(120); // let the clock tick a few times
+
+        // Fool's mate ends the game.
+        await game.Play(_mockUser1, "f2f3");
+        await game.Play(_mockUser2, "e7e5");
+        await game.Play(_mockUser1, "g2g4");
+        await game.Play(_mockUser2, "d8h4");
+
+        Assert.That(game.IsEnded, Is.True);
+        var rendersAtEnd = CountClockRenders();
+
+        await Task.Delay(150); // the clock timer must no longer fire
+
+        Assert.That(CountClockRenders(), Is.EqualTo(rendersAtEnd));
+    }
+
+    private int CountClockRenders() => _context.ReceivedCalls()
+        .Count(call => call.GetMethodInfo().Name == nameof(IContext.SendUpdatableHtml)
+                       && call.GetArguments()[0] is string htmlId && htmlId.Contains("chess-clock"));
+
+    private ChessGame CreateGameWithClockRefresh(TimeSpan refreshInterval)
+    {
+        var game = new ChessGame(_mockRandomService, _mockTemplatesManager, _configuration,
+            _mockRatingService, ChessConstants.INITIAL_CLOCK, refreshInterval);
+        game.Context = _context;
+        return game;
+    }
+
     private ChessGame CreateGameWithTimeout(TimeSpan timeoutDelay)
     {
         var ratingService = Substitute.For<IChessRatingService>();

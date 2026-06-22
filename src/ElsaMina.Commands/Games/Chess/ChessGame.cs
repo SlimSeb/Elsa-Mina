@@ -22,13 +22,16 @@ public class ChessGame : Game, IChessGame
     private readonly List<IUser> _players = [];
     private readonly TimeSpan _initialClock;
     private readonly TimeSpan _increment;
+    private readonly TimeSpan _clockRefreshInterval;
 
     private PeriodicTimerRunner _turnTimeoutTimer;
+    private PeriodicTimerRunner _clockTimer;
     private TimeSpan _whiteTimeRemaining;
     private TimeSpan _blackTimeRemaining;
     private DateTime _turnStartedAtUtc;
     private bool _ended;
     private int _renderCount;
+    private bool _clockInitialized;
 
     [UsedImplicitly]
     public ChessGame(IRandomService randomService,
@@ -43,7 +46,8 @@ public class ChessGame : Game, IChessGame
         ITemplatesManager templatesManager,
         IConfiguration configuration,
         IChessRatingService ratingService,
-        TimeSpan initialClock)
+        TimeSpan initialClock,
+        TimeSpan? clockRefreshInterval = null)
     {
         _randomService = randomService;
         _templatesManager = templatesManager;
@@ -51,6 +55,7 @@ public class ChessGame : Game, IChessGame
         _ratingService = ratingService;
         _initialClock = initialClock;
         _increment = ChessConstants.CLOCK_INCREMENT;
+        _clockRefreshInterval = clockRefreshInterval ?? ChessConstants.CLOCK_REFRESH_INTERVAL;
 
         GameId = NextGameId++;
     }
@@ -88,6 +93,8 @@ public class ChessGame : Game, IChessGame
     private string AnnounceId => $"chess-announce-{GameId}";
 
     private string PublicBoardId => $"chess-game-{Context.RoomId}-{GameId}";
+
+    private string PublicClockId => $"chess-clock-{Context.RoomId}-{GameId}";
 
     private string PlayerPageId => $"chess-{GameId}";
 
@@ -220,8 +227,7 @@ public class ChessGame : Game, IChessGame
 
     public void Cancel()
     {
-        OnEnd();
-        _turnTimeoutTimer?.Stop();
+        EndGame();
     }
 
     #endregion
@@ -302,6 +308,9 @@ public class ChessGame : Game, IChessGame
         _blackTimeRemaining = _initialClock;
         await RenderBoard();
         ScheduleTurnTimeout();
+
+        _clockTimer = new PeriodicTimerRunner(_clockRefreshInterval, RenderClock);
+        _clockTimer.Start();
     }
 
     private void DeductElapsedTime()
@@ -350,7 +359,9 @@ public class ChessGame : Game, IChessGame
             return;
         }
 
-        _ended = true;
+        // Stop the clocks and mark the game ended before anything that can throw (e.g. the rating
+        // update) so the timers never keep firing past the end, and the final clock renders frozen.
+        EndGame();
         await RenderBoard();
 
         Context.ReplyLocalizedMessage("chess_game_win_message", winner.Name);
@@ -358,8 +369,6 @@ public class ChessGame : Game, IChessGame
         Context.ReplyLocalizedMessage("chess_rating_update",
             winner.Name, winnerChange.OldRating, winnerChange.NewRating, winnerChange.Delta,
             loser.Name, loserChange.OldRating, loserChange.NewRating, loserChange.Delta);
-
-        Cancel();
     }
 
     private async Task OnDraw()
@@ -369,7 +378,7 @@ public class ChessGame : Game, IChessGame
             return;
         }
 
-        _ended = true;
+        EndGame();
         await RenderBoard();
 
         Context.ReplyLocalizedMessage("chess_game_draw_end");
@@ -377,14 +386,39 @@ public class ChessGame : Game, IChessGame
         Context.ReplyLocalizedMessage("chess_rating_update",
             WhitePlayer.Name, change1.OldRating, change1.NewRating, change1.Delta,
             BlackPlayer.Name, change2.OldRating, change2.NewRating, change2.Delta);
+    }
 
-        Cancel();
+    private void EndGame()
+    {
+        if (IsEnded)
+        {
+            return;
+        }
+
+        _ended = true;
+        _turnTimeoutTimer?.Stop();
+        _clockTimer?.Stop();
+        OnEnd();
     }
 
     private async Task RenderBoard()
     {
         await RenderPublicBoard();
         await RenderPlayerPages();
+        await RenderClock();
+    }
+
+    /// <summary>
+    /// Renders the live clock as its own updatable chat box. A periodic timer refreshes it every few
+    /// seconds so the remaining time ticks down without re-rendering the whole board.
+    /// </summary>
+    private async Task RenderClock()
+    {
+        var template = await _templatesManager.GetTemplateAsync("Games/Chess/ChessClock",
+            BuildModel(viewerColor: null));
+
+        Context.SendUpdatableHtml(PublicClockId, template.RemoveNewlines(), _clockInitialized);
+        _clockInitialized = true;
     }
 
     /// <summary>

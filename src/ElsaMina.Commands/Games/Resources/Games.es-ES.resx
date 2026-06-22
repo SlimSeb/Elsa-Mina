@@ -1848,6 +1848,9 @@
   <data name="chess_game_check" xml:space="preserve">
     <value>¡Jaque!</value>
   </data>
+  <data name="chess_clock_title" xml:space="preserve">
+    <value>Reloj</value>
+  </data>
   <data name="chess_game_how_to_play" xml:space="preserve">
     <value>Haz clic en una pieza y luego en su destino para mover.</value>
   </data>
