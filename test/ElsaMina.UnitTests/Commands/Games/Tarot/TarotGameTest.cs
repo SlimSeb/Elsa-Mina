@@ -427,7 +427,7 @@ public class TarotGameTest
     }
 
     [Test]
-    public async Task Test_GetLegalMoves_ShouldForbidLeadingTheCalledSuit_WhenFivePlayers()
+    public async Task Test_GetLegalMoves_ShouldForbidLeadingTheCalledSuit_OnFirstTrick_WhenFivePlayers()
     {
         // Deterministic deal: player1 is dealt every heart, the king of hearts included, plus the only
         // spade in their hand. They take, then call the king of spades.
@@ -437,8 +437,9 @@ public class TarotGameTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(leader.UserId, Is.EqualTo("player1"));
+            Assert.That(_game.TrickNumber, Is.EqualTo(1));
             Assert.That(_game.CalledKing, Is.EqualTo(Card("ks")));
-            // The single spade is the called suit and cannot be led.
+            // The single spade is the called suit and cannot be led on the first trick.
             Assert.That(_game.GetLegalMoves(leader), Does.Not.Contain(Card("1s")));
             Assert.That(_game.GetLegalMoves(leader), Does.Contain(Card("kh")));
             Assert.That(_game.GetLegalMoves(leader), Does.Contain(Card("exc")));
@@ -446,7 +447,7 @@ public class TarotGameTest
     }
 
     [Test]
-    public async Task Test_GetLegalMoves_ShouldAllowLeadingTheCalledCardItself_WhenFivePlayers()
+    public async Task Test_GetLegalMoves_ShouldAllowLeadingTheCalledCardItself_OnFirstTrick_WhenFivePlayers()
     {
         // Player1 takes while holding the king of hearts and calls it: leading the called suit is then
         // only allowed by playing that exact card.

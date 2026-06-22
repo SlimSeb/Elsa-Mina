@@ -33,7 +33,6 @@ public class TarotGame : Game, ITarotGame
     private int _takerSideTrickWins;
     private int _cardsPlayedTotal;
     private bool _slamAnnounced;
-    private bool _calledKingPlayed;
     private bool _publicPanelInitialized;
     private bool _subPanelInitialized;
 
@@ -272,7 +271,6 @@ public class TarotGame : Game, ITarotGame
         _takerSideTrickWins = 0;
         _cardsPlayedTotal = 0;
         _slamAnnounced = false;
-        _calledKingPlayed = false;
 
         CalledKing = null;
         DogRevealed = false;
@@ -560,15 +558,10 @@ public class TarotGame : Game, ITarotGame
         player.HasPlayed = true;
         _cardsPlayedTotal++;
 
-        if (CalledKing is not null && card == CalledKing)
+        if (CalledKing is not null && card == CalledKing && player.IsPartner)
         {
-            // Once the called card hits the table the call suit may be led freely from then on.
-            _calledKingPlayed = true;
-            if (player.IsPartner)
-            {
-                PartnerRevealed = true;
-                Context.ReplyLocalizedMessage("tarot_partner_revealed", player.Name);
-            }
+            PartnerRevealed = true;
+            Context.ReplyLocalizedMessage("tarot_partner_revealed", player.Name);
         }
 
         if (CurrentTrick.Plays.Count < _players.Count)
@@ -705,12 +698,12 @@ public class TarotGame : Game, ITarotGame
 
     /// <summary>
     /// The cards a player may lead a trick with. In a five-handed game the suit of the called card
-    /// cannot be led until that card has been played, the only exception being the called card itself
-    /// (and a fallback when the player holds nothing but cards of the called suit).
+    /// cannot be led on the very first trick, the only exception being the called card itself (and a
+    /// fallback when the player holds nothing but cards of the called suit).
     /// </summary>
     private IReadOnlyCollection<TarotCard> GetLegalLeadMoves(List<TarotCard> hand)
     {
-        if (_players.Count != 5 || CalledKing is null || _calledKingPlayed)
+        if (_players.Count != 5 || CalledKing is null || TrickNumber != 1)
         {
             return hand.ToList();
         }
