@@ -426,6 +426,54 @@ public class TarotGameTest
         Assert.That(_game.GetLegalMoves(player), Does.Contain(Card("exc")));
     }
 
+    [Test]
+    public async Task Test_GetLegalMoves_ShouldForbidLeadingTheCalledSuit_WhenFivePlayers()
+    {
+        // Deterministic deal: player1 is dealt every heart, the king of hearts included, plus the only
+        // spade in their hand. They take, then call the king of spades.
+        await DriveFivePlayerGameToPlayAsync("ks");
+        var leader = _game.CurrentPlayer;
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(leader.UserId, Is.EqualTo("player1"));
+            Assert.That(_game.CalledKing, Is.EqualTo(Card("ks")));
+            // The single spade is the called suit and cannot be led.
+            Assert.That(_game.GetLegalMoves(leader), Does.Not.Contain(Card("1s")));
+            Assert.That(_game.GetLegalMoves(leader), Does.Contain(Card("kh")));
+            Assert.That(_game.GetLegalMoves(leader), Does.Contain(Card("exc")));
+        }
+    }
+
+    [Test]
+    public async Task Test_GetLegalMoves_ShouldAllowLeadingTheCalledCardItself_WhenFivePlayers()
+    {
+        // Player1 takes while holding the king of hearts and calls it: leading the called suit is then
+        // only allowed by playing that exact card.
+        await DriveFivePlayerGameToPlayAsync("kh");
+        var leader = _game.CurrentPlayer;
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.CalledKing, Is.EqualTo(Card("kh")));
+            Assert.That(_game.GetLegalMoves(leader), Does.Contain(Card("kh")));
+            Assert.That(_game.GetLegalMoves(leader), Does.Not.Contain(Card("5h")));
+            Assert.That(_game.GetLegalMoves(leader), Does.Contain(Card("1s")));
+        }
+    }
+
+    /// <summary>
+    /// Drives a five-player game (no shuffle, so the deal is deterministic) through bidding, the king
+    /// call and the discard so that play begins with player1 leading the first trick.
+    /// </summary>
+    private async Task DriveFivePlayerGameToPlayAsync(string calledKingToken)
+    {
+        await JoinAndStartAsync(5);
+        await BidInOrderAsync(TarotBid.Petite, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass);
+        await _game.CallKingAsync(_game.Taker.User, Card(calledKingToken));
+        await _game.DiscardAsync(_game.Taker.User, [Card("2h"), Card("3h"), Card("4h")]);
+    }
+
     private static TarotCard Card(string token) => TarotCard.Parse(token);
 
     private static TarotPlayer MakePlayerWithHand(IEnumerable<TarotCard> cards)

@@ -4,8 +4,8 @@
 
 @{
     const string border = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
-    const string headerStyle = $"{border} padding: 4px 10px; text-align: left; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
-    const string cellStyle = $"{border} padding: 6px 10px; vertical-align: top;";
+    const string headerStyle = $"{border} padding: 4px 8px; text-align: left; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string cellStyle = $"{border} padding: 6px 8px; vertical-align: top;";
 
     string RankColor(Rank rank) => rank switch
     {
@@ -18,7 +18,7 @@
     };
 
     string FlagBadge(string text, string bg, string fg = "#fff") =>
-        $"<span style=\"display:inline-block;padding:1px 6px;border-radius:3px;font-size:0.8em;background:{bg};color:{fg};margin-left:4px;\">{text}</span>";
+        $"<span style=\"padding:2px;background:{bg};color:{fg};margin-left:4px;\">{text}</span>";
 
     string NavCommand(int index) => $"/w {Model.BotName},{Model.Trigger}allcommands {index}";
     string MenuCommand() => $"/w {Model.BotName},{Model.Trigger}allcommands";
@@ -81,7 +81,7 @@
                     </td>
                     <td style="@cellStyle white-space:nowrap;">
                         <span style="color: @RankColor(command.RequiredRank); font-weight: bold;">
-                            @command.RequiredRank
+                            @User.GetCharacterFromRank(command.RequiredRank)
                         </span>
                     </td>
                     <td style="@cellStyle white-space:nowrap;">

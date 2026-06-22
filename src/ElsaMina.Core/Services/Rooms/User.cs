@@ -21,6 +21,11 @@ public sealed class User : IUser, IEquatable<User>
     {
         return RANK_MAPPING.TryGetValue(character, out var rank) ? rank : Rank.Regular;
     }
+
+    public static char GetCharacterFromRank(Rank targetRank)
+    {
+        return RANK_MAPPING.FirstOrDefault(kvp => kvp.Value == targetRank).Key;
+    }
     
     public static IUser FromUsername(string username)
     {

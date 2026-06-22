@@ -33,6 +33,7 @@ public class TarotGame : Game, ITarotGame
     private int _takerSideTrickWins;
     private int _cardsPlayedTotal;
     private bool _slamAnnounced;
+    private bool _calledKingPlayed;
     private bool _publicPanelInitialized;
     private bool _subPanelInitialized;
 
@@ -271,6 +272,7 @@ public class TarotGame : Game, ITarotGame
         _takerSideTrickWins = 0;
         _cardsPlayedTotal = 0;
         _slamAnnounced = false;
+        _calledKingPlayed = false;
 
         CalledKing = null;
         DogRevealed = false;
@@ -558,10 +560,15 @@ public class TarotGame : Game, ITarotGame
         player.HasPlayed = true;
         _cardsPlayedTotal++;
 
-        if (CalledKing is not null && card == CalledKing && player.IsPartner)
+        if (CalledKing is not null && card == CalledKing)
         {
-            PartnerRevealed = true;
-            Context.ReplyLocalizedMessage("tarot_partner_revealed", player.Name);
+            // Once the called card hits the table the call suit may be led freely from then on.
+            _calledKingPlayed = true;
+            if (player.IsPartner)
+            {
+                PartnerRevealed = true;
+                Context.ReplyLocalizedMessage("tarot_partner_revealed", player.Name);
+            }
         }
 
         if (CurrentTrick.Plays.Count < _players.Count)
@@ -659,10 +666,11 @@ public class TarotGame : Game, ITarotGame
         var hand = player.Hand;
         var excuse = hand.FirstOrDefault(card => card.IsExcuse);
 
-        // Leading, or only the Excuse has been played so far: anything goes.
+        // Leading, or only the Excuse has been played so far: anything goes, except that in a
+        // five-handed game the suit of the call may not be led.
         if (CurrentTrick.IsEmpty || CurrentTrick.LeadSuit is null)
         {
-            return hand.ToList();
+            return GetLegalLeadMoves(hand);
         }
 
         var legal = new List<TarotCard>();
@@ -693,6 +701,25 @@ public class TarotGame : Game, ITarotGame
         }
 
         return legal;
+    }
+
+    /// <summary>
+    /// The cards a player may lead a trick with. In a five-handed game the suit of the called card
+    /// cannot be led until that card has been played, the only exception being the called card itself
+    /// (and a fallback when the player holds nothing but cards of the called suit).
+    /// </summary>
+    private IReadOnlyCollection<TarotCard> GetLegalLeadMoves(List<TarotCard> hand)
+    {
+        if (_players.Count != 5 || CalledKing is null || _calledKingPlayed)
+        {
+            return hand.ToList();
+        }
+
+        var leadable = hand
+            .Where(card => card.Suit != CalledKing.Suit || card == CalledKing)
+            .ToList();
+
+        return leadable.Count > 0 ? leadable : hand.ToList();
     }
 
     private static void AddTrumpMoves(List<TarotCard> legal, List<TarotCard> trumps, int? highestTrump,

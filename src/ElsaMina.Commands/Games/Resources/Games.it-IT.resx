@@ -832,7 +832,7 @@
         <value>{0} è il compagno del prenditore!</value>
     </data>
     <data name="tarot_trick_won" xml:space="preserve">
-        <value>{0} vince la presa n. {1}.</value>
+        <value>__{0}__ vince la presa n. {1}.</value>
     </data>
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>La partita di Tarocchi è stata annullata.</value>

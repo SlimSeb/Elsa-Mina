@@ -838,7 +838,7 @@
         <value>{0} é o parceiro do tomador!</value>
     </data>
     <data name="tarot_trick_won" xml:space="preserve">
-        <value>{0} vence a vaza nº {1}.</value>
+        <value>__{0}__ vence a vaza nº {1}.</value>
     </data>
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>A partida de Tarô foi cancelada.</value>

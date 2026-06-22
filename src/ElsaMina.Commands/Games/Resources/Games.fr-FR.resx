@@ -838,7 +838,7 @@
         <value>{0} est le partenaire du preneur !</value>
     </data>
     <data name="tarot_trick_won" xml:space="preserve">
-        <value>{0} remporte le pli n°{1}.</value>
+        <value>__{0}__ remporte le pli n°{1}.</value>
     </data>
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>La partie de Tarot a été annulée.</value>
