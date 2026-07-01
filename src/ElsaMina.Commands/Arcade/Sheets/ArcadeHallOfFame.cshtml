@@ -8,7 +8,7 @@
     const string headerStyle = "border: 1px solid #68A; text-align: center;";
 }
 
-<div>
+<div style="@(Model.RoomMode ? "max-height: 250px; overflow-y: auto;" : "")">
     <span style="font-size: 1.2em; font-weight: bold;">Arcade's Hall of Fame</span>
 
     @if (Model.TotalPages > 1)

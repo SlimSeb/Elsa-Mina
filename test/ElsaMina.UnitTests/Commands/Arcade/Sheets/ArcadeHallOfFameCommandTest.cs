@@ -63,11 +63,43 @@ public class ArcadeHallOfFameCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReplyHtmlPage_WithRenderedTemplate()
+    public async Task Test_RunAsync_ShouldReplyHtmlPage_WhenInPrivateMessage()
     {
+        _context.IsPrivateMessage.Returns(true);
+
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyHtmlPage("arcade-hof", Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldBroadcastToRoom_WhenInRoom()
+    {
+        _context.IsPrivateMessage.Returns(false);
+
+        await _command.RunAsync(_context);
+
+        _context.Received(1).ReplyHtml(Arg.Any<string>());
+        _context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldHideSinglePointEntries_WhenInRoom()
+    {
+        _context.IsPrivateMessage.Returns(false);
+        _sheet.GetColumnAsync(0, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<string>>(["Rank", "1", "2", "3"]));
+        _sheet.GetColumnAsync(1, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<string>>(["Username", "PlayerOne", "PlayerTwo", "PlayerThree"]));
+        _sheet.GetColumnAsync(2, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IReadOnlyList<string>>(["Points", "100", "1", "5"]));
+
+        await _command.RunAsync(_context);
+
+        // The 1-point entry (PlayerTwo) is hidden in room mode; 100 and 5 remain.
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Arcade/Sheets/ArcadeHallOfFame",
+            Arg.Is<ArcadeHallOfFameViewModel>(vm => vm.RoomMode && vm.Entries.Length == 2));
     }
 
     [Test]
