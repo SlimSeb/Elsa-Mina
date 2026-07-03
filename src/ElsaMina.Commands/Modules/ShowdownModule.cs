@@ -30,7 +30,6 @@ public class ShowdownModule : Module
         builder.RegisterHandler<ReplaysHandler>();
 
         builder.RegisterType<ShowdownRanksProvider>().As<IShowdownRanksProvider>().SingleInstance();
-        builder.RegisterType<SmogonUsageDataProvider>().As<ISmogonUsageDataProvider>().SingleInstance();
         builder.RegisterType<LadderHistoryManager>().As<ILadderHistoryManager>().SingleInstance();
         builder.RegisterType<LadderTrackerManager>().As<ILadderTrackerManager>().SingleInstance();
         builder.RegisterType<EloProgressionManager>().As<IEloProgressionManager>().SingleInstance().OnActivating(e =>

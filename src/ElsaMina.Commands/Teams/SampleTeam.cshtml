@@ -1,43 +1,29 @@
-﻿@using ElsaMina.Commands.Teams
-@using ElsaMina.Core.Services.Templates
+@using ElsaMina.Commands.Teams
 @using Newtonsoft.Json
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Teams.SampleTeamViewModel>
 
 @{
     const int teamSize = 6;
-    const string cellStyle = "text-align: center;" +
-                             $"background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};" +
-                             "margin: 4px;" +
-                             "padding: 8px;" +
-                             "width: 250px;" +
-                             "height: 104px;" +
-                             "float: left;" +
-                             $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};" +
-                             "border-radius: 4px;";
     var sets = JsonConvert.DeserializeObject<IEnumerable<PokemonSet>>(Model.Team.TeamJson);
 }
 
-<a
-    style="text-decoration: inherit; color: inherit;"
-    href="@Model.Team.Link">
-    <div
-        style="@cellStyle">
-        @Raw(string.Concat(sets.Take(teamSize).Select(set => $"<psicon pokemon=\"{set.Species}\" />")))
-        <br />
-        <b>
+<a style="text-decoration:none;color:inherit;display:inline-block;" href="@Model.Team.Link">
+    <div style="background:#1a1a2e;border:1px solid #2e2e4e;border-radius:6px;margin:4px;padding:8px 10px;width:240px;height:104px;float:left;font-family:monospace;font-size:11px;color:#e0e0e0;text-align:center;overflow:hidden;">
+        <div style="margin-bottom:2px;">
+            @Raw(string.Concat(sets.Take(teamSize).Select(set => $"<psicon pokemon=\"{set.Species}\" />")))
+        </div>
+        <div style="font-weight:bold;font-size:12px;color:#6a9fd8;margin-bottom:2px;">
             @Model.Team.Name
-        </b>
-        <br />
-        <small style="font-style: italic;">
+        </div>
+        <div style="color:#a0a0c0;font-size:10px;font-style:italic;">
             @GetString("sample_team_description",
                 Model.Team.Author,
                 TimeZoneInfo.ConvertTime(Model.Team.CreationDate, Model.TimeZone).ToString("d", Model.Culture))
-        </small>
-        <br />
-        <small style="font-style: italic;">
+        </div>
+        <div style="color:#606080;font-size:10px;font-style:italic;">
             @GetString("sample_team_info",
                 string.Join(',', Model.Team.Rooms.Select(roomTeam => roomTeam.RoomId)),
                 Model.Team.Format)
-        </small>
+        </div>
     </div>
 </a>

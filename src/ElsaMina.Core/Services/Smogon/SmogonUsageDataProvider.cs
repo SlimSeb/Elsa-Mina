@@ -1,6 +1,6 @@
 using ElsaMina.Core.Services.Http;
 
-namespace ElsaMina.Commands.Showdown.SmogonStats;
+namespace ElsaMina.Core.Services.Smogon;
 
 public class SmogonUsageDataProvider : ISmogonUsageDataProvider
 {

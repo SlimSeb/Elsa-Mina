@@ -25,6 +25,7 @@ using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.FeatureSwitches;
+using ElsaMina.Core.Services.Smogon;
 using ElsaMina.Core.Services.Start;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
@@ -55,6 +56,7 @@ public class CoreModule : Module
         builder.RegisterType<DependencyContainerService>().As<IDependencyContainerService>().SingleInstance();
         builder.RegisterType<HttpService>().As<IHttpService>().SingleInstance();
         builder.RegisterType<ClockService>().As<IClockService>().SingleInstance();
+        builder.RegisterType<SmogonUsageDataProvider>().As<ISmogonUsageDataProvider>().SingleInstance();
         builder.RegisterType<ContextFactory>().As<IContextFactory>().SingleInstance();
         builder.RegisterType<CommandExecutor>().As<ICommandExecutor>().SingleInstance();
         builder.RegisterType<RoomsManager>().As<IRoomsManager>().SingleInstance();

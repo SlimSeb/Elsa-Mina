@@ -10,5 +10,6 @@ public class OpponentPokemonState
     public bool IsFainted { get; set; }
     public bool IsActive { get; set; }
     public string LastUsedMove { get; set; } = "";
+    public HashSet<string> RevealedMoves { get; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, int> Boosts { get; set; } = new();
 }

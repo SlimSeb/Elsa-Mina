@@ -160,6 +160,7 @@ public class BattleMessageParser : IBattleMessageParser
                 var pokemon = GetOrCreateOpponentPokemon(context, species);
                 EnsureActive(context, pokemon);
                 pokemon.LastUsedMove = moveName;
+                pokemon.RevealedMoves.Add(moveName);
                 return true;
             }
 

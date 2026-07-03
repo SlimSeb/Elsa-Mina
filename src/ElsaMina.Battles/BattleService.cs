@@ -24,17 +24,17 @@ public class BattleService : IBattleService
         _configuration = configuration;
     }
 
-    public Task HandleMessageAsync(string[] parts, string roomId, CancellationToken cancellationToken = default)
+    public async Task HandleMessageAsync(string[] parts, string roomId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(roomId) || !roomId.StartsWith("battle-"))
         {
-            return Task.CompletedTask;
+            return;
         }
 
         var context = _contexts.GetOrAdd(roomId, id => new BattleContext(id));
         if (!_messageParser.TryApplyMessage(parts, roomId, context, out var result))
         {
-            return Task.CompletedTask;
+            return;
         }
 
         if (result.Type == BattleMessageType.BattleStarted && !context.HasAnnouncedStart)
@@ -54,20 +54,23 @@ public class BattleService : IBattleService
 
             _bot.Say(roomId, "/leave");
             _contexts.TryRemove(roomId, out _);
-            return Task.CompletedTask;
+            return;
         }
 
-        if (result.Type == BattleMessageType.RequestUpdated &&
-            _decisionService.TryGetDecision(context, out var decision))
+        if (result.Type == BattleMessageType.RequestUpdated)
         {
+            var decision = await _decisionService.GetDecisionAsync(context, cancellationToken);
+            if (decision == null)
+            {
+                return;
+            }
+
             var command = BuildCommand(decision, context.Rqid);
             if (!string.IsNullOrWhiteSpace(command))
             {
                 _bot.Say(roomId, command);
             }
         }
-
-        return Task.CompletedTask;
     }
 
     private void AnnounceBattleEnd(string roomId, BattleMessageResult result)

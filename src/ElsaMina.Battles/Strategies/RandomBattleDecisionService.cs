@@ -11,46 +11,36 @@ public class RandomBattleDecisionService : IBattleDecisionService
         _randomService = randomService;
     }
 
-    public bool TryGetDecision(BattleContext context, out BattleDecision decision)
+    public Task<BattleDecision> GetDecisionAsync(BattleContext context, CancellationToken cancellationToken = default)
     {
-        decision = null;
         if (context.IsBattleOver)
         {
-            return false;
+            return Task.FromResult<BattleDecision>(null);
         }
 
         if (context.TeamPreview && context.SidePokemon.Count > 0)
         {
             var choice = _randomService.NextInt(1, context.SidePokemon.Count + 1);
-            decision = new BattleDecision(BattleDecisionType.TeamPreview, [choice]);
-            return true;
+            return Task.FromResult(new BattleDecision(BattleDecisionType.TeamPreview, [choice]));
         }
 
         if (context.ForceSwitchSlots.Any(slot => slot))
         {
             var choices = BuildSwitchChoices(context);
-            if (choices.Count == 0)
-            {
-                return false;
-            }
-
-            decision = new BattleDecision(BattleDecisionType.Switch, choices);
-            return true;
+            return Task.FromResult(choices.Count == 0
+                ? null
+                : new BattleDecision(BattleDecisionType.Switch, choices));
         }
 
         if (context.ActiveSlots.Count > 0)
         {
             var choices = BuildMoveChoices(context);
-            if (choices.Count == 0)
-            {
-                return false;
-            }
-
-            decision = new BattleDecision(BattleDecisionType.Move, choices);
-            return true;
+            return Task.FromResult(choices.Count == 0
+                ? null
+                : new BattleDecision(BattleDecisionType.Move, choices));
         }
 
-        return false;
+        return Task.FromResult<BattleDecision>(null);
     }
 
     private List<int> BuildSwitchChoices(BattleContext context)

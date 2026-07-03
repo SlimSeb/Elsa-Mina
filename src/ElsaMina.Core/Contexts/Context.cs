@@ -80,6 +80,7 @@ public abstract class Context : IContext
         {
             return GetString(key);
         }
+
         return string.Format(GetString(key), formatArguments);
     }
 
@@ -111,6 +112,7 @@ public abstract class Context : IContext
         {
             ReplyLocalizedMessage("command_execution_report_bug", _configuration.BugReportLink);
         }
+
         Reply($"!code {exception.GetType().FullName}: {exception.Message}\n{exception.StackTrace}");
     }
 
@@ -147,8 +149,8 @@ public abstract class Context : IContext
     public abstract bool IsPrivateMessage { get; }
     public abstract CultureInfo Culture { get; set; }
     public abstract ContextType Type { get; }
-    protected abstract Task<bool> IsAllowingErrorMessagesAsync(CancellationToken cancellationToken = default);
 
+    protected abstract Task<bool> IsAllowingErrorMessagesAsync(CancellationToken cancellationToken = default);
     public abstract bool HasRankOrHigher(Rank requiredRank);
     public abstract void Reply(string message, bool rankAware = false);
     public abstract void ReplyHtml(string html, string roomId = null, bool rankAware = false);

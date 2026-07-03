@@ -1,0 +1,269 @@
+using ElsaMina.Battles.Strategies.Prediction;
+using ElsaMina.Logging;
+using Lusamine.DamageCalc;
+using Lusamine.DamageCalc.Data;
+
+namespace ElsaMina.Battles.Strategies.Simulation;
+
+/// <summary>
+/// Builds a SimulationModel from the tracked battle state: all damage calc invocations
+/// (our moves against the opponent, the opponent's predicted moves against every one of
+/// our team members) happen here, once per decision.
+/// </summary>
+public static class SimulationModelBuilder
+{
+    public static SimulationModel TryBuild(BattleContext context,
+        IReadOnlyList<PredictedMove> predictedOpponentMoves, bool forcedSwitch)
+    {
+        var opponent = context.ActiveOpponent;
+        if (opponent == null || !CalcPokemonFactory.TryBuildOpponentPokemon(opponent, out var opponentPokemon))
+        {
+            return null;
+        }
+
+        var opponentMaxHp = opponentPokemon.MaxHP(false);
+        if (opponentMaxHp <= 0)
+        {
+            return null;
+        }
+
+        var activeSlot = context.ActiveSlots.Count > 0 ? context.ActiveSlots[0] : null;
+
+        var members = new List<SimulationTeamMember>();
+        var memberPokemons = new List<Pokemon>();
+        var activeMemberIndex = -1;
+        Pokemon terastallizedActivePokemon = null;
+
+        for (var slotIndex = 0; slotIndex < context.SidePokemon.Count; slotIndex++)
+        {
+            var pokemonState = context.SidePokemon[slotIndex];
+            if (pokemonState.IsFainted || pokemonState.CurrentHp <= 0 || pokemonState.MaxHp <= 0 ||
+                !CalcPokemonFactory.TryBuildOurPokemon(pokemonState, out var memberPokemon))
+            {
+                continue;
+            }
+
+            var isActive = pokemonState.IsActive && !forcedSwitch;
+            Pokemon teraPokemon = null;
+            if (isActive && activeSlot != null && !string.IsNullOrEmpty(activeSlot.CanTerastallize) &&
+                CalcPokemonFactory.TryBuildOurPokemon(pokemonState, out var teraVariant))
+            {
+                teraVariant.TeraType = activeSlot.CanTerastallize;
+                teraPokemon = teraVariant;
+            }
+
+            var moves = isActive && activeSlot != null
+                ? BuildActiveMoves(activeSlot, memberPokemon, teraPokemon, opponentPokemon, opponentMaxHp)
+                : BuildBenchMoves(pokemonState.Moves, memberPokemon, opponentPokemon, opponentMaxHp);
+
+            if (isActive)
+            {
+                activeMemberIndex = members.Count;
+                terastallizedActivePokemon = teraPokemon;
+            }
+
+            members.Add(new SimulationTeamMember
+            {
+                TeamSlot = slotIndex + 1,
+                Species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemonState.Details),
+                InitialHpRatio = (double)pokemonState.CurrentHp / pokemonState.MaxHp,
+                Speed = ComputeOurSpeed(pokemonState),
+                Moves = moves
+            });
+            memberPokemons.Add(memberPokemon);
+        }
+
+        if (members.Count == 0)
+        {
+            return null;
+        }
+
+        return new SimulationModel
+        {
+            Members = members,
+            ActiveMemberIndex = activeMemberIndex,
+            CanTerastallize = terastallizedActivePokemon != null,
+            ActiveIsTrapped = activeSlot?.Trapped ?? false,
+            OpponentMoves = BuildOpponentMoves(predictedOpponentMoves, opponentPokemon, members,
+                memberPokemons, terastallizedActivePokemon, activeMemberIndex),
+            OpponentSpeed = ComputeOpponentSpeed(opponent, opponentPokemon),
+            OpponentHpRatio = opponent.HpPercent / 100.0,
+            OpponentBenchAliveCount = context.OpponentPokemon.Count(pokemon => !pokemon.IsFainted && !pokemon.IsActive)
+        };
+    }
+
+    private static List<SimulationMove> BuildActiveMoves(BattleActiveSlot slot, Pokemon attacker,
+        Pokemon teraAttacker, Pokemon defender, int defenderMaxHp)
+    {
+        var moves = new List<SimulationMove>();
+        for (var index = 0; index < slot.Moves.Count; index++)
+        {
+            var moveState = slot.Moves[index];
+            var isUsable = moveState.Name == "Recharge" || moveState.MaxPp == 0 ||
+                           (!moveState.IsDisabled && moveState.Pp > 0);
+            if (!isUsable)
+            {
+                continue;
+            }
+
+            var move = BuildSimulationMove(moveState.Name, index + 1, attacker, teraAttacker,
+                defender, defenderMaxHp);
+            if (move != null)
+            {
+                moves.Add(move);
+            }
+        }
+
+        return moves;
+    }
+
+    private static List<SimulationMove> BuildBenchMoves(List<string> moveNames, Pokemon attacker,
+        Pokemon defender, int defenderMaxHp)
+    {
+        var moves = new List<SimulationMove>();
+        foreach (var moveName in moveNames)
+        {
+            var move = BuildSimulationMove(moveName, 0, attacker, null, defender, defenderMaxHp);
+            if (move != null)
+            {
+                moves.Add(move);
+            }
+        }
+
+        return moves;
+    }
+
+    private static SimulationMove BuildSimulationMove(string moveName, int requestMoveIndex,
+        Pokemon attacker, Pokemon teraAttacker, Pokemon defender, int defenderMaxHp)
+    {
+        try
+        {
+            var calcMove = new Move(CalcPokemonFactory.Generation, moveName);
+            var isStatus = calcMove.Category == MoveCategories.Status;
+
+            return new SimulationMove
+            {
+                Name = calcMove.Name,
+                RequestMoveIndex = requestMoveIndex,
+                Priority = calcMove.Priority,
+                IsStatus = isStatus,
+                DamageRatio = isStatus ? 0.0 : ComputeExpectedDamageRatio(attacker, defender, calcMove, defenderMaxHp),
+                TeraDamageRatio = isStatus || teraAttacker == null
+                    ? null
+                    : ComputeExpectedDamageRatio(teraAttacker, defender, calcMove, defenderMaxHp)
+            };
+        }
+        catch (Exception exception)
+        {
+            Log.Debug("Could not build simulation move {Move}: {Message}", moveName, exception.Message);
+            return null;
+        }
+    }
+
+    private static List<OpponentSimulationMove> BuildOpponentMoves(
+        IReadOnlyList<PredictedMove> predictedMoves, Pokemon opponentPokemon,
+        List<SimulationTeamMember> members, List<Pokemon> memberPokemons,
+        Pokemon terastallizedActivePokemon, int activeMemberIndex)
+    {
+        var opponentMoves = new List<OpponentSimulationMove>();
+        if (predictedMoves == null)
+        {
+            return opponentMoves;
+        }
+
+        foreach (var predictedMove in predictedMoves)
+        {
+            try
+            {
+                var calcMove = new Move(CalcPokemonFactory.Generation, predictedMove.Name);
+                if (calcMove.Category == MoveCategories.Status)
+                {
+                    continue;
+                }
+
+                var damageToMembers = new double[members.Count];
+                for (var memberIndex = 0; memberIndex < members.Count; memberIndex++)
+                {
+                    var memberMaxHp = memberPokemons[memberIndex].MaxHP(false);
+                    damageToMembers[memberIndex] = ComputeExpectedDamageRatio(opponentPokemon,
+                        memberPokemons[memberIndex], calcMove, memberMaxHp);
+                }
+
+                var damageToTeraActive = activeMemberIndex >= 0
+                    ? damageToMembers[activeMemberIndex]
+                    : 0.0;
+                if (terastallizedActivePokemon != null)
+                {
+                    damageToTeraActive = ComputeExpectedDamageRatio(opponentPokemon,
+                        terastallizedActivePokemon, calcMove, terastallizedActivePokemon.MaxHP(false));
+                }
+
+                opponentMoves.Add(new OpponentSimulationMove
+                {
+                    Name = calcMove.Name,
+                    Priority = calcMove.Priority,
+                    Probability = predictedMove.Probability,
+                    DamageToMembers = damageToMembers,
+                    DamageToTerastallizedActive = damageToTeraActive
+                });
+            }
+            catch (Exception exception)
+            {
+                Log.Debug("Could not build opponent simulation move {Move}: {Message}",
+                    predictedMove.Name, exception.Message);
+            }
+        }
+
+        return opponentMoves;
+    }
+
+    private static double ComputeExpectedDamageRatio(Pokemon attacker, Pokemon defender,
+        Move move, int defenderMaxHp)
+    {
+        if (defenderMaxHp <= 0)
+        {
+            return 0.0;
+        }
+
+        try
+        {
+            var result = Calc.Calculate(CalcPokemonFactory.Generation, attacker, defender, move, null);
+            var (minDamage, maxDamage) = result.Range();
+            return (minDamage + maxDamage) / 2.0 / defenderMaxHp;
+        }
+        catch
+        {
+            // Move not in the dex or not a damaging move
+            return 0.0;
+        }
+    }
+
+    private static int ComputeOurSpeed(BattlePokemonState state)
+    {
+        var speed = state.Stats.Spe;
+        if (CalcPokemonFactory.ExtractStatus(state.Condition) == "par")
+        {
+            speed /= 2;
+        }
+
+        return speed;
+    }
+
+    private static int ComputeOpponentSpeed(OpponentPokemonState state, Pokemon opponentPokemon)
+    {
+        // The opponent's exact spread is unknown: use the calc's default spread as an estimate
+        var speed = (double)opponentPokemon.RawStats.Spe;
+
+        if (state.Boosts.TryGetValue("spe", out var boostStage) && boostStage != 0)
+        {
+            speed *= boostStage > 0 ? (2.0 + boostStage) / 2.0 : 2.0 / (2.0 - boostStage);
+        }
+
+        if (state.Status == "par")
+        {
+            speed /= 2;
+        }
+
+        return (int)speed;
+    }
+}

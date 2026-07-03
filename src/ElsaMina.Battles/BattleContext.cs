@@ -8,6 +8,19 @@ public class BattleContext
     }
 
     public string RoomId { get; }
+
+    /// <summary>
+    /// Battle format extracted from the room id, e.g. "battle-gen9ou-12345" gives "gen9ou".
+    /// </summary>
+    public string Format
+    {
+        get
+        {
+            var segments = RoomId.Split('-');
+            return segments.Length >= 2 ? segments[1] : "";
+        }
+    }
+
     public int Rqid { get; set; }
     public string SideName { get; set; } = "";
     public string SideId { get; set; } = "";

@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace ElsaMina.Commands.Showdown.SmogonStats;
+namespace ElsaMina.Core.Services.Smogon;
 
 public class SmogonPokemonUsageDataDto
 {

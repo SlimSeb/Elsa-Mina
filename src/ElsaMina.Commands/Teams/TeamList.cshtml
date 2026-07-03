@@ -1,17 +1,15 @@
-﻿@using ElsaMina.Commands.Teams
+@using ElsaMina.Commands.Teams
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Teams.TeamListViewModel>
 
-<div
-    style="margin: auto; overflow-y: auto; max-height: 230px;">
+<div style="margin:auto;overflow-y:auto;max-height:230px;background:#1a1a2e;border-radius:6px;padding:4px;">
     @foreach (var team in Model.Teams)
     {
-        <div>
-            @{ await IncludeAsync("Teams/SampleTeam", new SampleTeamViewModel
-               {
-                   Culture = Model.Culture,
-                   Team = team,
-                   TimeZone = Model.TimeZone
-               }); }
-        </div>
+        await IncludeAsync("Teams/SampleTeam", new SampleTeamViewModel
+        {
+            Culture = Model.Culture,
+            Team = team,
+            TimeZone = Model.TimeZone
+        });
     }
+    <div style="clear:both;"></div>
 </div>

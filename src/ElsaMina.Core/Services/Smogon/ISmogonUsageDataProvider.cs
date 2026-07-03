@@ -1,4 +1,4 @@
-namespace ElsaMina.Commands.Showdown.SmogonStats;
+namespace ElsaMina.Core.Services.Smogon;
 
 public interface ISmogonUsageDataProvider
 {
