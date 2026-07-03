@@ -9,4 +9,5 @@ public class ArcadeHallOfFameViewModel : LocalizableViewModel
     public int TotalPages { get; set; }
     public string BotName { get; set; }
     public string Trigger { get; set; }
+    public bool RoomMode { get; set; }
 }

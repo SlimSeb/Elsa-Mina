@@ -30,13 +30,45 @@ public class ArcadeHallOfFameCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var page = int.TryParse(context.Target.Trim(), out var parsedPage)
-            ? Math.Max(1, parsedPage)
-            : 1;
-
         using var sheet = await _sheetProvider.GetSheetAsync(_configuration.ArcadeSpreadsheetName,
             _configuration.ArcadeHallOfFameSheetName, cancellationToken);
         var allEntries = await GetHallOfFameEntriesAsync(sheet, cancellationToken);
+
+        if (!context.IsPrivateMessage)
+        {
+            await DisplayInRoomAsync(context, allEntries);
+            return;
+        }
+
+        await DisplayAsPageAsync(context, allEntries);
+    }
+
+    private async Task DisplayInRoomAsync(IContext context, ArcadeHallOfFameEntry[] allEntries)
+    {
+        // In a room we broadcast the hall of fame but hide the long tail of 1-point
+        // entries to keep it readable, and don't paginate.
+        var entries = allEntries.Where(entry => entry.Points > 1).ToArray();
+
+        var viewModel = new ArcadeHallOfFameViewModel
+        {
+            Culture = context.Culture,
+            Entries = entries,
+            Page = 1,
+            TotalPages = 1,
+            RoomMode = true,
+            BotName = _configuration.Name,
+            Trigger = _configuration.Trigger
+        };
+
+        var template = await _templatesManager.GetTemplateAsync("Arcade/Sheets/ArcadeHallOfFame", viewModel);
+        context.ReplyHtml(template.RemoveNewlines().CollapseAttributeWhitespace().RemoveWhitespacesBetweenTags());
+    }
+
+    private async Task DisplayAsPageAsync(IContext context, ArcadeHallOfFameEntry[] allEntries)
+    {
+        var page = int.TryParse(context.Target.Trim(), out var parsedPage)
+            ? Math.Max(1, parsedPage)
+            : 1;
 
         var totalPages = (int)Math.Ceiling(allEntries.Length / (double)PAGE_SIZE);
         totalPages = Math.Max(1, totalPages);
