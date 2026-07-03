@@ -139,6 +139,38 @@ public class TurnResolverTest
     }
 
     [Test]
+    public void Test_Resolve_ShouldApplyHazardChip_WhenSwitchingUnderEntryHazards()
+    {
+        // Arrange - the incoming pokemon loses 25% to Stealth Rock before the opponent's move lands
+        var members = new List<SimulationTeamMember>
+        {
+            SimulationModelTestFactory.CreateMember(1, 1.0, speed: 100,
+                SimulationModelTestFactory.CreateMove("Strong Move", 0.5)),
+            new()
+            {
+                TeamSlot = 2,
+                Species = "Member2",
+                InitialHpRatio = 1.0,
+                Speed = 80,
+                SwitchInChipRatio = 0.25,
+                Moves = [SimulationModelTestFactory.CreateMove("Other Move", 0.3)]
+            }
+        };
+        var opponentMoves = new List<OpponentSimulationMove>
+        {
+            SimulationModelTestFactory.CreateOpponentMove("Counter Move", [0.5, 0.2])
+        };
+        var model = SimulationModelTestFactory.CreateModel(0, members, opponentMoves, opponentSpeed: 100);
+        var switchAction = new SimulationAction(SimulationActionKind.Switch, MemberIndex: 1);
+
+        // Act
+        var result = TurnResolver.Resolve(model, model.CreateInitialState(), switchAction, 0);
+
+        // Assert - 25% hazard chip then 20% from the opponent's move
+        Assert.That(result.MemberHpRatios[1], Is.EqualTo(0.55).Within(1e-9));
+    }
+
+    [Test]
     public void Test_EnumerateOurActions_ShouldOnlyReturnSwitches_WhenActivePokemonFainted()
     {
         // Arrange

@@ -117,6 +117,50 @@ public class SimulationModelBuilderTest
     }
 
     [Test]
+    public void Test_TryBuild_ShouldComputeStealthRockChip_ForGroundedMembers()
+    {
+        // Arrange - Snorlax (Normal) takes a neutral Stealth Rock hit: 12.5% of max HP
+        var context = CreateContext();
+        context.OwnSideStealthRock = true;
+
+        // Act
+        var model = SimulationModelBuilder.TryBuild(context, OpponentPrediction.Empty, forcedSwitch: false);
+
+        // Assert
+        var snorlax = model.Members.Single(member => member.Species == "Snorlax");
+        Assert.That(snorlax.SwitchInChipRatio, Is.EqualTo(0.125).Within(1e-9));
+    }
+
+    [Test]
+    public void Test_TryBuild_ShouldAddSpikesChipOnTopOfRock_ForGroundedMembers()
+    {
+        // Arrange
+        var context = CreateContext();
+        context.OwnSideStealthRock = true;
+        context.OwnSideSpikesLayers = 1;
+
+        // Act
+        var model = SimulationModelBuilder.TryBuild(context, OpponentPrediction.Empty, forcedSwitch: false);
+
+        // Assert - 12.5% Stealth Rock + 12.5% one layer of Spikes
+        var snorlax = model.Members.Single(member => member.Species == "Snorlax");
+        Assert.That(snorlax.SwitchInChipRatio, Is.EqualTo(0.25).Within(1e-9));
+    }
+
+    [Test]
+    public void Test_TryBuild_ShouldNotChipMembers_WhenNoHazardsAreSet()
+    {
+        // Arrange
+        var context = CreateContext();
+
+        // Act
+        var model = SimulationModelBuilder.TryBuild(context, OpponentPrediction.Empty, forcedSwitch: false);
+
+        // Assert
+        Assert.That(model.Members.All(member => member.SwitchInChipRatio == 0.0), Is.True);
+    }
+
+    [Test]
     public void Test_TryBuild_ShouldApplyPredictedSpread_MakingOpponentSpeedRealistic()
     {
         // Arrange - a max-speed spread must produce a higher opponent speed tier than the

@@ -313,6 +313,20 @@ public class BattleMessageParser : IBattleMessageParser
                 return true;
             }
 
+            // Hazard set on a side: |-sidestart|p1: Slim|move: Stealth Rock
+            case "-sidestart" when parts.Length >= 4:
+            {
+                ApplyHazardChange(context, parts[2], parts[3], removed: false);
+                return true;
+            }
+
+            // Hazard cleared: |-sideend|p1: Slim|Stealth Rock|[from] move: Rapid Spin
+            case "-sideend" when parts.Length >= 4:
+            {
+                ApplyHazardChange(context, parts[2], parts[3], removed: true);
+                return true;
+            }
+
             default:
                 return false;
         }
@@ -322,6 +336,29 @@ public class BattleMessageParser : IBattleMessageParser
     {
         // ident format: "p1a: Garchomp" - first two chars are the side id
         return ident.Length >= 2 && ident[..2] != ourSideId;
+    }
+
+    private static void ApplyHazardChange(BattleContext context, string sideIdent, string condition, bool removed)
+    {
+        // Only hazards on our own side damage our pokemon when they switch in
+        if (sideIdent.Length < 2 || sideIdent[..2] != context.SideId)
+        {
+            return;
+        }
+
+        var hazardName = condition.StartsWith("move: ", StringComparison.OrdinalIgnoreCase)
+            ? condition["move: ".Length..]
+            : condition;
+
+        if (hazardName.Equals("Stealth Rock", StringComparison.OrdinalIgnoreCase))
+        {
+            context.OwnSideStealthRock = !removed;
+        }
+        else if (hazardName.Equals("Spikes", StringComparison.OrdinalIgnoreCase))
+        {
+            // Spikes stack up to three layers; -sideend clears all of them at once
+            context.OwnSideSpikesLayers = removed ? 0 : Math.Min(3, context.OwnSideSpikesLayers + 1);
+        }
     }
 
     private static string ExtractSpeciesFromIdent(string ident)

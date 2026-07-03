@@ -32,6 +32,14 @@ public class BattleContext
     public bool HasAnnouncedStart { get; set; }
     public bool HasAnnouncedEnd { get; set; }
     public List<bool> ForceSwitchSlots { get; set; } = [];
+
+    /// <summary>
+    /// Entry hazards set on our own side of the field, which damage our pokemon as they switch in.
+    /// Opponent-side hazards are not tracked because the simulation never switches the opponent out.
+    /// </summary>
+    public bool OwnSideStealthRock { get; set; }
+    public int OwnSideSpikesLayers { get; set; }
+
     public List<BattlePokemonState> SidePokemon { get; set; } = [];
     public List<BattleActiveSlot> ActiveSlots { get; set; } = [];
     public List<OpponentPokemonState> OpponentPokemon { get; set; } = [];

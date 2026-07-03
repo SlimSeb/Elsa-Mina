@@ -60,9 +60,12 @@ public static class TurnResolver
 
         if (ourAction.Kind == SimulationActionKind.Switch)
         {
-            // The switch resolves first, then the opponent's move hits the incoming pokemon
+            // Entry hazards chip the incoming pokemon as it enters, then the opponent's move hits it
             var incomingIndex = ourAction.MemberIndex;
-            if (opponentMove != null && opponentHpRatio > 0)
+            memberHpRatios[incomingIndex] = Math.Max(0.0,
+                memberHpRatios[incomingIndex] - model.Members[incomingIndex].SwitchInChipRatio);
+
+            if (opponentMove != null && opponentHpRatio > 0 && memberHpRatios[incomingIndex] > 0)
             {
                 memberHpRatios[incomingIndex] = Math.Max(0.0,
                     memberHpRatios[incomingIndex] - GetOpponentDamage(model, state, opponentMove, incomingIndex));

@@ -70,6 +70,8 @@ public static class SimulationModelBuilder
                 Species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemonState.Details),
                 InitialHpRatio = (double)pokemonState.CurrentHp / pokemonState.MaxHp,
                 Speed = ComputeOurSpeed(pokemonState),
+                SwitchInChipRatio = ComputeSwitchInChip(memberPokemon.Types,
+                    context.OwnSideStealthRock, context.OwnSideSpikesLayers),
                 Moves = moves
             });
             memberPokemons.Add(memberPokemon);
@@ -238,6 +240,33 @@ public static class SimulationModelBuilder
             // Move not in the dex or not a damaging move
             return 0.0;
         }
+    }
+
+    private static readonly double[] SPIKES_CHIP_BY_LAYERS = [0.0, 1.0 / 8.0, 1.0 / 6.0, 1.0 / 4.0];
+
+    private static double ComputeSwitchInChip(IReadOnlyList<string> types, bool stealthRock, int spikesLayers)
+    {
+        var chip = 0.0;
+
+        if (stealthRock)
+        {
+            // Stealth Rock ignores grounding and scales with the Rock type's effectiveness
+            chip += 0.125 * Data.TypeMatchupTable.GetMultiplier("Rock", types);
+        }
+
+        if (spikesLayers > 0 && IsGrounded(types))
+        {
+            chip += SPIKES_CHIP_BY_LAYERS[Math.Clamp(spikesLayers, 0, 3)];
+        }
+
+        return chip;
+    }
+
+    private static bool IsGrounded(IReadOnlyList<string> types)
+    {
+        // Approximation: only Flying types are treated as airborne.
+        // Levitate and Air Balloon are not tracked, so they are not accounted for here.
+        return types == null || !types.Any(type => type.Equals("Flying", StringComparison.OrdinalIgnoreCase));
     }
 
     private static int ComputeOurSpeed(BattlePokemonState state)
