@@ -37,6 +37,11 @@ public class SmogonOpponentMovesPredictorTest
                         ["Earthquake"] = 90.0,
                         ["Stealth Rock"] = 50.0,
                         ["Fire Fang"] = 5.0
+                    },
+                    Spreads = new Dictionary<string, double>
+                    {
+                        ["Jolly:0/252/0/0/4/252"] = 60.0,
+                        ["Adamant:0/252/0/0/4/252"] = 30.0
                     }
                 }
             }
@@ -53,7 +58,7 @@ public class SmogonOpponentMovesPredictorTest
         SetUpUsageData();
 
         // Act
-        var predictions = await _predictor.PredictMovesAsync("gen9ou", "Garchomp", ["Dragon Claw"]);
+        var predictions = (await _predictor.PredictAsync("gen9ou", "Garchomp", ["Dragon Claw"])).Moves;
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -75,7 +80,7 @@ public class SmogonOpponentMovesPredictorTest
         SetUpUsageData();
 
         // Act
-        var predictions = await _predictor.PredictMovesAsync("gen9ou", "Garchomp", ["Earthquake"]);
+        var predictions = (await _predictor.PredictAsync("gen9ou", "Garchomp", ["Earthquake"])).Moves;
 
         // Assert
         Assert.That(predictions.Count(move => move.Name == "Earthquake"), Is.EqualTo(1));
@@ -86,7 +91,7 @@ public class SmogonOpponentMovesPredictorTest
     public async Task Test_PredictMovesAsync_ShouldSkipUsageStats_WhenFormatIsRandomBattle()
     {
         // Act
-        var predictions = await _predictor.PredictMovesAsync("gen9randombattle", "Garchomp", ["Earthquake"]);
+        var predictions = (await _predictor.PredictAsync("gen9randombattle", "Garchomp", ["Earthquake"])).Moves;
 
         // Assert
         Assert.That(predictions, Has.Count.EqualTo(1));
@@ -95,16 +100,18 @@ public class SmogonOpponentMovesPredictorTest
     }
 
     [Test]
-    public async Task Test_PredictMovesAsync_ShouldSkipUsageStats_WhenFourMovesAreAlreadyRevealed()
+    public async Task Test_PredictMovesAsync_ShouldNotAddUsageMoves_WhenFourMovesAreAlreadyRevealed()
     {
+        // Arrange - usage data is still fetched for the spread, but no extra moves are added
+        SetUpUsageData();
+
         // Act
-        var predictions = await _predictor.PredictMovesAsync("gen9ou", "Garchomp",
+        var prediction = await _predictor.PredictAsync("gen9ou", "Garchomp",
             ["Earthquake", "Dragon Claw", "Stealth Rock", "Fire Fang"]);
 
         // Assert
-        Assert.That(predictions, Has.Count.EqualTo(4));
-        await _smogonUsageDataProvider.DidNotReceiveWithAnyArgs()
-            .GetUsageDataAsync(default, default, default, default);
+        Assert.That(prediction.Moves, Has.Count.EqualTo(4));
+        Assert.That(prediction.Spread, Is.Not.Null);
     }
 
     [Test]
@@ -116,7 +123,7 @@ public class SmogonOpponentMovesPredictorTest
             .ThrowsAsync(new HttpRequestException("not found"));
 
         // Act
-        var predictions = await _predictor.PredictMovesAsync("gen9uber", "Koraidon", ["Collision Course"]);
+        var predictions = (await _predictor.PredictAsync("gen9uber", "Koraidon", ["Collision Course"])).Moves;
 
         // Assert
         Assert.That(predictions, Has.Count.EqualTo(1));
@@ -130,8 +137,8 @@ public class SmogonOpponentMovesPredictorTest
         SetUpUsageData();
 
         // Act
-        await _predictor.PredictMovesAsync("gen9ou", "Garchomp", []);
-        await _predictor.PredictMovesAsync("gen9ou", "Garchomp", ["Earthquake"]);
+        await _predictor.PredictAsync("gen9ou", "Garchomp", []);
+        await _predictor.PredictAsync("gen9ou", "Garchomp", ["Earthquake"]);
 
         // Assert
         await _smogonUsageDataProvider.Received(1)
@@ -164,10 +171,57 @@ public class SmogonOpponentMovesPredictorTest
             .Returns(usageData);
 
         // Act
-        var predictions = await _predictor.PredictMovesAsync("gen9lc", "Garchomp", []);
+        var predictions = (await _predictor.PredictAsync("gen9lc", "Garchomp", [])).Moves;
 
         // Assert
         Assert.That(predictions.Single(move => move.Name == "Earthquake").Probability,
             Is.EqualTo(0.9).Within(1e-9));
+    }
+
+    [Test]
+    public async Task Test_PredictAsync_ShouldReturnMostCommonSpread_WhenSpreadsAreAvailable()
+    {
+        // Arrange
+        SetUpUsageData();
+
+        // Act
+        var spread = (await _predictor.PredictAsync("gen9ou", "Garchomp", [])).Spread;
+
+        // Assert
+        Assert.That(spread, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(spread.Nature, Is.EqualTo("Jolly"));
+            Assert.That(spread.AtkEvs, Is.EqualTo(252));
+            Assert.That(spread.SpdEvs, Is.EqualTo(4));
+            Assert.That(spread.SpeEvs, Is.EqualTo(252));
+            Assert.That(spread.HpEvs, Is.EqualTo(0));
+        }
+    }
+
+    [Test]
+    public async Task Test_PredictAsync_ShouldReturnNullSpread_WhenSpreadKeyIsMalformed()
+    {
+        // Arrange
+        var usageData = new SmogonUsageDataDto
+        {
+            Data = new Dictionary<string, SmogonPokemonUsageDataDto>
+            {
+                ["Garchomp"] = new()
+                {
+                    Abilities = new Dictionary<string, double> { ["Rough Skin"] = 100.0 },
+                    Spreads = new Dictionary<string, double> { ["Other"] = 100.0 }
+                }
+            }
+        };
+        _smogonUsageDataProvider
+            .GetUsageDataAsync("2026-06", "gen9ou", 1760, Arg.Any<CancellationToken>())
+            .Returns(usageData);
+
+        // Act
+        var spread = (await _predictor.PredictAsync("gen9ou", "Garchomp", [])).Spread;
+
+        // Assert
+        Assert.That(spread, Is.Null);
     }
 }

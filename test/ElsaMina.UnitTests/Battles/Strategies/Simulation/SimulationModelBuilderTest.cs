@@ -62,14 +62,14 @@ public class SimulationModelBuilderTest
     {
         // Arrange
         var context = CreateContext();
-        var predictedMoves = new List<PredictedMove>
-        {
-            new("Waterfall", 0.8),
-            new("Dragon Dance", 0.6)
-        };
+        var prediction = new OpponentPrediction(
+        [
+            new PredictedMove("Waterfall", 0.8),
+            new PredictedMove("Dragon Dance", 0.6)
+        ], Spread: null);
 
         // Act
-        var model = SimulationModelBuilder.TryBuild(context, predictedMoves, forcedSwitch: false);
+        var model = SimulationModelBuilder.TryBuild(context, prediction, forcedSwitch: false);
 
         // Assert
         Assert.That(model, Is.Not.Null);
@@ -97,7 +97,7 @@ public class SimulationModelBuilderTest
         var context = CreateContext();
 
         // Act
-        var model = SimulationModelBuilder.TryBuild(context, [], forcedSwitch: true);
+        var model = SimulationModelBuilder.TryBuild(context, OpponentPrediction.Empty, forcedSwitch: true);
 
         // Assert
         Assert.That(model, Is.Not.Null);
@@ -112,6 +112,26 @@ public class SimulationModelBuilderTest
         context.OpponentPokemon[0].IsActive = false;
 
         // Act & Assert
-        Assert.That(SimulationModelBuilder.TryBuild(context, [], forcedSwitch: false), Is.Null);
+        Assert.That(SimulationModelBuilder.TryBuild(context, OpponentPrediction.Empty, forcedSwitch: false),
+            Is.Null);
+    }
+
+    [Test]
+    public void Test_TryBuild_ShouldApplyPredictedSpread_MakingOpponentSpeedRealistic()
+    {
+        // Arrange - a max-speed spread must produce a higher opponent speed tier than the
+        // calc's default 0-EV neutral spread, otherwise the bot mis-resolves turn order
+        var context = CreateContext();
+        var neutralModel = SimulationModelBuilder.TryBuild(context, OpponentPrediction.Empty,
+            forcedSwitch: false);
+
+        var maxSpeedPrediction = new OpponentPrediction([],
+            new PredictedSpread("Jolly", HpEvs: 0, AtkEvs: 252, DefEvs: 0, SpaEvs: 0, SpdEvs: 4, SpeEvs: 252));
+
+        // Act
+        var investedModel = SimulationModelBuilder.TryBuild(context, maxSpeedPrediction, forcedSwitch: false);
+
+        // Assert
+        Assert.That(investedModel.OpponentSpeed, Is.GreaterThan(neutralModel.OpponentSpeed));
     }
 }

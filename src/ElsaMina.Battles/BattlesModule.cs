@@ -19,9 +19,13 @@ public class BattlesModule : Module
         builder.RegisterType<MinimaxSearch>().As<IBattleSearchAlgorithm>().SingleInstance();
         builder.RegisterType<CalcBasedBattleDecisionService>().As<IBattleDecisionService>().SingleInstance();
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
+        builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();
+        builder.RegisterType<LadderingService>().As<ILadderingService>().SingleInstance();
 
         builder.RegisterHandler<BattleHandler>();
 
         builder.RegisterCommand<SearchCommand>();
+        builder.RegisterCommand<UseTeamCommand>();
+        builder.RegisterCommand<LadderingCommand>();
     }
 }

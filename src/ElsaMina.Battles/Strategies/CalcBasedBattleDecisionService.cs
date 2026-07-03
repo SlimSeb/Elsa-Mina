@@ -199,9 +199,9 @@ public class CalcBasedBattleDecisionService : IBattleDecisionService
 
         try
         {
-            var predictedMoves = await _opponentMovesPredictor.PredictMovesAsync(context.Format,
+            var prediction = await _opponentMovesPredictor.PredictAsync(context.Format,
                 opponent.Species, opponent.RevealedMoves, cancellationToken);
-            return SimulationModelBuilder.TryBuild(context, predictedMoves, forcedSwitch);
+            return SimulationModelBuilder.TryBuild(context, prediction, forcedSwitch);
         }
         catch (Exception exception)
         {

@@ -26,32 +26,43 @@ public class SmogonOpponentMovesPredictor : IOpponentMovesPredictor
         _clockService = clockService;
     }
 
-    public async Task<IReadOnlyList<PredictedMove>> PredictMovesAsync(string format, string species,
+    public async Task<OpponentPrediction> PredictAsync(string format, string species,
         IReadOnlyCollection<string> revealedMoves, CancellationToken cancellationToken = default)
     {
-        var predictions = revealedMoves
+        var predictedMoves = revealedMoves
             .Select(moveName => new PredictedMove(moveName, 1.0))
             .ToList();
 
-        if (predictions.Count >= MOVES_PER_SET || string.IsNullOrWhiteSpace(format) ||
-            string.IsNullOrWhiteSpace(species) || format.Contains("random", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(format) || string.IsNullOrWhiteSpace(species) ||
+            format.Contains("random", StringComparison.OrdinalIgnoreCase))
         {
-            return predictions;
+            return new OpponentPrediction(predictedMoves, null);
         }
 
         var usageData = await GetUsageDataAsync(format);
         var pokemonData = FindPokemonData(usageData, species);
-        if (pokemonData?.Moves == null || pokemonData.Moves.Count == 0)
+        if (pokemonData == null)
         {
-            return predictions;
+            return new OpponentPrediction(predictedMoves, null);
         }
 
         var totalWeight = pokemonData.Abilities?.Values.Sum()
                           ?? pokemonData.Items?.Values.Sum()
                           ?? 0.0;
-        if (totalWeight <= 0)
+
+        AddUsageMoves(predictedMoves, pokemonData, revealedMoves, totalWeight);
+        var spread = ParseMostCommonSpread(pokemonData);
+        return new OpponentPrediction(predictedMoves, spread);
+    }
+
+    private static void AddUsageMoves(List<PredictedMove> predictedMoves,
+        SmogonPokemonUsageDataDto pokemonData, IReadOnlyCollection<string> revealedMoves, double totalWeight)
+    {
+        // Once four moves are already revealed the set is known, so usage moves add nothing
+        if (predictedMoves.Count >= MOVES_PER_SET || pokemonData.Moves == null ||
+            pokemonData.Moves.Count == 0 || totalWeight <= 0)
         {
-            return predictions;
+            return;
         }
 
         var revealedNames = new HashSet<string>(revealedMoves, StringComparer.OrdinalIgnoreCase);
@@ -60,10 +71,45 @@ public class SmogonOpponentMovesPredictor : IOpponentMovesPredictor
             .Select(move => new PredictedMove(move.Key, Math.Min(1.0, move.Value / totalWeight)))
             .Where(move => move.Probability >= MIN_CARRY_PROBABILITY)
             .OrderByDescending(move => move.Probability)
-            .Take(MAX_PREDICTED_MOVES - predictions.Count);
+            .Take(MAX_PREDICTED_MOVES - predictedMoves.Count);
 
-        predictions.AddRange(usageMoves);
-        return predictions;
+        predictedMoves.AddRange(usageMoves);
+    }
+
+    // Spread keys look like "Jolly:0/252/0/0/4/252" => Nature:HP/Atk/Def/SpA/SpD/Spe
+    private static PredictedSpread ParseMostCommonSpread(SmogonPokemonUsageDataDto pokemonData)
+    {
+        if (pokemonData.Spreads == null || pokemonData.Spreads.Count == 0)
+        {
+            return null;
+        }
+
+        var mostCommon = pokemonData.Spreads
+            .OrderByDescending(spread => spread.Value)
+            .First().Key;
+
+        var natureAndEvs = mostCommon.Split(':');
+        if (natureAndEvs.Length != 2)
+        {
+            return null;
+        }
+
+        var evTokens = natureAndEvs[1].Split('/');
+        if (evTokens.Length != 6)
+        {
+            return null;
+        }
+
+        var evs = new int[6];
+        for (var index = 0; index < 6; index++)
+        {
+            if (!int.TryParse(evTokens[index], out evs[index]))
+            {
+                return null;
+            }
+        }
+
+        return new PredictedSpread(natureAndEvs[0], evs[0], evs[1], evs[2], evs[3], evs[4], evs[5]);
     }
 
     private static SmogonPokemonUsageDataDto FindPokemonData(SmogonUsageDataDto usageData, string species)

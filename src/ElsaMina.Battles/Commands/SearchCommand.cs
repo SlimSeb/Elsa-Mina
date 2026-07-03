@@ -6,6 +6,13 @@ namespace ElsaMina.Battles.Commands;
 [NamedCommand("search")]
 public class SearchCommand : Command
 {
+    private readonly IBattleTeamsService _battleTeamsService;
+
+    public SearchCommand(IBattleTeamsService battleTeamsService)
+    {
+        _battleTeamsService = battleTeamsService;
+    }
+
     public override bool IsWhitelistOnly => true;
     public override bool IsAllowedInPrivateMessage => true;
 
@@ -18,7 +25,13 @@ public class SearchCommand : Command
             return Task.CompletedTask;
         }
 
-        context.SendMessageIn(context.RoomId, $"/search {format}");
+        var packedTeam = _battleTeamsService.GetTeam(format);
+        if (!string.IsNullOrEmpty(packedTeam))
+        {
+            context.SendMessageIn(string.Empty, $"/utm {packedTeam}");
+        }
+
+        context.SendMessageIn(string.Empty, $"/search {format}");
         return Task.CompletedTask;
     }
 }

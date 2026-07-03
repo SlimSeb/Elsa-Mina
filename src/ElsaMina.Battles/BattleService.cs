@@ -11,17 +11,20 @@ public class BattleService : IBattleService
     private readonly IBattleDecisionService _decisionService;
     private readonly IBot _bot;
     private readonly IConfiguration _configuration;
+    private readonly ILadderingService _ladderingService;
     private readonly ConcurrentDictionary<string, BattleContext> _contexts = new();
 
     public BattleService(IBattleMessageParser messageParser,
         IBattleDecisionService decisionService,
         IBot bot,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ILadderingService ladderingService)
     {
         _messageParser = messageParser;
         _decisionService = decisionService;
         _bot = bot;
         _configuration = configuration;
+        _ladderingService = ladderingService;
     }
 
     public async Task HandleMessageAsync(string[] parts, string roomId, CancellationToken cancellationToken = default)
@@ -54,6 +57,7 @@ public class BattleService : IBattleService
 
             _bot.Say(roomId, "/leave");
             _contexts.TryRemove(roomId, out _);
+            _ladderingService.OnBattleEnded();
             return;
         }
 

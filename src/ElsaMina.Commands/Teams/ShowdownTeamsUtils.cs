@@ -570,6 +570,131 @@ public static class ShowdownTeamsUtils
         return team;
     }
 
+    public static string PackTeam(IReadOnlyList<PokemonSet> team)
+    {
+        if (team == null || team.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var buf = new StringBuilder();
+        var hasHiddenPower = false;
+
+        foreach (var set in team)
+        {
+            if (buf.Length > 0)
+            {
+                buf.Append(']');
+            }
+
+            // name
+            buf.Append(!string.IsNullOrEmpty(set.Name) ? set.Name : set.Species);
+
+            // species
+            var speciesId = set.Species.ToLowerAlphaNum();
+            var nameId = (!string.IsNullOrEmpty(set.Name) ? set.Name : set.Species).ToLowerAlphaNum();
+            buf.Append('|').Append(nameId == speciesId ? string.Empty : speciesId);
+
+            // item
+            buf.Append('|').Append(set.Item?.ToLowerAlphaNum());
+
+            // ability
+            buf.Append('|').Append(set.Ability?.ToLowerAlphaNum());
+
+            // moves
+            buf.Append('|');
+            if (set.Moves != null)
+            {
+                var first = true;
+                foreach (var move in set.Moves)
+                {
+                    var moveId = move.ToLowerAlphaNum();
+                    if (!first && string.IsNullOrEmpty(moveId))
+                    {
+                        continue;
+                    }
+
+                    buf.Append(first ? string.Empty : ",").Append(moveId);
+                    first = false;
+
+                    if (moveId.StartsWith("hiddenpower") && moveId.Length > 11)
+                    {
+                        hasHiddenPower = true;
+                    }
+                }
+            }
+
+            // nature
+            buf.Append('|').Append(set.Nature);
+
+            // evs
+            if (set.EffortValues != null)
+            {
+                var evString = string.Join(",", new[] { "hp", "atk", "def", "spa", "spd", "spe" }
+                    .Select(stat => set.EffortValues.TryGetValue(stat, out var value) ? value.ToString() : string.Empty));
+
+                if (evString == ",,,,,")
+                {
+                    buf.Append('|');
+                    if (set.EffortValues.TryGetValue("hp", out var hp) && hp == 0)
+                    {
+                        buf.Append('0');
+                    }
+                }
+                else
+                {
+                    buf.Append('|').Append(evString);
+                }
+            }
+            else
+            {
+                buf.Append('|');
+            }
+
+            // gender
+            buf.Append('|').Append(set.Gender);
+
+            // ivs
+            if (set.IndividualValues != null)
+            {
+                var ivString = string.Join(",", new[] { "hp", "atk", "def", "spa", "spd", "spe" }
+                    .Select(stat => !set.IndividualValues.TryGetValue(stat, out var value) || value == 31
+                        ? string.Empty
+                        : value.ToString()));
+
+                buf.Append('|').Append(ivString == ",,,,," ? string.Empty : ivString);
+            }
+            else
+            {
+                buf.Append('|');
+            }
+
+            // shiny
+            buf.Append('|').Append(set.IsShiny ? "S" : string.Empty);
+
+            // level
+            buf.Append('|').Append(set.Level != 0 && set.Level != 100 ? set.Level.ToString() : string.Empty);
+
+            // happiness
+            buf.Append('|').Append(set.Happiness >= 0 && set.Happiness != 255 ? set.Happiness.ToString() : string.Empty);
+
+            if (!string.IsNullOrEmpty(set.Pokeball)
+                || (!string.IsNullOrEmpty(set.HiddenPowerType) && !hasHiddenPower)
+                || set.IsGigantamax
+                || (set.DynamaxLevel >= 0 && set.DynamaxLevel != 10)
+                || !string.IsNullOrEmpty(set.TeraType))
+            {
+                buf.Append(',').Append(!hasHiddenPower ? set.HiddenPowerType : string.Empty);
+                buf.Append(',').Append(set.Pokeball?.ToLowerAlphaNum());
+                buf.Append(',').Append(set.IsGigantamax ? "G" : string.Empty);
+                buf.Append(',').Append(set.DynamaxLevel >= 0 && set.DynamaxLevel != 10 ? set.DynamaxLevel.ToString() : string.Empty);
+                buf.Append(',').Append(set.TeraType);
+            }
+        }
+
+        return buf.ToString();
+    }
+
     public static string TeamExportToJson(string export)
     {
         return JsonConvert.SerializeObject(DeserializeTeamExport(export));

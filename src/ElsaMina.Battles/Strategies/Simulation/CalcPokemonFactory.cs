@@ -1,3 +1,4 @@
+using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Logging;
 using Lusamine.DamageCalc;
 using Lusamine.DamageCalc.Data;
@@ -49,7 +50,8 @@ public static class CalcPokemonFactory
         }
     }
 
-    public static bool TryBuildOpponentPokemon(OpponentPokemonState state, out Pokemon pokemon)
+    public static bool TryBuildOpponentPokemon(OpponentPokemonState state, out Pokemon pokemon,
+        PredictedSpread spread = null)
     {
         pokemon = null;
 
@@ -59,10 +61,14 @@ public static class CalcPokemonFactory
             {
                 Level = state.Level,
                 Status = string.IsNullOrEmpty(state.Status) ? null : state.Status,
-                Boosts = BuildBoostsInput(state.Boosts)
+                Boosts = BuildBoostsInput(state.Boosts),
+                // Applying the predicted nature + EV spread makes the opponent's speed tier, damage
+                // and bulk realistic instead of the calc's default 0-EV neutral spread
+                Nature = spread == null || string.IsNullOrEmpty(spread.Nature) ? null : spread.Nature,
+                Evs = spread == null ? null : BuildEvsInput(spread)
             });
 
-            // Apply tracked HP percentage - derive actual HP from computed max
+            // Apply tracked HP percentage - derive actual HP from computed max (EVs affect max HP)
             var maxHp = pokemon.MaxHP(false);
             pokemon.OriginalCurHP = (int)Math.Max(1, Math.Round(maxHp * state.HpPercent / 100.0));
 
@@ -109,6 +115,19 @@ public static class CalcPokemonFactory
 
         var statusPart = condition[(spaceIndex + 1)..];
         return statusPart is "fnt" or "" ? null : statusPart;
+    }
+
+    private static StatsTableInput BuildEvsInput(PredictedSpread spread)
+    {
+        return new StatsTableInput
+        {
+            Hp = spread.HpEvs,
+            Atk = spread.AtkEvs,
+            Def = spread.DefEvs,
+            Spa = spread.SpaEvs,
+            Spd = spread.SpdEvs,
+            Spe = spread.SpeEvs
+        };
     }
 
     private static StatsTableInput BuildBoostsInput(Dictionary<string, int> boosts)

@@ -13,10 +13,12 @@ namespace ElsaMina.Battles.Strategies.Simulation;
 public static class SimulationModelBuilder
 {
     public static SimulationModel TryBuild(BattleContext context,
-        IReadOnlyList<PredictedMove> predictedOpponentMoves, bool forcedSwitch)
+        OpponentPrediction prediction, bool forcedSwitch)
     {
+        prediction ??= OpponentPrediction.Empty;
         var opponent = context.ActiveOpponent;
-        if (opponent == null || !CalcPokemonFactory.TryBuildOpponentPokemon(opponent, out var opponentPokemon))
+        if (opponent == null ||
+            !CalcPokemonFactory.TryBuildOpponentPokemon(opponent, out var opponentPokemon, prediction.Spread))
         {
             return null;
         }
@@ -84,7 +86,7 @@ public static class SimulationModelBuilder
             ActiveMemberIndex = activeMemberIndex,
             CanTerastallize = terastallizedActivePokemon != null,
             ActiveIsTrapped = activeSlot?.Trapped ?? false,
-            OpponentMoves = BuildOpponentMoves(predictedOpponentMoves, opponentPokemon, members,
+            OpponentMoves = BuildOpponentMoves(prediction.Moves, opponentPokemon, members,
                 memberPokemons, terastallizedActivePokemon, activeMemberIndex),
             OpponentSpeed = ComputeOpponentSpeed(opponent, opponentPokemon),
             OpponentHpRatio = opponent.HpPercent / 100.0,
