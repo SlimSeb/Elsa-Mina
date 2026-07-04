@@ -125,6 +125,8 @@ public class BattleMessageParser : IBattleMessageParser
                 switched.IsActive = !fainted;
                 switched.IsFainted = fainted;
                 switched.Boosts.Clear();
+                // Taunt only affects the pokemon that was on the field, so it wears off on a switch
+                context.OpponentActiveTaunted = false;
                 return true;
             }
 
@@ -327,6 +329,26 @@ public class BattleMessageParser : IBattleMessageParser
                 return true;
             }
 
+            // Volatile status started: |-start|p1a: Garchomp|move: Taunt
+            case "-start" when parts.Length >= 4:
+            {
+                if (IsOpponentIdent(parts[2], context.SideId) && IsTauntCondition(parts[3]))
+                {
+                    context.OpponentActiveTaunted = true;
+                }
+                return true;
+            }
+
+            // Volatile status ended: |-end|p1a: Garchomp|move: Taunt
+            case "-end" when parts.Length >= 4:
+            {
+                if (IsOpponentIdent(parts[2], context.SideId) && IsTauntCondition(parts[3]))
+                {
+                    context.OpponentActiveTaunted = false;
+                }
+                return true;
+            }
+
             default:
                 return false;
         }
@@ -340,25 +362,61 @@ public class BattleMessageParser : IBattleMessageParser
 
     private static void ApplyHazardChange(BattleContext context, string sideIdent, string condition, bool removed)
     {
-        // Only hazards on our own side damage our pokemon when they switch in
-        if (sideIdent.Length < 2 || sideIdent[..2] != context.SideId)
+        if (sideIdent.Length < 2)
         {
             return;
         }
 
+        var isOurSide = sideIdent[..2] == context.SideId;
         var hazardName = condition.StartsWith("move: ", StringComparison.OrdinalIgnoreCase)
             ? condition["move: ".Length..]
             : condition;
 
         if (hazardName.Equals("Stealth Rock", StringComparison.OrdinalIgnoreCase))
         {
-            context.OwnSideStealthRock = !removed;
+            if (isOurSide)
+            {
+                context.OwnSideStealthRock = !removed;
+            }
+            else
+            {
+                context.OpponentSideStealthRock = !removed;
+            }
         }
         else if (hazardName.Equals("Spikes", StringComparison.OrdinalIgnoreCase))
         {
             // Spikes stack up to three layers; -sideend clears all of them at once
-            context.OwnSideSpikesLayers = removed ? 0 : Math.Min(3, context.OwnSideSpikesLayers + 1);
+            if (isOurSide)
+            {
+                context.OwnSideSpikesLayers = removed ? 0 : Math.Min(3, context.OwnSideSpikesLayers + 1);
+            }
+            else
+            {
+                context.OpponentSideSpikesLayers = removed ? 0 : Math.Min(3, context.OpponentSideSpikesLayers + 1);
+            }
         }
+        else if (hazardName.Equals("Toxic Spikes", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!isOurSide)
+            {
+                context.OpponentSideToxicSpikes = !removed;
+            }
+        }
+        else if (hazardName.Equals("Sticky Web", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!isOurSide)
+            {
+                context.OpponentSideStickyWeb = !removed;
+            }
+        }
+    }
+
+    private static bool IsTauntCondition(string condition)
+    {
+        var name = condition.StartsWith("move: ", StringComparison.OrdinalIgnoreCase)
+            ? condition["move: ".Length..]
+            : condition;
+        return name.Equals("Taunt", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ExtractSpeciesFromIdent(string ident)

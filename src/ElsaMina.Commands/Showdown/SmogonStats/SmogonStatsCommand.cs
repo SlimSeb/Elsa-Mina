@@ -12,7 +12,7 @@ namespace ElsaMina.Commands.Showdown.SmogonStats;
 [NamedCommand("smogonstats", Aliases = ["usage", "usagestats"])]
 public class SmogonStatsCommand : Command
 {
-    private const int DEFAULT_PLAYER_LEVEL = 1760;
+    private const Level DEFAULT_PLAYER_LEVEL = Level.VeryHigh;
     private const int TOP_MOVES_COUNT = 10;
     private const int TOP_ITEMS_COUNT = 8;
     private const int TOP_ABILITIES_COUNT = 6;
@@ -49,7 +49,7 @@ public class SmogonStatsCommand : Command
         var month = parts.Length > 2 ? parts[2].Trim() : GetDefaultMonth();
         var playerLevel = DEFAULT_PLAYER_LEVEL;
 
-        if (parts.Length > 3 && int.TryParse(parts[3].Trim(), out var parsedLevel))
+        if (parts.Length > 3 && Enum.TryParse<Level>(parts[3].Trim(), ignoreCase: true, out var parsedLevel))
         {
             playerLevel = parsedLevel;
         }

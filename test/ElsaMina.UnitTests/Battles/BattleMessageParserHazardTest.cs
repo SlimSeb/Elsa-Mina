@@ -58,6 +58,25 @@ public class BattleMessageParserHazardTest
     }
 
     [Test]
+    public void Test_TryApplyMessage_ShouldTrackOpponentSideHazards_WhenWeSetThem()
+    {
+        // Act
+        Apply("|-sidestart|p2: Rival|move: Stealth Rock");
+        Apply("|-sidestart|p2: Rival|Spikes");
+        Apply("|-sidestart|p2: Rival|move: Toxic Spikes");
+        Apply("|-sidestart|p2: Rival|move: Sticky Web");
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_context.OpponentSideStealthRock, Is.True);
+            Assert.That(_context.OpponentSideSpikesLayers, Is.EqualTo(1));
+            Assert.That(_context.OpponentSideToxicSpikes, Is.True);
+            Assert.That(_context.OpponentSideStickyWeb, Is.True);
+        }
+    }
+
+    [Test]
     public void Test_TryApplyMessage_ShouldClearHazards_WhenRemovedFromOurSide()
     {
         // Arrange

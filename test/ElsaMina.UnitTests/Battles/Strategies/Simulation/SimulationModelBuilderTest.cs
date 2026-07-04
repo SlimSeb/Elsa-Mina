@@ -105,6 +105,84 @@ public class SimulationModelBuilderTest
     }
 
     [Test]
+    public void Test_TryBuild_ShouldClassifyHazardAndTauntMoves()
+    {
+        // Arrange
+        var context = CreateContext();
+        context.ActiveSlots[0].Moves.Add(new BattleMoveState
+            { Name = "Stealth Rock", Id = "stealthrock", Pp = 20, MaxPp = 20 });
+        context.ActiveSlots[0].Moves.Add(new BattleMoveState
+            { Name = "Taunt", Id = "taunt", Pp = 20, MaxPp = 20 });
+
+        // Act
+        var model = SimulationModelBuilder.TryBuild(context, OpponentPrediction.Empty, forcedSwitch: false);
+
+        // Assert
+        var active = model.Members[model.ActiveMemberIndex];
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(active.Moves.Single(move => move.Name == "Stealth Rock").StatusEffect,
+                Is.EqualTo(StatusMoveEffect.StealthRock));
+            Assert.That(active.Moves.Single(move => move.Name == "Taunt").StatusEffect,
+                Is.EqualTo(StatusMoveEffect.Taunt));
+            Assert.That(active.Moves.Single(move => move.Name == "Thunderbolt").StatusEffect,
+                Is.EqualTo(StatusMoveEffect.None));
+        }
+    }
+
+    [Test]
+    public void Test_TryBuild_ShouldSeedInitialOpponentHazards_FromContext()
+    {
+        // Arrange
+        var context = CreateContext();
+        context.OpponentSideStealthRock = true;
+        context.OpponentSideSpikesLayers = 2;
+
+        // Act
+        var model = SimulationModelBuilder.TryBuild(context, OpponentPrediction.Empty, forcedSwitch: false);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(model.InitialOpponentField.StealthRock, Is.True);
+            Assert.That(model.InitialOpponentField.SpikesLayers, Is.EqualTo(2));
+        }
+    }
+
+    [Test]
+    public void Test_TryBuild_ShouldMarkOpponentPassive_WhenItHasOnlyStatusMoves()
+    {
+        // Arrange - a set of purely status moves produces no damaging opponent moves
+        var context = CreateContext();
+        var prediction = new OpponentPrediction(
+            [new PredictedMove("Thunder Wave", 0.9), new PredictedMove("Toxic", 0.8)], Spread: null);
+
+        // Act
+        var model = SimulationModelBuilder.TryBuild(context, prediction, forcedSwitch: false);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(model.OpponentMoves, Is.Empty);
+            Assert.That(model.OpponentIsPassive, Is.True);
+        }
+    }
+
+    [Test]
+    public void Test_TryBuild_ShouldNotMarkOpponentPassive_WhenItHitsHard()
+    {
+        // Arrange - Waterfall from Gyarados is a heavy hit on Pikachu
+        var context = CreateContext();
+        var prediction = new OpponentPrediction([new PredictedMove("Waterfall", 0.9)], Spread: null);
+
+        // Act
+        var model = SimulationModelBuilder.TryBuild(context, prediction, forcedSwitch: false);
+
+        // Assert
+        Assert.That(model.OpponentIsPassive, Is.False);
+    }
+
+    [Test]
     public void Test_TryBuild_ShouldReturnNull_WhenThereIsNoActiveOpponent()
     {
         // Arrange

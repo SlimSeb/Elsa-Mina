@@ -16,6 +16,12 @@ public class SimulationMove
 
     public int Priority { get; init; }
     public bool IsStatus { get; init; }
+
+    /// <summary>
+    /// Board effect of this move when it is a status move, so the search can value it.
+    /// </summary>
+    public StatusMoveEffect StatusEffect { get; init; } = StatusMoveEffect.None;
+
     public double DamageRatio { get; init; }
 
     /// <summary>

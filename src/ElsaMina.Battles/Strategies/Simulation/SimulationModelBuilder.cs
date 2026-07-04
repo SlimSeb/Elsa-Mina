@@ -82,17 +82,28 @@ public static class SimulationModelBuilder
             return null;
         }
 
+        var opponentMoves = BuildOpponentMoves(prediction.Moves, opponentPokemon, members,
+            memberPokemons, terastallizedActivePokemon, activeMemberIndex);
+
         return new SimulationModel
         {
             Members = members,
             ActiveMemberIndex = activeMemberIndex,
             CanTerastallize = terastallizedActivePokemon != null,
             ActiveIsTrapped = activeSlot?.Trapped ?? false,
-            OpponentMoves = BuildOpponentMoves(prediction.Moves, opponentPokemon, members,
-                memberPokemons, terastallizedActivePokemon, activeMemberIndex),
+            OpponentMoves = opponentMoves,
             OpponentSpeed = ComputeOpponentSpeed(opponent, opponentPokemon),
             OpponentHpRatio = opponent.HpPercent / 100.0,
-            OpponentBenchAliveCount = context.OpponentPokemon.Count(pokemon => !pokemon.IsFainted && !pokemon.IsActive)
+            OpponentBenchAliveCount = context.OpponentPokemon.Count(pokemon => !pokemon.IsFainted && !pokemon.IsActive),
+            OpponentIsPassive = ComputeOpponentIsPassive(opponentMoves, activeMemberIndex),
+            InitialOpponentField = new OpponentFieldConditions
+            {
+                StealthRock = context.OpponentSideStealthRock,
+                SpikesLayers = context.OpponentSideSpikesLayers,
+                ToxicSpikes = context.OpponentSideToxicSpikes,
+                StickyWeb = context.OpponentSideStickyWeb,
+                Taunted = context.OpponentActiveTaunted
+            }
         };
     }
 
@@ -151,6 +162,7 @@ public static class SimulationModelBuilder
                 RequestMoveIndex = requestMoveIndex,
                 Priority = calcMove.Priority,
                 IsStatus = isStatus,
+                StatusEffect = isStatus ? DetermineStatusEffect(calcMove.Name) : StatusMoveEffect.None,
                 DamageRatio = isStatus ? 0.0 : ComputeExpectedDamageRatio(attacker, defender, calcMove, defenderMaxHp),
                 TeraDamageRatio = isStatus || teraAttacker == null
                     ? null
@@ -240,6 +252,35 @@ public static class SimulationModelBuilder
             // Move not in the dex or not a damaging move
             return 0.0;
         }
+    }
+
+    // The opponent's active pokemon counts as passive when its best expected hit on us stays below this
+    private const double PASSIVE_OPPONENT_DAMAGE_THRESHOLD = 0.25;
+
+    private static StatusMoveEffect DetermineStatusEffect(string moveName)
+    {
+        var id = new string(moveName.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant).ToArray());
+        return id switch
+        {
+            "stealthrock" => StatusMoveEffect.StealthRock,
+            "spikes" => StatusMoveEffect.Spikes,
+            "toxicspikes" => StatusMoveEffect.ToxicSpikes,
+            "stickyweb" => StatusMoveEffect.StickyWeb,
+            "taunt" => StatusMoveEffect.Taunt,
+            _ => StatusMoveEffect.OtherStatus
+        };
+    }
+
+    private static bool ComputeOpponentIsPassive(List<OpponentSimulationMove> opponentMoves, int activeMemberIndex)
+    {
+        // All-status opponents build no damaging moves at all, so they are trivially passive
+        if (opponentMoves.Count == 0 || activeMemberIndex < 0)
+        {
+            return opponentMoves.Count == 0;
+        }
+
+        var bestDamageToActive = opponentMoves.Max(move => move.DamageToMembers[activeMemberIndex]);
+        return bestDamageToActive < PASSIVE_OPPONENT_DAMAGE_THRESHOLD;
     }
 
     private static readonly double[] SPIKES_CHIP_BY_LAYERS = [0.0, 1.0 / 8.0, 1.0 / 6.0, 1.0 / 4.0];

@@ -47,7 +47,7 @@ public class SmogonOpponentMovesPredictorTest
             }
         };
         _smogonUsageDataProvider
-            .GetUsageDataAsync("2026-06", "gen9ou", 1760, Arg.Any<CancellationToken>())
+            .GetUsageDataAsync("2026-06", "gen9ou", Level.VeryHigh, Arg.Any<CancellationToken>())
             .Returns(usageData);
     }
 
@@ -119,7 +119,7 @@ public class SmogonOpponentMovesPredictorTest
     {
         // Arrange
         _smogonUsageDataProvider
-            .GetUsageDataAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .GetUsageDataAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<Level>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(new HttpRequestException("not found"));
 
         // Act
@@ -142,7 +142,7 @@ public class SmogonOpponentMovesPredictorTest
 
         // Assert
         await _smogonUsageDataProvider.Received(1)
-            .GetUsageDataAsync("2026-06", "gen9ou", 1760, Arg.Any<CancellationToken>());
+            .GetUsageDataAsync("2026-06", "gen9ou", Level.VeryHigh, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -161,13 +161,10 @@ public class SmogonOpponentMovesPredictorTest
             }
         };
         _smogonUsageDataProvider
-            .GetUsageDataAsync("2026-06", "gen9lc", 1760, Arg.Any<CancellationToken>())
+            .GetUsageDataAsync("2026-06", "gen9lc", Level.VeryHigh, Arg.Any<CancellationToken>())
             .ThrowsAsync(new HttpRequestException("not found"));
         _smogonUsageDataProvider
-            .GetUsageDataAsync("2026-06", "gen9lc", 1825, Arg.Any<CancellationToken>())
-            .ThrowsAsync(new HttpRequestException("not found"));
-        _smogonUsageDataProvider
-            .GetUsageDataAsync("2026-06", "gen9lc", 1500, Arg.Any<CancellationToken>())
+            .GetUsageDataAsync("2026-06", "gen9lc", Level.Mid, Arg.Any<CancellationToken>())
             .Returns(usageData);
 
         // Act
@@ -215,7 +212,7 @@ public class SmogonOpponentMovesPredictorTest
             }
         };
         _smogonUsageDataProvider
-            .GetUsageDataAsync("2026-06", "gen9ou", 1760, Arg.Any<CancellationToken>())
+            .GetUsageDataAsync("2026-06", "gen9ou", Level.VeryHigh, Arg.Any<CancellationToken>())
             .Returns(usageData);
 
         // Act

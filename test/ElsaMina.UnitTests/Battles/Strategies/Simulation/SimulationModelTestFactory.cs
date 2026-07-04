@@ -5,13 +5,16 @@ namespace ElsaMina.UnitTests.Battles.Strategies.Simulation;
 public static class SimulationModelTestFactory
 {
     public static SimulationMove CreateMove(string name, double damageRatio, int priority = 0,
-        int requestMoveIndex = 1, double? teraDamageRatio = null)
+        int requestMoveIndex = 1, double? teraDamageRatio = null,
+        StatusMoveEffect statusEffect = StatusMoveEffect.None)
     {
         return new SimulationMove
         {
             Name = name,
             RequestMoveIndex = requestMoveIndex,
             Priority = priority,
+            IsStatus = statusEffect != StatusMoveEffect.None,
+            StatusEffect = statusEffect,
             DamageRatio = damageRatio,
             TeraDamageRatio = teraDamageRatio
         };
@@ -49,7 +52,10 @@ public static class SimulationModelTestFactory
         int opponentSpeed,
         double opponentHpRatio = 1.0,
         bool canTerastallize = false,
-        bool activeIsTrapped = false)
+        bool activeIsTrapped = false,
+        int opponentBenchAliveCount = 0,
+        bool opponentIsPassive = false,
+        OpponentFieldConditions initialOpponentField = null)
     {
         return new SimulationModel
         {
@@ -60,7 +66,9 @@ public static class SimulationModelTestFactory
             OpponentMoves = opponentMoves,
             OpponentSpeed = opponentSpeed,
             OpponentHpRatio = opponentHpRatio,
-            OpponentBenchAliveCount = 0
+            OpponentBenchAliveCount = opponentBenchAliveCount,
+            OpponentIsPassive = opponentIsPassive,
+            InitialOpponentField = initialOpponentField ?? OpponentFieldConditions.Empty
         };
     }
 }

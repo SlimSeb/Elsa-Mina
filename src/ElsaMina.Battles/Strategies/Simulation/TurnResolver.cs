@@ -71,7 +71,14 @@ public static class TurnResolver
                     memberHpRatios[incomingIndex] - GetOpponentDamage(model, state, opponentMove, incomingIndex));
             }
 
-            return state with { ActiveMemberIndex = incomingIndex, MemberHpRatios = memberHpRatios };
+            // Hazards already up keep exerting pressure this turn even though we only switched
+            return state with
+            {
+                ActiveMemberIndex = incomingIndex,
+                MemberHpRatios = memberHpRatios,
+                AccruedFieldValue = state.AccruedFieldValue
+                                    + StateEvaluator.PerTurnFieldPressure(model, state.OpponentField)
+            };
         }
 
         var actingIndex = ourAction.MemberIndex;
@@ -92,8 +99,11 @@ public static class TurnResolver
                 : opponentMove.DamageToMembers[actingIndex];
         }
 
+        bool ourMoveLands;
         if (WeActFirst(actingMember, move, model, opponentMove))
         {
+            // We move first, so our move always executes; the opponent only retaliates if it survives
+            ourMoveLands = true;
             opponentHpRatio = Math.Max(0.0, opponentHpRatio - ourDamage);
             if (opponentHpRatio > 0)
             {
@@ -103,18 +113,42 @@ public static class TurnResolver
         else
         {
             memberHpRatios[actingIndex] = Math.Max(0.0, memberHpRatios[actingIndex] - incomingDamage);
-            if (memberHpRatios[actingIndex] > 0)
+            // Our move only lands if we survive the opponent's hit
+            ourMoveLands = memberHpRatios[actingIndex] > 0;
+            if (ourMoveLands)
             {
                 opponentHpRatio = Math.Max(0.0, opponentHpRatio - ourDamage);
             }
         }
+
+        var opponentField = ourMoveLands && move.StatusEffect != StatusMoveEffect.None
+            ? ApplyStatusEffect(state.OpponentField, move.StatusEffect)
+            : state.OpponentField;
 
         return state with
         {
             MemberHpRatios = memberHpRatios,
             OpponentHpRatio = opponentHpRatio,
             HasTerastallized = state.HasTerastallized || ourAction.UseTerastallize,
-            RootActiveIsTerastallized = state.RootActiveIsTerastallized || ourAction.UseTerastallize
+            RootActiveIsTerastallized = state.RootActiveIsTerastallized || ourAction.UseTerastallize,
+            OpponentField = opponentField,
+            // Accrue this turn's pressure from the resulting board (hazards / taunt set now count from
+            // this turn on, so setting them earlier is strictly better than deferring)
+            AccruedFieldValue = state.AccruedFieldValue + StateEvaluator.PerTurnFieldPressure(model, opponentField)
+        };
+    }
+
+    private static OpponentFieldConditions ApplyStatusEffect(OpponentFieldConditions field,
+        StatusMoveEffect effect)
+    {
+        return effect switch
+        {
+            StatusMoveEffect.StealthRock => field with { StealthRock = true },
+            StatusMoveEffect.Spikes => field with { SpikesLayers = Math.Min(3, field.SpikesLayers + 1) },
+            StatusMoveEffect.ToxicSpikes => field with { ToxicSpikes = true },
+            StatusMoveEffect.StickyWeb => field with { StickyWeb = true },
+            StatusMoveEffect.Taunt => field with { Taunted = true },
+            _ => field
         };
     }
 

@@ -22,10 +22,23 @@ public class SimulationModel
     public double OpponentHpRatio { get; init; }
     public int OpponentBenchAliveCount { get; init; }
 
+    /// <summary>
+    /// Hazards already set on the opponent's side at the root of the search, so the bot values
+    /// setting the remaining ones instead of re-setting what is already up.
+    /// </summary>
+    public OpponentFieldConditions InitialOpponentField { get; init; } = OpponentFieldConditions.Empty;
+
+    /// <summary>
+    /// True when the opponent's active pokemon threatens little damage (mostly status moves or weak
+    /// attacks). Taunt is only worth a turn against such a passive opponent.
+    /// </summary>
+    public bool OpponentIsPassive { get; init; }
+
     public SimulationState CreateInitialState()
     {
         var memberHpRatios = Members.Select(member => member.InitialHpRatio).ToArray();
         return new SimulationState(ActiveMemberIndex, memberHpRatios, OpponentHpRatio,
-            HasTerastallized: false, RootActiveIsTerastallized: false);
+            HasTerastallized: false, RootActiveIsTerastallized: false,
+            OpponentField: InitialOpponentField, AccruedFieldValue: 0.0);
     }
 }

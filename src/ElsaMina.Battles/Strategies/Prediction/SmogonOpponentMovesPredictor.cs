@@ -11,8 +11,9 @@ public class SmogonOpponentMovesPredictor : IOpponentMovesPredictor
     private const int MOVES_PER_SET = 4;
     private const double MIN_CARRY_PROBABILITY = 0.1;
 
-    // Smogon publishes chaos files for a handful of rating cutoffs; which ones exist depends on the format
-    private static readonly int[] RATING_CUTOFFS = [1760, 1825, 1500, 0];
+    // Prefer the highest-rated ladder data and fall back to broader pools when a format lacks it.
+    // The provider resolves each level to the format's actual glicko2 cutoff.
+    private static readonly Level[] PLAYER_LEVELS = [Level.VeryHigh, Level.Mid, Level.Low];
 
     private readonly ISmogonUsageDataProvider _smogonUsageDataProvider;
     private readonly IClockService _clockService;
@@ -142,22 +143,22 @@ public class SmogonOpponentMovesPredictor : IOpponentMovesPredictor
         var months = new[] { firstMonth, GetPreviousMonth(firstMonth) };
         foreach (var month in months)
         {
-            foreach (var ratingCutoff in RATING_CUTOFFS)
+            foreach (var playerLevel in PLAYER_LEVELS)
             {
                 try
                 {
-                    var usageData = await _smogonUsageDataProvider.GetUsageDataAsync(month, format, ratingCutoff);
+                    var usageData = await _smogonUsageDataProvider.GetUsageDataAsync(month, format, playerLevel);
                     if (usageData?.Data is { Count: > 0 })
                     {
-                        Log.Information("Loaded Smogon usage data for {Format} ({Month}, {Rating}+)",
-                            format, month, ratingCutoff);
+                        Log.Information("Loaded Smogon usage data for {Format} ({Month}, {Level})",
+                            format, month, playerLevel);
                         return usageData;
                     }
                 }
                 catch (Exception exception)
                 {
-                    Log.Debug("No Smogon usage data for {Format} ({Month}, {Rating}+): {Message}",
-                        format, month, ratingCutoff, exception.Message);
+                    Log.Debug("No Smogon usage data for {Format} ({Month}, {Level}): {Message}",
+                        format, month, playerLevel, exception.Message);
                 }
             }
         }
