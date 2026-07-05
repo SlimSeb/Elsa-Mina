@@ -7,9 +7,12 @@ public class BattleTeamsService : IBattleTeamsService
 {
     private readonly ConcurrentDictionary<string, string> _packedTeamsByFormat = new();
 
+    public event EventHandler<string> TeamChanged;
+
     public void SetTeam(string format, string packedTeam)
     {
         _packedTeamsByFormat[format.ToLowerAlphaNum()] = packedTeam;
+        TeamChanged?.Invoke(this, packedTeam);
     }
 
     public string GetTeam(string format)

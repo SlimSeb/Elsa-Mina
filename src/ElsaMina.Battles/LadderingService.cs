@@ -14,6 +14,16 @@ public class LadderingService : ILadderingService
     {
         _bot = bot;
         _battleTeamsService = battleTeamsService;
+
+        _battleTeamsService.TeamChanged += HandleTeamChanged;
+    }
+
+    private void HandleTeamChanged(object sender, string team)
+    {
+        if (!string.IsNullOrEmpty(team))
+        {
+            _bot.Send($"|/utm {team}");
+        }
     }
 
     public bool IsLaddering
@@ -68,12 +78,6 @@ public class LadderingService : ILadderingService
 
     private void Search()
     {
-        var packedTeam = _battleTeamsService.GetTeam(_format);
-        if (!string.IsNullOrEmpty(packedTeam))
-        {
-            _bot.Say(string.Empty, $"/utm {packedTeam}");
-        }
-
         _bot.Say(string.Empty, $"/search {_format}");
     }
 }

@@ -1,4 +1,7 @@
+using System.Globalization;
+using System.Text;
 using ElsaMina.Battles.Strategies.Simulation;
+using ElsaMina.Logging;
 
 namespace ElsaMina.Battles.Strategies.Search;
 
@@ -11,7 +14,7 @@ namespace ElsaMina.Battles.Strategies.Search;
 public class MinimaxSearch : IBattleSearchAlgorithm
 {
     // One depth unit = one full turn (both sides act)
-    private const int MAX_DEPTH = 3;
+    private const int MAX_DEPTH = 5;
 
     // Small bonus per unspent depth level when the opponent is KOed, so faster wins are preferred
     private const double FAST_KO_BONUS = 0.01;
@@ -29,9 +32,16 @@ public class MinimaxSearch : IBattleSearchAlgorithm
         var bestValue = double.MinValue;
         var alpha = double.MinValue;
 
+        // Human-readable breakdown of the decision, emitted once at the end so the lines stay together
+        var log = new StringBuilder();
+        log.Append(DescribePosition(model, rootState)).Append('\n');
+        log.Append(DescribeOpponentMoves(model)).Append('\n');
+
         foreach (var action in rootActions)
         {
             var value = MinValue(model, rootState, action, MAX_DEPTH, alpha, double.MaxValue);
+            log.Append("  ").Append(DescribeAction(model, action))
+                .Append(" -> ").Append(value.ToString("F3", CultureInfo.InvariantCulture)).Append('\n');
             // Strict comparison keeps the first best action; moves are enumerated
             // before switches, so ties are resolved in favor of attacking
             if (value > bestValue)
@@ -43,8 +53,59 @@ public class MinimaxSearch : IBattleSearchAlgorithm
             alpha = Math.Max(alpha, bestValue);
         }
 
+        log.Append("  => chosen: ").Append(DescribeAction(model, bestAction))
+            .Append(" (value ").Append(bestValue.ToString("F3", CultureInfo.InvariantCulture)).Append(')');
+        Log.Debug("[Battle AI] Minimax move selection\n{Breakdown}", log.ToString());
+
         return bestAction;
     }
+
+    // ── Human-readable logging helpers ────────────────────────────────────────
+
+    private static string DescribePosition(SimulationModel model, SimulationState state)
+    {
+        var activeIndex = state.ActiveMemberIndex;
+        var activeDescription = activeIndex >= 0 && activeIndex < model.Members.Count
+            ? $"{model.Members[activeIndex].Species} ({FormatPercent(state.MemberHpRatios[activeIndex])} HP)"
+            : "(must switch)";
+
+        return $"Position: our {activeDescription} vs opponent ({FormatPercent(state.OpponentHpRatio)} HP), " +
+               $"opponent bench {model.OpponentBenchAliveCount} alive, " +
+               $"opponent passive={model.OpponentIsPassive}, can tera={model.CanTerastallize}, " +
+               $"trapped={model.ActiveIsTrapped}";
+    }
+
+    private static string DescribeOpponentMoves(SimulationModel model)
+    {
+        if (model.OpponentMoves.Count == 0)
+        {
+            return "Opponent moves considered: (none)";
+        }
+
+        var moves = string.Join(", ", model.OpponentMoves.Select(move =>
+            $"{move.Name} (p={move.Probability.ToString("F2", CultureInfo.InvariantCulture)})"));
+        return $"Opponent moves considered: {moves}";
+    }
+
+    private static string DescribeAction(SimulationModel model, SimulationAction action)
+    {
+        if (action == null)
+        {
+            return "(no action)";
+        }
+
+        if (action.Kind == SimulationActionKind.Switch)
+        {
+            return $"switch to {model.Members[action.MemberIndex].Species}";
+        }
+
+        var move = model.Members[action.MemberIndex].Moves[action.MoveListIndex];
+        var teraSuffix = action.UseTerastallize ? " + Tera" : "";
+        return $"move {move.Name}{teraSuffix}";
+    }
+
+    private static string FormatPercent(double ratio) =>
+        (ratio * 100).ToString("F0", CultureInfo.InvariantCulture) + "%";
 
     // Opponent node: it answers our chosen action with its worst move for us
     private static double MinValue(SimulationModel model, SimulationState state,
