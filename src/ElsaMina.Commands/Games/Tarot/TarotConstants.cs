@@ -76,6 +76,12 @@ public static class TarotConstants
     public static readonly int[] POIGNEE_HALF_POINTS = [0, 40, 60, 80];
 
     /// <summary>
+    /// Flat misère (misery) bonus in half-points (10 points × 2) for each declared misère. It is a
+    /// personal prime: every other player pays this amount to the declarer, whatever the contract does.
+    /// </summary>
+    public const int MISERE_HALF_POINTS = 20;
+
+    /// <summary>
     /// Chelem (slam) bonus in half-points (× 2): announced &amp; achieved, achieved without announcing,
     /// and announced but failed.
     /// </summary>

@@ -1095,6 +1095,27 @@
     <data name="tarot_announce_slam_button" xml:space="preserve">
         <value>Anunciar chelem</value>
     </data>
+    <data name="tarot_misere_none" xml:space="preserve">
+        <value>Você não tem nenhuma miséria para declarar.</value>
+    </data>
+    <data name="tarot_misere_declared" xml:space="preserve">
+        <value>{0} declara uma miséria ({1})!</value>
+    </data>
+    <data name="tarot_misere_type_trump" xml:space="preserve">
+        <value>sem trunfo</value>
+    </data>
+    <data name="tarot_misere_type_head" xml:space="preserve">
+        <value>sem figura</value>
+    </data>
+    <data name="tarot_misere_banner" xml:space="preserve">
+        <value>{0}: miséria ({1})</value>
+    </data>
+    <data name="tarot_declare_misere_button" xml:space="preserve">
+        <value>Declarar miséria ({0})</value>
+    </data>
+    <data name="tarot_result_misere" xml:space="preserve">
+        <value>{0}: miséria {1} (+{2})</value>
+    </data>
     <data name="tarot_side_attack" xml:space="preserve">
         <value>o ataque</value>
     </data>

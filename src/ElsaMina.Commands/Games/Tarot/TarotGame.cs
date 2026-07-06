@@ -25,6 +25,7 @@ public class TarotGame : Game, ITarotGame
     private readonly List<TarotCard> _dog = [];
     private readonly List<TarotCard> _pendingDiscards = [];
     private readonly List<(TarotPlayer Player, int Tier)> _declaredPoignees = [];
+    private readonly List<(TarotPlayer Player, TarotMisereType Type)> _declaredMiseres = [];
 
     private int _currentTurnIndex;
     private int _firstLeaderIndex;
@@ -94,6 +95,7 @@ public class TarotGame : Game, ITarotGame
 
     public bool SlamAnnounced => _slamAnnounced;
     public IReadOnlyList<(TarotPlayer Player, int Tier)> DeclaredPoignees => _declaredPoignees;
+    public IReadOnlyList<(TarotPlayer Player, TarotMisereType Type)> DeclaredMiseres => _declaredMiseres;
 
     private string PublicPanelId => $"tarot-{GameId}";
     private string PlayerPageId => $"tarot-{GameId}";
@@ -259,11 +261,14 @@ public class TarotGame : Game, ITarotGame
             player.HasPlayed = false;
             player.HasDeclaredPoignee = false;
             player.PoigneeTier = 0;
+            player.HasDeclaredMisere = false;
+            player.DeclaredMisereTypes.Clear();
         }
 
         _dog.Clear();
         _pendingDiscards.Clear();
         _declaredPoignees.Clear();
+        _declaredMiseres.Clear();
 
         HighestBid = TarotBid.Pass;
         _takerIndex = -1;
@@ -778,6 +783,35 @@ public class TarotGame : Game, ITarotGame
     public bool CanAnnounceSlam(TarotPlayer player) =>
         Phase == TarotPhase.Playing && _cardsPlayedTotal == 0 && !_slamAnnounced && player is { IsTaker: true };
 
+    /// <summary>
+    /// The misère types the player could declare with their current hand: a misère d'atout when they
+    /// hold no trump (the Excuse is tolerated), a misère de tête when they hold no face card.
+    /// </summary>
+    public IReadOnlyList<TarotMisereType> GetDeclarableMisereTypes(TarotPlayer player)
+    {
+        if (player is null || player.Hand.Count == 0)
+        {
+            return [];
+        }
+
+        var types = new List<TarotMisereType>();
+        if (player.Hand.All(card => !card.IsTrump))
+        {
+            types.Add(TarotMisereType.Trump);
+        }
+
+        if (player.Hand.All(card => !card.IsFaceCard))
+        {
+            types.Add(TarotMisereType.Head);
+        }
+
+        return types;
+    }
+
+    public bool CanDeclareMisere(TarotPlayer player) =>
+        Phase == TarotPhase.Playing && player is { HasPlayed: false, HasDeclaredMisere: false }
+                                    && GetDeclarableMisereTypes(player).Count > 0;
+
     public Task DeclarePoigneeAsync(IUser user) => RunActionAsync(() => DeclarePoigneeCoreAsync(user));
 
     private async Task DeclarePoigneeCoreAsync(IUser user)
@@ -810,6 +844,41 @@ public class TarotGame : Game, ITarotGame
             .Select(card => card.ToDisplay(Context.Culture));
         Context.ReplyLocalizedMessage("tarot_poignee_declared", player.Name,
             Context.GetString($"tarot_poignee_tier_{tier}"), string.Join(" ", trumps));
+
+        await RenderAllAsync();
+    }
+
+    public Task DeclareMisereAsync(IUser user) => RunActionAsync(() => DeclareMisereCoreAsync(user));
+
+    private async Task DeclareMisereCoreAsync(IUser user)
+    {
+        if (Phase != TarotPhase.Playing)
+        {
+            return;
+        }
+
+        var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
+        if (player is null || player.HasPlayed || player.HasDeclaredMisere)
+        {
+            return;
+        }
+
+        var types = GetDeclarableMisereTypes(player);
+        if (types.Count == 0)
+        {
+            Context.ReplyLocalizedMessage("tarot_misere_none");
+            return;
+        }
+
+        player.HasDeclaredMisere = true;
+        player.DeclaredMisereTypes.AddRange(types);
+        foreach (var type in types)
+        {
+            _declaredMiseres.Add((player, type));
+        }
+
+        var typeNames = types.Select(type => Context.GetString($"tarot_misere_type_{type.ToString().ToLowerInvariant()}"));
+        Context.ReplyLocalizedMessage("tarot_misere_declared", player.Name, string.Join(", ", typeNames));
 
         await RenderAllAsync();
     }
@@ -870,9 +939,16 @@ public class TarotGame : Game, ITarotGame
             _declaredPoignees.Sum(declaration => TarotConstants.POIGNEE_HALF_POINTS[declaration.Tier]);
         var slamWinnerSide = _takerSideTrickWins == TotalTricks ? 1 : _takerSideTrickWins == 0 ? -1 : 0;
 
+        var miserePlayerHalfPoints = new int[_players.Count];
+        foreach (var (player, _) in _declaredMiseres)
+        {
+            miserePlayerHalfPoints[_players.IndexOf(player)] += TarotConstants.MISERE_HALF_POINTS;
+        }
+
         ScoreResult = TarotScorer.Compute(takerHalfPoints, oudlerCount, HighestBid,
             _players.Count, _takerIndex, _partnerIndex,
-            petitAuBoutSide, poigneeHalfPoints, slamWinnerSide, _slamAnnounced);
+            petitAuBoutSide, poigneeHalfPoints, slamWinnerSide, _slamAnnounced,
+            miserePlayerHalfPoints);
 
         Phase = TarotPhase.Finished;
         StopTurnTimer();

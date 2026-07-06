@@ -18,10 +18,13 @@ public static class TarotScorer
     /// <param name="slamWinnerSide">+1 if the taker side won every trick, -1 if the defenders did,
     /// 0 if there was no slam.</param>
     /// <param name="slamAnnounced">Whether the taker announced a chelem before play.</param>
+    /// <param name="miserePlayerHalfPoints">Per-player misère bonus, in half-points, indexed like the
+    /// player list. Each amount is paid to that player by every other player, independent of the contract.</param>
     public static TarotScoreResult Compute(int takerHalfPoints, int oudlerCount, TarotBid bid,
         int playerCount, int takerIndex, int partnerIndex,
         int petitAuBoutSide = 0, int poigneeHalfPoints = 0,
-        int slamWinnerSide = 0, bool slamAnnounced = false)
+        int slamWinnerSide = 0, bool slamAnnounced = false,
+        IReadOnlyList<int> miserePlayerHalfPoints = null)
     {
         var target = GetTargetHalfPoints(oudlerCount);
         var diff = takerHalfPoints - target;
@@ -41,6 +44,9 @@ public static class TarotScorer
                           + poigneeContribution
                           + slamHalfPoints;
 
+        var deltas = Distribute(perDefender, playerCount, takerIndex, partnerIndex);
+        ApplyMiserePayments(deltas, miserePlayerHalfPoints);
+
         return new TarotScoreResult
         {
             OudlerCount = oudlerCount,
@@ -58,8 +64,37 @@ public static class TarotScorer
             SlamAnnounced = slamAnnounced,
             SlamHalfPoints = slamHalfPoints,
             PerDefenderHalfPoints = perDefender,
-            Deltas = Distribute(perDefender, playerCount, takerIndex, partnerIndex)
+            Deltas = deltas
         };
+    }
+
+    /// <summary>
+    /// Overlays the personal misère primes onto the deal deltas. Each player receives their own misère
+    /// bonus from every other player and pays every other player's, keeping the total zero-sum.
+    /// </summary>
+    private static void ApplyMiserePayments(int[] deltas, IReadOnlyList<int> miserePlayerHalfPoints)
+    {
+        if (miserePlayerHalfPoints is null)
+        {
+            return;
+        }
+
+        var playerCount = deltas.Length;
+        var total = 0;
+        for (var i = 0; i < playerCount; i++)
+        {
+            total += miserePlayerHalfPoints[i];
+        }
+
+        if (total == 0)
+        {
+            return;
+        }
+
+        for (var i = 0; i < playerCount; i++)
+        {
+            deltas[i] += miserePlayerHalfPoints[i] * playerCount - total;
+        }
     }
 
     /// <summary>

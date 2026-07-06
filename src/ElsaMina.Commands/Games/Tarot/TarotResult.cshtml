@@ -104,6 +104,14 @@
                 }
             </p>
         }
+        @foreach (var declaration in game.DeclaredMiseres)
+        {
+            <p style="text-align:center;margin:2px 0;color:#f7d774;font-size:0.9em">
+                @GetString("tarot_result_misere", declaration.Player.Name,
+                    GetString($"tarot_misere_type_{declaration.Type.ToString().ToLowerInvariant()}"),
+                    Points(TarotConstants.MISERE_HALF_POINTS))
+            </p>
+        }
 
         <table style="margin:8px auto 0 auto;border-collapse:collapse">
             <tr style="border-bottom:1px solid #5a4a6a">

@@ -106,6 +106,16 @@
             </p>
         }
 
+        @if (game.DeclaredMiseres.Count > 0)
+        {
+            <p style="text-align:center;margin:4px 0;color:#cabbd9;font-size:0.85em">
+                @foreach (var declaration in game.DeclaredMiseres)
+                {
+                    <text>@GetString("tarot_misere_banner", declaration.Player.Name, GetString($"tarot_misere_type_{declaration.Type.ToString().ToLowerInvariant()}")) </text>
+                }
+            </p>
+        }
+
         @if (game.LastTrick != null && game.LastTrickWinner != null)
         {
             <p style="text-align:center;margin:8px 0 2px 0;color:#b9a9c9;font-size:0.85em">

@@ -23,6 +23,11 @@ public sealed record TarotCard(TarotSuit Suit, int Rank)
     public bool IsQueen => !IsTrump && !IsExcuse && Rank == QUEEN;
 
     /// <summary>
+    /// A face card (tête): a suit Jack, Cavalier, Queen or King. Trumps and the Excuse are never faces.
+    /// </summary>
+    public bool IsFaceCard => !IsTrump && !IsExcuse && Rank >= JACK;
+
+    /// <summary>
     /// The three oudlers (bouts): the Petit (trump 1), the Monde (trump 21) and the Excuse.
     /// </summary>
     public bool IsOudler => IsExcuse || (IsTrump && Rank is PETIT or MONDE);

@@ -61,4 +61,14 @@ public sealed class TarotPlayer
     /// The declared poignée tier: 1 = single, 2 = double, 3 = triple, 0 = none.
     /// </summary>
     public int PoigneeTier { get; set; }
+
+    /// <summary>
+    /// True once this player has declared their misère(s) for the deal.
+    /// </summary>
+    public bool HasDeclaredMisere { get; set; }
+
+    /// <summary>
+    /// The misère types this player has declared for the deal (empty when none).
+    /// </summary>
+    public List<TarotMisereType> DeclaredMisereTypes { get; } = [];
 }

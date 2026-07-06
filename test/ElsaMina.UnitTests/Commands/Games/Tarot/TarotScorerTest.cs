@@ -150,6 +150,37 @@ public class TarotScorerTest
     }
 
     [Test]
+    public void Test_Compute_ShouldPayMisereFromEveryOtherPlayerToDeclarer()
+    {
+        // Made Petite: base 88 per defender -> deltas {264, -88, -88, -88}.
+        // Player 1 (a defender) declares one misère worth 20 half-points: they collect 20 from each of
+        // the three other players (+60) while every other player pays 20.
+        var result = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1,
+            miserePlayerHalfPoints: [0, 20, 0, 0]);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Deltas, Is.EqualTo(new[] { 244, -28, -108, -108 }));
+            Assert.That(result.Deltas.Sum(), Is.Zero);
+        }
+    }
+
+    [Test]
+    public void Test_Compute_ShouldStackMultipleMiseres_AndStayZeroSum()
+    {
+        // Player 0 declares both misères (40) and player 2 declares one (20), independent of the contract.
+        var result = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1,
+            miserePlayerHalfPoints: [40, 0, 20, 0]);
+
+        using (Assert.EnterMultipleScope())
+        {
+            // Base deltas {264, -88, -88, -88}; misère overlay {40×4-60, -60, 20×4-60, -60} = {100, -60, 20, -60}.
+            Assert.That(result.Deltas, Is.EqualTo(new[] { 364, -148, -68, -148 }));
+            Assert.That(result.Deltas.Sum(), Is.Zero);
+        }
+    }
+
+    [Test]
     public void Test_Compute_ShouldAddSlamBonus()
     {
         var announced = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1,

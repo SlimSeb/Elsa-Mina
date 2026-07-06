@@ -207,6 +207,58 @@ public class TarotGameTest
     }
 
     [Test]
+    public async Task Test_DeclareMisere_ShouldRecordMisereDAtout_ForPlayerWithNoTrumps()
+    {
+        await JoinAndStartAsync(4);
+        await BidInOrderAsync(TarotBid.GardeSans, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass);
+
+        // In the deterministic deal, players[1] is dealt only suit cards -> a misère d'atout (no trump).
+        var miserePlayer = _game.Players[1];
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Phase, Is.EqualTo(TarotPhase.Playing));
+            Assert.That(_game.GetDeclarableMisereTypes(miserePlayer), Is.EqualTo(new[] { TarotMisereType.Trump }));
+            Assert.That(_game.CanDeclareMisere(miserePlayer), Is.True);
+        }
+
+        await _game.DeclareMisereAsync(miserePlayer.User);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.DeclaredMiseres, Has.Count.EqualTo(1));
+            Assert.That(_game.DeclaredMiseres[0].Player, Is.EqualTo(miserePlayer));
+            Assert.That(_game.DeclaredMiseres[0].Type, Is.EqualTo(TarotMisereType.Trump));
+            Assert.That(miserePlayer.HasDeclaredMisere, Is.True);
+        }
+    }
+
+    [Test]
+    public async Task Test_DeclareMisere_ShouldBeRejected_ForPlayerHoldingTrumpsAndFaces()
+    {
+        await JoinAndStartAsync(4);
+        await BidInOrderAsync(TarotBid.GardeSans, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass);
+
+        // players[3] holds trumps and face cards -> no misère of either kind.
+        var player = _game.Players[3];
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.GetDeclarableMisereTypes(player), Is.Empty);
+            Assert.That(_game.CanDeclareMisere(player), Is.False);
+        }
+
+        await _game.DeclareMisereAsync(player.User);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.DeclaredMiseres, Is.Empty);
+            Assert.That(player.HasDeclaredMisere, Is.False);
+            _context.Received().ReplyLocalizedMessage("tarot_misere_none");
+        }
+    }
+
+    [Test]
     public async Task Test_AnnounceSlam_ShouldBeAllowedForTaker_BeforeFirstCard()
     {
         await JoinAndStartAsync(4);

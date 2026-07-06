@@ -34,6 +34,10 @@ public interface ITarotGame : IGame
     bool CanDeclarePoignee(TarotPlayer player);
     bool CanAnnounceSlam(TarotPlayer player);
 
+    IReadOnlyList<(TarotPlayer Player, TarotMisereType Type)> DeclaredMiseres { get; }
+    IReadOnlyList<TarotMisereType> GetDeclarableMisereTypes(TarotPlayer player);
+    bool CanDeclareMisere(TarotPlayer player);
+
     Task<(bool Success, string MessageKey, object[] Args)> JoinAsync(IUser user);
     Task<(bool Success, string MessageKey, object[] Args)> LeaveAsync(IUser user);
     Task StartAsync(IUser user);
@@ -42,6 +46,7 @@ public interface ITarotGame : IGame
     Task DiscardAsync(IUser user, IReadOnlyList<TarotCard> cards);
     Task PlayAsync(IUser user, TarotCard card);
     Task DeclarePoigneeAsync(IUser user);
+    Task DeclareMisereAsync(IUser user);
     Task AnnounceSlamAsync(IUser user);
     Task ResendPlayerPageAsync(IUser user);
     Task<(bool Success, string MessageKey, object[] Args)> RequestSubAsync(IUser user);

@@ -68,7 +68,7 @@
         </p>
     }
 
-    @if (game.Phase == TarotPhase.Playing && (game.CanDeclarePoignee(viewer) || game.CanAnnounceSlam(viewer)))
+    @if (game.Phase == TarotPhase.Playing && (game.CanDeclarePoignee(viewer) || game.CanAnnounceSlam(viewer) || game.CanDeclareMisere(viewer)))
     {
         <p style="margin:4px 0">
             @if (game.CanAnnounceSlam(viewer))
@@ -78,6 +78,12 @@
             @if (game.CanDeclarePoignee(viewer))
             {
                 <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tarotpoignee @Model.RoomId,">@GetString("tarot_declare_poignee_button", GetString($"tarot_poignee_tier_{game.GetDeclarablePoigneeTier(viewer)}"))</button>
+            }
+            @if (game.CanDeclareMisere(viewer))
+            {
+                var misereNames = string.Join(", ", game.GetDeclarableMisereTypes(viewer)
+                    .Select(type => GetString($"tarot_misere_type_{type.ToString().ToLowerInvariant()}")));
+                <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)tarotmisere @Model.RoomId,">@GetString("tarot_declare_misere_button", misereNames)</button>
             }
         </p>
     }

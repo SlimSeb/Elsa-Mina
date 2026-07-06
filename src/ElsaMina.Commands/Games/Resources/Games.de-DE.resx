@@ -1032,6 +1032,27 @@
     <data name="tarot_announce_slam_button" xml:space="preserve">
         <value>Chelem ansagen</value>
     </data>
+    <data name="tarot_misere_none" xml:space="preserve">
+        <value>Du hast keine Misère zum Ansagen.</value>
+    </data>
+    <data name="tarot_misere_declared" xml:space="preserve">
+        <value>{0} sagt eine Misère ({1}) an!</value>
+    </data>
+    <data name="tarot_misere_type_trump" xml:space="preserve">
+        <value>ohne Trumpf</value>
+    </data>
+    <data name="tarot_misere_type_head" xml:space="preserve">
+        <value>ohne Bild</value>
+    </data>
+    <data name="tarot_misere_banner" xml:space="preserve">
+        <value>{0}: Misère ({1})</value>
+    </data>
+    <data name="tarot_declare_misere_button" xml:space="preserve">
+        <value>Misère ansagen ({0})</value>
+    </data>
+    <data name="tarot_result_misere" xml:space="preserve">
+        <value>{0}: Misère {1} (+{2})</value>
+    </data>
     <data name="tarot_side_attack" xml:space="preserve">
         <value>die Angreifer</value>
     </data>
