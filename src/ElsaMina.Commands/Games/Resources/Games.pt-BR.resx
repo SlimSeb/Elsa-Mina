@@ -819,6 +819,9 @@
     <data name="tarot_dog_revealed" xml:space="preserve">
         <value>O cão (chien): {0}</value>
     </data>
+    <data name="tarot_result_dog" xml:space="preserve">
+        <value>Cão (chien)</value>
+    </data>
     <data name="tarot_discard_not_in_hand" xml:space="preserve">
         <value>Essas cartas não estão todas na sua mão.</value>
     </data>

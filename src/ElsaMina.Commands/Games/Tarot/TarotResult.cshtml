@@ -43,6 +43,18 @@
             }
         </p>
 
+        @if (game.HighestBid is TarotBid.GardeSans or TarotBid.GardeContre && game.Dog.Count > 0)
+        {
+            var dogCards = game.Dog.OrderBy(card => card.Suit).ThenBy(card => card.Rank).ToList();
+            <p style="text-align:center;margin:6px 0 2px 0;color:#b9a9c9;font-size:0.85em">@GetString("tarot_result_dog")</p>
+            <div style="text-align:center;line-height:1.9em;margin-bottom:4px">
+                @foreach (var card in dogCards)
+                {
+                    <span style="color:@CardColor(card);font-weight:bold;font-size:@CardSize(card);margin:0 3px">@card.ToDisplay(Model.Culture)</span>
+                }
+            </div>
+        }
+
         <p style="text-align:center;margin:4px 0;font-size:1.1em">
             @if (result.Made)
             {

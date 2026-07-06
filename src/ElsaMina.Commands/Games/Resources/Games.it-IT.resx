@@ -813,6 +813,9 @@
     <data name="tarot_dog_revealed" xml:space="preserve">
         <value>Il monte (chien): {0}</value>
     </data>
+    <data name="tarot_result_dog" xml:space="preserve">
+        <value>Monte (chien)</value>
+    </data>
     <data name="tarot_discard_not_in_hand" xml:space="preserve">
         <value>Quelle carte non sono tutte nella tua mano.</value>
     </data>
