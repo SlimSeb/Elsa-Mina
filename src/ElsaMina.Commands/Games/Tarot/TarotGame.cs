@@ -37,6 +37,8 @@ public class TarotGame : Game, ITarotGame
     private bool _slamAnnounced;
     private bool _publicPanelInitialized;
     private bool _subPanelInitialized;
+    private bool _logPanelInitialized;
+    private int _renderedLogCount;
 
     [UsedImplicitly]
     public TarotGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration,
@@ -103,6 +105,7 @@ public class TarotGame : Game, ITarotGame
     private string PublicPanelId => $"tarot-{GameId}";
     private string PlayerPageId => $"tarot-{GameId}";
     private string SubPanelId => $"tarot-{GameId}-sub";
+    private string LogPanelId => $"tarot-{GameId}-log";
 
     #region Lobby
 
@@ -998,6 +1001,7 @@ public class TarotGame : Game, ITarotGame
 
         Phase = TarotPhase.Finished;
         ClearSubPanel();
+        ClearLogPanel();
         OnEnd();
     }
 
@@ -1007,6 +1011,7 @@ public class TarotGame : Game, ITarotGame
         Phase = TarotPhase.Finished;
         Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
         ClearSubPanel();
+        ClearLogPanel();
         ClosePlayerPages();
         OnEnd();
     }
@@ -1304,7 +1309,44 @@ public class TarotGame : Game, ITarotGame
     private async Task RenderAllAsync()
     {
         await RenderPublicAsync();
+        await RenderPublicLogAsync();
         await RenderPlayerPagesAsync();
+    }
+
+    /// <summary>
+    /// Renders the running game log into its own updatable chat panel, kept separate from the main table
+    /// panel so it only re-renders when a new event has actually been logged.
+    /// </summary>
+    private async Task RenderPublicLogAsync()
+    {
+        // The final result panel embeds the whole log itself, so drop the live panel once the game ends.
+        if (Phase == TarotPhase.Finished)
+        {
+            ClearLogPanel();
+            return;
+        }
+
+        if (_log.Count == 0 || (_logPanelInitialized && _renderedLogCount == _log.Count))
+        {
+            return;
+        }
+
+        var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotLog", BuildModel(null));
+        Context.SendUpdatableHtml(LogPanelId, html.RemoveNewlines(), isChanging: _logPanelInitialized);
+        _logPanelInitialized = true;
+        _renderedLogCount = _log.Count;
+    }
+
+    private void ClearLogPanel()
+    {
+        if (!_logPanelInitialized)
+        {
+            return;
+        }
+
+        Context.SendUpdatableHtml(LogPanelId, string.Empty, isChanging: true);
+        _logPanelInitialized = false;
+        _renderedLogCount = 0;
     }
 
     /// <summary>
@@ -1372,8 +1414,11 @@ public class TarotGame : Game, ITarotGame
 
         var tableHtml = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotTable", model);
         var handHtml = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotHand", model);
+        var logHtml = _log.Count > 0
+            ? await _templatesManager.GetTemplateAsync("Games/Tarot/TarotLog", model)
+            : string.Empty;
         Context.SendHtmlPageTo(player.UserId, PlayerPageId,
-            tableHtml.RemoveNewlines() + handHtml.RemoveNewlines());
+            tableHtml.RemoveNewlines() + logHtml.RemoveNewlines() + handHtml.RemoveNewlines());
     }
 
     private void ClosePlayerPages()
