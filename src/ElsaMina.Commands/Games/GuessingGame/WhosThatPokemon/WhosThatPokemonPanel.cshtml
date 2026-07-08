@@ -1,0 +1,57 @@
+@using ElsaMina.Core.Services.Dex
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.GuessingGame.WhosThatPokemon.WhosThatPokemonPanelViewModel>
+@{
+    var isFrench = Model.Culture.TwoLetterISOLanguageName == "fr";
+    var name = isFrench ? Model.Pokemon.Name.French : Model.Pokemon.Name.English;
+    var spriteStyle = Model.IsRevealed ? string.Empty : "filter: brightness(0);";
+
+    const string border = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string headerStyle = $"{border} padding: 6px; text-align: center; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string spriteCellStyle = $"{border} padding: 12px; text-align: center; vertical-align: middle;";
+    const string sectionStyle = $"{border} padding: 6px; text-align: center;";
+    const string greenBackground = "background-color: #55BB8873;";
+}
+<table style="border-collapse: collapse; width: 300px;">
+    <tbody>
+    <tr>
+        <td style="@headerStyle">
+            <b>@GetString("whosthatpokemon_title")</b>
+            <br/>
+            <b>@Model.CurrentTurn / @Model.TurnsCount</b>
+            @if (!Model.IsRevealed)
+            {
+                <text>&bull; @Model.RemainingTime.Seconds s</text>
+            }
+        </td>
+    </tr>
+    <tr>
+        <td style="@spriteCellStyle @(Model.IsRevealed ? greenBackground : string.Empty)">
+            <img src="@Model.Pokemon.Sprites.Regular" alt="@(Model.IsRevealed ? name : "?")" width="180" height="180"
+                 style="@spriteStyle"/>
+            <div style="margin-top: 6px; font-size: 15px;">
+                @if (Model.IsRevealed)
+                {
+                    <b>@name</b>
+                }
+                else
+                {
+                    <b>@GetString("whosthatpokemon_prompt")</b>
+                }
+            </div>
+        </td>
+    </tr>
+    @if (Model.Scores != null && Model.Scores.Count > 0)
+    {
+        <tr>
+            <td style="@sectionStyle">
+                @foreach (var (player, score) in Model.Scores.OrderByDescending(entry => entry.Value))
+                {
+                    <span>@player.UserName: <b>@score</b></span>
+                    <text>&nbsp;&nbsp;</text>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

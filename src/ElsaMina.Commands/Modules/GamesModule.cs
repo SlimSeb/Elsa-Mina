@@ -14,6 +14,7 @@ using ElsaMina.Commands.Games.GuessingGame.Gatekeepers;
 using ElsaMina.Commands.Games.GuessingGame.HigherLower;
 using ElsaMina.Commands.Games.GuessingGame.PokeCries;
 using ElsaMina.Commands.Games.GuessingGame.PokeDesc;
+using ElsaMina.Commands.Games.GuessingGame.WhosThatPokemon;
 using ElsaMina.Commands.Games.LightsOut;
 using ElsaMina.Commands.Games.PokeRace;
 using ElsaMina.Commands.Games.Poker;
@@ -185,6 +186,7 @@ public class GamesModule : Module
         builder.RegisterType<PokeCriesGame>().AsSelf();
         builder.RegisterType<GatekeepersGame>().AsSelf();
         builder.RegisterType<HigherLowerGame>().AsSelf();
+        builder.RegisterType<WhosThatPokemonGame>().AsSelf();
         builder.RegisterType<LightsOutGame>().AsSelf();
         builder.RegisterType<LightsOutGameManager>().As<ILightsOutGameManager>().SingleInstance();
         builder.RegisterType<WordleGame>().AsSelf();
