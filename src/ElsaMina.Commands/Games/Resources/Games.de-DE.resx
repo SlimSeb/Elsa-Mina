@@ -1899,4 +1899,49 @@
   <data name="games_chess" xml:space="preserve">
     <value>Schach</value>
   </data>
+    <data name="higherlower_start" xml:space="preserve">
+        <value>Ein Höher-oder-Tiefer-Spiel hat begonnen! Ist der Wert des versteckten Pokémon höher oder tiefer? Antworte mit `hoch` oder `tief` direkt im Chat.</value>
+    </data>
+    <data name="higherlower_title" xml:space="preserve">
+        <value>Höher oder Tiefer</value>
+    </data>
+    <data name="higherlower_prompt" xml:space="preserve">
+        <value>Ist {1} von {0} höher oder tiefer als von {2}?</value>
+    </data>
+    <data name="higherlower_higher" xml:space="preserve">
+        <value>Höher</value>
+    </data>
+    <data name="higherlower_lower" xml:space="preserve">
+        <value>Tiefer</value>
+    </data>
+    <data name="higherlower_category_bst" xml:space="preserve">
+        <value>Statuswerte-Summe</value>
+    </data>
+    <data name="higherlower_category_hp" xml:space="preserve">
+        <value>KP</value>
+    </data>
+    <data name="higherlower_category_atk" xml:space="preserve">
+        <value>Angriff</value>
+    </data>
+    <data name="higherlower_category_def" xml:space="preserve">
+        <value>Verteidigung</value>
+    </data>
+    <data name="higherlower_category_spa" xml:space="preserve">
+        <value>Spezial-Angriff</value>
+    </data>
+    <data name="higherlower_category_spd" xml:space="preserve">
+        <value>Spezial-Verteidigung</value>
+    </data>
+    <data name="higherlower_category_spe" xml:space="preserve">
+        <value>Initiative</value>
+    </data>
+    <data name="higherlower_category_weight" xml:space="preserve">
+        <value>Gewicht</value>
+    </data>
+    <data name="higherlower_category_height" xml:space="preserve">
+        <value>Größe</value>
+    </data>
+    <data name="higherlower_category_dex" xml:space="preserve">
+        <value>Pokédex-Nummer</value>
+    </data>
 </root>

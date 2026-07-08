@@ -1,0 +1,86 @@
+@using ElsaMina.Core.Services.Dex
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.GuessingGame.HigherLower.HigherLowerPanelViewModel>
+@{
+    var isFrench = Model.Culture.TwoLetterISOLanguageName == "fr";
+    string NameOf(Pokemon pokemon) => isFrench ? pokemon.Name.French : pokemon.Name.English;
+    var nameA = NameOf(Model.PokemonA);
+    var nameB = NameOf(Model.PokemonB);
+    var categoryLabel = GetString(Model.CategoryLabelKey);
+
+    const string border = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string headerStyle = $"{border} padding: 6px; text-align: center; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string monCellStyle = $"{border} padding: 8px; text-align: center; vertical-align: middle; width: 160px;";
+    const string sectionStyle = $"{border} padding: 6px; text-align: center;";
+    const string greenBackground = "background-color: #55BB8873;";
+    const string redBackground = "background-color: #BB555573;";
+
+    var revealStyle = Model.IsRevealed ? (Model.IsHigher ? greenBackground : redBackground) : string.Empty;
+}
+<table style="border-collapse: collapse; max-width: 540px;">
+    <tbody>
+    <tr>
+        <td colspan="3" style="@headerStyle">
+            <b>@GetString("higherlower_title")</b> &bull; @categoryLabel
+            <br/>
+            <b>@Model.CurrentTurn / @Model.TurnsCount</b>
+            @if (!Model.IsRevealed)
+            {
+                <text>&bull; @Model.RemainingTime.Seconds s</text>
+            }
+        </td>
+    </tr>
+    <tr>
+        <td style="@monCellStyle">
+            <img src="@Model.PokemonA.Sprites.Regular" alt="@nameA" width="120" height="120"/>
+            <div><b>@nameA</b></div>
+            <div style="font-size: 15px;">@Model.ValueADisplay</div>
+        </td>
+        <td style="@border padding: 4px; text-align: center; vertical-align: middle;">
+            <b>@GetString("vs")</b>
+        </td>
+        <td style="@monCellStyle @revealStyle">
+            <img src="@Model.PokemonB.Sprites.Regular" alt="@nameB" width="120" height="120"/>
+            <div><b>@nameB</b></div>
+            <div style="font-size: 15px;">
+                @if (Model.IsRevealed)
+                {
+                    <b>@Model.ValueBDisplay @(Model.IsHigher ? "▲" : "▼")</b>
+                }
+                else
+                {
+                    <b>?</b>
+                }
+            </div>
+        </td>
+    </tr>
+    @if (!Model.IsRevealed)
+    {
+        <tr>
+            <td colspan="3" style="@sectionStyle">
+                <div style="margin-bottom: 6px;">@GetString("higherlower_prompt", nameB, categoryLabel, nameA)</div>
+                <button class="button" name="send"
+                        value="/botmsg @Model.BotName, @(Model.Trigger)guess @Model.RoomId,higher">
+                    @GetString("higherlower_higher") ▲
+                </button>
+                <button class="button" name="send"
+                        value="/botmsg @Model.BotName, @(Model.Trigger)guess @Model.RoomId,lower">
+                    @GetString("higherlower_lower") ▼
+                </button>
+            </td>
+        </tr>
+    }
+    @if (Model.Scores != null && Model.Scores.Count > 0)
+    {
+        <tr>
+            <td colspan="3" style="@sectionStyle">
+                @foreach (var (player, score) in Model.Scores.OrderByDescending(entry => entry.Value))
+                {
+                    <span>@player.UserName: <b>@score</b></span>
+                    <text>&nbsp;&nbsp;</text>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

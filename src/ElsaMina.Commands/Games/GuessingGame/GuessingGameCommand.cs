@@ -1,8 +1,10 @@
 ﻿using ElsaMina.Commands.Games.GuessingGame.Capitals;
 using ElsaMina.Commands.Games.GuessingGame.Countries;
 using ElsaMina.Commands.Games.GuessingGame.Gatekeepers;
+using ElsaMina.Commands.Games.GuessingGame.HigherLower;
 using ElsaMina.Commands.Games.GuessingGame.PokeCries;
 using ElsaMina.Commands.Games.GuessingGame.PokeDesc;
+using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.DependencyInjection;
@@ -10,22 +12,31 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.GuessingGame;
 
-[NamedCommand("guessinggame", Aliases = ["countriesgame", "pokedesc", "pokecries", "gatekeepers", "capitalcities"])]
+[NamedCommand("guessinggame", Aliases = ["countriesgame", "pokedesc", "pokecries", "gatekeepers", "capitalcities", "higherlower"])]
 public class GuessingGameCommand : Command
 {
     private const int MAX_TURNS_COUNT = 20;
-    
-    private readonly IDependencyContainerService _dependencyContainerService;
 
-    public GuessingGameCommand(IDependencyContainerService dependencyContainerService)
+    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly IArcadeEventsService _arcadeEventsService;
+
+    public GuessingGameCommand(IDependencyContainerService dependencyContainerService,
+        IArcadeEventsService arcadeEventsService)
     {
         _dependencyContainerService = dependencyContainerService;
+        _arcadeEventsService = arcadeEventsService;
     }
 
     public override Rank RequiredRank => Rank.Voiced;
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
+        if (_arcadeEventsService.AreGamesMuted(context.RoomId))
+        {
+            context.ReplyLocalizedMessage("games_muted_event");
+            return;
+        }
+
         if (!int.TryParse(context.Target, out var turnsCount))
         {
             context.ReplyLocalizedMessage("guessing_game_specify");
@@ -52,6 +63,7 @@ public class GuessingGameCommand : Command
             "pokecries" => _dependencyContainerService.Resolve<PokeCriesGame>(),
             "gatekeepers" => _dependencyContainerService.Resolve<GatekeepersGame>(),
             "capitalcities" => _dependencyContainerService.Resolve<CapitalCitiesGame>(),
+            "higherlower" => _dependencyContainerService.Resolve<HigherLowerGame>(),
             _ => null
         };
         if (game == null)

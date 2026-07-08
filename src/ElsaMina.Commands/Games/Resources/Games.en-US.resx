@@ -1962,4 +1962,49 @@
   <data name="games_chess" xml:space="preserve">
     <value>Chess</value>
   </data>
+    <data name="higherlower_start" xml:space="preserve">
+        <value>A Higher or Lower game has started! Is the hidden Pokémon's stat higher or lower? Answer `higher` or `lower` directly in the chat.</value>
+    </data>
+    <data name="higherlower_title" xml:space="preserve">
+        <value>Higher or Lower</value>
+    </data>
+    <data name="higherlower_prompt" xml:space="preserve">
+        <value>Is {0}'s {1} higher or lower than {2}'s?</value>
+    </data>
+    <data name="higherlower_higher" xml:space="preserve">
+        <value>Higher</value>
+    </data>
+    <data name="higherlower_lower" xml:space="preserve">
+        <value>Lower</value>
+    </data>
+    <data name="higherlower_category_bst" xml:space="preserve">
+        <value>Base stat total</value>
+    </data>
+    <data name="higherlower_category_hp" xml:space="preserve">
+        <value>HP</value>
+    </data>
+    <data name="higherlower_category_atk" xml:space="preserve">
+        <value>Attack</value>
+    </data>
+    <data name="higherlower_category_def" xml:space="preserve">
+        <value>Defense</value>
+    </data>
+    <data name="higherlower_category_spa" xml:space="preserve">
+        <value>Special Attack</value>
+    </data>
+    <data name="higherlower_category_spd" xml:space="preserve">
+        <value>Special Defense</value>
+    </data>
+    <data name="higherlower_category_spe" xml:space="preserve">
+        <value>Speed</value>
+    </data>
+    <data name="higherlower_category_weight" xml:space="preserve">
+        <value>Weight</value>
+    </data>
+    <data name="higherlower_category_height" xml:space="preserve">
+        <value>Height</value>
+    </data>
+    <data name="higherlower_category_dex" xml:space="preserve">
+        <value>Pokédex number</value>
+    </data>
 </root>

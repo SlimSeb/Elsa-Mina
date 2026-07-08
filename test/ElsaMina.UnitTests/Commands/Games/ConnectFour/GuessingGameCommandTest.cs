@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.GuessingGame;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.DependencyInjection;
@@ -12,6 +13,7 @@ public class GuessingGameCommandTest
 {
     private GuessingGameCommand _command;
     private IDependencyContainerService _dependencyContainerService;
+    private IArcadeEventsService _arcadeEventsService;
     private IContext _context;
     private IRoom _room;
 
@@ -19,10 +21,26 @@ public class GuessingGameCommandTest
     public void SetUp()
     {
         _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
 
-        _command = new GuessingGameCommand(_dependencyContainerService);
+        _command = new GuessingGameCommand(_dependencyContainerService, _arcadeEventsService);
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyGamesMutedMessage_WhenGamesAreMuted()
+    {
+        // Arrange
+        _context.RoomId.Returns("testroom");
+        _arcadeEventsService.AreGamesMuted("testroom").Returns(true);
+
+        // Act
+        await _command.RunAsync(_context);
+
+        // Assert
+        _context.Received(1).ReplyLocalizedMessage("games_muted_event");
+        _context.DidNotReceive().ReplyLocalizedMessage("guessing_game_specify");
     }
 
     [Test]
