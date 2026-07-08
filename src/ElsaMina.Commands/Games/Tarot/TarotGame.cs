@@ -187,7 +187,7 @@ public class TarotGame : Game, ITarotGame
                 return;
             }
 
-            await RenderPublicAsync(forceResend: true);
+            await RenderPublicAsync();
             await DealAndStartBiddingAsync();
         }
         finally
@@ -243,11 +243,9 @@ public class TarotGame : Game, ITarotGame
         _firstLeaderIndex = 0;
         _currentTurnIndex = 0;
 
-        // Re-post the public chat panel so each fresh deal (the first one and any redeal after every
-        // player passed) drops back to the bottom of the chat instead of staying stuck in the scrollback.
-        ResendPublicPanel();
-
-        await RenderAllAsync();
+        // Re-post the public chat panel and the log panel so each fresh deal (the first one and any redeal
+        // after every player passed) drops back to the bottom of the chat instead of staying in scrollback.
+        await RenderAllAsync(resendPublic: true, resendLog: true);
         RestartTurnTimer();
     }
 
@@ -623,11 +621,9 @@ public class TarotGame : Game, ITarotGame
         // Force re-post the public chat panel so it drops back to the bottom of the chat instead of
         // staying stuck high up in the scrollback. Player hands and tables live in HTML pages that
         // update in place, so they need no such workaround.
-        ResendPublicPanel();
-
         TrickNumber++;
         CurrentTrick = new TarotTrick();
-        await RenderAllAsync();
+        await RenderAllAsync(resendPublic: true);
         RestartTurnTimer();
     }
 
@@ -1306,18 +1302,19 @@ public class TarotGame : Game, ITarotGame
         _log.Add(Context.GetString(key, args));
     }
 
-    private async Task RenderAllAsync()
+    private async Task RenderAllAsync(bool resendPublic = false, bool resendLog = false)
     {
-        await RenderPublicAsync();
-        await RenderPublicLogAsync();
+        await RenderPublicAsync(resendPublic);
+        await RenderPublicLogAsync(resendLog);
         await RenderPlayerPagesAsync();
     }
 
     /// <summary>
     /// Renders the running game log into its own updatable chat panel, kept separate from the main table
-    /// panel so it only re-renders when a new event has actually been logged.
+    /// panel so it only re-renders when a new event has actually been logged. When <paramref name="forceResend"/>
+    /// is set (a fresh deal), it is re-posted at the bottom of the chat instead of updated in place.
     /// </summary>
-    private async Task RenderPublicLogAsync()
+    private async Task RenderPublicLogAsync(bool forceResend = false)
     {
         // The final result panel embeds the whole log itself, so drop the live panel once the game ends.
         if (Phase == TarotPhase.Finished)
@@ -1326,13 +1323,13 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
-        if (_log.Count == 0 || (_logPanelInitialized && _renderedLogCount == _log.Count))
+        if (_log.Count == 0 || (!forceResend && _logPanelInitialized && _renderedLogCount == _log.Count))
         {
             return;
         }
 
         var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotLog", BuildModel(null));
-        Context.SendUpdatableHtml(LogPanelId, html.RemoveNewlines(), isChanging: _logPanelInitialized);
+        Context.SendUpdatableHtml(LogPanelId, html.RemoveNewlines(), isChanging: _logPanelInitialized && !forceResend);
         _logPanelInitialized = true;
         _renderedLogCount = _log.Count;
     }
@@ -1351,7 +1348,9 @@ public class TarotGame : Game, ITarotGame
 
     /// <summary>
     /// Renders the public table as a chat panel so spectators (and players) can follow the game from
-    /// the room itself. The lobby and the final result are only ever shown here.
+    /// the room itself. The lobby and the final result are only ever shown here. When
+    /// <paramref name="forceResend"/> is set, it is re-posted at the bottom of the chat instead of
+    /// updated in place high up in the scrollback.
     /// </summary>
     private async Task RenderPublicAsync(bool forceResend = false)
     {
@@ -1363,23 +1362,8 @@ public class TarotGame : Game, ITarotGame
         };
 
         var html = await _templatesManager.GetTemplateAsync(templateKey, BuildModel(null));
-        Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), forceResend || _publicPanelInitialized);
+        Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), isChanging: _publicPanelInitialized && !forceResend);
         _publicPanelInitialized = true;
-    }
-
-    /// <summary>
-    /// Clears the public chat panel so the next render re-posts it at the bottom of the chat instead of
-    /// updating it in place high up in the scrollback.
-    /// </summary>
-    private void ResendPublicPanel()
-    {
-        if (!_publicPanelInitialized)
-        {
-            return;
-        }
-
-        Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
-        _publicPanelInitialized = false;
     }
 
     private async Task RenderCancelledPublicAsync()
