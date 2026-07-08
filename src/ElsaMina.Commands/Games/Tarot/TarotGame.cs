@@ -623,7 +623,7 @@ public class TarotGame : Game, ITarotGame
         // update in place, so they need no such workaround.
         TrickNumber++;
         CurrentTrick = new TarotTrick();
-        await RenderAllAsync(resendPublic: true);
+        await RenderAllAsync(resendPublic: true, resendLog: true);
         RestartTurnTimer();
     }
 
