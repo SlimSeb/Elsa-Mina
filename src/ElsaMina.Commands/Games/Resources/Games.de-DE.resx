@@ -778,7 +778,7 @@
         <value>{0} ist der Partner des Alleinspielers!</value>
     </data>
     <data name="tarot_trick_won" xml:space="preserve">
-        <value>__{0}__ gewinnt Stich Nr. {1}.</value>
+        <value>{0} gewinnt Stich Nr. {1}.</value>
     </data>
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>Die Tarot-Partie wurde abgebrochen.</value>
@@ -980,6 +980,9 @@
     </data>
     <data name="tarot_cards_won_title" xml:space="preserve">
         <value>Gewonnene Karten</value>
+    </data>
+    <data name="tarot_log_title" xml:space="preserve">
+        <value>Spielprotokoll</value>
     </data>
     <data name="tarot_cards_won_points" xml:space="preserve">
         <value>{0} Pkt.</value>

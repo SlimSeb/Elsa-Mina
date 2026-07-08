@@ -38,6 +38,8 @@ public interface ITarotGame : IGame
     IReadOnlyList<TarotMisereType> GetDeclarableMisereTypes(TarotPlayer player);
     bool CanDeclareMisere(TarotPlayer player);
 
+    IReadOnlyList<string> Log { get; }
+
     Task<(bool Success, string MessageKey, object[] Args)> JoinAsync(IUser user);
     Task<(bool Success, string MessageKey, object[] Args)> LeaveAsync(IUser user);
     Task StartAsync(IUser user);

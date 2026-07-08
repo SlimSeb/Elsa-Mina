@@ -35,6 +35,9 @@ public class TarotGameTest
         _configuration.Trigger.Returns("-");
         _context.RoomId.Returns("testroom");
         _context.Culture.Returns(CultureInfo.InvariantCulture);
+        // Echo the resource key so the game log (built from GetString) is assertable in tests.
+        _context.GetString(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>());
+        _context.GetString(Arg.Any<string>(), Arg.Any<object[]>()).Returns(callInfo => callInfo.ArgAt<string>(0));
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>())
             .Returns(Task.FromResult(string.Empty));
 
@@ -107,7 +110,7 @@ public class TarotGameTest
             Assert.That(_game.Dog, Has.Count.EqualTo(6));
         }
 
-        _context.Received().ReplyLocalizedMessage("tarot_bidding_all_passed");
+        Assert.That(_game.Log, Does.Contain("tarot_bidding_all_passed"));
     }
 
     [Test]

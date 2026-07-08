@@ -835,7 +835,7 @@
         <value>¡{0} es el compañero del tomador!</value>
     </data>
     <data name="tarot_trick_won" xml:space="preserve">
-        <value>__{0}__ gana la baza n.º {1}.</value>
+        <value>{0} gana la baza n.º {1}.</value>
     </data>
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>La partida de Tarot fue cancelada.</value>
@@ -1037,6 +1037,9 @@
     </data>
     <data name="tarot_cards_won_title" xml:space="preserve">
         <value>Cartas ganadas</value>
+    </data>
+    <data name="tarot_log_title" xml:space="preserve">
+        <value>Registro de la partida</value>
     </data>
     <data name="tarot_cards_won_points" xml:space="preserve">
         <value>{0} pts</value>

@@ -26,6 +26,7 @@ public class TarotGame : Game, ITarotGame
     private readonly List<TarotCard> _pendingDiscards = [];
     private readonly List<(TarotPlayer Player, int Tier)> _declaredPoignees = [];
     private readonly List<(TarotPlayer Player, TarotMisereType Type)> _declaredMiseres = [];
+    private readonly List<string> _log = [];
 
     private int _currentTurnIndex;
     private int _firstLeaderIndex;
@@ -96,6 +97,8 @@ public class TarotGame : Game, ITarotGame
     public bool SlamAnnounced => _slamAnnounced;
     public IReadOnlyList<(TarotPlayer Player, int Tier)> DeclaredPoignees => _declaredPoignees;
     public IReadOnlyList<(TarotPlayer Player, TarotMisereType Type)> DeclaredMiseres => _declaredMiseres;
+
+    public IReadOnlyList<string> Log => _log;
 
     private string PublicPanelId => $"tarot-{GameId}";
     private string PlayerPageId => $"tarot-{GameId}";
@@ -330,7 +333,7 @@ public class TarotGame : Game, ITarotGame
     {
         if (HighestBid == TarotBid.Pass)
         {
-            Context.ReplyLocalizedMessage("tarot_bidding_all_passed");
+            LogEvent("tarot_bidding_all_passed");
             await DealNewHandAsync();
             return;
         }
@@ -339,7 +342,7 @@ public class TarotGame : Game, ITarotGame
         _players[_takerIndex].IsTaker = true;
         _currentTurnIndex = _takerIndex;
 
-        Context.ReplyLocalizedMessage("tarot_taker_announced", Taker.Name, GetBidName(HighestBid));
+        LogEvent("tarot_taker_announced", Taker.Name, GetBidName(HighestBid));
 
         if (_players.Count == 5)
         {
@@ -374,7 +377,7 @@ public class TarotGame : Game, ITarotGame
         }
 
         CalledKing = card;
-        Context.ReplyLocalizedMessage("tarot_king_called", Taker.Name, card.ToDisplay(Context.Culture));
+        LogEvent("tarot_king_called", Taker.Name, card.ToDisplay(Context.Culture));
 
         await ResolveDogAsync();
     }
@@ -389,7 +392,7 @@ public class TarotGame : Game, ITarotGame
         {
             case TarotBid.Petite or TarotBid.Garde:
                 DogRevealed = true;
-                Context.ReplyLocalizedMessage("tarot_dog_revealed",
+                LogEvent("tarot_dog_revealed",
                     string.Join(" ", _dog.Select(card => card.ToDisplay(Context.Culture))));
                 Taker.Hand.AddRange(_dog);
                 SortHand(Taker.Hand);
@@ -497,7 +500,7 @@ public class TarotGame : Game, ITarotGame
         var discardedTrumps = cards.Where(card => card.IsTrump).ToList();
         if (discardedTrumps.Count > 0)
         {
-            Context.ReplyLocalizedMessage("tarot_discard_trumps_revealed",
+            LogEvent("tarot_discard_trumps_revealed",
                 string.Join(" ", discardedTrumps.Select(card => card.ToDisplay(Context.Culture))));
         }
 
@@ -566,7 +569,7 @@ public class TarotGame : Game, ITarotGame
         if (CalledKing is not null && card == CalledKing && player.IsPartner)
         {
             PartnerRevealed = true;
-            Context.ReplyLocalizedMessage("tarot_partner_revealed", player.Name);
+            LogEvent("tarot_partner_revealed", player.Name);
         }
 
         if (CurrentTrick.Plays.Count < _players.Count)
@@ -602,7 +605,7 @@ public class TarotGame : Game, ITarotGame
             _takerSideTrickWins++;
         }
 
-        Context.ReplyLocalizedMessage("tarot_trick_won", winner.Name, TrickNumber);
+        LogEvent("tarot_trick_won", winner.Name, TrickNumber);
 
         LastTrick = CurrentTrick;
         LastTrickWinner = winner;
@@ -842,7 +845,7 @@ public class TarotGame : Game, ITarotGame
             .Where(card => card.IsTrump || card.IsExcuse)
             .OrderBy(card => card.IsExcuse ? 0 : card.Rank)
             .Select(card => card.ToDisplay(Context.Culture));
-        Context.ReplyLocalizedMessage("tarot_poignee_declared", player.Name,
+        LogEvent("tarot_poignee_declared", player.Name,
             Context.GetString($"tarot_poignee_tier_{tier}"), string.Join(" ", trumps));
 
         await RenderAllAsync();
@@ -878,7 +881,7 @@ public class TarotGame : Game, ITarotGame
         }
 
         var typeNames = types.Select(type => Context.GetString($"tarot_misere_type_{type.ToString().ToLowerInvariant()}"));
-        Context.ReplyLocalizedMessage("tarot_misere_declared", player.Name, string.Join(", ", typeNames));
+        LogEvent("tarot_misere_declared", player.Name, string.Join(", ", typeNames));
 
         await RenderAllAsync();
     }
@@ -899,7 +902,7 @@ public class TarotGame : Game, ITarotGame
         }
 
         _slamAnnounced = true;
-        Context.ReplyLocalizedMessage("tarot_slam_announced", Taker.Name);
+        LogEvent("tarot_slam_announced", Taker.Name);
         await RenderAllAsync();
     }
 
@@ -1288,6 +1291,15 @@ public class TarotGame : Game, ITarotGame
     #endregion
 
     #region Rendering
+
+    /// <summary>
+    /// Appends a localized game event to the running log shown (collapsed) on the public panel and the
+    /// player pages. Replaces the old chat broadcasts so the narration lives inside the game HTML.
+    /// </summary>
+    private void LogEvent(string key, params object[] args)
+    {
+        _log.Add(Context.GetString(key, args));
+    }
 
     private async Task RenderAllAsync()
     {

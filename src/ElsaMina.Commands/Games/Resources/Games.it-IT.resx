@@ -835,7 +835,7 @@
         <value>{0} è il compagno del prenditore!</value>
     </data>
     <data name="tarot_trick_won" xml:space="preserve">
-        <value>__{0}__ vince la presa n. {1}.</value>
+        <value>{0} vince la presa n. {1}.</value>
     </data>
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>La partita di Tarocchi è stata annullata.</value>
@@ -1037,6 +1037,9 @@
     </data>
     <data name="tarot_cards_won_title" xml:space="preserve">
         <value>Carte vinte</value>
+    </data>
+    <data name="tarot_log_title" xml:space="preserve">
+        <value>Registro della partita</value>
     </data>
     <data name="tarot_cards_won_points" xml:space="preserve">
         <value>{0} pts</value>

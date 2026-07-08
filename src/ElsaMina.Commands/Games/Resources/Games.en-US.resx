@@ -841,7 +841,7 @@
         <value>{0} is the taker's partner!</value>
     </data>
     <data name="tarot_trick_won" xml:space="preserve">
-        <value>__{0}__ wins trick #{1}.</value>
+        <value>{0} wins trick #{1}.</value>
     </data>
     <data name="tarot_game_cancelled" xml:space="preserve">
         <value>The French Tarot game was cancelled.</value>
@@ -1043,6 +1043,9 @@
     </data>
     <data name="tarot_cards_won_title" xml:space="preserve">
         <value>Cards won</value>
+    </data>
+    <data name="tarot_log_title" xml:space="preserve">
+        <value>Game log</value>
     </data>
     <data name="tarot_cards_won_points" xml:space="preserve">
         <value>{0} pts</value>
