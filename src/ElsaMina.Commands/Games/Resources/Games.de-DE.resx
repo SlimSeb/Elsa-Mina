@@ -132,6 +132,15 @@
     <data name="pokecries_started" xml:space="preserve">
         <value>Ein PokeCries-Spiel wurde erstellt! Schreibe den Namen des entsprechenden Pokémon direkt in den Chat.</value>
     </data>
+    <data name="whosthatpokemon_start" xml:space="preserve">
+        <value>Ein Wer ist dieses Pokémon-Spiel wurde gestartet! Errate das Pokémon anhand seiner Silhouette, indem du seinen Namen direkt in den Chat schreibst.</value>
+    </data>
+    <data name="whosthatpokemon_title" xml:space="preserve">
+        <value>Wer ist dieses Pokémon?</value>
+    </data>
+    <data name="whosthatpokemon_prompt" xml:space="preserve">
+        <value>Wer ist dieses Pokémon?</value>
+    </data>
     <data name="c4_panel_title" xml:space="preserve">
         <value>Ein Vier-gewinnt-Spiel wurde erstellt!</value>
     </data>

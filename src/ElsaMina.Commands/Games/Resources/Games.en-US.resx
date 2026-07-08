@@ -132,6 +132,15 @@
     <data name="pokecries_started" xml:space="preserve">
         <value>A PokeCries games has been created! Write the corresponding Pokémon's name directly in the chat.</value>
     </data>
+    <data name="whosthatpokemon_start" xml:space="preserve">
+        <value>A Who's That Pokémon game has been started! Guess the silhouetted Pokémon by writing its name directly in the chat.</value>
+    </data>
+    <data name="whosthatpokemon_title" xml:space="preserve">
+        <value>Who's That Pokémon?</value>
+    </data>
+    <data name="whosthatpokemon_prompt" xml:space="preserve">
+        <value>Who's that Pokémon?</value>
+    </data>
     <data name="c4_panel_title" xml:space="preserve">
         <value>A connect four game has been created!</value>
     </data>
