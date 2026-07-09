@@ -18,7 +18,7 @@ public sealed record BeloteCard(BeloteSuit Suit, int Rank)
     /// <summary>
     /// Point value of each rank when the card is trump (Jack and 9 are boosted).
     /// </summary>
-    private static readonly IReadOnlyDictionary<int, int> TrumpPoints = new Dictionary<int, int>
+    private static readonly Dictionary<int, int> TrumpPoints = new Dictionary<int, int>
     {
         [JACK] = 20,
         [9] = 14,
@@ -33,7 +33,7 @@ public sealed record BeloteCard(BeloteSuit Suit, int Rank)
     /// <summary>
     /// Point value of each rank when the card is a plain (non-trump) suit.
     /// </summary>
-    private static readonly IReadOnlyDictionary<int, int> PlainPoints = new Dictionary<int, int>
+    private static readonly Dictionary<int, int> PlainPoints = new Dictionary<int, int>
     {
         [ACE] = 11,
         [10] = 10,
@@ -49,7 +49,7 @@ public sealed record BeloteCard(BeloteSuit Suit, int Rank)
     /// Relative strength (higher beats lower) of each rank within the trump suit:
     /// J &gt; 9 &gt; A &gt; 10 &gt; K &gt; Q &gt; 8 &gt; 7.
     /// </summary>
-    private static readonly IReadOnlyDictionary<int, int> TrumpStrength = new Dictionary<int, int>
+    private static readonly Dictionary<int, int> TrumpStrength = new Dictionary<int, int>
     {
         [JACK] = 8,
         [9] = 7,
@@ -65,7 +65,7 @@ public sealed record BeloteCard(BeloteSuit Suit, int Rank)
     /// Relative strength (higher beats lower) of each rank within a plain suit:
     /// A &gt; 10 &gt; K &gt; Q &gt; J &gt; 9 &gt; 8 &gt; 7.
     /// </summary>
-    private static readonly IReadOnlyDictionary<int, int> PlainStrength = new Dictionary<int, int>
+    private static readonly Dictionary<int, int> PlainStrength = new Dictionary<int, int>
     {
         [ACE] = 8,
         [10] = 7,

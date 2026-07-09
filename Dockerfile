@@ -39,5 +39,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY --from=build /app/output .
+COPY --from=build --chown=$APP_UID:$APP_UID /app/output .
+
+# Run as the non-root user shipped with the .NET runtime images instead of root.
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "ElsaMina.Console.dll"]

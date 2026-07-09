@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Core.Services.PlayTime;
 
-public class PlayTimeUpdateService : IPlayTimeUpdateService
+public sealed class PlayTimeUpdateService : IPlayTimeUpdateService
 {
     private readonly IConfiguration _configuration;
     private readonly IBotDbContextFactory _dbContextFactory;
@@ -130,5 +130,6 @@ public class PlayTimeUpdateService : IPlayTimeUpdateService
     {
         _timerRunner?.Dispose();
         _playTimeUpdateSemaphoreSlim.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

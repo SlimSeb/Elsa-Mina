@@ -506,7 +506,7 @@ public class BattleshipGame : Game, IBattleshipGame
         Context.SendHtmlPageTo(player.User.UserId, PlayerPageId, template.RemoveNewlines());
     }
 
-    private bool TryParseCoordinate(string coordinate, out int row, out int column)
+    private static bool TryParseCoordinate(string coordinate, out int row, out int column)
     {
         row = -1;
         column = -1;

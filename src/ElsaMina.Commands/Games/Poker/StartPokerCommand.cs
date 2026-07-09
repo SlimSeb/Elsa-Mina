@@ -39,13 +39,11 @@ public class StartPokerCommand : Command
         }
 
         var buyIn = PokerConstants.DEFAULT_BUY_IN;
-        if (!string.IsNullOrWhiteSpace(context.Target))
+        if (!string.IsNullOrWhiteSpace(context.Target)
+            && (!long.TryParse(context.Target.Trim(), out buyIn) || buyIn < PokerConstants.MIN_BUY_IN))
         {
-            if (!long.TryParse(context.Target.Trim(), out buyIn) || buyIn < PokerConstants.MIN_BUY_IN)
-            {
-                context.ReplyLocalizedMessage("poker_invalid_buy_in", PokerConstants.MIN_BUY_IN);
-                return;
-            }
+            context.ReplyLocalizedMessage("poker_invalid_buy_in", PokerConstants.MIN_BUY_IN);
+            return;
         }
 
         var isForFun = !await context.IsBucksEnabledAsync(cancellationToken);

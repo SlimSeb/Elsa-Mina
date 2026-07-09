@@ -6,6 +6,8 @@ namespace ElsaMina.Battles;
 
 public class BattleMessageParser : IBattleMessageParser
 {
+    private const string MOVE_PREFIX = "move: ";
+
     public bool TryApplyMessage(string[] parts, string roomId, BattleContext context, out BattleMessageResult result)
     {
         result = new BattleMessageResult(BattleMessageType.None);
@@ -368,8 +370,8 @@ public class BattleMessageParser : IBattleMessageParser
         }
 
         var isOurSide = sideIdent[..2] == context.SideId;
-        var hazardName = condition.StartsWith("move: ", StringComparison.OrdinalIgnoreCase)
-            ? condition["move: ".Length..]
+        var hazardName = condition.StartsWith(MOVE_PREFIX, StringComparison.OrdinalIgnoreCase)
+            ? condition[MOVE_PREFIX.Length..]
             : condition;
 
         if (hazardName.Equals("Stealth Rock", StringComparison.OrdinalIgnoreCase))
@@ -402,19 +404,16 @@ public class BattleMessageParser : IBattleMessageParser
                 context.OpponentSideToxicSpikes = !removed;
             }
         }
-        else if (hazardName.Equals("Sticky Web", StringComparison.OrdinalIgnoreCase))
+        else if (hazardName.Equals("Sticky Web", StringComparison.OrdinalIgnoreCase) && !isOurSide)
         {
-            if (!isOurSide)
-            {
-                context.OpponentSideStickyWeb = !removed;
-            }
+            context.OpponentSideStickyWeb = !removed;
         }
     }
 
     private static bool IsTauntCondition(string condition)
     {
-        var name = condition.StartsWith("move: ", StringComparison.OrdinalIgnoreCase)
-            ? condition["move: ".Length..]
+        var name = condition.StartsWith(MOVE_PREFIX, StringComparison.OrdinalIgnoreCase)
+            ? condition[MOVE_PREFIX.Length..]
             : condition;
         return name.Equals("Taunt", StringComparison.OrdinalIgnoreCase);
     }
@@ -627,7 +626,7 @@ public class BattleMessageParser : IBattleMessageParser
             return;
         }
 
-        int.TryParse(hpPart.AsSpan(0, slashIndex), out currentHp);
-        int.TryParse(hpPart.AsSpan(slashIndex + 1), out maxHp);
+        _ = int.TryParse(hpPart.AsSpan(0, slashIndex), out currentHp);
+        _ = int.TryParse(hpPart.AsSpan(slashIndex + 1), out maxHp);
     }
 }

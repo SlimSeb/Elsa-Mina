@@ -4,19 +4,19 @@ namespace ElsaMina.Core.Services.Smogon;
 
 public class SmogonPokemonUsageDataDto
 {
-    [JsonProperty("Abilities")]
+    [JsonProperty(nameof(Abilities))]
     public Dictionary<string, double> Abilities { get; set; }
 
-    [JsonProperty("Items")]
+    [JsonProperty(nameof(Items))]
     public Dictionary<string, double> Items { get; set; }
 
-    [JsonProperty("Spreads")]
+    [JsonProperty(nameof(Spreads))]
     public Dictionary<string, double> Spreads { get; set; }
 
-    [JsonProperty("Moves")]
+    [JsonProperty(nameof(Moves))]
     public Dictionary<string, double> Moves { get; set; }
 
-    [JsonProperty("Teammates")]
+    [JsonProperty(nameof(Teammates))]
     public Dictionary<string, double> Teammates { get; set; }
 
     [JsonProperty("usage")]

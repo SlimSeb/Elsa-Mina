@@ -60,7 +60,7 @@ public class LadderHistoryManager : ILadderHistoryManager
         }
     }
 
-    private static IReadOnlyDictionary<string, int> BuildEntriesByPlayer(IEnumerable<LadderPlayerDto> players,
+    private static Dictionary<string, int> BuildEntriesByPlayer(IEnumerable<LadderPlayerDto> players,
         Func<LadderPlayerDto, int> valueSelector)
     {
         var entriesByPlayer = new Dictionary<string, int>(StringComparer.Ordinal);

@@ -6,7 +6,7 @@ using Google.Apis.Sheets.v4;
 
 namespace ElsaMina.Sheets.GoogleSheets;
 
-public class GoogleSheetProvider : ISheetProvider
+public sealed class GoogleSheetProvider : ISheetProvider
 {
     private readonly SheetsService _sheets;
     private readonly DriveService _drive;
@@ -104,5 +104,6 @@ public class GoogleSheetProvider : ISheetProvider
     {
         _sheets.Dispose();
         _drive.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

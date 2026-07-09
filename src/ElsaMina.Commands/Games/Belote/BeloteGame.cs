@@ -800,7 +800,7 @@ public class BeloteGame : Game, IBeloteGame
 
     #endregion
 
-    private void SortHand(List<BeloteCard> hand, BeloteSuit? trump)
+    private static void SortHand(List<BeloteCard> hand, BeloteSuit? trump)
     {
         hand.Sort((first, second) =>
         {

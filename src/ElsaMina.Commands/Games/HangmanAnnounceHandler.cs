@@ -8,9 +8,10 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games;
 
-public class HangmanAnnounceHandler : Handler
+public partial class HangmanAnnounceHandler : Handler
 {
-    private static readonly Regex HANGMAN_ID_REGEX = new(@"hangman(\d+)");
+    [GeneratedRegex(@"hangman(\d+)")]
+    private static partial Regex HangmanIdRegex();
 
     private readonly IConfiguration _configuration;
     private readonly IBot _bot;
@@ -38,7 +39,7 @@ public class HangmanAnnounceHandler : Handler
             return Task.CompletedTask;
         }
 
-        var match = HANGMAN_ID_REGEX.Match(parts[2]);
+        var match = HangmanIdRegex().Match(parts[2]);
         if (!match.Success)
         {
             return Task.CompletedTask;
