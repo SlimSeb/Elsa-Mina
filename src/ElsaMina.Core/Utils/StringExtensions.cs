@@ -101,6 +101,10 @@ public static class StringExtensions
         return output.ToString();
     }
 
+    /// <summary>
+    /// Non-cryptographic MD5 digest, used only to reproduce Pokémon Showdown's username-colour
+    /// algorithm and for the cosmetic ship command. Not used for security; do not use for secrets.
+    /// </summary>
     public static string ToMd5Digest(this string text)
     {
         var stringBuilder = new StringBuilder();

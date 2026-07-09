@@ -46,7 +46,8 @@ public class WordleDailyService : IWordleDailyService
         }
 
         // Seed the picker with the current calendar day in the room timezone so the answer is the
-        // same for every player in that room and only changes once a day.
+        // same for every player in that room and only changes once a day. This deliberately uses a
+        // non-cryptographic seeded Random for reproducibility; it is not security-sensitive.
         var index = new Random(GetToday(timeZone).DayNumber).Next(words.Count);
         return words[index].ToUpperInvariant();
     }
