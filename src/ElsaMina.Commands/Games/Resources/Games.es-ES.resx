@@ -2013,4 +2013,58 @@
     <data name="higherlower_category_dex" xml:space="preserve">
         <value>Número de Pokédex</value>
     </data>
+    <data name="games_scattergories" xml:space="preserve">
+        <value>Poké Scattergories</value>
+    </data>
+    <data name="scattergories_start" xml:space="preserve">
+        <value>🔤 ¡Comienza una partida de Poké Scattergories! {0} rondas de {1} segundos cada una. ¡Nombra tantos Pokémon como puedas que empiecen por la letra indicada!</value>
+    </data>
+    <data name="scattergories_round_label" xml:space="preserve">
+        <value>Ronda {0} de {1}</value>
+    </data>
+    <data name="scattergories_prompt" xml:space="preserve">
+        <value>Nombra un Pokémon que empiece por</value>
+    </data>
+    <data name="scattergories_instruction" xml:space="preserve">
+        <value>¡Escribe nombres de Pokémon en el chat! Tienes {0} segundos.</value>
+    </data>
+    <data name="scattergories_round_over" xml:space="preserve">
+        <value>¡Ronda terminada!</value>
+    </data>
+    <data name="scattergories_found_count" xml:space="preserve">
+        <value>{0} de {1} Pokémon posibles encontrados</value>
+    </data>
+    <data name="scattergories_time_warning" xml:space="preserve">
+        <value>⏱ ¡Quedan {0} segundos para nombrar Pokémon que empiecen por {1}!</value>
+    </data>
+    <data name="scattergories_answer_scored" xml:space="preserve">
+        <value>✅ ¡{0} puntúa con {1}! ({2} pts)</value>
+    </data>
+    <data name="scattergories_scores" xml:space="preserve">
+        <value>Puntuaciones</value>
+    </data>
+    <data name="scattergories_result_title" xml:space="preserve">
+        <value>Poké Scattergories - Resultados finales</value>
+    </data>
+    <data name="scattergories_result_no_players" xml:space="preserve">
+        <value>¡Nadie ha puntuado esta vez!</value>
+    </data>
+    <data name="scattergories_points" xml:space="preserve">
+        <value>{0} pts</value>
+    </data>
+    <data name="scattergories_result_footer" xml:space="preserve">
+        <value>¡Gracias por jugar! Escribe -scattergories para jugar de nuevo.</value>
+    </data>
+    <data name="scattergories_already_running" xml:space="preserve">
+        <value>¡Ya hay una partida de Poké Scattergories en curso en esta sala!</value>
+    </data>
+    <data name="scattergories_other_game_running" xml:space="preserve">
+        <value>Ya hay otro juego en curso en esta sala.</value>
+    </data>
+    <data name="scattergories_not_running" xml:space="preserve">
+        <value>No hay ninguna partida de Poké Scattergories en curso. Usa -scattergories para empezar una.</value>
+    </data>
+    <data name="scattergories_cancelled" xml:space="preserve">
+        <value>La partida de Poké Scattergories ha sido cancelada.</value>
+    </data>
 </root>

@@ -19,6 +19,7 @@ using ElsaMina.Commands.Games.LightsOut;
 using ElsaMina.Commands.Games.PokeRace;
 using ElsaMina.Commands.Games.Poker;
 using ElsaMina.Commands.Games.RockPaperScissors;
+using ElsaMina.Commands.Games.Scattergories;
 using ElsaMina.Commands.Games.Semantix;
 using ElsaMina.Commands.Games.Tarot;
 using ElsaMina.Commands.Games.TwentyFortyEight;
@@ -84,6 +85,9 @@ public class GamesModule : Module
         builder.RegisterCommand<JoinPokeRaceCommand>();
         builder.RegisterCommand<StartRaceCommand>();
         builder.RegisterCommand<EndRaceCommand>();
+
+        builder.RegisterCommand<StartScattergoriesCommand>();
+        builder.RegisterCommand<EndScattergoriesCommand>();
 
         builder.RegisterCommand<StartLightsOutCommand>();
         builder.RegisterCommand<JoinLightsOutCommand>();
@@ -164,6 +168,7 @@ public class GamesModule : Module
         builder.RegisterCommand<EndPokerCommand>();
 
         builder.RegisterHandler<GuessingGameHandler>();
+        builder.RegisterHandler<ScattergoriesHandler>();
         builder.RegisterHandler<HangmanAnnounceHandler>();
 
         builder.RegisterType<CountriesGame>().AsSelf();
@@ -176,6 +181,7 @@ public class GamesModule : Module
         builder.RegisterType<BattleshipRatingService>().As<IBattleshipRatingService>().SingleInstance();
         builder.RegisterType<VoltorbFlipGame>().AsSelf();
         builder.RegisterType<PokeRaceGame>().AsSelf();
+        builder.RegisterType<ScattergoriesGame>().AsSelf();
         builder.RegisterType<RpsGame>().AsSelf();
         builder.RegisterType<TarotGame>().AsSelf();
         builder.RegisterType<TarotStatsService>().As<ITarotStatsService>().SingleInstance();

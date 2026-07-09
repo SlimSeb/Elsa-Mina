@@ -1,0 +1,34 @@
+@using ElsaMina.Core.Utils
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Scattergories.ScattergoriesResultModel>
+
+<div style="background-color: #2f2b3a; color: white; padding: 12px; border-radius: 8px;">
+    <h3 style="text-align: center; margin: 0 0 8px;">🏆 @GetString("scattergories_result_title")</h3>
+
+    @if (Model.Scores.Count == 0)
+    {
+        <p style="text-align: center; color: #cfc7e6;">@GetString("scattergories_result_no_players")</p>
+    }
+    else
+    {
+        var medals = new[] { "🥇", "🥈", "🥉" };
+        <table style="margin: 0 auto; border-collapse: collapse;">
+            @{
+                var index = 0;
+            }
+            @foreach (var (name, points) in Model.Scores)
+            {
+                var color = name.ToColorHexCodeWithCustoms();
+                var medal = index < medals.Length ? medals[index] : $"{index + 1}.";
+                <tr>
+                    <td style="padding: 3px 8px; text-align: right; font-size: 16px;">@medal</td>
+                    <td style="padding: 3px 8px; text-align: left;"><b style="color: @color;">@name</b></td>
+                    <td style="padding: 3px 8px; text-align: right;">@GetString("scattergories_points", points)</td>
+                </tr>
+                index++;
+            }
+        </table>
+        <p style="text-align: center; margin-top: 10px; color: #bcb3d6;">
+            @GetString("scattergories_result_footer")
+        </p>
+    }
+</div>

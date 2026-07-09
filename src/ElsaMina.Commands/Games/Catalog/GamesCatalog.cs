@@ -30,6 +30,7 @@ public static class GamesCatalog
         new("games_pokerace", "pokerace", Rank.Driver, GameMode.Multiplayer, IsPlayableInPrivate: false),
 
         // Room-wide guessing games (everyone in the room guesses)
-        new("games_guessing", "guessinggame", Rank.Voiced, GameMode.RoomWide, IsPlayableInPrivate: false)
+        new("games_guessing", "guessinggame", Rank.Voiced, GameMode.RoomWide, IsPlayableInPrivate: false),
+        new("games_scattergories", "scattergories", Rank.Voiced, GameMode.RoomWide, IsPlayableInPrivate: false)
     ];
 }
