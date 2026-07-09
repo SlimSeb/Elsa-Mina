@@ -6,7 +6,6 @@ namespace ElsaMina.Commands.Games.Semantix;
 
 public interface ISemantixGame : IGame
 {
-    bool IsEnded { get; }
     bool IsRoundActive { get; }
     bool IsWon { get; }
     string Answer { get; }

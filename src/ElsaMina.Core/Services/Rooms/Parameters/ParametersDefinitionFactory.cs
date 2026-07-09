@@ -21,7 +21,7 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
     public IReadOnlyDictionary<Parameter, IParameterDefinition> GetParametersDefinitions() =>
         _cachedDefinitions ??= BuildParametersDefinitions();
 
-    private IReadOnlyDictionary<Parameter, IParameterDefinition> BuildParametersDefinitions() =>
+    private Dictionary<Parameter, IParameterDefinition> BuildParametersDefinitions() =>
         new Dictionary<Parameter, IParameterDefinition>
         {
             [Parameter.Locale] = new ParameterDefinition

@@ -5,7 +5,6 @@ namespace ElsaMina.Battles;
 public class LadderingService : ILadderingService
 {
     private readonly IBot _bot;
-    private readonly IBattleTeamsService _battleTeamsService;
     private readonly Lock _lock = new();
 
     private string _format;
@@ -13,9 +12,8 @@ public class LadderingService : ILadderingService
     public LadderingService(IBot bot, IBattleTeamsService battleTeamsService)
     {
         _bot = bot;
-        _battleTeamsService = battleTeamsService;
 
-        _battleTeamsService.TeamChanged += HandleTeamChanged;
+        battleTeamsService.TeamChanged += HandleTeamChanged;
     }
 
     private void HandleTeamChanged(object sender, string team)

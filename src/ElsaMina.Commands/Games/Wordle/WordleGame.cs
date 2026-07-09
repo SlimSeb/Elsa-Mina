@@ -254,7 +254,7 @@ public class WordleGame : Game, IWordleGame
         return states;
     }
 
-    private void UpdateKeyboard(string guess, IReadOnlyList<WordleLetterState> states)
+    private void UpdateKeyboard(string guess, WordleLetterState[] states)
     {
         for (var i = 0; i < guess.Length; i++)
         {

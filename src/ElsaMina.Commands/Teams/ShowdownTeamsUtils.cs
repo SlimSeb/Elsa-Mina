@@ -8,6 +8,8 @@ namespace ElsaMina.Commands.Teams;
 
 public static class ShowdownTeamsUtils
 {
+    private static readonly string[] STAT_KEYS = ["hp", "atk", "def", "spa", "spd", "spe"];
+
     private static readonly Dictionary<string, string> BATTLE_STAT_IDS = new()
     {
         ["HP"] = "hp",
@@ -630,7 +632,7 @@ public static class ShowdownTeamsUtils
             // evs
             if (set.EffortValues != null)
             {
-                var evString = string.Join(",", new[] { "hp", "atk", "def", "spa", "spd", "spe" }
+                var evString = string.Join(",", STAT_KEYS
                     .Select(stat => set.EffortValues.TryGetValue(stat, out var value) ? value.ToString() : string.Empty));
 
                 if (evString == ",,,,,")
@@ -657,7 +659,7 @@ public static class ShowdownTeamsUtils
             // ivs
             if (set.IndividualValues != null)
             {
-                var ivString = string.Join(",", new[] { "hp", "atk", "def", "spa", "spd", "spe" }
+                var ivString = string.Join(",", STAT_KEYS
                     .Select(stat => !set.IndividualValues.TryGetValue(stat, out var value) || value == 31
                         ? string.Empty
                         : value.ToString()));

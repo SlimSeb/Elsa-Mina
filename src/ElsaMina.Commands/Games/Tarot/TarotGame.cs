@@ -708,7 +708,7 @@ public class TarotGame : Game, ITarotGame
     /// cannot be led on the very first trick, the only exception being the called card itself (and a
     /// fallback when the player holds nothing but cards of the called suit).
     /// </summary>
-    private IReadOnlyCollection<TarotCard> GetLegalLeadMoves(List<TarotCard> hand)
+    private List<TarotCard> GetLegalLeadMoves(List<TarotCard> hand)
     {
         if (_players.Count != 5 || CalledKing is null || TrickNumber != 1)
         {
@@ -763,7 +763,7 @@ public class TarotGame : Game, ITarotGame
         return tier;
     }
 
-    private static int TierForTrumpCount(int count, IReadOnlyList<int> thresholds)
+    private static int TierForTrumpCount(int count, int[] thresholds)
     {
         if (count >= thresholds[2])
         {
@@ -998,17 +998,6 @@ public class TarotGame : Game, ITarotGame
         Phase = TarotPhase.Finished;
         ClearSubPanel();
         ClearLogPanel();
-        OnEnd();
-    }
-
-    private void EndGame()
-    {
-        StopTurnTimer();
-        Phase = TarotPhase.Finished;
-        Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
-        ClearSubPanel();
-        ClearLogPanel();
-        ClosePlayerPages();
         OnEnd();
     }
 

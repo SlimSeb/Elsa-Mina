@@ -70,27 +70,36 @@ public sealed record TarotCard(TarotSuit Suit, int Rank)
 
         var normalized = token.Trim().ToLowerInvariant().Replace(" ", string.Empty);
 
-        switch (normalized)
+        var special = ParseSpecialCard(normalized);
+        if (special != null)
         {
-            case "exc" or "excuse" or "x" or "fool":
-                return new TarotCard(TarotSuit.Excuse, 0);
-            case "petit":
-                return new TarotCard(TarotSuit.Trump, PETIT);
-            case "monde" or "world":
-                return new TarotCard(TarotSuit.Trump, MONDE);
+            return special;
         }
 
-        if (normalized[0] == 't')
-        {
-            if (int.TryParse(normalized[1..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var trumpRank)
-                && trumpRank is >= 1 and <= 21)
-            {
-                return new TarotCard(TarotSuit.Trump, trumpRank);
-            }
+        return normalized[0] == 't' ? ParseTrumpCard(normalized) : ParseSuitCard(normalized);
+    }
 
-            return null;
+    private static TarotCard ParseSpecialCard(string normalized) => normalized switch
+    {
+        "exc" or "excuse" or "x" or "fool" => new TarotCard(TarotSuit.Excuse, 0),
+        "petit" => new TarotCard(TarotSuit.Trump, PETIT),
+        "monde" or "world" => new TarotCard(TarotSuit.Trump, MONDE),
+        _ => null
+    };
+
+    private static TarotCard ParseTrumpCard(string normalized)
+    {
+        if (int.TryParse(normalized[1..], NumberStyles.Integer, CultureInfo.InvariantCulture, out var trumpRank)
+            && trumpRank is >= 1 and <= 21)
+        {
+            return new TarotCard(TarotSuit.Trump, trumpRank);
         }
 
+        return null;
+    }
+
+    private static TarotCard ParseSuitCard(string normalized)
+    {
         var suit = normalized[^1] switch
         {
             'h' => TarotSuit.Hearts,

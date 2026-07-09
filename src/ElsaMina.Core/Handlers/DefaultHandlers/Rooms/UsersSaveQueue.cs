@@ -124,41 +124,7 @@ public sealed class UserSaveQueue : IUserSaveQueue
                 Log.Debug("Saving user ids : {0}", string.Join(", ", userIds));
                 foreach (var (userId, pendingUser) in batch)
                 {
-                    var userName = ExtractUserName(pendingUser.RawUserName);
-
-                    if (existingUsers.TryGetValue(userId, out var user))
-                    {
-                        if (user.UserName != userName)
-                        {
-                            user.UserName = userName;
-                        }
-
-                        if (user.LastOnline != pendingUser.LastSeenTime)
-                        {
-                            user.LastOnline = pendingUser.LastSeenTime;
-                        }
-
-                        if (user.LastSeenRoomId != pendingUser.RoomId)
-                        {
-                            user.LastSeenRoomId = pendingUser.RoomId;
-                        }
-
-                        if (user.LastSeenAction != pendingUser.Action)
-                        {
-                            user.LastSeenAction = pendingUser.Action;
-                        }
-                    }
-                    else
-                    {
-                        dbContext.Users.Add(new SavedUser
-                        {
-                            UserId = userId,
-                            UserName = userName,
-                            LastOnline = pendingUser.LastSeenTime,
-                            LastSeenRoomId = pendingUser.RoomId,
-                            LastSeenAction = pendingUser.Action
-                        });
-                    }
+                    ApplyPendingUser(dbContext, existingUsers, userId, pendingUser);
                 }
 
                 await dbContext.SaveChangesAsync(cancellationToken);
@@ -167,6 +133,45 @@ public sealed class UserSaveQueue : IUserSaveQueue
         finally
         {
             _flushLock.Release();
+        }
+    }
+
+    private static void ApplyPendingUser(BotDbContext dbContext, Dictionary<string, SavedUser> existingUsers,
+        string userId, PendingUserSave pendingUser)
+    {
+        var userName = ExtractUserName(pendingUser.RawUserName);
+
+        if (!existingUsers.TryGetValue(userId, out var user))
+        {
+            dbContext.Users.Add(new SavedUser
+            {
+                UserId = userId,
+                UserName = userName,
+                LastOnline = pendingUser.LastSeenTime,
+                LastSeenRoomId = pendingUser.RoomId,
+                LastSeenAction = pendingUser.Action
+            });
+            return;
+        }
+
+        if (user.UserName != userName)
+        {
+            user.UserName = userName;
+        }
+
+        if (user.LastOnline != pendingUser.LastSeenTime)
+        {
+            user.LastOnline = pendingUser.LastSeenTime;
+        }
+
+        if (user.LastSeenRoomId != pendingUser.RoomId)
+        {
+            user.LastSeenRoomId = pendingUser.RoomId;
+        }
+
+        if (user.LastSeenAction != pendingUser.Action)
+        {
+            user.LastSeenAction = pendingUser.Action;
         }
     }
 

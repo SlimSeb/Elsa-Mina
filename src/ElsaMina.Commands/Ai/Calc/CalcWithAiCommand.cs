@@ -12,6 +12,8 @@ namespace ElsaMina.Commands.Ai.Calc;
 [NamedCommand("calc-ai", "calcai", "aicalc")]
 public class CalcWithAiCommand : Command
 {
+    private const string CALC_AI_ERROR = "calc_ai_error";
+
     private readonly ILanguageModelProvider _languageModelProvider;
     private readonly IResourcesService _resourcesService;
     private readonly IDamageCalculator _damageCalculator;
@@ -50,7 +52,7 @@ public class CalcWithAiCommand : Command
         var response = await _languageModelProvider.AskLanguageModelAsync(request, cancellationToken);
         if (string.IsNullOrWhiteSpace(response))
         {
-            context.ReplyLocalizedMessage("calc_ai_error");
+            context.ReplyLocalizedMessage(CALC_AI_ERROR);
             return;
         }
 
@@ -62,7 +64,7 @@ public class CalcWithAiCommand : Command
         catch (Exception exception)
         {
             Log.Error(exception, "Failed to parse calc request from AI response: {Response}", response);
-            context.ReplyLocalizedMessage("calc_ai_error");
+            context.ReplyLocalizedMessage(CALC_AI_ERROR);
             return;
         }
 
@@ -72,7 +74,7 @@ public class CalcWithAiCommand : Command
             || calcRequest.Defender == null
             || string.IsNullOrWhiteSpace(calcRequest.Move))
         {
-            context.ReplyLocalizedMessage("calc_ai_error");
+            context.ReplyLocalizedMessage(CALC_AI_ERROR);
             return;
         }
 
@@ -84,7 +86,7 @@ public class CalcWithAiCommand : Command
         catch (Exception exception)
         {
             Log.Error(exception, "Damage calculation failed for AI response: {Response}", response);
-            context.ReplyLocalizedMessage("calc_ai_error");
+            context.ReplyLocalizedMessage(CALC_AI_ERROR);
             return;
         }
 

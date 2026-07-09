@@ -317,7 +317,7 @@ public class PokerGame : Game, IPokerGame
         Phase is PokerPhase.Preflop or PokerPhase.Flop or PokerPhase.Turn or PokerPhase.River
         && CurrentPlayer?.UserId == user.UserId;
 
-    private void CommitChips(PokerPlayer player, long amount)
+    private static void CommitChips(PokerPlayer player, long amount)
     {
         var actual = Math.Min(amount, player.Stack);
         player.Stack -= actual;

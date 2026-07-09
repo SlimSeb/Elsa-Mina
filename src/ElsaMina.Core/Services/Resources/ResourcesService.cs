@@ -51,41 +51,50 @@ public class ResourcesService : IResourcesService
         {
             foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
             {
-                ResourceSet resourceSet;
-                try
-                {
-                    resourceSet = manager.GetResourceSet(culture, true, false);
-                }
-                catch (CultureNotFoundException)
-                {
-                    continue;
-                }
-
+                var resourceSet = TryGetResourceSet(manager, culture);
                 if (resourceSet == null)
                 {
                     continue;
                 }
 
-                foreach (DictionaryEntry entry in resourceSet)
-                {
-                    if (entry.Value is not string stringValue)
-                    {
-                        continue;
-                    }
-
-                    var entryKey = entry.Key.ToString()!;
-                    if (!merged.TryGetValue(entryKey, out var cultureMap))
-                    {
-                        merged[entryKey] = cultureMap = new Dictionary<string, string>();
-                    }
-
-                    cultureMap.TryAdd(culture.Name, stringValue);
-                }
+                MergeResourceSet(merged, resourceSet, culture.Name);
             }
         }
 
         return merged.ToDictionary(
             kvp => kvp.Key,
             IReadOnlyDictionary<string, string> (kvp) => kvp.Value);
+    }
+
+    private static ResourceSet TryGetResourceSet(ResourceManager manager, CultureInfo culture)
+    {
+        try
+        {
+            return manager.GetResourceSet(culture, true, false);
+        }
+        catch (CultureNotFoundException)
+        {
+            return null;
+        }
+    }
+
+    private static void MergeResourceSet(Dictionary<string, Dictionary<string, string>> merged,
+        ResourceSet resourceSet, string cultureName)
+    {
+        foreach (DictionaryEntry entry in resourceSet)
+        {
+            if (entry.Value is not string stringValue)
+            {
+                continue;
+            }
+
+            var entryKey = entry.Key.ToString()!;
+            if (!merged.TryGetValue(entryKey, out var cultureMap))
+            {
+                merged[entryKey] = cultureMap = new Dictionary<string, string>();
+            }
+
+            cultureMap.TryAdd(cultureName, stringValue);
+        }
     }
 }

@@ -176,7 +176,8 @@ public class SmogonOpponentMovesPredictor : IOpponentMovesPredictor
     private static string GetPreviousMonth(string month)
     {
         var parts = month.Split('-');
-        var date = new DateTime(int.Parse(parts[0]), int.Parse(parts[1]), 1).AddMonths(-1);
+        var date = new DateTime(int.Parse(parts[0]), int.Parse(parts[1]), 1, 0, 0, 0, DateTimeKind.Utc)
+            .AddMonths(-1);
         return $"{date.Year:D4}-{date.Month:D2}";
     }
 }

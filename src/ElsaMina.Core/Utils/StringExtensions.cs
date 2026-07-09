@@ -239,51 +239,31 @@ public static class StringExtensions
         return IsEmojiCodePoint(codePoint);
     }
 
-    private static bool IsEmojiCodePoint(int cp) => cp switch
+    // Unicode blocks that count as emoji, as (inclusive start, inclusive end) code point ranges:
+    // Misc Symbols/Dingbats, Emoticons, Misc symbols & pictographs, Transport/map, Supplemental
+    // symbols, Extended-A, Enclosed alphanumeric/ideographic supplements, Mahjong/domino tiles,
+    // Misc technical, arrows, and the Tags block used in flag sequences.
+    private static readonly (int Start, int End)[] EMOJI_CODE_POINT_RANGES =
+    [
+        (0x2600, 0x26FF), (0x2700, 0x27BF), (0x1F600, 0x1F64F), (0x1F300, 0x1F5FF),
+        (0x1F680, 0x1F6FF), (0x1F900, 0x1F9FF), (0x1FA00, 0x1FA6F), (0x1FA70, 0x1FAFF),
+        (0x1F100, 0x1F1FF), (0x1F200, 0x1F2FF), (0x1F000, 0x1F02F), (0x1F0A0, 0x1F0FF),
+        (0x2300, 0x23FF), (0x2B00, 0x2BFF), (0x25A0, 0x25FF), (0x2100, 0x214F),
+        (0xE0000, 0xE007F)
+    ];
+
+    private static bool IsEmojiCodePoint(int cp)
     {
-        // Miscellaneous Symbols and Dingbats
-        >= 0x2600 and <= 0x26FF => true,
-        >= 0x2700 and <= 0x27BF => true,
+        foreach (var (start, end) in EMOJI_CODE_POINT_RANGES)
+        {
+            if (cp >= start && cp <= end)
+            {
+                return true;
+            }
+        }
 
-        // Emoticons block
-        >= 0x1F600 and <= 0x1F64F => true,
-
-        // Misc symbols and pictographs
-        >= 0x1F300 and <= 0x1F5FF => true,
-
-        // Transport and map
-        >= 0x1F680 and <= 0x1F6FF => true,
-
-        // Supplemental symbols and pictographs
-        >= 0x1F900 and <= 0x1F9FF => true,
-
-        // Symbols and pictographs extended-A
-        >= 0x1FA00 and <= 0x1FA6F => true,
-        >= 0x1FA70 and <= 0x1FAFF => true,
-
-        // Enclosed alphanumeric supplement (circled numbers, etc.)
-        >= 0x1F100 and <= 0x1F1FF => true,
-
-        // Enclosed ideographic supplement
-        >= 0x1F200 and <= 0x1F2FF => true,
-
-        // Mahjong / domino tiles
-        >= 0x1F000 and <= 0x1F02F => true,
-        >= 0x1F0A0 and <= 0x1F0FF => true,
-
-        // Miscellaneous technical
-        >= 0x2300 and <= 0x23FF => true,
-
-        // Arrows and other common emoji
-        >= 0x2B00 and <= 0x2BFF => true,
-        >= 0x25A0 and <= 0x25FF => true,
-        >= 0x2100 and <= 0x214F => true,
-
-        // Tags block (used in flag sequences)
-        >= 0xE0000 and <= 0xE007F => true,
-
-        _ => false
-    };
+        return false;
+    }
 
     private static bool IsRegionalIndicator(int cp)
         => cp is >= 0x1F1E6 and <= 0x1F1FF;

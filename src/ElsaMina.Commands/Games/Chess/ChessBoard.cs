@@ -194,7 +194,7 @@ public class ChessBoard
         return legalMoves;
     }
 
-    private IEnumerable<ChessMove> GeneratePseudoLegalMoves(bool white)
+    private List<ChessMove> GeneratePseudoLegalMoves(bool white)
     {
         var moves = new List<ChessMove>();
         for (var row = 0; row < ChessConstants.BOARD_SIZE; row++)
@@ -266,17 +266,13 @@ public class ChessBoard
             while (IsInsideBoard(toRow, toColumn))
             {
                 var target = Squares[toRow, toColumn];
-                if (target == EMPTY)
+                if (target == EMPTY || !BelongsTo(target, white))
                 {
                     moves.Add(new ChessMove(row, column, toRow, toColumn));
                 }
-                else
-                {
-                    if (!BelongsTo(target, white))
-                    {
-                        moves.Add(new ChessMove(row, column, toRow, toColumn));
-                    }
 
+                if (target != EMPTY)
+                {
                     break;
                 }
 

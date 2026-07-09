@@ -57,4 +57,35 @@ public sealed class PokerHandEvaluation : IComparable<PokerHandEvaluation>
 
         return Tiebreakers.Count.CompareTo(other.Tiebreakers.Count);
     }
+
+    public override bool Equals(object obj) => obj is PokerHandEvaluation other && CompareTo(other) == 0;
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(Rank);
+        foreach (var tiebreaker in Tiebreakers)
+        {
+            hash.Add(tiebreaker);
+        }
+
+        return hash.ToHashCode();
+    }
+
+    public static bool operator ==(PokerHandEvaluation left, PokerHandEvaluation right) =>
+        left is null ? right is null : left.Equals(right);
+
+    public static bool operator !=(PokerHandEvaluation left, PokerHandEvaluation right) => !(left == right);
+
+    public static bool operator <(PokerHandEvaluation left, PokerHandEvaluation right) =>
+        left is null ? right is not null : left.CompareTo(right) < 0;
+
+    public static bool operator >(PokerHandEvaluation left, PokerHandEvaluation right) =>
+        left is not null && left.CompareTo(right) > 0;
+
+    public static bool operator <=(PokerHandEvaluation left, PokerHandEvaluation right) =>
+        left is null || left.CompareTo(right) <= 0;
+
+    public static bool operator >=(PokerHandEvaluation left, PokerHandEvaluation right) =>
+        left is null ? right is null : left.CompareTo(right) >= 0;
 }

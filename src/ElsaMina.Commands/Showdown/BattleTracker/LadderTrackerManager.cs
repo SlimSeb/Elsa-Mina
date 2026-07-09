@@ -10,7 +10,7 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Showdown.BattleTracker;
 
-public class LadderTrackerManager : ILadderTrackerManager
+public sealed class LadderTrackerManager : ILadderTrackerManager
 {
     private const string UNKNOWN_LABEL = "unknown";
     private static readonly TimeSpan DEFAULT_POLL_INTERVAL = TimeSpan.FromSeconds(10);
@@ -161,6 +161,7 @@ public class LadderTrackerManager : ILadderTrackerManager
 
         pollingCts?.Cancel();
         pollingCts?.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private void StartPollingNoLock()
@@ -321,6 +322,6 @@ public class LadderTrackerManager : ILadderTrackerManager
     {
         public bool IsInitialized { get; set; }
         public ulong LastBattleId { get; set; }
-        public ISet<string> SubscribedRoomIds { get; } = new HashSet<string>();
+        public HashSet<string> SubscribedRoomIds { get; } = new HashSet<string>();
     }
 }
