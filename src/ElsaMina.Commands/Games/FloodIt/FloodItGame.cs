@@ -211,7 +211,13 @@ public class FloodItGame : Game, IFloodItGame
         IsRoundActive = false;
         _inactivityTimer.Stop();
         OnEnd();
-        await DisplayBoard(firstTime: false);
+
+        // Grid is only initialized once a round starts; a game cancelled while
+        // still at the announce stage has no board to render.
+        if (Grid != null)
+        {
+            await DisplayBoard(firstTime: false);
+        }
     }
 
     private void GenerateRandomGrid()
