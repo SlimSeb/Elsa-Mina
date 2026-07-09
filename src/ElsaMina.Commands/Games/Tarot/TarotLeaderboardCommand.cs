@@ -4,11 +4,12 @@ using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
+using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Commands.Games.Tarot;
 
-[NamedCommand("tarotleaderboard", Aliases = ["tarotlb"])]
+[NamedCommand("tarotleaderboard", Aliases = ["tarotlb", "tarotlbreverse"])]
 public class TarotLeaderboardCommand : Command
 {
     private const int MAX_COUNT = 20;
@@ -28,11 +29,23 @@ public class TarotLeaderboardCommand : Command
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var leaderboard = await dbContext.TarotStats
-            .Include(entry => entry.User)
-            .OrderByDescending(entry => entry.TotalScoreHalfPoints)
-            .Take(MAX_COUNT)
-            .ToListAsync(cancellationToken);
+        List<TarotStats> leaderboard;
+        if (context.Command == "tarotlbreverse")
+        {
+            leaderboard = await dbContext.TarotStats
+                .Include(entry => entry.User)
+                .OrderBy(entry => entry.TotalScoreHalfPoints)
+                .Take(MAX_COUNT)
+                .ToListAsync(cancellationToken);
+        }
+        else
+        {
+            leaderboard = await dbContext.TarotStats
+                .Include(entry => entry.User)
+                .OrderByDescending(entry => entry.TotalScoreHalfPoints)
+                .Take(MAX_COUNT)
+                .ToListAsync(cancellationToken);
+        }
 
         if (leaderboard.Count == 0)
         {
