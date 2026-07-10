@@ -133,4 +133,99 @@ public class StringExtensionsTest
         // Assert
         Assert.That(result, Is.EqualTo("Stuff"));
     }
+
+    [Test]
+    [TestCase("true", ExpectedResult = true)]
+    [TestCase("  TRUE  ", ExpectedResult = true)]
+    [TestCase("y", ExpectedResult = true)]
+    [TestCase("t", ExpectedResult = true)]
+    [TestCase("1", ExpectedResult = true)]
+    [TestCase("on", ExpectedResult = true)]
+    [TestCase("false", ExpectedResult = false)]
+    [TestCase("0", ExpectedResult = false)]
+    [TestCase("nope", ExpectedResult = false)]
+    [TestCase("", ExpectedResult = false)]
+    public bool Test_ToBoolean_ShouldParseTruthyValues(string input)
+    {
+        // Act & Assert
+        return input.ToBoolean();
+    }
+
+    [Test]
+    public void Test_ToMd5Digest_ShouldReturnKnownHash()
+    {
+        // Act
+        var result = "abc".ToMd5Digest();
+
+        // Assert
+        // Reference MD5("abc") lowercase hex digest.
+        Assert.That(result, Is.EqualTo("900150983cd24fb0d6963f7d28e17f72"));
+    }
+
+    [Test]
+    public void Test_ToMd5Digest_ShouldBeDeterministicAnd32CharsLong()
+    {
+        // Act
+        var first = "elsamina".ToMd5Digest();
+        var second = "elsamina".ToMd5Digest();
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(first, Is.EqualTo(second));
+            Assert.That(first, Has.Length.EqualTo(32));
+        }
+    }
+
+    [Test]
+    [TestCase("<a>   <b>", ExpectedResult = "<a> <b>")]
+    [TestCase("text   <span>", ExpectedResult = "text <span>")]
+    [TestCase("</span>   text", ExpectedResult = "</span> text")]
+    [TestCase("<a> <b>", ExpectedResult = "<a> <b>")]
+    public string Test_CollapseWhitespacesBetweenTags_ShouldCollapseRuns(string input)
+    {
+        // Act & Assert
+        return input.CollapseWhitespacesBetweenTags();
+    }
+
+    [Test]
+    [TestCase("😀", ExpectedResult = true)]
+    [TestCase("👍", ExpectedResult = true)]
+    [TestCase("🇫🇷", ExpectedResult = true)] // regional-indicator flag
+    [TestCase("a", ExpectedResult = false)]
+    [TestCase("😀😀", ExpectedResult = false)] // more than one grapheme
+    [TestCase("😀a", ExpectedResult = false)]
+    [TestCase("", ExpectedResult = false)]
+    [TestCase(null, ExpectedResult = false)]
+    public bool Test_IsSingleEmoji_ShouldDetectExactlyOneEmoji(string input)
+    {
+        // Act & Assert
+        return input.IsSingleEmoji();
+    }
+
+    [Test]
+    [TestCase("😀👍🔥", ExpectedResult = true)]
+    [TestCase("😀", ExpectedResult = true)]
+    [TestCase("😀 👍", ExpectedResult = false)] // space is not emoji
+    [TestCase("hello", ExpectedResult = false)]
+    [TestCase("😀hi", ExpectedResult = false)]
+    [TestCase("", ExpectedResult = false)]
+    [TestCase(null, ExpectedResult = false)]
+    public bool Test_IsAllEmoji_ShouldRequireEveryGraphemeToBeEmoji(string input)
+    {
+        // Act & Assert
+        return input.IsAllEmoji();
+    }
+
+    [Test]
+    [TestCase("hello 😀 world", ExpectedResult = true)]
+    [TestCase("😀", ExpectedResult = true)]
+    [TestCase("no emoji here", ExpectedResult = false)]
+    [TestCase("", ExpectedResult = false)]
+    [TestCase(null, ExpectedResult = false)]
+    public bool Test_ContainsEmoji_ShouldDetectAnyEmoji(string input)
+    {
+        // Act & Assert
+        return input.ContainsEmoji();
+    }
 }
