@@ -138,7 +138,7 @@ public class ParametersDefinitionFactoryTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(definition.Identifier, Is.EqualTo("evann"));
+            Assert.That(definition.Identifier, Is.EqualTo("evn"));
             Assert.That(definition.Type, Is.EqualTo(RoomBotConfigurationType.Enumeration));
             Assert.That(definition.DefaultValue, Is.EqualTo(EventAnnouncesTypeValues.TournamentsOnly));
             Assert.That(definition.PossibleValues.Select(value => value.InternalValue),
