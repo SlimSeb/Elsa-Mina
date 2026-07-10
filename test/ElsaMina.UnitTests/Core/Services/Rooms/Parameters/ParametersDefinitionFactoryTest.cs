@@ -1,5 +1,6 @@
 using System.Globalization;
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
@@ -125,6 +126,29 @@ public class ParametersDefinitionFactoryTest
         {
             Assert.That(definition.Type, Is.EqualTo(RoomBotConfigurationType.Boolean));
             Assert.That(definition.DefaultValue, Is.EqualTo(expectedDefault.ToString()));
+        }
+    }
+
+    [Test]
+    public void Test_EventAnnouncesTypeDefinition_ShouldBeEnumerationDefaultingToTournamentsWithEveryOption()
+    {
+        // Act
+        var definition = _factory.GetParametersDefinitions()[Parameter.EventAnnouncesType];
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(definition.Identifier, Is.EqualTo("evann"));
+            Assert.That(definition.Type, Is.EqualTo(RoomBotConfigurationType.Enumeration));
+            Assert.That(definition.DefaultValue, Is.EqualTo(EventAnnouncesTypeValues.TournamentsOnly));
+            Assert.That(definition.PossibleValues.Select(value => value.InternalValue),
+                Is.EquivalentTo(new[]
+                {
+                    EventAnnouncesTypeValues.All,
+                    EventAnnouncesTypeValues.TournamentsOnly,
+                    EventAnnouncesTypeValues.GamesOnly,
+                    EventAnnouncesTypeValues.None
+                }));
         }
     }
 

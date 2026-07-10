@@ -2073,4 +2073,28 @@
     <data name="scattergories_cancelled" xml:space="preserve">
         <value>The Poké Scattergories game has been cancelled.</value>
     </data>
+    <data name="tarot_started_in" xml:space="preserve">
+        <value>A new tarot game was created in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="belote_started_in" xml:space="preserve">
+        <value>A new belote game was created in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="poker_started_in" xml:space="preserve">
+        <value>A new poker game was created in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="battleship_started_in" xml:space="preserve">
+        <value>A new battleship game was created in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="chess_started_in" xml:space="preserve">
+        <value>A new chess game was created in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="connect_four_started_in" xml:space="preserve">
+        <value>A new Connect Four game was created in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="scattergories_started_in" xml:space="preserve">
+        <value>A new Scattergories game was created in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="guessing_game_started_in" xml:space="preserve">
+        <value>A new guessing game was created in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
 </root>

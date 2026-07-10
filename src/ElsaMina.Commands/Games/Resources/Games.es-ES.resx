@@ -2067,4 +2067,28 @@
     <data name="scattergories_cancelled" xml:space="preserve">
         <value>La partida de Poké Scattergories ha sido cancelada.</value>
     </data>
+    <data name="tarot_started_in" xml:space="preserve">
+        <value>Se ha creado una nueva partida de tarot en &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="belote_started_in" xml:space="preserve">
+        <value>Se ha creado una nueva partida de belote en &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="poker_started_in" xml:space="preserve">
+        <value>Se ha creado una nueva partida de póker en &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="battleship_started_in" xml:space="preserve">
+        <value>Se ha creado una nueva partida de batalla naval en &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="chess_started_in" xml:space="preserve">
+        <value>Se ha creado una nueva partida de ajedrez en &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="connect_four_started_in" xml:space="preserve">
+        <value>Se ha creado una nueva partida de Conecta 4 en &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="scattergories_started_in" xml:space="preserve">
+        <value>Se ha creado una nueva partida de Scattergories en &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="guessing_game_started_in" xml:space="preserve">
+        <value>Se ha creado un nuevo juego de adivinanzas en &lt;&lt;{0}&gt;&gt;</value>
+    </data>
 </root>

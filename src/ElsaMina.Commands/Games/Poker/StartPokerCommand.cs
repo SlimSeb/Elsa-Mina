@@ -1,6 +1,7 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 
@@ -10,10 +11,13 @@ namespace ElsaMina.Commands.Games.Poker;
 public class StartPokerCommand : Command
 {
     private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly IEventAnnouncer _eventAnnouncer;
 
-    public StartPokerCommand(IDependencyContainerService dependencyContainerService)
+    public StartPokerCommand(IDependencyContainerService dependencyContainerService,
+        IEventAnnouncer eventAnnouncer)
     {
         _dependencyContainerService = dependencyContainerService;
+        _eventAnnouncer = eventAnnouncer;
     }
 
     public override Rank RequiredRank => Rank.Voiced;
@@ -53,6 +57,9 @@ public class StartPokerCommand : Command
         game.BuyIn = buyIn;
         game.IsForFun = isForFun;
         context.Room.Game = game;
+
+        await _eventAnnouncer.AnnounceToLinkedRoomsAsync(context.RoomId, EventAnnounceType.Game, "poker_started_in",
+            [context.RoomId], cancellationToken);
 
         context.ReplyLocalizedMessage("poker_game_created", context.Sender.Name, buyIn);
         if (isForFun)

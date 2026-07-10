@@ -134,4 +134,22 @@
     <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
         <value>Enable or disable tournament betting for this room.</value>
     </data>
+    <data name="parameter_name_event_announces_type" xml:space="preserve">
+        <value>Cross-room announcements</value>
+    </data>
+    <data name="parameter_description_event_announces_type" xml:space="preserve">
+        <value>Choose which events from linked rooms are announced in this room.</value>
+    </data>
+    <data name="parameter_value_event_announces_all" xml:space="preserve">
+        <value>Tournaments &amp; Games</value>
+    </data>
+    <data name="parameter_value_event_announces_tournaments" xml:space="preserve">
+        <value>Tournaments only</value>
+    </data>
+    <data name="parameter_value_event_announces_games" xml:space="preserve">
+        <value>Games only</value>
+    </data>
+    <data name="parameter_value_event_announces_none" xml:space="preserve">
+        <value>None</value>
+    </data>
 </root>

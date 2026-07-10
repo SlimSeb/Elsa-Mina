@@ -4,6 +4,7 @@ using ElsaMina.Commands.Games.Belote;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
@@ -18,6 +19,7 @@ public class StartBeloteCommandTest
 {
     private IDependencyContainerService _dependencyContainerService;
     private IArcadeEventsService _arcadeEventsService;
+    private IEventAnnouncer _eventAnnouncer;
     private StartBeloteCommand _command;
     private IContext _context;
     private IRoom _room;
@@ -28,6 +30,7 @@ public class StartBeloteCommandTest
     {
         _dependencyContainerService = Substitute.For<IDependencyContainerService>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
+        _eventAnnouncer = Substitute.For<IEventAnnouncer>();
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
 
@@ -49,7 +52,7 @@ public class StartBeloteCommandTest
         _game.Context = _context;
         _dependencyContainerService.Resolve<BeloteGame>().Returns(_game);
 
-        _command = new StartBeloteCommand(_dependencyContainerService, _arcadeEventsService);
+        _command = new StartBeloteCommand(_dependencyContainerService, _arcadeEventsService, _eventAnnouncer);
     }
 
     private static IUser MakeUser(string id)
@@ -113,5 +116,27 @@ public class StartBeloteCommandTest
             _context.Received(1).ReplyLocalizedMessage("belote_game_created", Arg.Any<object>());
             _room.Received(1).Game = _game;
         }
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldAnnounceGameStartToLinkedRooms_WhenNoGameIsActive()
+    {
+        await _command.RunAsync(_context);
+
+        await _eventAnnouncer.Received(1).AnnounceToLinkedRoomsAsync("test-room", EventAnnounceType.Game,
+            "belote_started_in",
+            Arg.Is<object[]>(arguments => arguments.Length == 1 && (string)arguments[0] == "test-room"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldNotAnnounce_WhenGamesAreMuted()
+    {
+        _arcadeEventsService.AreGamesMuted("test-room").Returns(true);
+
+        await _command.RunAsync(_context);
+
+        await _eventAnnouncer.DidNotReceiveWithAnyArgs()
+            .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 }

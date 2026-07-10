@@ -2010,4 +2010,28 @@
     <data name="scattergories_cancelled" xml:space="preserve">
         <value>Die Runde Poké Scattergories wurde abgebrochen.</value>
     </data>
+    <data name="tarot_started_in" xml:space="preserve">
+        <value>Ein neues Tarot-Spiel wurde in &lt;&lt;{0}&gt;&gt; erstellt</value>
+    </data>
+    <data name="belote_started_in" xml:space="preserve">
+        <value>Ein neues Belote-Spiel wurde in &lt;&lt;{0}&gt;&gt; erstellt</value>
+    </data>
+    <data name="poker_started_in" xml:space="preserve">
+        <value>Ein neues Poker-Spiel wurde in &lt;&lt;{0}&gt;&gt; erstellt</value>
+    </data>
+    <data name="battleship_started_in" xml:space="preserve">
+        <value>Ein neues Schiffe-versenken-Spiel wurde in &lt;&lt;{0}&gt;&gt; erstellt</value>
+    </data>
+    <data name="chess_started_in" xml:space="preserve">
+        <value>Ein neues Schach-Spiel wurde in &lt;&lt;{0}&gt;&gt; erstellt</value>
+    </data>
+    <data name="connect_four_started_in" xml:space="preserve">
+        <value>Ein neues Vier-gewinnt-Spiel wurde in &lt;&lt;{0}&gt;&gt; erstellt</value>
+    </data>
+    <data name="scattergories_started_in" xml:space="preserve">
+        <value>Ein neues Stadt-Land-Fluss-Spiel wurde in &lt;&lt;{0}&gt;&gt; erstellt</value>
+    </data>
+    <data name="guessing_game_started_in" xml:space="preserve">
+        <value>Ein neues Ratespiel wurde in &lt;&lt;{0}&gt;&gt; erstellt</value>
+    </data>
 </root>

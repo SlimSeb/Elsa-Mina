@@ -134,4 +134,22 @@
     <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
         <value>Activar o desactivar las apuestas de torneo para esta sala.</value>
     </data>
+    <data name="parameter_name_event_announces_type" xml:space="preserve">
+        <value>Anuncios entre salas</value>
+    </data>
+    <data name="parameter_description_event_announces_type" xml:space="preserve">
+        <value>Elige qué eventos de las salas vinculadas se anuncian en esta sala.</value>
+    </data>
+    <data name="parameter_value_event_announces_all" xml:space="preserve">
+        <value>Torneos y juegos</value>
+    </data>
+    <data name="parameter_value_event_announces_tournaments" xml:space="preserve">
+        <value>Solo torneos</value>
+    </data>
+    <data name="parameter_value_event_announces_games" xml:space="preserve">
+        <value>Solo juegos</value>
+    </data>
+    <data name="parameter_value_event_announces_none" xml:space="preserve">
+        <value>Ninguno</value>
+    </data>
 </root>

@@ -2,6 +2,7 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.GuessingGame;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
 using NSubstitute;
@@ -14,6 +15,7 @@ public class GuessingGameCommandTest
     private GuessingGameCommand _command;
     private IDependencyContainerService _dependencyContainerService;
     private IArcadeEventsService _arcadeEventsService;
+    private IEventAnnouncer _eventAnnouncer;
     private IContext _context;
     private IRoom _room;
 
@@ -22,10 +24,11 @@ public class GuessingGameCommandTest
     {
         _dependencyContainerService = Substitute.For<IDependencyContainerService>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
+        _eventAnnouncer = Substitute.For<IEventAnnouncer>();
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
 
-        _command = new GuessingGameCommand(_dependencyContainerService, _arcadeEventsService);
+        _command = new GuessingGameCommand(_dependencyContainerService, _arcadeEventsService, _eventAnnouncer);
     }
 
     [Test]
@@ -41,6 +44,8 @@ public class GuessingGameCommandTest
         // Assert
         _context.Received(1).ReplyLocalizedMessage("games_muted_event");
         _context.DidNotReceive().ReplyLocalizedMessage("guessing_game_specify");
+        await _eventAnnouncer.DidNotReceiveWithAnyArgs()
+            .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 
     [Test]
@@ -98,5 +103,7 @@ public class GuessingGameCommandTest
 
         // Assert
         _context.Received(1).ReplyLocalizedMessage("guessing_game_invalid_command");
+        await _eventAnnouncer.DidNotReceiveWithAnyArgs()
+            .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 }

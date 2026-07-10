@@ -1,6 +1,7 @@
 ﻿using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.ConnectFour;
@@ -9,10 +10,13 @@ namespace ElsaMina.Commands.Games.ConnectFour;
 public class CreateConnectFourCommand : Command
 {
     private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly IEventAnnouncer _eventAnnouncer;
 
-    public CreateConnectFourCommand(IDependencyContainerService dependencyContainerService)
+    public CreateConnectFourCommand(IDependencyContainerService dependencyContainerService,
+        IEventAnnouncer eventAnnouncer)
     {
         _dependencyContainerService = dependencyContainerService;
+        _eventAnnouncer = eventAnnouncer;
     }
 
     public override Rank RequiredRank => Rank.Voiced;
@@ -29,6 +33,10 @@ public class CreateConnectFourCommand : Command
         var game = _dependencyContainerService.Resolve<ConnectFourGame>();
         game.Context = context;
         room.Game = game;
+
+        await _eventAnnouncer.AnnounceToLinkedRoomsAsync(context.RoomId, EventAnnounceType.Game,
+            "connect_four_started_in", [context.RoomId], cancellationToken);
+
         await game.DisplayAnnounce();
     }
 }

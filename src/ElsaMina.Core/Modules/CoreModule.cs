@@ -12,6 +12,7 @@ using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Dex;
+using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Formats;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Images;
@@ -84,6 +85,7 @@ public class CoreModule : Module
         builder.RegisterType<ImageService>().As<IImageService>().SingleInstance();
 builder.RegisterType<EfRoomParameterStore>().As<IRoomParameterStore>();
         builder.RegisterType<UserSaveQueue>().As<IUserSaveQueue>().SingleInstance();
+        builder.RegisterType<EventAnnouncer>().As<IEventAnnouncer>().SingleInstance();
 
         builder.RegisterType<Client>().As<IClient>().SingleInstance();
         builder.RegisterType<Bot>().As<IBot>().AsSelf().SingleInstance();

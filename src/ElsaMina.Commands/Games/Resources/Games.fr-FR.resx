@@ -2073,4 +2073,28 @@
     <data name="scattergories_cancelled" xml:space="preserve">
         <value>La partie de Poké Scattergories a été annulée.</value>
     </data>
+    <data name="tarot_started_in" xml:space="preserve">
+        <value>Une nouvelle partie de tarot a été créée dans &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="belote_started_in" xml:space="preserve">
+        <value>Une nouvelle partie de belote a été créée dans &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="poker_started_in" xml:space="preserve">
+        <value>Une nouvelle partie de poker a été créée dans &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="battleship_started_in" xml:space="preserve">
+        <value>Une nouvelle partie de bataille navale a été créée dans &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="chess_started_in" xml:space="preserve">
+        <value>Une nouvelle partie d'échecs a été créée dans &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="connect_four_started_in" xml:space="preserve">
+        <value>Une nouvelle partie de Puissance 4 a été créée dans &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="scattergories_started_in" xml:space="preserve">
+        <value>Une nouvelle partie de Petit Bac a été créée dans &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="guessing_game_started_in" xml:space="preserve">
+        <value>Un nouveau jeu de devinettes a été créé dans &lt;&lt;{0}&gt;&gt;</value>
+    </data>
 </root>

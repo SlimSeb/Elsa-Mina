@@ -12,5 +12,6 @@ public enum Parameter
     ShowYoutubeLinkPreview,
     ShowUrlPreview,
     TenorGifEnabled,
-    BucksEnabled
+    BucksEnabled,
+    EventAnnouncesType
 }

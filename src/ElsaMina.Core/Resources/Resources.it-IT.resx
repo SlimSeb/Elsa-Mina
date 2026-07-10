@@ -134,4 +134,22 @@
     <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
         <value>Abilita o disabilita le scommesse sui tornei per questa stanza.</value>
     </data>
+    <data name="parameter_name_event_announces_type" xml:space="preserve">
+        <value>Annunci tra stanze</value>
+    </data>
+    <data name="parameter_description_event_announces_type" xml:space="preserve">
+        <value>Scegli quali eventi delle stanze collegate vengono annunciati in questa stanza.</value>
+    </data>
+    <data name="parameter_value_event_announces_all" xml:space="preserve">
+        <value>Tornei e giochi</value>
+    </data>
+    <data name="parameter_value_event_announces_tournaments" xml:space="preserve">
+        <value>Solo tornei</value>
+    </data>
+    <data name="parameter_value_event_announces_games" xml:space="preserve">
+        <value>Solo giochi</value>
+    </data>
+    <data name="parameter_value_event_announces_none" xml:space="preserve">
+        <value>Nessuno</value>
+    </data>
 </root>

@@ -2067,4 +2067,28 @@
     <data name="scattergories_cancelled" xml:space="preserve">
         <value>La partita di Poké Scattergories è stata annullata.</value>
     </data>
+    <data name="tarot_started_in" xml:space="preserve">
+        <value>È stata creata una nuova partita di tarocchi in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="belote_started_in" xml:space="preserve">
+        <value>È stata creata una nuova partita di belote in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="poker_started_in" xml:space="preserve">
+        <value>È stata creata una nuova partita di poker in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="battleship_started_in" xml:space="preserve">
+        <value>È stata creata una nuova partita di battaglia navale in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="chess_started_in" xml:space="preserve">
+        <value>È stata creata una nuova partita di scacchi in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="connect_four_started_in" xml:space="preserve">
+        <value>È stata creata una nuova partita di Forza 4 in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="scattergories_started_in" xml:space="preserve">
+        <value>È stata creata una nuova partita di Nomi Cose Città in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="guessing_game_started_in" xml:space="preserve">
+        <value>È stato creato un nuovo gioco di indovinelli in &lt;&lt;{0}&gt;&gt;</value>
+    </data>
 </root>

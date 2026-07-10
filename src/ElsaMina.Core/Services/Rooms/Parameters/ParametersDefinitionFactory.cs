@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Utils;
 
@@ -22,7 +23,7 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
         _cachedDefinitions ??= BuildParametersDefinitions();
 
     private Dictionary<Parameter, IParameterDefinition> BuildParametersDefinitions() =>
-        new Dictionary<Parameter, IParameterDefinition>
+        new()
         {
             [Parameter.Locale] = new ParameterDefinition
             {
@@ -124,6 +125,40 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
                 DescriptionKey = "parameter_description_bucks_enabled",
                 Type = RoomBotConfigurationType.Boolean,
                 DefaultValue = false.ToString()
+            },
+            [Parameter.EventAnnouncesType] = new ParameterDefinition
+            {
+                Identifier = "evn",
+                NameKey = "parameter_name_event_announces_type",
+                DescriptionKey = "parameter_description_event_announces_type",
+                Type = RoomBotConfigurationType.Enumeration,
+                DefaultValue = EventAnnouncesTypeValues.TournamentsOnly,
+                PossibleValues =
+                [
+                    new EnumerationValue
+                    {
+                        InternalValue = EventAnnouncesTypeValues.All,
+                        DisplayedValue = GetDefaultLocaleString("parameter_value_event_announces_all")
+                    },
+                    new EnumerationValue
+                    {
+                        InternalValue = EventAnnouncesTypeValues.TournamentsOnly,
+                        DisplayedValue = GetDefaultLocaleString("parameter_value_event_announces_tournaments")
+                    },
+                    new EnumerationValue
+                    {
+                        InternalValue = EventAnnouncesTypeValues.GamesOnly,
+                        DisplayedValue = GetDefaultLocaleString("parameter_value_event_announces_games")
+                    },
+                    new EnumerationValue
+                    {
+                        InternalValue = EventAnnouncesTypeValues.None,
+                        DisplayedValue = GetDefaultLocaleString("parameter_value_event_announces_none")
+                    }
+                ]
             }
         };
+
+    private string GetDefaultLocaleString(string key) =>
+        _resourcesService.GetString(key, new CultureInfo(_configuration.DefaultLocaleCode));
 }

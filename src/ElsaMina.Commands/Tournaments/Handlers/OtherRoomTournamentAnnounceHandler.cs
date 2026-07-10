@@ -1,29 +1,18 @@
-using System.Globalization;
-using ElsaMina.Core;
 using ElsaMina.Core.Handlers;
-using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Formats;
-using ElsaMina.Core.Services.Resources;
-using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Tournaments.Handlers;
 
 public class OtherRoomTournamentAnnounceHandler : Handler
 {
-    private readonly IConfiguration _configuration;
-    private readonly IBot _bot;
     private readonly IFormatsManager _formatsManager;
-    private readonly IResourcesService _resourcesService;
-    private readonly IRoomsManager _roomsManager;
+    private readonly IEventAnnouncer _eventAnnouncer;
 
-    public OtherRoomTournamentAnnounceHandler(IConfiguration configuration, IBot bot, IFormatsManager formatsManager,
-        IResourcesService resourcesService, IRoomsManager roomsManager)
+    public OtherRoomTournamentAnnounceHandler(IFormatsManager formatsManager, IEventAnnouncer eventAnnouncer)
     {
-        _configuration = configuration;
-        _bot = bot;
         _formatsManager = formatsManager;
-        _resourcesService = resourcesService;
-        _roomsManager = roomsManager;
+        _eventAnnouncer = eventAnnouncer;
     }
 
     public override IReadOnlySet<string> HandledMessageTypes { get; } = new HashSet<string> { "tournament" };
@@ -37,25 +26,7 @@ public class OtherRoomTournamentAnnounceHandler : Handler
         }
 
         var format = _formatsManager.GetCleanFormat(parts[3]);
-        foreach (var (broadcastingRoomId, receivingRoomsIds) in _configuration.EventAnnounces)
-        {
-            if (roomId != broadcastingRoomId)
-            {
-                continue;
-            }
-
-            foreach (var receivingRoomId in receivingRoomsIds)
-            {
-                var room = _roomsManager.GetRoom(receivingRoomId);
-                var culture = room?.Culture ?? new CultureInfo(_configuration.DefaultLocaleCode);
-                var message = string.Format(
-                    _resourcesService.GetString("tour_announce_message", culture),
-                    format,
-                    broadcastingRoomId);
-                _bot.Say(receivingRoomId, $"/wall {message}");
-            }
-        }
-
-        return Task.CompletedTask;
+        return _eventAnnouncer.AnnounceToLinkedRoomsAsync(roomId, EventAnnounceType.Tournament, "tour_announce_message",
+            [format, roomId], cancellationToken);
     }
 }

@@ -129,4 +129,22 @@
     <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
         <value>Activer ou désactiver les paris sur les tournois pour cette room.</value>
     </data>
+    <data name="parameter_name_event_announces_type" xml:space="preserve">
+        <value>Annonces inter-salles</value>
+    </data>
+    <data name="parameter_description_event_announces_type" xml:space="preserve">
+        <value>Choisissez quels événements des salles liées sont annoncés dans cette salle.</value>
+    </data>
+    <data name="parameter_value_event_announces_all" xml:space="preserve">
+        <value>Tournois et jeux</value>
+    </data>
+    <data name="parameter_value_event_announces_tournaments" xml:space="preserve">
+        <value>Tournois uniquement</value>
+    </data>
+    <data name="parameter_value_event_announces_games" xml:space="preserve">
+        <value>Jeux uniquement</value>
+    </data>
+    <data name="parameter_value_event_announces_none" xml:space="preserve">
+        <value>Aucune</value>
+    </data>
 </root>

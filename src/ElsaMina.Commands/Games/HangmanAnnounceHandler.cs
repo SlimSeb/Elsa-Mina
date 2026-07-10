@@ -1,10 +1,6 @@
-using System.Globalization;
 using System.Text.RegularExpressions;
-using ElsaMina.Core;
 using ElsaMina.Core.Handlers;
-using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.Resources;
-using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.EventAnnounces;
 
 namespace ElsaMina.Commands.Games;
 
@@ -13,22 +9,15 @@ public partial class HangmanAnnounceHandler : Handler
     [GeneratedRegex(@"hangman(\d+)")]
     private static partial Regex HangmanIdRegex();
 
-    private readonly IConfiguration _configuration;
-    private readonly IBot _bot;
-    private readonly IRoomsManager _roomsManager;
-    private readonly IResourcesService _resourcesService;
+    private readonly IEventAnnouncer _eventAnnouncer;
 
     public override IReadOnlySet<string> HandledMessageTypes => (HashSet<string>)["uhtml"];
 
     private uint _lastId;
 
-    public HangmanAnnounceHandler(IConfiguration configuration, IBot bot, IRoomsManager roomsManager,
-        IResourcesService resourcesService)
+    public HangmanAnnounceHandler(IEventAnnouncer eventAnnouncer)
     {
-        _configuration = configuration;
-        _bot = bot;
-        _roomsManager = roomsManager;
-        _resourcesService = resourcesService;
+        _eventAnnouncer = eventAnnouncer;
     }
 
     public override Task HandleReceivedMessageAsync(string[] parts, string roomId = null,
@@ -57,24 +46,7 @@ public partial class HangmanAnnounceHandler : Handler
 
         _lastId = hangmanId;
 
-        foreach (var (broadcastingRoomId, receivingRoomsIds) in _configuration.EventAnnounces)
-        {
-            if (roomId != broadcastingRoomId)
-            {
-                continue;
-            }
-
-            foreach (var receivingRoomId in receivingRoomsIds)
-            {
-                var room = _roomsManager.GetRoom(receivingRoomId);
-                var culture = room?.Culture ?? new CultureInfo(_configuration.DefaultLocaleCode);
-                var message = string.Format(
-                    _resourcesService.GetString("hangman_started_in", culture),
-                    broadcastingRoomId);
-                _bot.Say(receivingRoomId, $"/wall {message}");
-            }
-        }
-
-        return Task.CompletedTask;
+        return _eventAnnouncer.AnnounceToLinkedRoomsAsync(roomId, EventAnnounceType.Game, "hangman_started_in",
+            [roomId], cancellationToken);
     }
 }

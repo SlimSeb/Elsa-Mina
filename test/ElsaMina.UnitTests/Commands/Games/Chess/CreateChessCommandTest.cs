@@ -3,6 +3,7 @@ using ElsaMina.Commands.Games.Chess;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
@@ -15,6 +16,7 @@ public class CreateChessCommandTest
     private IDependencyContainerService _dependencyContainerService;
     private IArcadeEventsService _arcadeEventsService;
     private IConfiguration _configuration;
+    private IEventAnnouncer _eventAnnouncer;
     private CreateChessCommand _command;
     private IContext _context;
     private IRoom _room;
@@ -27,8 +29,9 @@ public class CreateChessCommandTest
         _dependencyContainerService = Substitute.For<IDependencyContainerService>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _configuration = Substitute.For<IConfiguration>();
+        _eventAnnouncer = Substitute.For<IEventAnnouncer>();
         _templatesManager = Substitute.For<ITemplatesManager>();
-        _command = new CreateChessCommand(_dependencyContainerService, _arcadeEventsService);
+        _command = new CreateChessCommand(_dependencyContainerService, _arcadeEventsService, _eventAnnouncer);
 
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
@@ -66,6 +69,20 @@ public class CreateChessCommandTest
     }
 
     [Test]
+    public async Task Test_RunAsync_ShouldAnnounceGameStartToLinkedRooms_WhenNoGameAlreadyExists()
+    {
+        _room.Game = null;
+        _configuration.Trigger.Returns("!");
+
+        await _command.RunAsync(_context);
+
+        await _eventAnnouncer.Received(1).AnnounceToLinkedRoomsAsync("room-id", EventAnnounceType.Game,
+            "chess_started_in",
+            Arg.Is<object[]>(arguments => arguments.Length == 1 && (string)arguments[0] == "room-id"),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Test]
     public async Task Test_RunAsync_ShouldNotStartGame_WhenGamesAreMuted()
     {
         _room.Game = null;
@@ -75,6 +92,8 @@ public class CreateChessCommandTest
 
         _context.Received(1).ReplyLocalizedMessage("games_muted_event");
         _dependencyContainerService.DidNotReceive().Resolve<ChessGame>();
+        await _eventAnnouncer.DidNotReceiveWithAnyArgs()
+            .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 
     [Test]
