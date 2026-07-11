@@ -1,0 +1,113 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.President.PresidentViewModel>
+@using ElsaMina.Commands.Games.President
+@using ElsaMina.Core.Utils
+
+@{
+    var game = Model.Game;
+    var viewer = Model.Viewer;
+    var isViewerTurn = viewer != null && game.CurrentPlayer == viewer;
+    var mustGive = viewer != null && game.Phase == PresidentPhase.Exchange && viewer.CardsToGive > 0;
+
+    string CardColor(PresidentCard card)
+    {
+        if (card.IsTwo)
+        {
+            return "#b8860b";
+        }
+        return card.Suit is PresidentSuit.Hearts or PresidentSuit.Diamonds ? "#cc2b2b" : "#111";
+    }
+
+    string GiveAction(PresidentCard card) =>
+        $"/w {Model.BotName}, {Model.Trigger}prg {Model.RoomId}, {card.ToToken()}";
+
+    string PlayAction(int rank, int count) =>
+        $"/w {Model.BotName}, {Model.Trigger}prp {Model.RoomId}, {PresidentCard.RankToken(rank)} {count}";
+}
+
+<div style="background:#16222a;color:#ece7f2;border:1px solid #3f5668;border-radius:6px;padding:8px">
+    <h4 style="margin:0 0 6px 0">👑 @GetString("president_your_hand")</h4>
+
+    @if (viewer != null && viewer.ReceivedCards.Count > 0)
+    {
+        <p style="margin:4px 0;color:#8fd694;font-size:0.9em">
+            @GetString("president_received_cards"):
+            @foreach (var card in viewer.ReceivedCards)
+            {
+                <b style="margin:0 2px">@card.ToDisplay(Model.Culture)</b>
+            }
+        </p>
+    }
+
+    @if (mustGive)
+    {
+        var receiver = viewer.Role == PresidentRole.President
+            ? game.Players.FirstOrDefault(player => player.Role == PresidentRole.Scum)
+            : game.Players.FirstOrDefault(player => player.Role == PresidentRole.ViceScum);
+        <p style="margin:4px 0">
+            @GetString("president_exchange_your_choice", viewer.CardsToGive, receiver?.Name)
+            (@viewer.PendingGives.Count/@viewer.CardsToGive)
+        </p>
+    }
+
+    @if (game.Phase == PresidentPhase.Playing && isViewerTurn)
+    {
+        @if (game.CurrentTrick.IsEmpty)
+        {
+            <p style="margin:4px 0">@GetString("president_your_turn_lead")</p>
+        }
+        else
+        {
+            <p style="margin:4px 0">
+                @GetString("president_your_turn_follow", game.CurrentTrick.RequiredCount,
+                    PresidentCard.DisplayRank(game.CurrentTrick.TopRank ?? 0, Model.Culture))
+            </p>
+        }
+
+        <p style="margin:4px 0">
+            @foreach (var (rank, count) in Model.ViewerLegalPlays)
+            {
+                var label = PresidentCard.DisplayRank(rank, Model.Culture) + (count > 1 ? $" ×{count}" : "");
+                <button class="button" name="send" value="@PlayAction(rank, count)" style="margin:2px">@label</button>
+            }
+            @if (Model.ViewerCanPass)
+            {
+                <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)prpass @Model.RoomId,"
+                        style="margin:2px;font-weight:bold">@GetString("president_pass_button")</button>
+            }
+        </p>
+    }
+
+    <p style="margin:6px 0;line-height:2.4em">
+        @foreach (var card in Model.ViewerHand)
+        {
+            var color = CardColor(card);
+            var baseStyle = $"display:inline-block;margin:2px;padding:3px 6px;font-size:1.05em;font-weight:bold;border-radius:4px;background:#f3f0e8;color:{color}";
+            if (mustGive)
+            {
+                var selected = viewer.PendingGives.Contains(card);
+                <button name="send" value="@GiveAction(card)"
+                        style="@baseStyle;cursor:pointer;@(selected ? "outline:3px solid #f7a000" : "")">@card.ToDisplay(Model.Culture)</button>
+            }
+            else
+            {
+                <span style="@baseStyle">@card.ToDisplay(Model.Culture)</span>
+            }
+        }
+    </p>
+
+    @if (game.Phase == PresidentPhase.Playing && !isViewerTurn && game.CurrentPlayer != null)
+    {
+        <p style="margin:4px 0;color:#8296a8;font-size:0.85em">
+            @GetString("president_waiting_for") <b>@game.CurrentPlayer.Name</b>
+        </p>
+    }
+
+    <details style="margin:8px 0 0 0">
+        <summary style="cursor:pointer;font-size:0.8em;color:#8296a8">@GetString("president_options")</summary>
+        <p style="margin:8px 0 0 0;text-align:right">
+            <button class="button" name="send" value="/w @Model.BotName, @(Model.Trigger)presidentsub @Model.RoomId" style="font-size:0.8em">
+                @(viewer != null && viewer.WantsSub ? GetString("president_sub_cancel_button") : GetString("president_sub_request_button"))
+            </button>
+        </p>
+    </details>
+</div>

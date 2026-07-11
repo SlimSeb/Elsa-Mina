@@ -1,0 +1,121 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.President.PresidentViewModel>
+@using ElsaMina.Commands.Games.President
+@using ElsaMina.Core.Utils
+
+@{
+    var game = Model.Game;
+
+    string CardColor(PresidentCard card)
+    {
+        if (card.IsTwo)
+        {
+            return "#f7d774";
+        }
+        return card.Suit is PresidentSuit.Hearts or PresidentSuit.Diamonds ? "#ff7b7b" : "#ececec";
+    }
+
+    string RoleIcon(PresidentRole role) => role switch
+    {
+        PresidentRole.President => "👑",
+        PresidentRole.VicePresident => "🎩",
+        PresidentRole.ViceScum => "🧹",
+        PresidentRole.Scum => "💩",
+        _ => ""
+    };
+
+    string PositionBadge(int position) => position switch
+    {
+        1 => "🥇",
+        2 => "🥈",
+        3 => "🥉",
+        _ => $"#{position}"
+    };
+}
+
+<div style="background:#1d2b35;color:#ece7f2;border:1px solid #3f5668;border-radius:6px;padding:8px">
+    <h3 style="margin:0 0 4px 0;text-align:center">👑 @GetString("president_title")</h3>
+    <p style="text-align:center;margin:2px 0;color:#a9bac9">
+        @GetString("president_round_label", game.RoundNumber, game.TotalRounds)
+    </p>
+
+    @if (game.Phase == PresidentPhase.Exchange)
+    {
+        <p style="text-align:center;margin:4px 0;color:#f7d774">
+            @GetString("president_exchange_banner",
+                string.Join(", ", game.Players.Where(player => player.CardsToGive > 0).Select(player => player.Name)))
+        </p>
+    }
+
+    <table style="margin:6px auto;border-collapse:collapse">
+        <tr style="border-bottom:1px solid #3f5668">
+            <th style="padding:2px 10px;text-align:left">@GetString("president_players_label")</th>
+            <th style="padding:2px 10px">@GetString("president_cards_label")</th>
+            <th style="padding:2px 10px">@GetString("president_score_label")</th>
+        </tr>
+        @foreach (var player in game.Players)
+        {
+            var isCurrent = game.CurrentPlayer == player;
+            <tr style="@(isCurrent ? "font-weight:bold;background:#2c4152" : "")">
+                <td style="padding:2px 10px">
+                    <span style="color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</span>
+                    @if (player.Role != PresidentRole.None && player.Role != PresidentRole.Neutral)
+                    {
+                        <span title="@GetString($"president_role_{player.Role.ToString().ToLowerInvariant()}")">@RoleIcon(player.Role)</span>
+                    }
+                </td>
+                <td style="padding:2px 10px;text-align:center">
+                    @if (player.FinishPosition > 0)
+                    {
+                        <text>@PositionBadge(player.FinishPosition)</text>
+                    }
+                    else if (player.HasPassed)
+                    {
+                        <span style="color:#8296a8">@GetString("president_passed_label") (@player.Hand.Count 🂠)</span>
+                    }
+                    else
+                    {
+                        <text>@player.Hand.Count 🂠</text>
+                    }
+                </td>
+                <td style="padding:2px 10px;text-align:center">@player.Score</td>
+            </tr>
+        }
+    </table>
+
+    @if (game.Phase == PresidentPhase.Playing)
+    {
+        @if (game.CurrentTrick.Plays.Count > 0)
+        {
+            <p style="text-align:center;margin:8px 0 2px 0;color:#a9bac9">@GetString("president_pile_label")</p>
+            <p style="text-align:center;margin:0 0 4px 0">
+                @for (var i = 0; i < game.CurrentTrick.Plays.Count; i++)
+                {
+                    var (player, cards) = game.CurrentTrick.Plays[i];
+                    var isLast = i == game.CurrentTrick.Plays.Count - 1;
+                    <span style="display:inline-block;margin:0 6px;text-align:center;padding:3px 6px;border-radius:5px;@(isLast ? "background:#2c4152;box-shadow:0 0 0 2px #f7d774" : "")">
+                        @foreach (var card in cards)
+                        {
+                            <span style="color:@CardColor(card);font-weight:bold;font-size:1.15em;margin:0 2px">@card.ToDisplay(Model.Culture)</span>
+                        }
+                        <br>
+                        <span style="font-size:0.7em;color:#a9bac9">@player.Name@(isLast ? " ◀" : "")</span>
+                    </span>
+                }
+            </p>
+        }
+        else if (game.LastTrickWinner != null)
+        {
+            <p style="text-align:center;margin:6px 0 2px 0;color:#a9bac9;font-size:0.85em">
+                @GetString("president_pile_taken_by", game.LastTrickWinner.Name)
+            </p>
+        }
+
+        @if (game.CurrentPlayer != null)
+        {
+            <p style="text-align:center;margin:6px 0 0 0">
+                @GetString("president_waiting_for")
+                <b style="color:@game.CurrentPlayer.Name.ToColorHexCodeWithCustoms()">@game.CurrentPlayer.Name</b>
+            </p>
+        }
+    }
+</div>

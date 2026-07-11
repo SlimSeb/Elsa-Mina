@@ -22,6 +22,7 @@ public static class GamesCatalog
         // Multiplayer / competitive games
         new("games_tarot", "tarot", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false, LeaderboardCommand: "tarotlb"),
         new("games_belote", "belote", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false, LeaderboardCommand: "belotelb"),
+        new("games_president", "president", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false),
         new("games_poker", "poker", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false),
         new("games_connectfour", "connectfour", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false, LeaderboardCommand: "c4lb"),
         new("games_chess", "chess", Rank.Voiced, GameMode.Multiplayer, IsPlayableInPrivate: false, LeaderboardCommand: "chesslb"),

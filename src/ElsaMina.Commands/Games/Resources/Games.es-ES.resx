@@ -2091,4 +2091,244 @@
     <data name="guessing_game_started_in" xml:space="preserve">
         <value>Se ha creado un nuevo juego de adivinanzas en &lt;&lt;{0}&gt;&gt;</value>
     </data>
+    <data name="president_other_game_running" xml:space="preserve">
+        <value>Ya hay otro juego en curso en esta sala.</value>
+    </data>
+    <data name="president_join_already_started" xml:space="preserve">
+        <value>La partida ya ha comenzado.</value>
+    </data>
+    <data name="president_join_full" xml:space="preserve">
+        <value>La partida está completa (5 jugadores máx.).</value>
+    </data>
+    <data name="president_join_already_joined" xml:space="preserve">
+        <value>Ya te has unido a la partida.</value>
+    </data>
+    <data name="president_join_success" xml:space="preserve">
+        <value>{0} se unió a la partida.</value>
+    </data>
+    <data name="president_quit_already_started" xml:space="preserve">
+        <value>La partida ya ha empezado.</value>
+    </data>
+    <data name="president_quit_not_joined" xml:space="preserve">
+        <value>No te has unido a la partida.</value>
+    </data>
+    <data name="president_quit_success" xml:space="preserve">
+        <value>{0} abandonó la partida.</value>
+    </data>
+    <data name="president_start_already_started" xml:space="preserve">
+        <value>La partida ya ha comenzado.</value>
+    </data>
+    <data name="president_start_not_enough_players" xml:space="preserve">
+        <value>Se necesitan al menos {0} jugadores para empezar.</value>
+    </data>
+    <data name="president_lobby_no_players" xml:space="preserve">
+        <value>nadie todavía</value>
+    </data>
+    <data name="president_lobby_join_button" xml:space="preserve">
+        <value>Unirse</value>
+    </data>
+    <data name="president_lobby_leave_button" xml:space="preserve">
+        <value>Salir</value>
+    </data>
+    <data name="president_lobby_start_button" xml:space="preserve">
+        <value>Empezar</value>
+    </data>
+    <data name="president_lobby_cancelled" xml:space="preserve">
+        <value>La partida fue cancelada antes de empezar.</value>
+    </data>
+    <data name="president_players_label" xml:space="preserve">
+        <value>Jugadores</value>
+    </data>
+    <data name="president_waiting_for" xml:space="preserve">
+        <value>Esperando a</value>
+    </data>
+    <data name="president_your_hand" xml:space="preserve">
+        <value>Tu mano</value>
+    </data>
+    <data name="president_options" xml:space="preserve">
+        <value>Opciones</value>
+    </data>
+    <data name="president_log_title" xml:space="preserve">
+        <value>Registro de la partida</value>
+    </data>
+    <data name="president_turn_timeout_warning" xml:space="preserve">
+        <value>⏰ ¡Date prisa! Solo te quedan {0} segundos para jugar antes de quedar eliminado por tiempo.</value>
+    </data>
+    <data name="president_card_unknown" xml:space="preserve">
+        <value>Carta desconocida: {0}</value>
+    </data>
+    <data name="president_resend_not_started" xml:space="preserve">
+        <value>La partida aún no ha comenzado, no hay ninguna página que reenviar.</value>
+    </data>
+    <data name="president_resend_not_a_player" xml:space="preserve">
+        <value>No eres jugador de la partida actual.</value>
+    </data>
+    <data name="president_sub_not_active" xml:space="preserve">
+        <value>Solo puedes pedir un sustituto durante una partida en curso.</value>
+    </data>
+    <data name="president_sub_not_a_player" xml:space="preserve">
+        <value>No eres jugador de la partida actual.</value>
+    </data>
+    <data name="president_sub_cancelled" xml:space="preserve">
+        <value>{0} ya no necesita un sustituto.</value>
+    </data>
+    <data name="president_sub_requested" xml:space="preserve">
+        <value>¡{0} busca un sustituto! Pulsa el botón para ocupar su lugar.</value>
+    </data>
+    <data name="president_sub_already_player" xml:space="preserve">
+        <value>Ya estás en esta partida.</value>
+    </data>
+    <data name="president_sub_none_pending" xml:space="preserve">
+        <value>Nadie busca un sustituto ahora mismo.</value>
+    </data>
+    <data name="president_sub_invalid_target" xml:space="preserve">
+        <value>Ese jugador no busca un sustituto.</value>
+    </data>
+    <data name="president_sub_done" xml:space="preserve">
+        <value>{0} ha ocupado el lugar de {1}.</value>
+    </data>
+    <data name="president_sub_panel_title" xml:space="preserve">
+        <value>Sustitución</value>
+    </data>
+    <data name="president_sub_panel_intro" xml:space="preserve">
+        <value>Estos jugadores quieren ser sustituidos:</value>
+    </data>
+    <data name="president_sub_panel_take" xml:space="preserve">
+        <value>Ocupar el lugar de {0}</value>
+    </data>
+    <data name="president_sub_request_button" xml:space="preserve">
+        <value>Pedir un sustituto</value>
+    </data>
+    <data name="president_sub_cancel_button" xml:space="preserve">
+        <value>Cancelar la solicitud</value>
+    </data>
+    <data name="games_president" xml:space="preserve">
+        <value>Presidente</value>
+    </data>
+    <data name="president_title" xml:space="preserve">
+        <value>Presidente</value>
+    </data>
+    <data name="president_help" xml:space="preserve">
+        <value>Inicia una partida de Presidente (3 a 8 jugadores). Un argumento opcional fija el número de rondas.</value>
+    </data>
+    <data name="president_started_in" xml:space="preserve">
+        <value>Se ha creado una nueva partida de Presidente en &lt;&lt;{0}&gt;&gt;</value>
+    </data>
+    <data name="president_game_created" xml:space="preserve">
+        <value>¡{0} ha iniciado una partida de Presidente!</value>
+    </data>
+    <data name="president_already_running" xml:space="preserve">
+        <value>Ya hay una partida de Presidente en curso aquí.</value>
+    </data>
+    <data name="president_not_running" xml:space="preserve">
+        <value>No hay ninguna partida de Presidente en curso aquí.</value>
+    </data>
+    <data name="president_game_cancelled" xml:space="preserve">
+        <value>La partida de Presidente ha sido cancelada.</value>
+    </data>
+    <data name="president_rounds_invalid" xml:space="preserve">
+        <value>Número de rondas no válido: debe estar entre 1 y {0}.</value>
+    </data>
+    <data name="president_lobby_intro" xml:space="preserve">
+        <value>¡Una nueva partida de Presidente va a empezar! (3-8 jugadores, {0} ronda(s))</value>
+    </data>
+    <data name="president_lobby_hint" xml:space="preserve">
+        <value>Escribe {0}presidentjoin para unirte, {0}presidentstart para empezar ({1}+ jugadores).</value>
+    </data>
+    <data name="president_round_label" xml:space="preserve">
+        <value>Ronda {0}/{1}</value>
+    </data>
+    <data name="president_cards_label" xml:space="preserve">
+        <value>Cartas</value>
+    </data>
+    <data name="president_score_label" xml:space="preserve">
+        <value>Puntos</value>
+    </data>
+    <data name="president_passed_label" xml:space="preserve">
+        <value>Pasa</value>
+    </data>
+    <data name="president_pile_label" xml:space="preserve">
+        <value>Pila actual</value>
+    </data>
+    <data name="president_pile_taken_by" xml:space="preserve">
+        <value>{0} se ha llevado la pila.</value>
+    </data>
+    <data name="president_received_cards" xml:space="preserve">
+        <value>Recibido en el intercambio</value>
+    </data>
+    <data name="president_exchange_banner" xml:space="preserve">
+        <value>Intercambio de cartas: esperando a {0}.</value>
+    </data>
+    <data name="president_exchange_your_choice" xml:space="preserve">
+        <value>Elige {0} carta(s) de tu mano para dar a {1}.</value>
+    </data>
+    <data name="president_exchange_gave_best" xml:space="preserve">
+        <value>{0} ha dado sus {1} mejores carta(s) a {2}.</value>
+    </data>
+    <data name="president_exchange_returned" xml:space="preserve">
+        <value>{0} ha devuelto {1} carta(s) a {2}.</value>
+    </data>
+    <data name="president_round_started" xml:space="preserve">
+        <value>Empieza la ronda {0}/{1}: {2} abre el juego.</value>
+    </data>
+    <data name="president_player_finished" xml:space="preserve">
+        <value>¡{0} se ha quedado sin cartas (n.º {1})!</value>
+    </data>
+    <data name="president_trick_won" xml:space="preserve">
+        <value>{0} se lleva la pila.</value>
+    </data>
+    <data name="president_round_ended" xml:space="preserve">
+        <value>Fin de la ronda {0}.</value>
+    </data>
+    <data name="president_role_earned" xml:space="preserve">
+        <value>¡{0} ahora es {1}!</value>
+    </data>
+    <data name="president_role_president" xml:space="preserve">
+        <value>Presidente</value>
+    </data>
+    <data name="president_role_vicepresident" xml:space="preserve">
+        <value>Vicepresidente</value>
+    </data>
+    <data name="president_role_neutral" xml:space="preserve">
+        <value>Neutral</value>
+    </data>
+    <data name="president_role_vicescum" xml:space="preserve">
+        <value>Vice-culo</value>
+    </data>
+    <data name="president_role_scum" xml:space="preserve">
+        <value>Culo</value>
+    </data>
+    <data name="president_your_turn_lead" xml:space="preserve">
+        <value>Te toca: abre con 1 a 4 cartas del mismo valor.</value>
+    </data>
+    <data name="president_your_turn_follow" xml:space="preserve">
+        <value>Juega {0} carta(s) de valor {1} o superior, o pasa.</value>
+    </data>
+    <data name="president_pass_button" xml:space="preserve">
+        <value>Pasar</value>
+    </data>
+    <data name="president_play_not_in_hand" xml:space="preserve">
+        <value>No tienes esas cartas.</value>
+    </data>
+    <data name="president_play_wrong_count" xml:space="preserve">
+        <value>Debes jugar exactamente {0} carta(s).</value>
+    </data>
+    <data name="president_play_too_low" xml:space="preserve">
+        <value>Tus cartas deben igualar o superar la cima de la pila.</value>
+    </data>
+    <data name="president_pass_leading" xml:space="preserve">
+        <value>Te toca abrir: debes jugar.</value>
+    </data>
+    <data name="president_give_not_in_hand" xml:space="preserve">
+        <value>No tienes esa carta.</value>
+    </data>
+    <data name="president_result_title" xml:space="preserve">
+        <value>Presidente - Resultados</value>
+    </data>
+    <data name="president_result_winner" xml:space="preserve">
+        <value>🏆 ¡{0} gana la partida!</value>
+    </data>
+    <data name="president_result_last_role" xml:space="preserve">
+        <value>Rol final</value>
+    </data>
 </root>

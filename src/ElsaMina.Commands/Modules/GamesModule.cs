@@ -18,6 +18,7 @@ using ElsaMina.Commands.Games.GuessingGame.WhosThatPokemon;
 using ElsaMina.Commands.Games.LightsOut;
 using ElsaMina.Commands.Games.PokeRace;
 using ElsaMina.Commands.Games.Poker;
+using ElsaMina.Commands.Games.President;
 using ElsaMina.Commands.Games.RockPaperScissors;
 using ElsaMina.Commands.Games.Scattergories;
 using ElsaMina.Commands.Games.Semantix;
@@ -158,6 +159,18 @@ public class GamesModule : Module
         builder.RegisterCommand<BeloteLeaderboardCommand>();
         builder.RegisterCommand<BeloteStatsCommand>();
 
+        builder.RegisterCommand<StartPresidentCommand>();
+        builder.RegisterCommand<JoinPresidentCommand>();
+        builder.RegisterCommand<QuitPresidentCommand>();
+        builder.RegisterCommand<BeginPresidentCommand>();
+        builder.RegisterCommand<PlayPresidentCommand>();
+        builder.RegisterCommand<PassPresidentCommand>();
+        builder.RegisterCommand<GivePresidentCommand>();
+        builder.RegisterCommand<ResendPresidentCommand>();
+        builder.RegisterCommand<RequestPresidentSubCommand>();
+        builder.RegisterCommand<AcceptPresidentSubCommand>();
+        builder.RegisterCommand<EndPresidentCommand>();
+
         builder.RegisterCommand<StartPokerCommand>();
         builder.RegisterCommand<JoinPokerCommand>();
         builder.RegisterCommand<BeginPokerCommand>();
@@ -185,6 +198,7 @@ public class GamesModule : Module
         builder.RegisterType<RpsGame>().AsSelf();
         builder.RegisterType<TarotGame>().AsSelf();
         builder.RegisterType<TarotStatsService>().As<ITarotStatsService>().SingleInstance();
+        builder.RegisterType<PresidentGame>().AsSelf();
         builder.RegisterType<BeloteGame>().AsSelf();
         builder.RegisterType<BeloteStatsService>().As<IBeloteStatsService>().SingleInstance();
         builder.RegisterType<PokerGame>().AsSelf();
