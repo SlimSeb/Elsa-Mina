@@ -13,6 +13,7 @@ public interface IPresidentGame : IGame
     int TotalRounds { get; set; }
 
     PresidentTrick CurrentTrick { get; }
+    bool IsMatchRequired { get; }
     PresidentPlayer LastTrickWinner { get; }
     IReadOnlyList<PresidentPlayer> FinishOrder { get; }
 

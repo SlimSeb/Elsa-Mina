@@ -2337,4 +2337,19 @@
     <data name="president_result_last_role" xml:space="preserve">
         <value>Papel final</value>
     </data>
+    <data name="president_ou_rien_skipped" xml:space="preserve">
+        <value>Ou nada! {0} perde a vez.</value>
+    </data>
+    <data name="president_ou_rien_banner" xml:space="preserve">
+        <value>Ou nada! {0} deve igualar ou pular a vez.</value>
+    </data>
+    <data name="president_your_turn_match" xml:space="preserve">
+        <value>Ou nada! Iguale com {0} carta(s) de valor {1}, ou passe esta vez (você continua na pilha).</value>
+    </data>
+    <data name="president_play_must_match" xml:space="preserve">
+        <value>Ou nada: você deve jogar o valor {0} ou passar.</value>
+    </data>
+    <data name="president_square_closed" xml:space="preserve">
+        <value>💥 Quadra de {1}! {0} fecha a pilha.</value>
+    </data>
 </root>

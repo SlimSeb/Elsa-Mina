@@ -2337,4 +2337,19 @@
     <data name="president_result_last_role" xml:space="preserve">
         <value>Rôle final</value>
     </data>
+    <data name="president_ou_rien_skipped" xml:space="preserve">
+        <value>Ou rien ! {0} passe son tour.</value>
+    </data>
+    <data name="president_ou_rien_banner" xml:space="preserve">
+        <value>Ou rien ! {0} doit égaler ou passer son tour.</value>
+    </data>
+    <data name="president_your_turn_match" xml:space="preserve">
+        <value>Ou rien ! Égale avec {0} carte(s) de valeur {1}, ou passe ton tour (tu restes dans le pli).</value>
+    </data>
+    <data name="president_play_must_match" xml:space="preserve">
+        <value>Ou rien : tu dois jouer la valeur {0} ou passer.</value>
+    </data>
+    <data name="president_square_closed" xml:space="preserve">
+        <value>💥 Carré de {1} ! {0} ferme le pli.</value>
+    </data>
 </root>

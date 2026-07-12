@@ -270,6 +270,167 @@ public class PresidentGameTest
     }
 
     [Test]
+    public async Task Test_OuRien_ShouldPinNextPlayerToTheExactRank_WhenAPlayIsMatched()
+    {
+        await JoinAndStartAsync(3);
+        // player1 leads a 3; player2 matches it with their own 3, pinning player3.
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.IsMatchRequired, Is.True);
+            Assert.That(_game.CurrentPlayer, Is.EqualTo(_game.Players[2]));
+            Assert.That(_game.GetLegalPlays(_game.Players[2]), Is.EqualTo(new[] { (3, 1) }));
+        }
+    }
+
+    [Test]
+    public async Task Test_OuRien_ShouldRejectAnyOtherRank_WhenPinned()
+    {
+        await JoinAndStartAsync(3);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        var pinned = _game.CurrentPlayer;
+
+        await _game.PlayAsync(pinned.User, PresidentCard.KING, 1);
+
+        using (Assert.EnterMultipleScope())
+        {
+            _context.Received(1).ReplyLocalizedMessage("president_play_must_match", Arg.Any<object[]>());
+            Assert.That(_game.CurrentPlayer, Is.EqualTo(pinned));
+            Assert.That(_game.CurrentTrick.Plays, Has.Count.EqualTo(2));
+        }
+    }
+
+    [Test]
+    public async Task Test_OuRien_ShouldOnlySkipTheTurn_WhenPinnedPlayerPasses()
+    {
+        await JoinAndStartAsync(3);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        var pinned = _game.CurrentPlayer;
+
+        await _game.PassAsync(pinned.User);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pinned.HasPassed, Is.False, "an ou rien pass must not knock the player out of the trick");
+            Assert.That(_game.IsMatchRequired, Is.False);
+            Assert.That(_game.CurrentPlayer, Is.EqualTo(_game.Players[0]));
+            Assert.That(_game.Log, Does.Contain("president_ou_rien_skipped"));
+        }
+    }
+
+    [Test]
+    public async Task Test_OuRien_ShouldLiftConstraintForFollowingPlayers_AfterTheSkip()
+    {
+        await JoinAndStartAsync(3);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        await _game.PassAsync(_game.CurrentPlayer.User);
+
+        // Back to player1, who now follows the usual "equal or higher" rule.
+        var plays = _game.GetLegalPlays(_game.CurrentPlayer);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.CurrentPlayer, Is.EqualTo(_game.Players[0]));
+            Assert.That(plays, Does.Contain((PresidentCard.KING, 1)));
+            Assert.That(plays.Count, Is.GreaterThan(1));
+        }
+    }
+
+    [Test]
+    public async Task Test_OuRien_ShouldSkipPinnedPlayerAutomatically_WhenTheyCannotMatch()
+    {
+        await JoinAndStartAsync(5);
+        // In the deterministic 5-player deal player3 holds no 3: once player1 leads a 3 and
+        // player2 matches it, the pinned player3 is skipped outright and player4 plays freely.
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.CurrentTrick.Plays, Has.Count.EqualTo(2));
+            Assert.That(_game.CurrentPlayer, Is.EqualTo(_game.Players[3]));
+            Assert.That(_game.Players[2].HasPassed, Is.False);
+            Assert.That(_game.IsMatchRequired, Is.False);
+            Assert.That(_game.Log, Does.Contain("president_ou_rien_skipped"));
+        }
+    }
+
+    [Test]
+    public async Task Test_Square_ShouldCloseThePile_WhenFourthSingleEndsAnOuRienChain()
+    {
+        await JoinAndStartAsync(4);
+        // Each player holds exactly one 3 in the deterministic 4-player deal: the fourth 3
+        // completes the square and slams the pile shut.
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+        await _game.PlayAsync(_game.CurrentPlayer.User, 3, 1);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.CurrentTrick.IsEmpty, Is.True);
+            Assert.That(_game.LastTrickWinner, Is.EqualTo(_game.Players[3]));
+            Assert.That(_game.CurrentPlayer, Is.EqualTo(_game.Players[3]));
+            Assert.That(_game.IsMatchRequired, Is.False);
+            Assert.That(_game.Log, Does.Contain("president_square_closed"));
+        }
+    }
+
+    [Test]
+    public async Task Test_Square_ShouldCloseThePile_WhenComplementaryPairIsPlayed()
+    {
+        await JoinAndStartAsync(3);
+        var leader = _game.Players[0];
+        var follower = _game.Players[1];
+        var third = _game.Players[2];
+        // The deterministic deal spreads the 3s as 2/1/1: hand over player3's 3 so player2 can
+        // answer the led pair of 3s with the complementary pair.
+        var spareThree = third.Hand.Single(card => card.Rank == 3);
+        third.Hand.Remove(spareThree);
+        follower.Hand.Add(spareThree);
+
+        await _game.PlayAsync(leader.User, 3, 2);
+        await _game.PlayAsync(follower.User, 3, 2);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.CurrentTrick.IsEmpty, Is.True);
+            Assert.That(_game.LastTrickWinner, Is.EqualTo(follower));
+            Assert.That(_game.CurrentPlayer, Is.EqualTo(follower));
+            Assert.That(_game.Log, Does.Contain("president_square_closed"));
+        }
+    }
+
+    [Test]
+    public async Task Test_Square_ShouldCloseThePile_WhenAllFourCardsAreLedAtOnce()
+    {
+        await JoinAndStartAsync(3);
+        var leader = _game.Players[0];
+        // Hand the two missing 3s to the leader so they can open with the full square.
+        foreach (var other in new[] { _game.Players[1], _game.Players[2] })
+        {
+            var spareThree = other.Hand.Single(card => card.Rank == 3);
+            other.Hand.Remove(spareThree);
+            leader.Hand.Add(spareThree);
+        }
+
+        await _game.PlayAsync(leader.User, 3, 4);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.CurrentTrick.IsEmpty, Is.True);
+            Assert.That(_game.LastTrickWinner, Is.EqualTo(leader));
+            Assert.That(_game.CurrentPlayer, Is.EqualTo(leader));
+            Assert.That(_game.Log, Does.Contain("president_square_closed"));
+        }
+    }
+
+    [Test]
     public async Task Test_Pass_ShouldBeRejected_WhenLeadingTheTrick()
     {
         await JoinAndStartAsync(3);

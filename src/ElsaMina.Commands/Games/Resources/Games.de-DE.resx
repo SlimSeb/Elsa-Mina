@@ -2274,4 +2274,19 @@
     <data name="president_result_last_role" xml:space="preserve">
         <value>Letzte Rolle</value>
     </data>
+    <data name="president_ou_rien_skipped" xml:space="preserve">
+        <value>Oder nichts! {0} wird übersprungen.</value>
+    </data>
+    <data name="president_ou_rien_banner" xml:space="preserve">
+        <value>Oder nichts! {0} muss den Wert halten oder aussetzen.</value>
+    </data>
+    <data name="president_your_turn_match" xml:space="preserve">
+        <value>Oder nichts! Lege {0} Karte(n) mit Wert {1} oder setze diese Runde aus (du bleibst im Stich).</value>
+    </data>
+    <data name="president_play_must_match" xml:space="preserve">
+        <value>Oder nichts: du musst den Wert {0} spielen oder passen.</value>
+    </data>
+    <data name="president_square_closed" xml:space="preserve">
+        <value>💥 Vierling ({1})! {0} macht den Stapel dicht.</value>
+    </data>
 </root>

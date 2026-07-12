@@ -2337,4 +2337,19 @@
     <data name="president_result_last_role" xml:space="preserve">
         <value>Final role</value>
     </data>
+    <data name="president_ou_rien_skipped" xml:space="preserve">
+        <value>Or nothing! {0} is skipped.</value>
+    </data>
+    <data name="president_ou_rien_banner" xml:space="preserve">
+        <value>Or nothing! {0} must match the rank or sit this turn out.</value>
+    </data>
+    <data name="president_your_turn_match" xml:space="preserve">
+        <value>Or nothing! Match with {0} card(s) of rank {1}, or pass this turn (you stay in the trick).</value>
+    </data>
+    <data name="president_play_must_match" xml:space="preserve">
+        <value>Or nothing: you must play rank {0} or pass.</value>
+    </data>
+    <data name="president_square_closed" xml:space="preserve">
+        <value>💥 Four of a kind of {1}! {0} slams the pile shut.</value>
+    </data>
 </root>

@@ -2331,4 +2331,19 @@
     <data name="president_result_last_role" xml:space="preserve">
         <value>Rol final</value>
     </data>
+    <data name="president_ou_rien_skipped" xml:space="preserve">
+        <value>¡O nada! {0} pierde su turno.</value>
+    </data>
+    <data name="president_ou_rien_banner" xml:space="preserve">
+        <value>¡O nada! {0} debe igualar o saltar su turno.</value>
+    </data>
+    <data name="president_your_turn_match" xml:space="preserve">
+        <value>¡O nada! Iguala con {0} carta(s) de valor {1}, o pasa este turno (sigues en la pila).</value>
+    </data>
+    <data name="president_play_must_match" xml:space="preserve">
+        <value>O nada: debes jugar el valor {0} o pasar.</value>
+    </data>
+    <data name="president_square_closed" xml:space="preserve">
+        <value>💥 ¡Póker de {1}! {0} cierra la pila.</value>
+    </data>
 </root>

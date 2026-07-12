@@ -25,6 +25,7 @@ public class PresidentGame : Game, IPresidentGame
     private readonly List<string> _log = [];
 
     private int _currentTurnIndex;
+    private bool _matchRequired;
     private bool _publicPanelInitialized;
     private bool _subPanelInitialized;
     private bool _logPanelInitialized;
@@ -72,6 +73,13 @@ public class PresidentGame : Game, IPresidentGame
     public int TotalRounds { get; set; } = PresidentConstants.DEFAULT_ROUNDS;
 
     public PresidentTrick CurrentTrick { get; private set; } = new();
+
+    /// <summary>
+    /// True while the "ou rien" rule pins the current player: the last play matched the rank of the
+    /// one before it, so they must play that exact rank or sit the turn out (without leaving the trick).
+    /// </summary>
+    public bool IsMatchRequired => _matchRequired;
+
     public PresidentPlayer LastTrickWinner { get; private set; }
     public IReadOnlyList<PresidentPlayer> FinishOrder => _finishOrder;
 
@@ -219,6 +227,7 @@ public class PresidentGame : Game, IPresidentGame
         _finishOrder.Clear();
         CurrentTrick = new PresidentTrick();
         LastTrickWinner = null;
+        _matchRequired = false;
     }
 
     /// <summary>
@@ -385,12 +394,23 @@ public class PresidentGame : Game, IPresidentGame
 
     /// <summary>
     /// The (rank, card count) combinations the given player may legally put on the pile: any set of
-    /// same-ranked cards when leading, otherwise exactly the pile's card count at an equal or higher rank.
+    /// same-ranked cards when leading, otherwise exactly the pile's card count at an equal or higher
+    /// rank. Under the "ou rien" rule, only the pile's exact rank is playable.
     /// </summary>
     public IReadOnlyList<(int Rank, int Count)> GetLegalPlays(PresidentPlayer player)
     {
         if (Phase != PresidentPhase.Playing || player is null || CurrentPlayer != player)
         {
+            return [];
+        }
+
+        if (_matchRequired && !CurrentTrick.IsEmpty)
+        {
+            if (CanMatchPile(player))
+            {
+                return [(CurrentTrick.TopRank.Value, CurrentTrick.RequiredCount)];
+            }
+
             return [];
         }
 
@@ -458,12 +478,28 @@ public class PresidentGame : Game, IPresidentGame
             return;
         }
 
+        if (_matchRequired && !CurrentTrick.IsEmpty && rank != CurrentTrick.TopRank)
+        {
+            Context.ReplyLocalizedMessage("president_play_must_match",
+                PresidentCard.DisplayRank(CurrentTrick.TopRank.Value, Context.Culture));
+            return;
+        }
+
         foreach (var card in matching)
         {
             player.Hand.Remove(card);
         }
 
+        // "Ou rien": matching the rank of the previous play pins the next player to that exact rank.
+        _matchRequired = !CurrentTrick.IsEmpty && rank == CurrentTrick.TopRank;
         CurrentTrick.Add(player, matching);
+
+        var completedSquare = CompletesSquare(rank);
+        if (completedSquare)
+        {
+            LogEvent("president_square_closed", player.Name,
+                PresidentCard.DisplayRank(rank, Context.Culture));
+        }
 
         if (player.Hand.Count == 0)
         {
@@ -477,14 +513,36 @@ public class PresidentGame : Game, IPresidentGame
             return;
         }
 
-        // The 2 is unbeatable: playing it takes the pile on the spot.
-        if (rank == PresidentCard.TWO)
+        // The 2 is unbeatable and a completed square slams the pile shut: both take it on the spot.
+        if (rank == PresidentCard.TWO || completedSquare)
         {
             await CloseTrickAsync(player);
             return;
         }
 
         await AdvanceTurnAsync(player);
+    }
+
+    /// <summary>
+    /// True when the trailing consecutive plays of the pile all share the given rank and add up to
+    /// all four cards of it: the fourth single closing an "ou rien" chain, the complementary pair
+    /// laid on a pair, or a four-card lead.
+    /// </summary>
+    private bool CompletesSquare(int rank)
+    {
+        var consecutiveCards = 0;
+        for (var playIndex = CurrentTrick.Plays.Count - 1; playIndex >= 0; playIndex--)
+        {
+            var (_, cards) = CurrentTrick.Plays[playIndex];
+            if (cards[0].Rank != rank)
+            {
+                break;
+            }
+
+            consecutiveCards += cards.Count;
+        }
+
+        return consecutiveCards == 4;
     }
 
     public Task PassAsync(IUser user) => RunActionAsync(() => PassCoreAsync(user));
@@ -502,6 +560,15 @@ public class PresidentGame : Game, IPresidentGame
             return;
         }
 
+        // "Ou rien": declining to match only skips this turn, the player stays in the trick.
+        if (_matchRequired)
+        {
+            _matchRequired = false;
+            LogEvent("president_ou_rien_skipped", CurrentPlayer.Name);
+            await AdvanceTurnAsync(CurrentTrick.LastPlayer);
+            return;
+        }
+
         CurrentPlayer.HasPassed = true;
         await AdvanceTurnAsync(CurrentTrick.LastPlayer);
     }
@@ -509,7 +576,8 @@ public class PresidentGame : Game, IPresidentGame
     /// <summary>
     /// Moves the turn to the next player still holding cards who has not passed on this pile. When
     /// the turn would come back to the author of the top play (everyone else passed or is out), the
-    /// pile is taken instead.
+    /// pile is taken instead. A player pinned by the "ou rien" rule who cannot match the rank is
+    /// skipped outright, which lifts the constraint for the player after them.
     /// </summary>
     private async Task AdvanceTurnAsync(PresidentPlayer lastPlayer)
     {
@@ -521,17 +589,33 @@ public class PresidentGame : Game, IPresidentGame
                 break;
             }
 
-            if (candidate.Hand.Count > 0 && !candidate.HasPassed)
+            if (candidate.Hand.Count == 0 || candidate.HasPassed)
             {
-                _currentTurnIndex = _players.IndexOf(candidate);
-                await RenderAllAsync();
-                RestartTurnTimer();
-                return;
+                continue;
             }
+
+            if (_matchRequired && !CanMatchPile(candidate))
+            {
+                _matchRequired = false;
+                LogEvent("president_ou_rien_skipped", candidate.Name);
+                continue;
+            }
+
+            _currentTurnIndex = _players.IndexOf(candidate);
+            await RenderAllAsync();
+            RestartTurnTimer();
+            return;
         }
 
         await CloseTrickAsync(lastPlayer);
     }
+
+    /// <summary>
+    /// Whether the player holds enough cards of the pile's exact rank to satisfy the "ou rien" rule.
+    /// </summary>
+    private bool CanMatchPile(PresidentPlayer player) =>
+        !CurrentTrick.IsEmpty
+        && player.Hand.Count(card => card.Rank == CurrentTrick.TopRank) >= CurrentTrick.RequiredCount;
 
     /// <summary>
     /// Clears the pile and hands the lead to its winner, or to the next player still holding cards
@@ -546,6 +630,7 @@ public class PresidentGame : Game, IPresidentGame
 
         CurrentTrick = new PresidentTrick();
         LastTrickWinner = winner;
+        _matchRequired = false;
         LogEvent("president_trick_won", winner.Name);
 
         var winnerIndex = _players.IndexOf(winner);

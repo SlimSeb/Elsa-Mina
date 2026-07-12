@@ -55,6 +55,13 @@
         {
             <p style="margin:4px 0">@GetString("president_your_turn_lead")</p>
         }
+        else if (game.IsMatchRequired)
+        {
+            <p style="margin:4px 0;color:#f7a000;font-weight:bold">
+                @GetString("president_your_turn_match", game.CurrentTrick.RequiredCount,
+                    PresidentCard.DisplayRank(game.CurrentTrick.TopRank ?? 0, Model.Culture))
+            </p>
+        }
         else
         {
             <p style="margin:4px 0">

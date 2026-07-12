@@ -84,6 +84,13 @@
 
     @if (game.Phase == PresidentPhase.Playing)
     {
+        @if (game.IsMatchRequired && game.CurrentPlayer != null)
+        {
+            <p style="text-align:center;margin:4px 0;color:#f7a000;font-weight:bold">
+                🚫 @GetString("president_ou_rien_banner", game.CurrentPlayer.Name)
+            </p>
+        }
+
         @if (game.CurrentTrick.Plays.Count > 0)
         {
             <p style="text-align:center;margin:8px 0 2px 0;color:#a9bac9">@GetString("president_pile_label")</p>
