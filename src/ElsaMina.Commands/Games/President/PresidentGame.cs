@@ -22,6 +22,7 @@ public class PresidentGame : Game, IPresidentGame
     private readonly PeriodicTimerRunner _turnWarningTimer;
     private readonly List<PresidentPlayer> _players = [];
     private readonly List<PresidentPlayer> _finishOrder = [];
+    private readonly List<PresidentPlayer> _twoFinishers = [];
     private readonly List<string> _log = [];
 
     private int _currentTurnIndex;
@@ -222,9 +223,11 @@ public class PresidentGame : Game, IPresidentGame
             player.CardsToGive = 0;
             player.PendingGives.Clear();
             player.ReceivedCards.Clear();
+            player.GivenCards.Clear();
         }
 
         _finishOrder.Clear();
+        _twoFinishers.Clear();
         CurrentTrick = new PresidentTrick();
         LastTrickWinner = null;
         _matchRequired = false;
@@ -284,6 +287,7 @@ public class PresidentGame : Game, IPresidentGame
         SortHand(receiver.Hand);
         receiver.ReceivedCards.AddRange(bestCards);
         receiver.CardsToGive = count;
+        giver.GivenCards.AddRange(bestCards);
 
         LogEvent("president_exchange_gave_best", giver.Name, count, receiver.Name);
     }
@@ -370,7 +374,8 @@ public class PresidentGame : Game, IPresidentGame
 
         if (_players.All(player => player.CardsToGive == 0))
         {
-            await BeginPlayingAsync(FindByRole(PresidentRole.President) ?? _players[0]);
+            // The scum of the previous round opens the new one.
+            await BeginPlayingAsync(FindByRole(PresidentRole.Scum) ?? _players[0]);
             return;
         }
 
@@ -503,9 +508,26 @@ public class PresidentGame : Game, IPresidentGame
 
         if (player.Hand.Count == 0)
         {
-            _finishOrder.Add(player);
-            player.FinishPosition = _finishOrder.Count;
-            LogEvent("president_player_finished", player.Name, player.FinishPosition);
+            if (rank == PresidentCard.TWO)
+            {
+                // Going out on a 2 relegates the player to the bottom of the finish order: they are
+                // kept out of the regular order and appended last when the round ends. Their display
+                // position is provisional until then; a later offender sinks even lower.
+                _twoFinishers.Add(player);
+                for (var offenderIndex = 0; offenderIndex < _twoFinishers.Count; offenderIndex++)
+                {
+                    _twoFinishers[offenderIndex].FinishPosition =
+                        _players.Count - _twoFinishers.Count + 1 + offenderIndex;
+                }
+
+                LogEvent("president_finished_on_two", player.Name);
+            }
+            else
+            {
+                _finishOrder.Add(player);
+                player.FinishPosition = _finishOrder.Count;
+                LogEvent("president_player_finished", player.Name, player.FinishPosition);
+            }
         }
 
         if (await TryFinishRoundAsync())
@@ -669,10 +691,12 @@ public class PresidentGame : Game, IPresidentGame
 
         if (stillPlaying.Count == 1)
         {
-            var lastPlayer = stillPlaying[0];
-            _finishOrder.Add(lastPlayer);
-            lastPlayer.FinishPosition = _finishOrder.Count;
+            _finishOrder.Add(stillPlaying[0]);
         }
+
+        // Whoever went out on a 2 sinks below even the player left holding cards.
+        _finishOrder.AddRange(_twoFinishers);
+        _twoFinishers.Clear();
 
         AssignRolesAndPoints();
         LogEvent("president_round_ended", RoundNumber);
@@ -693,6 +717,7 @@ public class PresidentGame : Game, IPresidentGame
         for (var position = 1; position <= _finishOrder.Count; position++)
         {
             var player = _finishOrder[position - 1];
+            player.FinishPosition = position;
             player.Role = RoleForPosition(position, _finishOrder.Count);
             player.Score += _finishOrder.Count - position;
 

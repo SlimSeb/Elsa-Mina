@@ -2262,6 +2262,9 @@
     <data name="president_received_cards" xml:space="preserve">
         <value>Received from the exchange</value>
     </data>
+    <data name="president_given_cards" xml:space="preserve">
+        <value>You gave</value>
+    </data>
     <data name="president_exchange_banner" xml:space="preserve">
         <value>Card exchange: waiting for {0}.</value>
     </data>
@@ -2279,6 +2282,9 @@
     </data>
     <data name="president_player_finished" xml:space="preserve">
         <value>{0} got rid of all their cards (#{1})!</value>
+    </data>
+    <data name="president_finished_on_two" xml:space="preserve">
+        <value>{0} went out on a 2 and is automatically the Scum!</value>
     </data>
     <data name="president_trick_won" xml:space="preserve">
         <value>{0} takes the pile.</value>

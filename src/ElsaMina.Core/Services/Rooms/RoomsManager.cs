@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Services.Rooms;

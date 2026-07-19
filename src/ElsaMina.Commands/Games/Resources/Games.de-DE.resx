@@ -2199,6 +2199,9 @@
     <data name="president_received_cards" xml:space="preserve">
         <value>Beim Tausch erhalten</value>
     </data>
+    <data name="president_given_cards" xml:space="preserve">
+        <value>Du hast abgegeben</value>
+    </data>
     <data name="president_exchange_banner" xml:space="preserve">
         <value>Kartentausch: warte auf {0}.</value>
     </data>
@@ -2216,6 +2219,9 @@
     </data>
     <data name="president_player_finished" xml:space="preserve">
         <value>{0} hat keine Karten mehr (Nr. {1})!</value>
+    </data>
+    <data name="president_finished_on_two" xml:space="preserve">
+        <value>{0} hat mit einer 2 abgeschlossen und wird automatisch das Arschloch!</value>
     </data>
     <data name="president_trick_won" xml:space="preserve">
         <value>{0} nimmt den Stapel.</value>

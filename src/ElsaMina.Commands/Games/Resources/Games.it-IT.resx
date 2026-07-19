@@ -2256,6 +2256,9 @@
     <data name="president_received_cards" xml:space="preserve">
         <value>Ricevuto dallo scambio</value>
     </data>
+    <data name="president_given_cards" xml:space="preserve">
+        <value>Hai dato</value>
+    </data>
     <data name="president_exchange_banner" xml:space="preserve">
         <value>Scambio di carte: in attesa di {0}.</value>
     </data>
@@ -2273,6 +2276,9 @@
     </data>
     <data name="president_player_finished" xml:space="preserve">
         <value>{0} è rimasto senza carte (n. {1})!</value>
+    </data>
+    <data name="president_finished_on_two" xml:space="preserve">
+        <value>{0} ha chiuso con un 2 e diventa automaticamente Straccione!</value>
     </data>
     <data name="president_trick_won" xml:space="preserve">
         <value>{0} prende la pila.</value>

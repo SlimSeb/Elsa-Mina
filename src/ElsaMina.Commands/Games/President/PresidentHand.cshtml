@@ -27,6 +27,17 @@
 <div style="background:#16222a;color:#ece7f2;border:1px solid #3f5668;border-radius:6px;padding:8px">
     <h4 style="margin:0 0 6px 0">👑 @GetString("president_your_hand")</h4>
 
+    @if (viewer != null && viewer.GivenCards.Count > 0)
+    {
+        <p style="margin:4px 0;color:#f0b46f;font-size:0.9em">
+            @GetString("president_given_cards"):
+            @foreach (var card in viewer.GivenCards)
+            {
+                <b style="margin:0 2px">@card.ToDisplay(Model.Culture)</b>
+            }
+        </p>
+    }
+
     @if (viewer != null && viewer.ReceivedCards.Count > 0)
     {
         <p style="margin:4px 0;color:#8fd694;font-size:0.9em">

@@ -67,4 +67,10 @@ public sealed class PresidentPlayer
     /// Cards received during the current exchange, shown privately on the player's hand page.
     /// </summary>
     public List<PresidentCard> ReceivedCards { get; } = [];
+
+    /// <summary>
+    /// Cards automatically handed over during the current exchange (scum and vice-scum gifts),
+    /// shown privately on the giver's hand page.
+    /// </summary>
+    public List<PresidentCard> GivenCards { get; } = [];
 }

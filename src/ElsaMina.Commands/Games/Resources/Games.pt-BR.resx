@@ -2262,6 +2262,9 @@
     <data name="president_received_cards" xml:space="preserve">
         <value>Recebido na troca</value>
     </data>
+    <data name="president_given_cards" xml:space="preserve">
+        <value>Você deu</value>
+    </data>
     <data name="president_exchange_banner" xml:space="preserve">
         <value>Troca de cartas: aguardando {0}.</value>
     </data>
@@ -2279,6 +2282,9 @@
     </data>
     <data name="president_player_finished" xml:space="preserve">
         <value>{0} ficou sem cartas (nº {1})!</value>
+    </data>
+    <data name="president_finished_on_two" xml:space="preserve">
+        <value>{0} terminou com um 2 e vira automaticamente o Lixo!</value>
     </data>
     <data name="president_trick_won" xml:space="preserve">
         <value>{0} leva a pilha.</value>

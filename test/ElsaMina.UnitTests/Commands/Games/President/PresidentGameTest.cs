@@ -522,12 +522,13 @@ public class PresidentGameTest
             Assert.That(president.ReceivedCards, Has.Count.EqualTo(PresidentConstants.SCUM_EXCHANGE_COUNT));
             Assert.That(president.CardsToGive, Is.EqualTo(PresidentConstants.SCUM_EXCHANGE_COUNT));
             Assert.That(scum.CardsToGive, Is.Zero);
+            Assert.That(scum.GivenCards, Is.EqualTo(president.ReceivedCards));
             Assert.That(_game.Log, Does.Contain("president_exchange_gave_best"));
         }
     }
 
     [Test]
-    public async Task Test_Give_ShouldCompleteExchangeAndLetPresidentLead()
+    public async Task Test_Give_ShouldCompleteExchangeAndLetScumLead()
     {
         await JoinAndStartAsync(3);
         _game.TotalRounds = 2;
@@ -543,10 +544,40 @@ public class PresidentGameTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(PresidentPhase.Playing));
-            Assert.That(_game.CurrentPlayer, Is.EqualTo(president));
+            Assert.That(_game.CurrentPlayer, Is.EqualTo(scum));
             Assert.That(scum.ReceivedCards, Is.EquivalentTo(lowestCards));
             Assert.That(_game.Players.Sum(player => player.Hand.Count), Is.EqualTo(52));
             Assert.That(_game.Log, Does.Contain("president_exchange_returned"));
+        }
+    }
+
+    [Test]
+    public async Task Test_Play_ShouldRelegatePlayerToScum_WhenFinishingOnATwo()
+    {
+        await JoinAndStartAsync(3);
+        _game.TotalRounds = 1;
+        // player2 is left holding a single 2: they go out on it as soon as their turn comes,
+        // chronologically first, yet the final 2 rule relegates them to last place. The other
+        // players' 2s are stripped so the greedy driver does not make them finish on a 2 too.
+        var victim = _game.Players[1];
+        victim.Hand.Clear();
+        victim.Hand.Add(new PresidentCard(PresidentSuit.Spades, PresidentCard.TWO));
+        foreach (var other in new[] { _game.Players[0], _game.Players[2] })
+        {
+            other.Hand.RemoveAll(card => card.IsTwo);
+        }
+
+        await DriveRoundAsync();
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Phase, Is.EqualTo(PresidentPhase.Finished));
+            Assert.That(victim.FinishPosition, Is.EqualTo(3));
+            Assert.That(victim.Role, Is.EqualTo(PresidentRole.Scum));
+            Assert.That(victim.Score, Is.Zero);
+            Assert.That(_game.Players.Where(player => player != victim).Select(player => player.FinishPosition),
+                Is.EquivalentTo(new[] { 1, 2 }));
+            Assert.That(_game.Log, Does.Contain("president_finished_on_two"));
         }
     }
 

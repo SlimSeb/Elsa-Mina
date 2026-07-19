@@ -2262,6 +2262,9 @@
     <data name="president_received_cards" xml:space="preserve">
         <value>Reçu à l'échange</value>
     </data>
+    <data name="president_given_cards" xml:space="preserve">
+        <value>Vous avez donné</value>
+    </data>
     <data name="president_exchange_banner" xml:space="preserve">
         <value>Échange de cartes : en attente de {0}.</value>
     </data>
@@ -2279,6 +2282,9 @@
     </data>
     <data name="president_player_finished" xml:space="preserve">
         <value>{0} s'est débarrassé de toutes ses cartes (n°{1}) !</value>
+    </data>
+    <data name="president_finished_on_two" xml:space="preserve">
+        <value>{0} a terminé sur un 2 et devient automatiquement Trou du cul !</value>
     </data>
     <data name="president_trick_won" xml:space="preserve">
         <value>{0} ramasse le pli.</value>
