@@ -65,6 +65,10 @@ public class PresidentGame : Game, IPresidentGame
     public int PlayerCount => _players.Count;
     public PresidentPhase Phase { get; private set; } = PresidentPhase.Lobby;
 
+    public bool IsInLobby => Phase == PresidentPhase.Lobby;
+
+    public bool HasPlayer(string userId) => _players.Any(player => player.UserId == userId);
+
     public PresidentPlayer CurrentPlayer =>
         Phase == PresidentPhase.Playing && _currentTurnIndex >= 0 && _currentTurnIndex < _players.Count
             ? _players[_currentTurnIndex]

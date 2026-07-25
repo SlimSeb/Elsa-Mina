@@ -1,9 +1,9 @@
-using ElsaMina.Core.Services.Games;
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Tarot;
 
-public interface ITarotGame : IGame
+public interface ITarotGame : ILeavableCardGame, IResendableCardGame, ISubstitutableCardGame
 {
     IReadOnlyList<TarotPlayer> Players { get; }
     int PlayerCount { get; }
@@ -40,9 +40,6 @@ public interface ITarotGame : IGame
 
     IReadOnlyList<string> Log { get; }
 
-    Task<(bool Success, string MessageKey, object[] Args)> JoinAsync(IUser user);
-    Task<(bool Success, string MessageKey, object[] Args)> LeaveAsync(IUser user);
-    Task StartAsync(IUser user);
     Task BidAsync(IUser user, TarotBid bid);
     Task CallKingAsync(IUser user, TarotCard card);
     Task DiscardAsync(IUser user, IReadOnlyList<TarotCard> cards);
@@ -50,9 +47,5 @@ public interface ITarotGame : IGame
     Task DeclarePoigneeAsync(IUser user);
     Task DeclareMisereAsync(IUser user);
     Task AnnounceSlamAsync(IUser user);
-    Task ResendPlayerPageAsync(IUser user);
-    Task<(bool Success, string MessageKey, object[] Args)> RequestSubAsync(IUser user);
     Task<(bool Success, string MessageKey, object[] Args)> ForceRequestSubAsync(string targetPlayerId);
-    Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user, string targetPlayerId);
-    Task CancelAsync();
 }

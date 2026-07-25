@@ -1,23 +1,13 @@
-using ElsaMina.Core.Contexts;
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Poker;
 
+/// <summary>
+/// Calls the running game off.
+/// </summary>
 [NamedCommand("pokerend")]
-public class EndPokerCommand : Command
+public class EndPokerCommand : EndGameCommand<IPokerGame>
 {
-    public override Rank RequiredRank => Rank.Voiced;
-
-    public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
-    {
-        if (context.Room?.Game is not IPokerGame game)
-        {
-            context.ReplyLocalizedMessage("poker_not_running");
-            return;
-        }
-
-        await game.CancelAsync();
-        context.ReplyLocalizedMessage("poker_game_cancelled");
-    }
+    protected override string ResourcePrefix => "poker";
 }

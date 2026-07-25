@@ -67,6 +67,10 @@ public class PokerGame : Game, IPokerGame
     public int PlayerCount => _players.Count;
     public PokerPhase Phase { get; private set; } = PokerPhase.Lobby;
 
+    public bool IsInLobby => Phase == PokerPhase.Lobby;
+
+    public bool HasPlayer(string userId) => _players.Any(player => player.UserId == userId);
+
     public PokerPlayer CurrentPlayer =>
         _currentTurnIndex >= 0 && _currentTurnIndex < _players.Count ? _players[_currentTurnIndex] : null;
 

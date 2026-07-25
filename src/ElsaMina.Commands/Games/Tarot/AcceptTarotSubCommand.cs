@@ -1,7 +1,6 @@
-using ElsaMina.Core.Contexts;
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Games.Tarot;
 
@@ -11,50 +10,11 @@ namespace ElsaMina.Commands.Games.Tarot;
 /// is prefixed with the room id (<c>roomid, playerid</c>).
 /// </summary>
 [NamedCommand("tarotsubaccept", Aliases = ["tsa"])]
-public class AcceptTarotSubCommand : Command
+public class AcceptTarotSubCommand : AcceptSubGameCommand<ITarotGame>
 {
-    private readonly IRoomsManager _roomsManager;
-
-    public AcceptTarotSubCommand(IRoomsManager roomsManager)
+    public AcceptTarotSubCommand(IRoomsManager roomsManager) : base(roomsManager)
     {
-        _roomsManager = roomsManager;
     }
 
-    public override bool IsAllowedInPrivateMessage => true;
-    public override Rank RequiredRank => Rank.Regular;
-
-    public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
-    {
-        string targetPlayerId;
-        IRoom room;
-
-        if (context.IsPrivateMessage)
-        {
-            var parts = context.Target.Split(',', 2);
-            if (parts.Length < 2)
-            {
-                return;
-            }
-
-            room = _roomsManager.GetRoom(parts[0].Trim().ToLowerAlphaNum());
-            targetPlayerId = parts[1].Trim();
-        }
-        else
-        {
-            room = context.Room;
-            targetPlayerId = context.Target.Trim();
-        }
-
-        if (room?.Game is not ITarotGame game)
-        {
-            context.ReplyLocalizedMessage("tarot_not_running");
-            return;
-        }
-
-        var (success, messageKey, args) = await game.AcceptSubAsync(context.Sender, targetPlayerId);
-        if (!success)
-        {
-            context.ReplyLocalizedMessage(messageKey, args);
-        }
-    }
+    protected override string ResourcePrefix => "tarot";
 }

@@ -74,6 +74,10 @@ public class TarotGame : Game, ITarotGame
     public int PlayerCount => _players.Count;
     public TarotPhase Phase { get; private set; } = TarotPhase.Lobby;
 
+    public bool IsInLobby => Phase == TarotPhase.Lobby;
+
+    public bool HasPlayer(string userId) => _players.Any(player => player.UserId == userId);
+
     public TarotPlayer CurrentPlayer =>
         _currentTurnIndex >= 0 && _currentTurnIndex < _players.Count ? _players[_currentTurnIndex] : null;
 

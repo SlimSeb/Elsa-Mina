@@ -69,6 +69,10 @@ public class BeloteGame : Game, IBeloteGame
     public IReadOnlyList<BelotePlayer> Players => _players;
     public int PlayerCount => _players.Count;
     public BelotePhase Phase { get; private set; } = BelotePhase.Lobby;
+
+    public bool IsInLobby => Phase == BelotePhase.Lobby;
+
+    public bool HasPlayer(string userId) => _players.Any(player => player.UserId == userId);
     public int BiddingRound { get; private set; }
 
     public BelotePlayer CurrentPlayer =>
