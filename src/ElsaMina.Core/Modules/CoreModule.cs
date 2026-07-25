@@ -22,6 +22,7 @@ using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Repeats;
 using ElsaMina.Core.Services.Resources;
+using ElsaMina.Core.Services.RoomInfo;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.RoomUserData;
@@ -73,6 +74,7 @@ public class CoreModule : Module
         builder.RegisterType<RoomUserDataService>().As<IRoomUserDataService>().SingleInstance();
         builder.RegisterType<UserDetailsManager>().As<IUserDetailsManager>().SingleInstance();
         builder.RegisterType<ActiveBattlesManager>().As<IActiveBattlesManager>().SingleInstance();
+        builder.RegisterType<RoomInfoManager>().As<IRoomInfoManager>().SingleInstance();
         builder.RegisterType<UserDataService>().As<IUserDataService>().SingleInstance();
         builder.RegisterType<RandomService>().As<IRandomService>().SingleInstance();
         builder.RegisterType<RepeatsManager>().As<IRepeatsManager>().SingleInstance();

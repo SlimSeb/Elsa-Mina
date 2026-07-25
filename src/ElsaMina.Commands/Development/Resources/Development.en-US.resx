@@ -144,4 +144,13 @@
     <data name="handlerdashboard_btn_disable" xml:space="preserve">
         <value>Disable</value>
     </data>
+    <data name="roominfo_no_room" xml:space="preserve">
+        <value>Please specify a room id.</value>
+    </data>
+    <data name="roominfo_timeout" xml:space="preserve">
+        <value>Room info request timed out.</value>
+    </data>
+    <data name="roominfo_error" xml:space="preserve">
+        <value>Error: {0}</value>
+    </data>
 </root>
