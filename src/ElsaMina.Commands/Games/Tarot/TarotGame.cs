@@ -665,79 +665,8 @@ public class TarotGame : Game, ITarotGame
     /// <summary>
     /// The cards the given player may legally play to the current trick.
     /// </summary>
-    public IReadOnlyCollection<TarotCard> GetLegalMoves(TarotPlayer player)
-    {
-        var hand = player.Hand;
-        var excuse = hand.FirstOrDefault(card => card.IsExcuse);
-
-        // Leading, or only the Excuse has been played so far: anything goes, except that in a
-        // five-handed game the suit of the call may not be led.
-        if (CurrentTrick.IsEmpty || CurrentTrick.LeadSuit is null)
-        {
-            return GetLegalLeadMoves(hand);
-        }
-
-        var legal = new List<TarotCard>();
-        var leadSuit = CurrentTrick.LeadSuit.Value;
-        var highestTrump = CurrentTrick.HighestTrumpRank;
-        var trumps = hand.Where(card => card.IsTrump).ToList();
-
-        if (leadSuit == TarotSuit.Trump)
-        {
-            AddTrumpMoves(legal, trumps, highestTrump, hand);
-        }
-        else
-        {
-            var suitCards = hand.Where(card => card.Suit == leadSuit).ToList();
-            if (suitCards.Count > 0)
-            {
-                legal.AddRange(suitCards);
-            }
-            else
-            {
-                AddTrumpMoves(legal, trumps, highestTrump, hand);
-            }
-        }
-
-        if (excuse is not null && !legal.Contains(excuse))
-        {
-            legal.Add(excuse);
-        }
-
-        return legal;
-    }
-
-    /// <summary>
-    /// The cards a player may lead a trick with. In a five-handed game the suit of the called card
-    /// cannot be led on the very first trick, the only exception being the called card itself (and a
-    /// fallback when the player holds nothing but cards of the called suit).
-    /// </summary>
-    private List<TarotCard> GetLegalLeadMoves(List<TarotCard> hand)
-    {
-        if (_players.Count != 5 || CalledKing is null || TrickNumber != 1)
-        {
-            return hand.ToList();
-        }
-
-        var leadable = hand
-            .Where(card => card.Suit != CalledKing.Suit || card == CalledKing)
-            .ToList();
-
-        return leadable.Count > 0 ? leadable : hand.ToList();
-    }
-
-    private static void AddTrumpMoves(List<TarotCard> legal, List<TarotCard> trumps, int? highestTrump,
-        List<TarotCard> hand)
-    {
-        if (trumps.Count == 0)
-        {
-            legal.AddRange(hand.Where(card => !card.IsExcuse));
-            return;
-        }
-
-        var overtrumps = trumps.Where(card => highestTrump is null || card.Rank > highestTrump).ToList();
-        legal.AddRange(overtrumps.Count > 0 ? overtrumps : trumps);
-    }
+    public IReadOnlyCollection<TarotCard> GetLegalMoves(TarotPlayer player) =>
+        TarotRules.GetLegalMoves(player.Hand, CurrentTrick, _players.Count, CalledKing, TrickNumber);
 
     #endregion
 
@@ -747,40 +676,10 @@ public class TarotGame : Game, ITarotGame
     /// The poignée tier (1 single, 2 double, 3 triple, 0 none) the player could declare with their
     /// current hand. The Excuse may stand in for a missing trump to reach a tier.
     /// </summary>
-    public int GetDeclarablePoigneeTier(TarotPlayer player)
-    {
-        if (player is null || _players.Count == 0)
-        {
-            return 0;
-        }
-
-        var thresholds = TarotConstants.POIGNEE_THRESHOLDS[_players.Count];
-        var trumpCount = player.Hand.Count(card => card.IsTrump);
-        var hasExcuse = player.Hand.Any(card => card.IsExcuse);
-
-        var tier = TierForTrumpCount(trumpCount, thresholds);
-        if (hasExcuse)
-        {
-            tier = Math.Max(tier, TierForTrumpCount(trumpCount + 1, thresholds));
-        }
-
-        return tier;
-    }
-
-    private static int TierForTrumpCount(int count, int[] thresholds)
-    {
-        if (count >= thresholds[2])
-        {
-            return 3;
-        }
-
-        if (count >= thresholds[1])
-        {
-            return 2;
-        }
-
-        return count >= thresholds[0] ? 1 : 0;
-    }
+    public int GetDeclarablePoigneeTier(TarotPlayer player) =>
+        player is null || _players.Count == 0
+            ? 0
+            : TarotRules.GetDeclarablePoigneeTier(player.Hand, _players.Count);
 
     public bool CanDeclarePoignee(TarotPlayer player) =>
         Phase == TarotPhase.Playing && player is { HasPlayed: false, HasDeclaredPoignee: false }
@@ -793,26 +692,8 @@ public class TarotGame : Game, ITarotGame
     /// The misère types the player could declare with their current hand: a misère d'atout when they
     /// hold no trump (the Excuse is tolerated), a misère de tête when they hold no face card.
     /// </summary>
-    public IReadOnlyList<TarotMisereType> GetDeclarableMisereTypes(TarotPlayer player)
-    {
-        if (player is null || player.Hand.Count == 0)
-        {
-            return [];
-        }
-
-        var types = new List<TarotMisereType>();
-        if (player.Hand.All(card => !card.IsTrump))
-        {
-            types.Add(TarotMisereType.Trump);
-        }
-
-        if (player.Hand.All(card => !card.IsFaceCard))
-        {
-            types.Add(TarotMisereType.Head);
-        }
-
-        return types;
-    }
+    public IReadOnlyList<TarotMisereType> GetDeclarableMisereTypes(TarotPlayer player) =>
+        player is null || player.Hand.Count == 0 ? [] : TarotRules.GetDeclarableMisereTypes(player.Hand);
 
     public bool CanDeclareMisere(TarotPlayer player) =>
         Phase == TarotPhase.Playing && player is { HasPlayed: false, HasDeclaredMisere: false }
@@ -909,26 +790,9 @@ public class TarotGame : Game, ITarotGame
         await RenderAllAsync();
     }
 
-    private int ComputePetitAuBoutSide()
-    {
-        if (LastTrick is null || LastTrickWinner is null)
-        {
-            return 0;
-        }
+    private int ComputePetitAuBoutSide() => TarotRules.ComputePetitAuBoutSide(LastTrick, LastTrickWinner);
 
-        var petitInLastTrick = LastTrick.Plays
-            .Any(play => play.Card.IsTrump && play.Card.Rank == TarotCard.PETIT);
-        if (!petitInLastTrick)
-        {
-            return 0;
-        }
-
-        return LastTrickWinner.IsTaker || LastTrickWinner.IsPartner ? 1 : -1;
-    }
-
-    private bool TakerHoldsAllKings() =>
-        Taker is not null && new[] { TarotSuit.Hearts, TarotSuit.Spades, TarotSuit.Diamonds, TarotSuit.Clubs }
-            .All(suit => Taker.Hand.Contains(new TarotCard(suit, TarotCard.KING)));
+    private bool TakerHoldsAllKings() => Taker is not null && TarotRules.HoldsAllKings(Taker.Hand);
 
     #endregion
 
