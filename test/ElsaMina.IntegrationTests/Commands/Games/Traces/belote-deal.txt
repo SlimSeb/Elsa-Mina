@@ -1,0 +1,108 @@
+tpl Games/Belote/BeloteLobby
+panel belote-# new
+<<repeat 5>>
+tpl Games/Belote/BeloteLobby
+panel belote-# update
+<<end>>
+tpl Games/Belote/BeloteTable
+panel belote-# update
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player1 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player2 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player3 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player4 belote-#
+reply belote_taker_announced
+<<repeat 4>>
+tpl Games/Belote/BeloteTable
+panel belote-# update
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player1 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player2 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player3 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player4 belote-#
+<<end>>
+<<repeat 7>>
+reply belote_trick_won
+panel belote-# clear
+tpl Games/Belote/BeloteTable
+panel belote-# new
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player1 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player2 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player3 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player4 belote-#
+tpl Games/Belote/BeloteTable
+panel belote-# update
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player1 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player2 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player3 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player4 belote-#
+tpl Games/Belote/BeloteTable
+panel belote-# update
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player1 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player2 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player3 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player4 belote-#
+tpl Games/Belote/BeloteTable
+panel belote-# update
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player1 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player2 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player3 belote-#
+tpl Games/Belote/BeloteTable
+tpl Games/Belote/BeloteHand
+page player4 belote-#
+<<end>>
+reply belote_trick_won
+tpl Games/Belote/BeloteResult
+panel belote-# update
+tpl Games/Belote/BeloteResult
+page player1 belote-#
+tpl Games/Belote/BeloteResult
+page player2 belote-#
+tpl Games/Belote/BeloteResult
+page player3 belote-#
+tpl Games/Belote/BeloteResult
+page player4 belote-#

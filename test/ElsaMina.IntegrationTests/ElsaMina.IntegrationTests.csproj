@@ -26,6 +26,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Include="Commands\Games\Traces\*.txt" LinkBase="Traces" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\..\src\ElsaMina.Commands\ElsaMina.Commands.csproj" />
       <ProjectReference Include="..\..\src\ElsaMina.Core\ElsaMina.Core.csproj" />
     </ItemGroup>
