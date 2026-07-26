@@ -15,7 +15,16 @@ namespace ElsaMina.IntegrationTests.Commands.Games.Poker;
 [TestFixture]
 public class PokerTurnTimerAndConcurrencyTest
 {
-    private static readonly TimeSpan SHORT_TURN_TIMEOUT = TimeSpan.FromMilliseconds(200);
+    /// <summary>
+    /// The turn a test lets run out. Long enough that the setup leading up to it always finishes first,
+    /// even on a loaded CI runner, since any action taken while the clock ticks restarts it.
+    /// </summary>
+    private static readonly TimeSpan EXPIRING_TURN_TIMEOUT = TimeSpan.FromSeconds(2);
+
+    /// <summary>
+    /// Used only where the test asserts that nothing happens, so it can afford to be short.
+    /// </summary>
+    private static readonly TimeSpan IDLE_TURN_TIMEOUT = TimeSpan.FromMilliseconds(200);
 
     private GameInteractionRecorder _recorder;
     private IRandomService _randomService;
@@ -51,7 +60,7 @@ public class PokerTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_Timeout_ShouldFold_WhenThereIsSomethingToCall()
     {
-        await StartHandAsync(SHORT_TURN_TIMEOUT);
+        await StartHandAsync(EXPIRING_TURN_TIMEOUT);
         var actor = _game.CurrentPlayer;
         Assert.That(_game.AmountToCall(actor), Is.GreaterThan(0));
 
@@ -67,7 +76,7 @@ public class PokerTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_Timeout_ShouldCheck_WhenThereIsNothingToCall()
     {
-        await StartHandAsync(SHORT_TURN_TIMEOUT);
+        await StartHandAsync(EXPIRING_TURN_TIMEOUT);
         await CallEveryoneIntoTheFlopAsync();
 
         var actor = _game.CurrentPlayer;
@@ -86,11 +95,11 @@ public class PokerTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_TurnTimer_ShouldStopOnceTheHandIsFinished()
     {
-        await StartHandAsync(SHORT_TURN_TIMEOUT);
+        await StartHandAsync(IDLE_TURN_TIMEOUT);
         await _game.CancelAsync();
         _recorder.Clear();
 
-        await Wait.ForQuietPeriodAsync(SHORT_TURN_TIMEOUT * 4);
+        await Wait.ForQuietPeriodAsync(IDLE_TURN_TIMEOUT * 4);
 
         Assert.That(_recorder.Entries, Is.Empty);
     }

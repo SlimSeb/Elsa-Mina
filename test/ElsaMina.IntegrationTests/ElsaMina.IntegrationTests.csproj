@@ -26,7 +26,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="Commands\Games\Traces\*.txt" LinkBase="Traces" CopyToOutputDirectory="PreserveNewest" />
+      <!-- Update, not Include: the SDK's default None glob already owns these files, so an Include
+           would add a duplicate item and the copy metadata would never be applied. -->
+      <None Update="Commands/Games/Traces/*.txt" Link="Traces/%(Filename)%(Extension)"
+            CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>

@@ -15,16 +15,35 @@ namespace ElsaMina.IntegrationTests.Commands.Games.President;
 [TestFixture]
 public class PresidentTurnTimerAndConcurrencyTest
 {
-    private static readonly TimeSpan SHORT_TURN_TIMEOUT = TimeSpan.FromMilliseconds(200);
-
-    private static readonly TimeSpan WARNING_ONLY_TURN_TIMEOUT =
-        PresidentConstants.TURN_TIMEOUT_WARNING_REMAINING + TimeSpan.FromMilliseconds(200);
+    /// <summary>
+    /// The turn a test lets run out. Long enough that the setup leading up to it always finishes first,
+    /// even on a loaded CI runner, since any action taken while the clock ticks restarts it.
+    /// </summary>
+    private static readonly TimeSpan EXPIRING_TURN_TIMEOUT = TimeSpan.FromSeconds(2);
 
     /// <summary>
-    /// Long enough that driving a whole round by hand never trips the timer, short enough that waiting
-    /// for the exchange to time out stays quick.
+    /// Used by the exchange tests, which have to drive a whole round by hand before the timer matters.
+    /// Every action restarts the clock, so this only has to exceed the slowest single action.
     /// </summary>
-    private static readonly TimeSpan LENIENT_TURN_TIMEOUT = TimeSpan.FromMilliseconds(1500);
+    private static readonly TimeSpan LENIENT_TURN_TIMEOUT = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Used only where the test asserts that nothing happens, so it can afford to be short.
+    /// </summary>
+    private static readonly TimeSpan IDLE_TURN_TIMEOUT = TimeSpan.FromMilliseconds(200);
+
+    /// <summary>
+    /// A turn a little longer than the warning threshold, so the warning fires early in the turn and
+    /// the auto-action never gets a chance to.
+    /// </summary>
+    private static readonly TimeSpan EXPIRING_WARNING_TURN_TIMEOUT =
+        PresidentConstants.TURN_TIMEOUT_WARNING_REMAINING + EXPIRING_TURN_TIMEOUT;
+
+    /// <summary>
+    /// The same, with enough slack to drive a whole round by hand first.
+    /// </summary>
+    private static readonly TimeSpan LENIENT_WARNING_TURN_TIMEOUT =
+        PresidentConstants.TURN_TIMEOUT_WARNING_REMAINING + LENIENT_TURN_TIMEOUT;
 
     private GameInteractionRecorder _recorder;
     private IRandomService _randomService;
@@ -54,7 +73,7 @@ public class PresidentTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_Timeout_ShouldPlayTheFirstLegalCombination_WhenLeading()
     {
-        await StartGameAsync(SHORT_TURN_TIMEOUT);
+        await StartGameAsync(EXPIRING_TURN_TIMEOUT);
         var leader = _game.CurrentPlayer;
         var (expectedRank, expectedCount) = _game.GetLegalPlays(leader)[0];
 
@@ -73,7 +92,7 @@ public class PresidentTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_Timeout_ShouldPassRatherThanPlay_WhenThePileIsNotEmpty()
     {
-        await StartGameAsync(SHORT_TURN_TIMEOUT);
+        await StartGameAsync(EXPIRING_TURN_TIMEOUT);
         var leader = _game.CurrentPlayer;
         var (rank, count) = _game.GetLegalPlays(leader)[0];
         await _game.PlayAsync(leader.User, rank, count);
@@ -90,7 +109,7 @@ public class PresidentTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_TurnWarning_ShouldBeSentByPrivateMessageToTheActivePlayer()
     {
-        await StartGameAsync(WARNING_ONLY_TURN_TIMEOUT);
+        await StartGameAsync(EXPIRING_WARNING_TURN_TIMEOUT);
 
         await Wait.UntilAsync(() => _recorder.EntriesOfKind("say").Count > 0, "the turn warning PM");
         var warnings = _recorder.EntriesOfKind("say");
@@ -127,7 +146,7 @@ public class PresidentTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_TurnWarning_ShouldReachEveryDebtor_DuringTheExchange()
     {
-        await StartGameAsync(WARNING_ONLY_TURN_TIMEOUT, rounds: 2);
+        await StartGameAsync(LENIENT_WARNING_TURN_TIMEOUT, rounds: 2);
         await PlayFirstRoundOutAsync();
         Assert.That(_game.Phase, Is.EqualTo(PresidentPhase.Exchange));
         var debtors = _game.Players.Where(player => player.CardsToGive > 0)
@@ -152,11 +171,11 @@ public class PresidentTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_TurnTimer_ShouldStopOnceTheGameIsFinished()
     {
-        await StartGameAsync(SHORT_TURN_TIMEOUT);
+        await StartGameAsync(IDLE_TURN_TIMEOUT);
         await _game.CancelAsync();
         _recorder.Clear();
 
-        await Wait.ForQuietPeriodAsync(SHORT_TURN_TIMEOUT * 4);
+        await Wait.ForQuietPeriodAsync(IDLE_TURN_TIMEOUT * 4);
 
         Assert.That(_recorder.Entries, Is.Empty);
     }

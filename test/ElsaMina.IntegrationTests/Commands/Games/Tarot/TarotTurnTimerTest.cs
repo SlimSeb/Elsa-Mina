@@ -15,15 +15,24 @@ namespace ElsaMina.IntegrationTests.Commands.Games.Tarot;
 [TestFixture]
 public class TarotTurnTimerTest
 {
-    private static readonly TimeSpan SHORT_TURN_TIMEOUT = TimeSpan.FromMilliseconds(200);
+    /// <summary>
+    /// The turn a test lets run out. Long enough that the setup leading up to it always finishes first,
+    /// even on a loaded CI runner, since any action taken while the clock ticks restarts it.
+    /// </summary>
+    private static readonly TimeSpan EXPIRING_TURN_TIMEOUT = TimeSpan.FromSeconds(2);
+
+    /// <summary>
+    /// Used only where the test asserts that nothing happens, so it can afford to be short.
+    /// </summary>
+    private static readonly TimeSpan IDLE_TURN_TIMEOUT = TimeSpan.FromMilliseconds(200);
 
     /// <summary>
     /// The warning fires <see cref="TarotConstants.TURN_TIMEOUT_WARNING_REMAINING"/> before the turn
-    /// runs out, so a turn barely longer than that threshold warns almost immediately and then leaves
-    /// plenty of time before the auto-action would fire.
+    /// runs out, so a turn a little longer than that threshold warns early and then leaves plenty of
+    /// time before the auto-action would fire.
     /// </summary>
     private static readonly TimeSpan WARNING_ONLY_TURN_TIMEOUT =
-        TarotConstants.TURN_TIMEOUT_WARNING_REMAINING + TimeSpan.FromMilliseconds(200);
+        TarotConstants.TURN_TIMEOUT_WARNING_REMAINING + EXPIRING_TURN_TIMEOUT;
 
     private GameInteractionRecorder _recorder;
     private IRandomService _randomService;
@@ -55,7 +64,7 @@ public class TarotTurnTimerTest
     [Test]
     public async Task Test_Timeout_ShouldPassForThePlayerWhoRanOutOfTime_WhileBidding()
     {
-        var users = await StartDealAsync(SHORT_TURN_TIMEOUT);
+        var users = await StartDealAsync(EXPIRING_TURN_TIMEOUT);
 
         await Wait.UntilAsync(() => _game.Players[0].HasBid, "the first bidder to be passed automatically");
         await _game.CancelAsync();
@@ -71,7 +80,7 @@ public class TarotTurnTimerTest
     [Test]
     public async Task Test_Timeout_ShouldPlayTheFirstLegalMove_WhilePlaying()
     {
-        await StartDealAsync(SHORT_TURN_TIMEOUT);
+        await StartDealAsync(EXPIRING_TURN_TIMEOUT);
         await BidToPlayingPhaseAsync();
         var leader = _game.CurrentPlayer;
         var expectedCard = _game.GetLegalMoves(leader).First();
@@ -90,7 +99,7 @@ public class TarotTurnTimerTest
     [Test]
     public async Task Test_Timeout_ShouldDiscardAutomatically_WhileDiscarding()
     {
-        await StartDealAsync(SHORT_TURN_TIMEOUT);
+        await StartDealAsync(EXPIRING_TURN_TIMEOUT);
         await BidInOrderAsync(TarotBid.Petite, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass);
         Assert.That(_game.Phase, Is.EqualTo(TarotPhase.Discard));
 
@@ -120,11 +129,11 @@ public class TarotTurnTimerTest
     [Test]
     public async Task Test_TurnTimer_ShouldStopOnceTheDealIsFinished()
     {
-        await StartDealAsync(SHORT_TURN_TIMEOUT);
+        await StartDealAsync(IDLE_TURN_TIMEOUT);
         await _game.CancelAsync();
         _recorder.Clear();
 
-        await Wait.ForQuietPeriodAsync(SHORT_TURN_TIMEOUT * 4);
+        await Wait.ForQuietPeriodAsync(IDLE_TURN_TIMEOUT * 4);
 
         Assert.That(_recorder.Entries, Is.Empty);
     }
@@ -137,7 +146,7 @@ public class TarotTurnTimerTest
     public async Task Test_TurnTimer_ShouldNotRunWhileStillInTheLobby()
     {
         _game = new TarotGame(_randomService, _recorder.TemplatesManager, _configuration, _statsService,
-            SHORT_TURN_TIMEOUT);
+            IDLE_TURN_TIMEOUT);
         _game.Context = _recorder.Context;
         _recorder.MaskGameId("tarot", _game.GameId);
 
@@ -145,7 +154,7 @@ public class TarotTurnTimerTest
         await _game.JoinAsync(GameUsers.User("player1"));
         _recorder.Clear();
 
-        await Wait.ForQuietPeriodAsync(SHORT_TURN_TIMEOUT * 4);
+        await Wait.ForQuietPeriodAsync(IDLE_TURN_TIMEOUT * 4);
 
         using (Assert.EnterMultipleScope())
         {

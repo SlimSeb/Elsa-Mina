@@ -10,8 +10,14 @@ namespace ElsaMina.IntegrationTests.Fixtures;
 /// posts, the HTML pages it pushes to players, the localized replies and PMs it sends, and the
 /// templates it renders. The resulting trace is the characterization surface for the panel lifecycle.
 /// </summary>
+/// <remarks>
+/// Turn timers fire on the thread pool, so a game can record from a background thread while the test
+/// thread is reading the trace. Every access is therefore taken under a lock, and readers hand back a
+/// snapshot rather than the live list.
+/// </remarks>
 public sealed class GameInteractionRecorder
 {
+    private readonly Lock _entriesLock = new();
     private readonly List<string> _entries = [];
     private readonly List<(string Value, string Replacement)> _masks = [];
 
@@ -32,13 +38,30 @@ public sealed class GameInteractionRecorder
     /// </summary>
     public ITemplatesManager TemplatesManager { get; }
 
-    public IReadOnlyList<string> Entries => _entries;
+    /// <summary>
+    /// A snapshot of everything recorded so far.
+    /// </summary>
+    public IReadOnlyList<string> Entries
+    {
+        get
+        {
+            lock (_entriesLock)
+            {
+                return _entries.ToList();
+            }
+        }
+    }
 
     /// <summary>
     /// The recorded entries of a single kind, e.g. <c>"panel"</c> or <c>"reply"</c>.
     /// </summary>
-    public IReadOnlyList<string> EntriesOfKind(string kind) =>
-        _entries.Where(entry => entry.StartsWith(kind + " ", StringComparison.Ordinal)).ToList();
+    public IReadOnlyList<string> EntriesOfKind(string kind)
+    {
+        lock (_entriesLock)
+        {
+            return _entries.Where(entry => entry.StartsWith(kind + " ", StringComparison.Ordinal)).ToList();
+        }
+    }
 
     /// <summary>
     /// The <c>SendUpdatableHtml</c> calls only, as <c>"panelId new|update|clear"</c>.
@@ -47,7 +70,13 @@ public sealed class GameInteractionRecorder
         .Select(entry => entry["panel ".Length..])
         .ToList();
 
-    public void Clear() => _entries.Clear();
+    public void Clear()
+    {
+        lock (_entriesLock)
+        {
+            _entries.Clear();
+        }
+    }
 
     /// <summary>
     /// Rewrites <paramref name="value"/> to <paramref name="replacement"/> in every recorded entry.
@@ -75,25 +104,26 @@ public sealed class GameInteractionRecorder
     /// </summary>
     public IReadOnlyList<string> CompressedTrace()
     {
+        var entries = Entries;
         var compressed = new List<string>();
         var index = 0;
 
-        while (index < _entries.Count)
+        while (index < entries.Count)
         {
-            var (blockLength, repeats) = FindLongestRepeatAt(index);
+            var (blockLength, repeats) = FindLongestRepeatAt(entries, index);
 
             if (repeats == 1)
             {
-                compressed.Add(_entries[index]);
+                compressed.Add(entries[index]);
             }
             else if (blockLength == 1)
             {
-                compressed.Add($"{_entries[index]} x{repeats}");
+                compressed.Add($"{entries[index]} x{repeats}");
             }
             else
             {
                 compressed.Add($"<<repeat {repeats}>>");
-                compressed.AddRange(_entries.Skip(index).Take(blockLength));
+                compressed.AddRange(entries.Skip(index).Take(blockLength));
                 compressed.Add("<<end>>");
             }
 
@@ -107,22 +137,23 @@ public sealed class GameInteractionRecorder
     /// The block starting at <paramref name="start"/> that covers the most entries by repeating itself
     /// back to back. Ties go to the shorter block, which compresses more aggressively.
     /// </summary>
-    private (int BlockLength, int Repeats) FindLongestRepeatAt(int start)
+    private static (int BlockLength, int Repeats) FindLongestRepeatAt(IReadOnlyList<string> entries, int start)
     {
         var bestLength = 1;
         var bestRepeats = 1;
-        var maxLength = Math.Min(MAX_BLOCK_LENGTH, _entries.Count - start);
+        var maxLength = Math.Min(MAX_BLOCK_LENGTH, entries.Count - start);
 
         for (var length = 1; length <= maxLength; length++)
         {
             // A repeat must at least start with the same entry, which prunes most candidate lengths.
-            if (start + length >= _entries.Count || _entries[start] != _entries[start + length])
+            if (start + length >= entries.Count || entries[start] != entries[start + length])
             {
                 continue;
             }
 
             var repeats = 1;
-            while (start + (repeats + 1) * length <= _entries.Count && BlocksMatch(start, start + repeats * length, length))
+            while (start + (repeats + 1) * length <= entries.Count
+                   && BlocksMatch(entries, start, start + repeats * length, length))
             {
                 repeats++;
             }
@@ -137,11 +168,11 @@ public sealed class GameInteractionRecorder
         return (bestLength, bestRepeats);
     }
 
-    private bool BlocksMatch(int firstStart, int secondStart, int length)
+    private static bool BlocksMatch(IReadOnlyList<string> entries, int firstStart, int secondStart, int length)
     {
         for (var offset = 0; offset < length; offset++)
         {
-            if (_entries[firstStart + offset] != _entries[secondStart + offset])
+            if (entries[firstStart + offset] != entries[secondStart + offset])
             {
                 return false;
             }
@@ -157,7 +188,10 @@ public sealed class GameInteractionRecorder
             entry = entry.Replace(value, replacement, StringComparison.Ordinal);
         }
 
-        _entries.Add(entry);
+        lock (_entriesLock)
+        {
+            _entries.Add(entry);
+        }
     }
 
     /// <summary>

@@ -12,15 +12,34 @@ public static class TraceGolden
     private const string TRACES_FOLDER = "Traces";
 
     /// <summary>
-    /// Asserts the given trace matches <c>Traces/{name}.txt</c>. When the golden file does not exist
-    /// yet it is written out and the test fails, so a new trace is never silently accepted.
+    /// Set this environment variable to have a missing golden written out instead of simply failing.
     /// </summary>
+    private const string WRITE_MISSING_VARIABLE = "ELSAMINA_WRITE_GOLDEN_TRACES";
+
+    /// <summary>
+    /// Asserts the given trace matches <c>Traces/{name}.txt</c>, which the test project copies to the
+    /// output directory.
+    /// </summary>
+    /// <remarks>
+    /// A missing golden is a hard failure rather than something the run quietly creates: writing one
+    /// makes the next run pass against a file the test itself produced, which hides a broken build
+    /// setup on a developer machine right up until CI checks out a clean tree. Pass
+    /// <c>ELSAMINA_WRITE_GOLDEN_TRACES=1</c> when deliberately recording a new trace.
+    /// </remarks>
     public static void Verify(string name, IReadOnlyList<string> actual)
     {
         var path = Path.Combine(TestContext.CurrentContext.TestDirectory, TRACES_FOLDER, $"{name}.txt");
 
         if (!File.Exists(path))
         {
+            if (Environment.GetEnvironmentVariable(WRITE_MISSING_VARIABLE) is null)
+            {
+                Assert.Fail($"Golden trace '{name}' was not found at {path}. It should have been copied " +
+                            "from Commands/Games/Traces by the build. To record a new one, re-run with " +
+                            $"{WRITE_MISSING_VARIABLE}=1 and copy the result into the source tree.");
+                return;
+            }
+
             WriteGolden(path, actual);
             Assert.Fail($"Golden trace '{name}' did not exist and has been written to {path}. " +
                         "Review it, copy it next to the test sources, then re-run.");

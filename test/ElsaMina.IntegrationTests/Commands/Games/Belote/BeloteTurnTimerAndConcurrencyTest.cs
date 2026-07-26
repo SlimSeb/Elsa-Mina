@@ -14,10 +14,19 @@ namespace ElsaMina.IntegrationTests.Commands.Games.Belote;
 [TestFixture]
 public class BeloteTurnTimerAndConcurrencyTest
 {
-    private static readonly TimeSpan SHORT_TURN_TIMEOUT = TimeSpan.FromMilliseconds(200);
+    /// <summary>
+    /// The turn a test lets run out. Long enough that the setup leading up to it always finishes first,
+    /// even on a loaded CI runner, since any action taken while the clock ticks restarts it.
+    /// </summary>
+    private static readonly TimeSpan EXPIRING_TURN_TIMEOUT = TimeSpan.FromSeconds(2);
+
+    /// <summary>
+    /// Used only where the test asserts that nothing happens, so it can afford to be short.
+    /// </summary>
+    private static readonly TimeSpan IDLE_TURN_TIMEOUT = TimeSpan.FromMilliseconds(200);
 
     private static readonly TimeSpan WARNING_ONLY_TURN_TIMEOUT =
-        BeloteConstants.TURN_TIMEOUT_WARNING_REMAINING + TimeSpan.FromMilliseconds(200);
+        BeloteConstants.TURN_TIMEOUT_WARNING_REMAINING + EXPIRING_TURN_TIMEOUT;
 
     private GameInteractionRecorder _recorder;
     private IRandomService _randomService;
@@ -49,7 +58,7 @@ public class BeloteTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_Timeout_ShouldPassForThePlayerWhoRanOutOfTime_WhileBidding()
     {
-        await StartDealAsync(SHORT_TURN_TIMEOUT);
+        await StartDealAsync(EXPIRING_TURN_TIMEOUT);
 
         await Wait.UntilAsync(() => _game.Players[0].HasBid, "the first bidder to be passed automatically");
         var currentPlayer = _game.CurrentPlayer;
@@ -65,7 +74,7 @@ public class BeloteTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_Timeout_ShouldPlayTheFirstLegalMove_WhilePlaying()
     {
-        await StartDealAsync(SHORT_TURN_TIMEOUT);
+        await StartDealAsync(EXPIRING_TURN_TIMEOUT);
         await _game.BidAsync(_game.CurrentPlayer.User, pass: false, null);
         var leader = _game.CurrentPlayer;
         var expectedCard = _game.GetLegalMoves(leader).First();
@@ -96,11 +105,11 @@ public class BeloteTurnTimerAndConcurrencyTest
     [Test]
     public async Task Test_TurnTimer_ShouldStopOnceTheDealIsFinished()
     {
-        await StartDealAsync(SHORT_TURN_TIMEOUT);
+        await StartDealAsync(IDLE_TURN_TIMEOUT);
         await _game.CancelAsync();
         _recorder.Clear();
 
-        await Wait.ForQuietPeriodAsync(SHORT_TURN_TIMEOUT * 4);
+        await Wait.ForQuietPeriodAsync(IDLE_TURN_TIMEOUT * 4);
 
         Assert.That(_recorder.Entries, Is.Empty);
     }

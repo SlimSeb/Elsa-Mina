@@ -6,7 +6,12 @@ namespace ElsaMina.IntegrationTests.Fixtures;
 public static class Wait
 {
     private static readonly TimeSpan POLL_INTERVAL = TimeSpan.FromMilliseconds(10);
-    private static readonly TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Generous on purpose: a loaded CI runner is far slower than a development machine, and a wait
+    /// that ends early turns a slow machine into a failing build.
+    /// </summary>
+    private static readonly TimeSpan DEFAULT_TIMEOUT = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Waits until <paramref name="condition"/> holds, failing the test if it never does.
