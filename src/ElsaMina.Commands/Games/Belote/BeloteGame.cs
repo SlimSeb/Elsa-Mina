@@ -61,7 +61,7 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
 
     public BelotePlayer Taker => _takerIndex >= 0 ? Seats[_takerIndex] : null;
     public BeloteCard TurnedCard { get; private set; }
-    public BeloteSuit? Trump { get; private set; }
+    public Suit? Trump { get; private set; }
 
     public BeloteTrick CurrentTrick { get; private set; }
     public BeloteTrick LastTrick { get; private set; }
@@ -116,10 +116,10 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
         RestartTurnTimer();
     }
 
-    public Task BidAsync(IUser user, bool pass, BeloteSuit? chosenSuit) =>
+    public Task BidAsync(IUser user, bool pass, Suit? chosenSuit) =>
         RunActionAsync(() => BidCoreAsync(user, pass, chosenSuit));
 
-    private async Task BidCoreAsync(IUser user, bool pass, BeloteSuit? chosenSuit)
+    private async Task BidCoreAsync(IUser user, bool pass, Suit? chosenSuit)
     {
         if (Phase != BelotePhase.Bidding || CurrentPlayer?.UserId != user.UserId)
         {
@@ -128,7 +128,7 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
 
         if (!pass)
         {
-            BeloteSuit trump;
+            Suit trump;
             if (BiddingRound == 1)
             {
                 trump = TurnedCard.Suit;
@@ -153,7 +153,7 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
             _takerIndex = CurrentTurnIndex;
             CurrentPlayer.IsTaker = true;
             Context.ReplyLocalizedMessage("belote_taker_announced", Taker.Name, GetSuitName(trump),
-                BeloteCard.SuitDisplay(trump));
+                CardToken.SuitSymbol(trump));
 
             await BeginPlayAsync(trump);
             return;
@@ -197,7 +197,7 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
 
     #region Playing
 
-    private async Task BeginPlayAsync(BeloteSuit trump)
+    private async Task BeginPlayAsync(Suit trump)
     {
         Trump = trump;
 
@@ -226,7 +226,7 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
         RestartTurnTimer();
     }
 
-    private void DetectBelote(BeloteSuit trump)
+    private void DetectBelote(Suit trump)
     {
         var king = new BeloteCard(trump, BeloteCard.KING);
         var queen = new BeloteCard(trump, BeloteCard.QUEEN);
@@ -450,7 +450,7 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
             : []
     };
 
-    private static void SortHand(List<BeloteCard> hand, BeloteSuit? trump)
+    private static void SortHand(List<BeloteCard> hand, Suit? trump)
     {
         hand.Sort((first, second) =>
         {
@@ -470,6 +470,6 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
         });
     }
 
-    private string GetSuitName(BeloteSuit suit) =>
+    private string GetSuitName(Suit suit) =>
         Context.GetString($"belote_suit_{suit.ToString().ToLowerInvariant()}");
 }

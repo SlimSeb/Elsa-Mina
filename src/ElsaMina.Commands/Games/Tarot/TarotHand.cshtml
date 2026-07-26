@@ -1,5 +1,6 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Tarot.TarotViewModel>
 @using ElsaMina.Commands.Games.Tarot
+@using ElsaMina.Commands.Games.Cards
 @using ElsaMina.Core.Utils
 
 @{
@@ -18,7 +19,7 @@
         {
             return "#1f6dbf";
         }
-        return card.Suit is TarotSuit.Hearts or TarotSuit.Diamonds ? "#cc2b2b" : "#111";
+        return card.Suit is Suit.Hearts or Suit.Diamonds ? "#cc2b2b" : "#111";
     }
 
     string CardFontSize(TarotCard card) => card.IsExcuse ? "1.35em" : "1.05em";

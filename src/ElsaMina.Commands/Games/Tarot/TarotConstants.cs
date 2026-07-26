@@ -1,3 +1,5 @@
+using ElsaMina.Commands.Games.Cards;
+
 namespace ElsaMina.Commands.Games.Tarot;
 
 public static class TarotConstants
@@ -89,6 +91,8 @@ public static class TarotConstants
     public const int SLAM_UNANNOUNCED_HALF_POINTS = 400;
     public const int SLAM_FAILED_HALF_POINTS = 400;
 
+    public static readonly IReadOnlyList<Suit> Suits = [Suit.Hearts, Suit.Spades, Suit.Diamonds, Suit.Clubs];
+
     /// <summary>
     /// Builds a full, ordered 78-card French Tarot deck (56 suit cards + 21 trumps + the Excuse).
     /// </summary>
@@ -96,20 +100,20 @@ public static class TarotConstants
     {
         var deck = new List<TarotCard>(78);
 
-        foreach (var suit in new[] { TarotSuit.Hearts, TarotSuit.Spades, TarotSuit.Diamonds, TarotSuit.Clubs })
+        foreach (var suit in Suits)
         {
             for (var rank = 1; rank <= 14; rank++)
             {
-                deck.Add(new TarotCard(suit, rank));
+                deck.Add(TarotCard.Suited(suit, rank));
             }
         }
 
         for (var rank = 1; rank <= 21; rank++)
         {
-            deck.Add(new TarotCard(TarotSuit.Trump, rank));
+            deck.Add(TarotCard.Trump(rank));
         }
 
-        deck.Add(new TarotCard(TarotSuit.Excuse, 0));
+        deck.Add(TarotCard.Excuse);
 
         return deck;
     }

@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Commands.Games.Belote;
 using ElsaMina.Commands.Games.President;
 using ElsaMina.Commands.Games.Tarot;
@@ -80,38 +81,48 @@ public class CardTokenRoundTripTest
     /// The exact tokens the panel buttons carry, pinned so a refactor of the token helpers cannot
     /// quietly change the wire format.
     /// </summary>
-    [TestCase("exc", TarotSuit.Excuse, 0)]
-    [TestCase("t1", TarotSuit.Trump, TarotCard.PETIT)]
-    [TestCase("t21", TarotSuit.Trump, TarotCard.MONDE)]
-    [TestCase("jh", TarotSuit.Hearts, TarotCard.JACK)]
-    [TestCase("cs", TarotSuit.Spades, TarotCard.CAVALIER)]
-    [TestCase("qd", TarotSuit.Diamonds, TarotCard.QUEEN)]
-    [TestCase("kc", TarotSuit.Clubs, TarotCard.KING)]
-    [TestCase("10h", TarotSuit.Hearts, 10)]
-    public void Test_TarotCard_ShouldProduceTheExpectedToken(string expectedToken, TarotSuit suit, int rank)
+    [TestCase("jh", Suit.Hearts, TarotCard.JACK)]
+    [TestCase("cs", Suit.Spades, TarotCard.CAVALIER)]
+    [TestCase("qd", Suit.Diamonds, TarotCard.QUEEN)]
+    [TestCase("kc", Suit.Clubs, TarotCard.KING)]
+    [TestCase("10h", Suit.Hearts, 10)]
+    public void Test_TarotCard_ShouldProduceTheExpectedToken(string expectedToken, Suit suit, int rank)
     {
-        Assert.That(new TarotCard(suit, rank).ToToken(), Is.EqualTo(expectedToken));
+        Assert.That(TarotCard.Suited(suit, rank).ToToken(), Is.EqualTo(expectedToken));
     }
 
-    [TestCase("jh", BeloteSuit.Hearts, BeloteCard.JACK)]
-    [TestCase("qs", BeloteSuit.Spades, BeloteCard.QUEEN)]
-    [TestCase("kd", BeloteSuit.Diamonds, BeloteCard.KING)]
-    [TestCase("ac", BeloteSuit.Clubs, BeloteCard.ACE)]
-    [TestCase("7h", BeloteSuit.Hearts, 7)]
-    [TestCase("10s", BeloteSuit.Spades, 10)]
-    public void Test_BeloteCard_ShouldProduceTheExpectedToken(string expectedToken, BeloteSuit suit, int rank)
+    [TestCase("t1", TarotCard.PETIT)]
+    [TestCase("t21", TarotCard.MONDE)]
+    public void Test_TarotTrump_ShouldProduceTheExpectedToken(string expectedToken, int rank)
+    {
+        Assert.That(TarotCard.Trump(rank).ToToken(), Is.EqualTo(expectedToken));
+    }
+
+    [Test]
+    public void Test_TarotExcuse_ShouldProduceTheExpectedToken()
+    {
+        Assert.That(TarotCard.Excuse.ToToken(), Is.EqualTo("exc"));
+    }
+
+    [TestCase("jh", Suit.Hearts, BeloteCard.JACK)]
+    [TestCase("qs", Suit.Spades, BeloteCard.QUEEN)]
+    [TestCase("kd", Suit.Diamonds, BeloteCard.KING)]
+    [TestCase("ac", Suit.Clubs, BeloteCard.ACE)]
+    [TestCase("7h", Suit.Hearts, 7)]
+    [TestCase("10s", Suit.Spades, 10)]
+    public void Test_BeloteCard_ShouldProduceTheExpectedToken(string expectedToken, Suit suit, int rank)
     {
         Assert.That(new BeloteCard(suit, rank).ToToken(), Is.EqualTo(expectedToken));
     }
 
-    [TestCase("jh", PresidentSuit.Hearts, PresidentCard.JACK)]
-    [TestCase("qs", PresidentSuit.Spades, PresidentCard.QUEEN)]
-    [TestCase("kd", PresidentSuit.Diamonds, PresidentCard.KING)]
-    [TestCase("ac", PresidentSuit.Clubs, PresidentCard.ACE)]
-    [TestCase("2h", PresidentSuit.Hearts, PresidentCard.TWO)]
-    [TestCase("3s", PresidentSuit.Spades, 3)]
-    [TestCase("10d", PresidentSuit.Diamonds, 10)]
-    public void Test_PresidentCard_ShouldProduceTheExpectedToken(string expectedToken, PresidentSuit suit,
+    [TestCase("jh", Suit.Hearts, PresidentCard.JACK)]
+    [TestCase("qs", Suit.Spades, PresidentCard.QUEEN)]
+    [TestCase("kd", Suit.Diamonds, PresidentCard.KING)]
+    [TestCase("ac", Suit.Clubs, PresidentCard.ACE)]
+    [TestCase("2h", Suit.Hearts, PresidentCard.TWO)]
+    [TestCase("3s", Suit.Spades, 3)]
+    [TestCase("10d", Suit.Diamonds, 10)]
+    public void Test_PresidentCard_ShouldProduceTheExpectedToken(string expectedToken, Suit suit,
         int rank)
     {
         Assert.That(new PresidentCard(suit, rank).ToToken(), Is.EqualTo(expectedToken));
@@ -121,30 +132,41 @@ public class CardTokenRoundTripTest
     /// The alternative spellings players type in chat, which <see cref="TarotCard.Parse"/> accepts
     /// alongside the canonical tokens.
     /// </summary>
-    [TestCase("excuse", TarotSuit.Excuse, 0)]
-    [TestCase("x", TarotSuit.Excuse, 0)]
-    [TestCase("fool", TarotSuit.Excuse, 0)]
-    [TestCase("petit", TarotSuit.Trump, TarotCard.PETIT)]
-    [TestCase("monde", TarotSuit.Trump, TarotCard.MONDE)]
-    [TestCase("world", TarotSuit.Trump, TarotCard.MONDE)]
-    [TestCase("  KH  ", TarotSuit.Hearts, TarotCard.KING)]
-    public void Test_TarotCard_ShouldAcceptTheAlternativeSpellings(string token, TarotSuit suit, int rank)
+    [TestCase("excuse")]
+    [TestCase("x")]
+    [TestCase("fool")]
+    public void Test_TarotExcuse_ShouldAcceptTheAlternativeSpellings(string token)
     {
-        Assert.That(TarotCard.Parse(token), Is.EqualTo(new TarotCard(suit, rank)));
+        Assert.That(TarotCard.Parse(token), Is.EqualTo(TarotCard.Excuse));
     }
 
-    [TestCase("vh", BeloteSuit.Hearts, BeloteCard.JACK)]
-    [TestCase("rs", BeloteSuit.Spades, BeloteCard.KING)]
-    [TestCase("1d", BeloteSuit.Diamonds, BeloteCard.ACE)]
-    [TestCase(" AC ", BeloteSuit.Clubs, BeloteCard.ACE)]
-    public void Test_BeloteCard_ShouldAcceptTheAlternativeSpellings(string token, BeloteSuit suit, int rank)
+    [TestCase("petit", TarotCard.PETIT)]
+    [TestCase("monde", TarotCard.MONDE)]
+    [TestCase("world", TarotCard.MONDE)]
+    public void Test_TarotTrump_ShouldAcceptTheAlternativeSpellings(string token, int rank)
+    {
+        Assert.That(TarotCard.Parse(token), Is.EqualTo(TarotCard.Trump(rank)));
+    }
+
+    [TestCase("  KH  ", Suit.Hearts, TarotCard.KING)]
+    [TestCase("qd", Suit.Diamonds, TarotCard.QUEEN)]
+    public void Test_TarotCard_ShouldAcceptTheAlternativeSpellings(string token, Suit suit, int rank)
+    {
+        Assert.That(TarotCard.Parse(token), Is.EqualTo(TarotCard.Suited(suit, rank)));
+    }
+
+    [TestCase("vh", Suit.Hearts, BeloteCard.JACK)]
+    [TestCase("rs", Suit.Spades, BeloteCard.KING)]
+    [TestCase("1d", Suit.Diamonds, BeloteCard.ACE)]
+    [TestCase(" AC ", Suit.Clubs, BeloteCard.ACE)]
+    public void Test_BeloteCard_ShouldAcceptTheAlternativeSpellings(string token, Suit suit, int rank)
     {
         Assert.That(BeloteCard.Parse(token), Is.EqualTo(new BeloteCard(suit, rank)));
     }
 
-    [TestCase("th", PresidentSuit.Hearts, 10)]
-    [TestCase("1s", PresidentSuit.Spades, PresidentCard.ACE)]
-    public void Test_PresidentCard_ShouldAcceptTheAlternativeSpellings(string token, PresidentSuit suit,
+    [TestCase("th", Suit.Hearts, 10)]
+    [TestCase("1s", Suit.Spades, PresidentCard.ACE)]
+    public void Test_PresidentCard_ShouldAcceptTheAlternativeSpellings(string token, Suit suit,
         int rank)
     {
         Assert.That(PresidentCard.Parse(token), Is.EqualTo(new PresidentCard(suit, rank)));
@@ -183,28 +205,28 @@ public class CardTokenRoundTripTest
         Assert.That(PresidentCard.Parse(token), Is.Null);
     }
 
-    [TestCase("h", BeloteSuit.Hearts)]
-    [TestCase("coeur", BeloteSuit.Hearts)]
-    [TestCase("cœurs", BeloteSuit.Hearts)]
-    [TestCase("pique", BeloteSuit.Spades)]
-    [TestCase("carreaux", BeloteSuit.Diamonds)]
-    [TestCase("trèfle", BeloteSuit.Clubs)]
-    [TestCase("clubs", BeloteSuit.Clubs)]
-    public void Test_BeloteSuit_ShouldParseTheAcceptedSpellings(string token, BeloteSuit expected)
+    [TestCase("h", Suit.Hearts)]
+    [TestCase("coeur", Suit.Hearts)]
+    [TestCase("cœurs", Suit.Hearts)]
+    [TestCase("pique", Suit.Spades)]
+    [TestCase("carreaux", Suit.Diamonds)]
+    [TestCase("trèfle", Suit.Clubs)]
+    [TestCase("clubs", Suit.Clubs)]
+    public void Test_BeloteSuit_ShouldParseTheAcceptedSpellings(string token, Suit expected)
     {
-        Assert.That(BeloteCard.ParseSuit(token), Is.EqualTo(expected));
+        Assert.That(CardToken.ParseSuitName(token), Is.EqualTo(expected));
     }
 
-    [TestCase(BeloteSuit.Hearts, "h")]
-    [TestCase(BeloteSuit.Spades, "s")]
-    [TestCase(BeloteSuit.Diamonds, "d")]
-    [TestCase(BeloteSuit.Clubs, "c")]
-    public void Test_BeloteSuitToken_ShouldRoundTripThroughParseSuit(BeloteSuit suit, string expectedToken)
+    [TestCase(Suit.Hearts, "h")]
+    [TestCase(Suit.Spades, "s")]
+    [TestCase(Suit.Diamonds, "d")]
+    [TestCase(Suit.Clubs, "c")]
+    public void Test_BeloteSuitToken_ShouldRoundTripThroughParseSuit(Suit suit, string expectedToken)
     {
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(BeloteCard.SuitToken(suit), Is.EqualTo(expectedToken));
-            Assert.That(BeloteCard.ParseSuit(BeloteCard.SuitToken(suit)), Is.EqualTo(suit));
+            Assert.That(CardToken.SuitLetter(suit), Is.EqualTo(expectedToken));
+            Assert.That(CardToken.ParseSuitName(CardToken.SuitLetter(suit)), Is.EqualTo(suit));
         }
     }
 }

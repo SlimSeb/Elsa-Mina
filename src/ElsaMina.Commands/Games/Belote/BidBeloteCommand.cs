@@ -26,7 +26,7 @@ public class BidBeloteCommand : GameActionCommandBase<IBeloteGame>
                 return;
         }
 
-        var suit = BeloteCard.ParseSuit(normalized);
+        var suit = CardToken.ParseSuitName(normalized);
         if (suit is null)
         {
             context.ReplyLocalizedMessage("belote_bid_unknown");

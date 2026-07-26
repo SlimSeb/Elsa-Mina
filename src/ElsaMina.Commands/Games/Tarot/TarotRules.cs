@@ -1,3 +1,5 @@
+using ElsaMina.Commands.Games.Cards;
+
 namespace ElsaMina.Commands.Games.Tarot;
 
 /// <summary>
@@ -22,23 +24,23 @@ public static class TarotRules
 
         // Leading, or only the Excuse has been played so far: anything goes, except that in a
         // five-handed game the suit of the call may not be led.
-        if (trick.IsEmpty || trick.LeadSuit is null)
+        if (trick.IsEmpty || trick.LeadCard is null)
         {
             return GetLegalLeadMoves(hand, playerCount, calledKing, trickNumber);
         }
 
         var legal = new List<TarotCard>();
-        var leadSuit = trick.LeadSuit.Value;
+        var leadCard = trick.LeadCard;
         var highestTrump = trick.HighestTrumpRank;
         var trumps = hand.Where(card => card.IsTrump).ToList();
 
-        if (leadSuit == TarotSuit.Trump)
+        if (leadCard.IsTrump)
         {
             AddTrumpMoves(legal, trumps, highestTrump, hand);
         }
         else
         {
-            var suitCards = hand.Where(card => card.Suit == leadSuit).ToList();
+            var suitCards = hand.Where(card => card.Suit == leadCard.Suit).ToList();
             if (suitCards.Count > 0)
             {
                 legal.AddRange(suitCards);
@@ -174,6 +176,5 @@ public static class TarotRules
     /// to find a partner.
     /// </summary>
     public static bool HoldsAllKings(IReadOnlyCollection<TarotCard> hand) =>
-        new[] { TarotSuit.Hearts, TarotSuit.Spades, TarotSuit.Diamonds, TarotSuit.Clubs }
-            .All(suit => hand.Contains(new TarotCard(suit, TarotCard.KING)));
+        TarotConstants.Suits.All(suit => hand.Contains(TarotCard.Suited(suit, TarotCard.KING)));
 }

@@ -1,3 +1,5 @@
+using ElsaMina.Commands.Games.Cards;
+
 namespace ElsaMina.Commands.Games.Poker;
 
 public static class PokerConstants
@@ -26,7 +28,7 @@ public static class PokerConstants
     public static List<PokerCard> BuildDeck()
     {
         var deck = new List<PokerCard>(52);
-        foreach (var suit in new[] { PokerSuit.Clubs, PokerSuit.Diamonds, PokerSuit.Hearts, PokerSuit.Spades })
+        foreach (var suit in new[] { Suit.Clubs, Suit.Diamonds, Suit.Hearts, Suit.Spades })
         {
             for (var rank = 2; rank <= PokerCard.ACE; rank++)
             {

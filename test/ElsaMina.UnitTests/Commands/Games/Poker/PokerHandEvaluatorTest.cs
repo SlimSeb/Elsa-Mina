@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Commands.Games.Poker;
 
 namespace ElsaMina.UnitTests.Commands.Games.Poker;
@@ -35,10 +36,10 @@ public class PokerHandEvaluatorTest
         };
         var suit = token[1] switch
         {
-            'h' => PokerSuit.Hearts,
-            'd' => PokerSuit.Diamonds,
-            'c' => PokerSuit.Clubs,
-            _ => PokerSuit.Spades
+            'h' => Suit.Hearts,
+            'd' => Suit.Diamonds,
+            'c' => Suit.Clubs,
+            _ => Suit.Spades
         };
         return new PokerCard(suit, rank);
     }

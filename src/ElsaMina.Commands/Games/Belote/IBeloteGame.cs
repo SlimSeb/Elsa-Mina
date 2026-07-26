@@ -12,7 +12,7 @@ public interface IBeloteGame : IResendableCardGame, ISubstitutableCardGame
     BelotePlayer CurrentPlayer { get; }
     BelotePlayer Taker { get; }
     BeloteCard TurnedCard { get; }
-    BeloteSuit? Trump { get; }
+    Suit? Trump { get; }
 
     BeloteTrick CurrentTrick { get; }
     BeloteTrick LastTrick { get; }
@@ -26,7 +26,7 @@ public interface IBeloteGame : IResendableCardGame, ISubstitutableCardGame
 
     BeloteScoreResult ScoreResult { get; }
 
-    Task BidAsync(IUser user, bool pass, BeloteSuit? chosenSuit);
+    Task BidAsync(IUser user, bool pass, Suit? chosenSuit);
     Task PlayAsync(IUser user, BeloteCard card);
     IReadOnlyCollection<BeloteCard> GetLegalMoves(BelotePlayer player);
 }

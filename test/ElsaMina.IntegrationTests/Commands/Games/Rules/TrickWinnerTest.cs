@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Commands.Games.Belote;
 using ElsaMina.Commands.Games.Tarot;
 using ElsaMina.IntegrationTests.Fixtures;
@@ -28,7 +29,7 @@ public class TrickWinnerTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(trick.LeadSuit, Is.EqualTo(TarotSuit.Hearts));
+            Assert.That(trick.LeadSuit, Is.EqualTo(Suit.Hearts));
             Assert.That(trick.HighestTrumpRank, Is.Null);
             Assert.That(trick.DetermineWinner(), Is.SameAs(high));
         }
@@ -83,7 +84,7 @@ public class TrickWinnerTest
         using (Assert.EnterMultipleScope())
         {
             // The Excuse does not set the lead suit either: the next card does.
-            Assert.That(trick.LeadSuit, Is.EqualTo(TarotSuit.Hearts));
+            Assert.That(trick.LeadSuit, Is.EqualTo(Suit.Hearts));
             Assert.That(trick.DetermineWinner(), Is.SameAs(suitPlayer));
         }
     }
@@ -138,7 +139,7 @@ public class TrickWinnerTest
     [Test]
     public void Test_BeloteTrick_ShouldBeWonByTheHighestCardOfTheLeadSuit_WhenNoTrumpIsPlayed()
     {
-        var trick = new BeloteTrick(BeloteSuit.Clubs);
+        var trick = new BeloteTrick(Suit.Clubs);
         var lead = BeloteSeat("lead", 0);
         var ace = BeloteSeat("ace", 1);
         var offSuit = BeloteSeat("offsuit", 0);
@@ -149,7 +150,7 @@ public class TrickWinnerTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(trick.LeadSuit, Is.EqualTo(BeloteSuit.Hearts));
+            Assert.That(trick.LeadSuit, Is.EqualTo(Suit.Hearts));
             Assert.That(trick.HighestTrumpStrength, Is.Null);
             Assert.That(trick.DetermineWinner(), Is.SameAs(ace));
         }
@@ -161,7 +162,7 @@ public class TrickWinnerTest
     [Test]
     public void Test_BeloteTrick_ShouldRankPlainSuitsAceTenKing()
     {
-        var trick = new BeloteTrick(BeloteSuit.Clubs);
+        var trick = new BeloteTrick(Suit.Clubs);
         var king = BeloteSeat("king", 0);
         var ten = BeloteSeat("ten", 1);
         var jack = BeloteSeat("jack", 0);
@@ -179,7 +180,7 @@ public class TrickWinnerTest
     [Test]
     public void Test_BeloteTrick_ShouldRankTrumpJackNineAce()
     {
-        var trick = new BeloteTrick(BeloteSuit.Hearts);
+        var trick = new BeloteTrick(Suit.Hearts);
         var ace = BeloteSeat("ace", 0);
         var nine = BeloteSeat("nine", 1);
         var jack = BeloteSeat("jack", 0);
@@ -194,7 +195,7 @@ public class TrickWinnerTest
     [Test]
     public void Test_BeloteTrick_ShouldRankTheNineAboveTheAceUnderTrump()
     {
-        var trick = new BeloteTrick(BeloteSuit.Hearts);
+        var trick = new BeloteTrick(Suit.Hearts);
         var ace = BeloteSeat("ace", 0);
         var nine = BeloteSeat("nine", 1);
 
@@ -207,7 +208,7 @@ public class TrickWinnerTest
     [Test]
     public void Test_BeloteTrick_ShouldBeWonByATrump_EvenWhenTheLeadSuitIsHigher()
     {
-        var trick = new BeloteTrick(BeloteSuit.Spades);
+        var trick = new BeloteTrick(Suit.Spades);
         var ace = BeloteSeat("ace", 0);
         var trumper = BeloteSeat("trumper", 1);
 
@@ -224,7 +225,7 @@ public class TrickWinnerTest
     [Test]
     public void Test_BeloteTrick_ShouldBeWonByTheStrongestTrump_WhenSeveralArePlayed()
     {
-        var trick = new BeloteTrick(BeloteSuit.Spades);
+        var trick = new BeloteTrick(Suit.Spades);
         var ace = BeloteSeat("ace", 0);
         var lowTrump = BeloteSeat("lowtrump", 1);
         var highTrump = BeloteSeat("hightrump", 0);
@@ -247,7 +248,7 @@ public class TrickWinnerTest
     [Test]
     public void Test_BeloteTrick_CurrentWinner_ShouldTrackTheWinnerAsCardsAreAdded()
     {
-        var trick = new BeloteTrick(BeloteSuit.Spades);
+        var trick = new BeloteTrick(Suit.Spades);
         var lead = BeloteSeat("lead", 0);
         var follower = BeloteSeat("follower", 1);
         var trumper = BeloteSeat("trumper", 0);
@@ -270,7 +271,7 @@ public class TrickWinnerTest
     [Test]
     public void Test_BeloteTrick_ShouldHaveNoWinner_WhenEmpty()
     {
-        var trick = new BeloteTrick(BeloteSuit.Hearts);
+        var trick = new BeloteTrick(Suit.Hearts);
 
         using (Assert.EnterMultipleScope())
         {

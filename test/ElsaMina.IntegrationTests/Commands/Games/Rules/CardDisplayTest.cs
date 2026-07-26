@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using System.Globalization;
 using ElsaMina.Commands.Games.Belote;
 using ElsaMina.Commands.Games.Poker;
@@ -17,23 +18,19 @@ public class CardDisplayTest
     private static readonly CultureInfo FRENCH = new("fr-FR");
     private static readonly CultureInfo ENGLISH = new("en-US");
 
-    [TestCase(TarotSuit.Hearts, TarotCard.JACK, "V♥", "J♥")]
-    [TestCase(TarotSuit.Hearts, TarotCard.CAVALIER, "C♥", "C♥")]
-    [TestCase(TarotSuit.Hearts, TarotCard.QUEEN, "D♥", "Q♥")]
-    [TestCase(TarotSuit.Hearts, TarotCard.KING, "R♥", "K♥")]
-    [TestCase(TarotSuit.Spades, TarotCard.KING, "R♠", "K♠")]
-    [TestCase(TarotSuit.Diamonds, TarotCard.QUEEN, "D♦", "Q♦")]
-    [TestCase(TarotSuit.Clubs, TarotCard.JACK, "V♣", "J♣")]
-    [TestCase(TarotSuit.Hearts, 1, "1♥", "1♥")]
-    [TestCase(TarotSuit.Spades, 10, "10♠", "10♠")]
-    [TestCase(TarotSuit.Trump, TarotCard.PETIT, "A1", "T1")]
-    [TestCase(TarotSuit.Trump, 12, "A12", "T12")]
-    [TestCase(TarotSuit.Trump, TarotCard.MONDE, "A21", "T21")]
-    [TestCase(TarotSuit.Excuse, 0, "🃏", "🃏")]
-    public void Test_TarotCard_ShouldDisplayTheExpectedLabel(TarotSuit suit, int rank, string french,
+    [TestCase(Suit.Hearts, TarotCard.JACK, "V♥", "J♥")]
+    [TestCase(Suit.Hearts, TarotCard.CAVALIER, "C♥", "C♥")]
+    [TestCase(Suit.Hearts, TarotCard.QUEEN, "D♥", "Q♥")]
+    [TestCase(Suit.Hearts, TarotCard.KING, "R♥", "K♥")]
+    [TestCase(Suit.Spades, TarotCard.KING, "R♠", "K♠")]
+    [TestCase(Suit.Diamonds, TarotCard.QUEEN, "D♦", "Q♦")]
+    [TestCase(Suit.Clubs, TarotCard.JACK, "V♣", "J♣")]
+    [TestCase(Suit.Hearts, 1, "1♥", "1♥")]
+    [TestCase(Suit.Spades, 10, "10♠", "10♠")]
+    public void Test_TarotCard_ShouldDisplayTheExpectedLabel(Suit suit, int rank, string french,
         string english)
     {
-        var card = new TarotCard(suit, rank);
+        var card = TarotCard.Suited(suit, rank);
 
         using (Assert.EnterMultipleScope())
         {
@@ -42,14 +39,41 @@ public class CardDisplayTest
         }
     }
 
-    [TestCase(BeloteSuit.Hearts, BeloteCard.JACK, "V♥", "J♥")]
-    [TestCase(BeloteSuit.Hearts, BeloteCard.QUEEN, "D♥", "Q♥")]
-    [TestCase(BeloteSuit.Hearts, BeloteCard.KING, "R♥", "K♥")]
-    [TestCase(BeloteSuit.Hearts, BeloteCard.ACE, "A♥", "A♥")]
-    [TestCase(BeloteSuit.Spades, BeloteCard.KING, "R♠", "K♠")]
-    [TestCase(BeloteSuit.Diamonds, 10, "10♦", "10♦")]
-    [TestCase(BeloteSuit.Clubs, 7, "7♣", "7♣")]
-    public void Test_BeloteCard_ShouldDisplayTheExpectedLabel(BeloteSuit suit, int rank, string french,
+    /// <summary>
+    /// Trumps are prefixed A for atout in French and T for trump in English.
+    /// </summary>
+    [TestCase(TarotCard.PETIT, "A1", "T1")]
+    [TestCase(12, "A12", "T12")]
+    [TestCase(TarotCard.MONDE, "A21", "T21")]
+    public void Test_TarotTrump_ShouldDisplayTheExpectedLabel(int rank, string french, string english)
+    {
+        var card = TarotCard.Trump(rank);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(card.ToDisplay(FRENCH), Is.EqualTo(french));
+            Assert.That(card.ToDisplay(ENGLISH), Is.EqualTo(english));
+        }
+    }
+
+    [Test]
+    public void Test_TarotExcuse_ShouldDisplayAsAJokerInEveryLanguage()
+    {
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(TarotCard.Excuse.ToDisplay(FRENCH), Is.EqualTo("🃏"));
+            Assert.That(TarotCard.Excuse.ToDisplay(ENGLISH), Is.EqualTo("🃏"));
+        }
+    }
+
+    [TestCase(Suit.Hearts, BeloteCard.JACK, "V♥", "J♥")]
+    [TestCase(Suit.Hearts, BeloteCard.QUEEN, "D♥", "Q♥")]
+    [TestCase(Suit.Hearts, BeloteCard.KING, "R♥", "K♥")]
+    [TestCase(Suit.Hearts, BeloteCard.ACE, "A♥", "A♥")]
+    [TestCase(Suit.Spades, BeloteCard.KING, "R♠", "K♠")]
+    [TestCase(Suit.Diamonds, 10, "10♦", "10♦")]
+    [TestCase(Suit.Clubs, 7, "7♣", "7♣")]
+    public void Test_BeloteCard_ShouldDisplayTheExpectedLabel(Suit suit, int rank, string french,
         string english)
     {
         var card = new BeloteCard(suit, rank);
@@ -61,15 +85,15 @@ public class CardDisplayTest
         }
     }
 
-    [TestCase(PresidentSuit.Hearts, PresidentCard.JACK, "V♥", "J♥")]
-    [TestCase(PresidentSuit.Hearts, PresidentCard.QUEEN, "D♥", "Q♥")]
-    [TestCase(PresidentSuit.Hearts, PresidentCard.KING, "R♥", "K♥")]
-    [TestCase(PresidentSuit.Hearts, PresidentCard.ACE, "A♥", "A♥")]
-    [TestCase(PresidentSuit.Hearts, PresidentCard.TWO, "2♥", "2♥")]
-    [TestCase(PresidentSuit.Spades, 3, "3♠", "3♠")]
-    [TestCase(PresidentSuit.Diamonds, 10, "10♦", "10♦")]
-    [TestCase(PresidentSuit.Clubs, PresidentCard.KING, "R♣", "K♣")]
-    public void Test_PresidentCard_ShouldDisplayTheExpectedLabel(PresidentSuit suit, int rank, string french,
+    [TestCase(Suit.Hearts, PresidentCard.JACK, "V♥", "J♥")]
+    [TestCase(Suit.Hearts, PresidentCard.QUEEN, "D♥", "Q♥")]
+    [TestCase(Suit.Hearts, PresidentCard.KING, "R♥", "K♥")]
+    [TestCase(Suit.Hearts, PresidentCard.ACE, "A♥", "A♥")]
+    [TestCase(Suit.Hearts, PresidentCard.TWO, "2♥", "2♥")]
+    [TestCase(Suit.Spades, 3, "3♠", "3♠")]
+    [TestCase(Suit.Diamonds, 10, "10♦", "10♦")]
+    [TestCase(Suit.Clubs, PresidentCard.KING, "R♣", "K♣")]
+    public void Test_PresidentCard_ShouldDisplayTheExpectedLabel(Suit suit, int rank, string french,
         string english)
     {
         var card = new PresidentCard(suit, rank);
@@ -84,22 +108,22 @@ public class CardDisplayTest
     /// <summary>
     /// Poker labels are culture-independent: they are the ones printed on an English deck.
     /// </summary>
-    [TestCase(PokerSuit.Hearts, PokerCard.JACK, "J♥")]
-    [TestCase(PokerSuit.Diamonds, PokerCard.QUEEN, "Q♦")]
-    [TestCase(PokerSuit.Spades, PokerCard.KING, "K♠")]
-    [TestCase(PokerSuit.Clubs, PokerCard.ACE, "A♣")]
-    [TestCase(PokerSuit.Hearts, 10, "10♥")]
-    [TestCase(PokerSuit.Spades, 2, "2♠")]
-    public void Test_PokerCard_ShouldDisplayTheExpectedLabel(PokerSuit suit, int rank, string expected)
+    [TestCase(Suit.Hearts, PokerCard.JACK, "J♥")]
+    [TestCase(Suit.Diamonds, PokerCard.QUEEN, "Q♦")]
+    [TestCase(Suit.Spades, PokerCard.KING, "K♠")]
+    [TestCase(Suit.Clubs, PokerCard.ACE, "A♣")]
+    [TestCase(Suit.Hearts, 10, "10♥")]
+    [TestCase(Suit.Spades, 2, "2♠")]
+    public void Test_PokerCard_ShouldDisplayTheExpectedLabel(Suit suit, int rank, string expected)
     {
         Assert.That(new PokerCard(suit, rank).ToDisplay(), Is.EqualTo(expected));
     }
 
-    [TestCase(PokerSuit.Hearts, true)]
-    [TestCase(PokerSuit.Diamonds, true)]
-    [TestCase(PokerSuit.Spades, false)]
-    [TestCase(PokerSuit.Clubs, false)]
-    public void Test_PokerCard_ShouldKnowWhichSuitsAreRed(PokerSuit suit, bool expected)
+    [TestCase(Suit.Hearts, true)]
+    [TestCase(Suit.Diamonds, true)]
+    [TestCase(Suit.Spades, false)]
+    [TestCase(Suit.Clubs, false)]
+    public void Test_PokerCard_ShouldKnowWhichSuitsAreRed(Suit suit, bool expected)
     {
         Assert.That(new PokerCard(suit, PokerCard.ACE).IsRed, Is.EqualTo(expected));
     }
@@ -112,21 +136,21 @@ public class CardDisplayTest
     {
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(new TarotCard(TarotSuit.Hearts, TarotCard.KING).ToDisplay(), Is.EqualTo("K♥"));
-            Assert.That(new TarotCard(TarotSuit.Trump, 5).ToDisplay(), Is.EqualTo("T5"));
-            Assert.That(new BeloteCard(BeloteSuit.Spades, BeloteCard.JACK).ToDisplay(), Is.EqualTo("J♠"));
-            Assert.That(new PresidentCard(PresidentSuit.Clubs, PresidentCard.QUEEN).ToDisplay(),
+            Assert.That(TarotCard.Suited(Suit.Hearts, TarotCard.KING).ToDisplay(), Is.EqualTo("K♥"));
+            Assert.That(TarotCard.Trump(5).ToDisplay(), Is.EqualTo("T5"));
+            Assert.That(new BeloteCard(Suit.Spades, BeloteCard.JACK).ToDisplay(), Is.EqualTo("J♠"));
+            Assert.That(new PresidentCard(Suit.Clubs, PresidentCard.QUEEN).ToDisplay(),
                 Is.EqualTo("Q♣"));
         }
     }
 
-    [TestCase(BeloteSuit.Hearts, "♥")]
-    [TestCase(BeloteSuit.Spades, "♠")]
-    [TestCase(BeloteSuit.Diamonds, "♦")]
-    [TestCase(BeloteSuit.Clubs, "♣")]
-    public void Test_BeloteSuitDisplay_ShouldUseTheExpectedSymbol(BeloteSuit suit, string expected)
+    [TestCase(Suit.Hearts, "♥")]
+    [TestCase(Suit.Spades, "♠")]
+    [TestCase(Suit.Diamonds, "♦")]
+    [TestCase(Suit.Clubs, "♣")]
+    public void Test_BeloteSuitDisplay_ShouldUseTheExpectedSymbol(Suit suit, string expected)
     {
-        Assert.That(BeloteCard.SuitDisplay(suit), Is.EqualTo(expected));
+        Assert.That(CardToken.SuitSymbol(suit), Is.EqualTo(expected));
     }
 
     [TestCase(PresidentCard.JACK, "V", "J")]

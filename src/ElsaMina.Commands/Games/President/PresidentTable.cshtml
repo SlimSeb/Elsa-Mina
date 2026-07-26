@@ -1,5 +1,6 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.President.PresidentViewModel>
 @using ElsaMina.Commands.Games.President
+@using ElsaMina.Commands.Games.Cards
 @using ElsaMina.Core.Utils
 
 @{
@@ -11,7 +12,7 @@
         {
             return "#f7d774";
         }
-        return card.Suit is PresidentSuit.Hearts or PresidentSuit.Diamonds ? "#ff7b7b" : "#ececec";
+        return card.Suit is Suit.Hearts or Suit.Diamonds ? "#ff7b7b" : "#ececec";
     }
 
     string RoleIcon(PresidentRole role) => role switch

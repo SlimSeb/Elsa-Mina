@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Commands.Games.Belote;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Probabilities;
@@ -77,7 +78,7 @@ public class BelotePlaythroughTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_game.Trump, Is.EqualTo(BeloteSuit.Diamonds));
+            Assert.That(_game.Trump, Is.EqualTo(Suit.Diamonds));
             Assert.That(_game.TurnedCard, Is.EqualTo(BeloteCard.Parse("jd")));
             Assert.That(_game.Players[0].IsTaker, Is.True);
             Assert.That(_game.Players[0].Team, Is.Zero);

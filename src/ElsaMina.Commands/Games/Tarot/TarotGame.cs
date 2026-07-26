@@ -751,12 +751,10 @@ public class TarotGame : SubstitutableCardGame<TarotPlayer>, ITarotGame
 
     private TarotCard ChooseAutoKing()
     {
-        var suits = new[] { TarotSuit.Hearts, TarotSuit.Spades, TarotSuit.Diamonds, TarotSuit.Clubs };
-
         // With all four kings in hand, a queen must be called instead. Otherwise call a king the taker
         // does not hold, so a partner is found.
         var rank = TakerHoldsAllKings() ? TarotCard.QUEEN : TarotCard.KING;
-        var candidates = suits.Select(suit => new TarotCard(suit, rank)).ToList();
+        var candidates = TarotConstants.Suits.Select(suit => TarotCard.Suited(suit, rank)).ToList();
         return candidates.FirstOrDefault(card => !Taker.Hand.Contains(card)) ?? candidates[0];
     }
 
@@ -795,11 +793,21 @@ public class TarotGame : SubstitutableCardGame<TarotPlayer>, ITarotGame
             : []
     };
 
+    /// <summary>
+    /// Orders a hand the way it is displayed: the four suits first, then the trumps, then the Excuse,
+    /// each group ordered by rank.
+    /// </summary>
     private static void SortHand(List<TarotCard> hand)
     {
         hand.Sort((first, second) =>
         {
-            var suitComparison = first.Suit.CompareTo(second.Suit);
+            var kindComparison = first.Kind.CompareTo(second.Kind);
+            if (kindComparison != 0)
+            {
+                return kindComparison;
+            }
+
+            var suitComparison = Nullable.Compare(first.Suit, second.Suit);
             return suitComparison != 0 ? suitComparison : first.Rank.CompareTo(second.Rank);
         });
     }
