@@ -1,37 +1,28 @@
 using ElsaMina.Commands.Economy;
-using ElsaMina.Core.Contexts;
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
-using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using JetBrains.Annotations;
 
 namespace ElsaMina.Commands.Games.Poker;
 
-public class PokerGame : Game, IPokerGame
+public class PokerGame : SeatedCardGame<PokerPlayer>, IPokerGame
 {
-    private static int _nextGameId;
-
     private readonly IRandomService _randomService;
-    private readonly ITemplatesManager _templatesManager;
     private readonly IConfiguration _configuration;
     private readonly IMoneyService _moneyService;
 
-    private readonly SemaphoreSlim _actionLock = new(1, 1);
-    private readonly PeriodicTimerRunner _turnTimer;
-    private readonly List<PokerPlayer> _players = [];
     private readonly List<PokerCard> _community = [];
     private readonly List<PokerCard> _deck = [];
     private readonly List<PokerPot> _pots = [];
     private readonly HashSet<string> _initializedHandPanels = [];
 
     private int _dealerIndex;
-    private int _currentTurnIndex = -1;
     private long _currentBet;
     private long _lastRaiseAmount;
-    private bool _publicPanelInitialized;
     private int _publicPanelSegment;
     private int _handPanelSegment;
 
@@ -44,35 +35,39 @@ public class PokerGame : Game, IPokerGame
 
     public PokerGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration,
         IMoneyService moneyService, TimeSpan turnTimeout)
+        // Poker gives no advance warning before a turn runs out: it simply checks or folds for you.
+        : base(templatesManager, turnTimeout, turnWarningRemaining: null)
     {
         _randomService = randomService;
-        _templatesManager = templatesManager;
         _configuration = configuration;
         _moneyService = moneyService;
-        GameId = Interlocked.Increment(ref _nextGameId);
-        _turnTimer = new PeriodicTimerRunner(turnTimeout, OnTurnTimeoutAsync, runOnce: true);
+        CurrentTurnIndex = -1;
     }
 
-    public int GameId { get; }
     public override string Identifier => nameof(PokerGame);
 
-    public IContext Context { get; set; }
     public long BuyIn { get; set; } = PokerConstants.DEFAULT_BUY_IN;
 
     // When bucks are disabled in the room, poker runs as a "for fun" mode:
     // the buy-in only seeds each player's chip stack and no real bucks are moved.
     public bool IsForFun { get; set; }
 
-    public IReadOnlyList<PokerPlayer> Players => _players;
-    public int PlayerCount => _players.Count;
     public PokerPhase Phase { get; private set; } = PokerPhase.Lobby;
 
-    public bool IsInLobby => Phase == PokerPhase.Lobby;
+    public override bool IsInLobby => Phase == PokerPhase.Lobby;
 
-    public bool HasPlayer(string userId) => _players.Any(player => player.UserId == userId);
+    protected override string ResourcePrefix => "poker";
+    protected override string TemplateFolder => "Poker";
+    protected override int MinPlayers => PokerConstants.MIN_PLAYERS;
+    protected override int MaxPlayers => PokerConstants.MAX_PLAYERS;
+    protected override bool IsFinished => Phase == PokerPhase.Finished;
 
-    public PokerPlayer CurrentPlayer =>
-        _currentTurnIndex >= 0 && _currentTurnIndex < _players.Count ? _players[_currentTurnIndex] : null;
+    protected override bool IsAcceptingActions =>
+        Phase is PokerPhase.Preflop or PokerPhase.Flop or PokerPhase.Turn or PokerPhase.River;
+
+    protected override PokerPlayer CreatePlayer(IUser user) => new(user, BuyIn);
+
+    public PokerPlayer CurrentPlayer => CurrentSeat;
 
     public IReadOnlyList<PokerCard> CommunityCards => _community;
 
@@ -80,9 +75,9 @@ public class PokerGame : Game, IPokerGame
     public long SmallBlindAmount => PokerConstants.SmallBlind(BuyIn);
     public long CurrentBet => _currentBet;
     public long LastRaiseAmount => _lastRaiseAmount;
-    public long TotalPot => _players.Sum(player => player.Committed);
+    public long TotalPot => Seats.Sum(player => player.Committed);
 
-    public PokerPlayer Dealer => _players.Count > 0 ? _players[_dealerIndex] : null;
+    public PokerPlayer Dealer => Seats.Count > 0 ? Seats[_dealerIndex] : null;
     public PokerPlayer SmallBlindPlayer => PositionPlayer(SmallBlindOffset());
     public PokerPlayer BigBlindPlayer => PositionPlayer(BigBlindOffset());
 
@@ -93,101 +88,64 @@ public class PokerGame : Game, IPokerGame
 
     public long MinimumRaiseTo() => _currentBet == 0 ? BigBlindAmount : _currentBet + _lastRaiseAmount;
 
-    private string PublicPanelId => $"poker-{GameId}-{_publicPanelSegment}";
+    // Every re-post moves the panels to a new id, so the wiped ones stay wiped in the scrollback.
+    protected override string PublicPanelId => $"poker-{GameId}-{_publicPanelSegment}";
     private string HandPanelId(string userId) => $"poker-hand-{GameId}-{userId}-{_handPanelSegment}";
 
     #region Lobby
 
-    public Task BeginJoinPhaseAsync() => RenderPublicAsync();
-
-    public async Task<(bool Success, string MessageKey, object[] Args)> JoinAsync(IUser user)
+    /// <summary>
+    /// Takes the buy-in out of the joining player's bucks, unless the table runs for fun.
+    /// </summary>
+    protected override async Task<(bool Success, string MessageKey, object[] Args)?> OnJoiningAsync(IUser user)
     {
-        await _actionLock.WaitAsync();
-        try
+        if (IsForFun)
         {
-            if (Phase != PokerPhase.Lobby)
-            {
-                return (false, "poker_join_already_started", []);
-            }
-
-            if (_players.Count >= PokerConstants.MAX_PLAYERS)
-            {
-                return (false, "poker_join_full", []);
-            }
-
-            if (_players.Any(player => player.UserId == user.UserId))
-            {
-                return (false, "poker_join_already_joined", []);
-            }
-
-            if (!IsForFun)
-            {
-                var balance = await _moneyService.GetBalanceAsync(Context.RoomId, user.UserId);
-                if (balance < BuyIn)
-                {
-                    return (false, "poker_join_insufficient_funds", [BuyIn, balance]);
-                }
-
-                await _moneyService.AddAsync(Context.RoomId, user.UserId, -BuyIn);
-            }
-
-            _players.Add(new PokerPlayer(user, BuyIn));
-            await RenderPublicAsync();
-            return (true, "poker_join_success", [user.Name, BuyIn]);
+            return null;
         }
-        finally
+
+        var balance = await _moneyService.GetBalanceAsync(Context.RoomId, user.UserId);
+        if (balance < BuyIn)
         {
-            _actionLock.Release();
+            return (false, "poker_join_insufficient_funds", [BuyIn, balance]);
         }
+
+        await _moneyService.AddAsync(Context.RoomId, user.UserId, -BuyIn);
+        return null;
     }
 
-    public async Task StartAsync(IUser user)
+    protected override object[] JoinSuccessArguments(IUser user) => [user.Name, BuyIn];
+
+    /// <summary>
+    /// A poker seat holds real bucks, so only someone sitting at the table may deal the hand.
+    /// </summary>
+    protected override bool CanStart(IUser user)
     {
-        await _actionLock.WaitAsync();
-        try
+        if (HasPlayer(user.UserId))
         {
-            if (Phase != PokerPhase.Lobby)
-            {
-                Context.ReplyLocalizedMessage("poker_start_already_started");
-                return;
-            }
-
-            if (_players.All(player => player.UserId != user.UserId))
-            {
-                Context.ReplyLocalizedMessage("poker_start_not_a_player");
-                return;
-            }
-
-            if (_players.Count < PokerConstants.MIN_PLAYERS)
-            {
-                Context.ReplyLocalizedMessage("poker_start_not_enough_players", PokerConstants.MIN_PLAYERS);
-                return;
-            }
-
-            await DealAndStartHandAsync();
+            return true;
         }
-        finally
-        {
-            _actionLock.Release();
-        }
+
+        Context.ReplyLocalizedMessage("poker_start_not_a_player");
+        return false;
     }
 
     #endregion
 
     #region Dealing
 
-    private async Task DealAndStartHandAsync()
+    protected override async Task StartDealAsync()
     {
         OnStart();
 
-        _randomService.ShuffleInPlace(_players);
-        _dealerIndex = _randomService.NextInt(_players.Count);
+        _randomService.ShuffleInPlace(Seats);
+        _dealerIndex = _randomService.NextInt(Seats.Count);
 
         _deck.Clear();
         _deck.AddRange(PokerConstants.BuildDeck());
         _randomService.ShuffleInPlace(_deck);
 
-        foreach (var player in _players)
+        foreach (var player in Seats)
         {
             player.HoleCards.Add(DrawCard());
             player.HoleCards.Add(DrawCard());
@@ -209,7 +167,7 @@ public class PokerGame : Game, IPokerGame
         CommitChips(smallBlind, Math.Min(SmallBlindAmount, smallBlind.Stack));
         CommitChips(bigBlind, Math.Min(BigBlindAmount, bigBlind.Stack));
 
-        _currentBet = _players.Max(player => player.RoundBet);
+        _currentBet = Seats.Max(player => player.RoundBet);
         _lastRaiseAmount = BigBlindAmount;
     }
 
@@ -309,7 +267,7 @@ public class PokerGame : Game, IPokerGame
         player.HasActed = true;
 
         // A raise reopens the action: everyone still able to act must respond to it.
-        foreach (var other in _players.Where(other => other != player && other.CanAct))
+        foreach (var other in Seats.Where(other => other != player && other.CanAct))
         {
             other.HasActed = false;
         }
@@ -317,9 +275,7 @@ public class PokerGame : Game, IPokerGame
         await AdvanceAsync();
     }
 
-    private bool IsActable(IUser user) =>
-        Phase is PokerPhase.Preflop or PokerPhase.Flop or PokerPhase.Turn or PokerPhase.River
-        && CurrentPlayer?.UserId == user.UserId;
+    private bool IsActable(IUser user) => IsAcceptingActions && CurrentPlayer?.UserId == user.UserId;
 
     private static void CommitChips(PokerPlayer player, long amount)
     {
@@ -335,7 +291,7 @@ public class PokerGame : Game, IPokerGame
 
     private void StartBettingRound(bool preflop)
     {
-        foreach (var player in _players)
+        foreach (var player in Seats)
         {
             player.RoundBet = preflop ? player.RoundBet : 0;
             player.HasActed = false;
@@ -349,21 +305,21 @@ public class PokerGame : Game, IPokerGame
 
         // Preflop the first actor sits left of the big blind; afterwards, left of the dealer.
         var startExclusive = preflop ? PositionIndex(BigBlindOffset()) : _dealerIndex;
-        _currentTurnIndex = FindNextActor(startExclusive);
+        CurrentTurnIndex = FindNextActor(startExclusive);
     }
 
     private async Task AdvanceAsync()
     {
-        if (_players.Count(player => !player.HasFolded) <= 1)
+        if (Seats.Count(player => !player.HasFolded) <= 1)
         {
             await ResolveHandAsync();
             return;
         }
 
-        var next = FindNextActor(_currentTurnIndex);
+        var next = FindNextActor(CurrentTurnIndex);
         if (next >= 0)
         {
-            _currentTurnIndex = next;
+            CurrentTurnIndex = next;
             await RenderAllAsync();
             RestartTurnTimer();
             return;
@@ -375,7 +331,7 @@ public class PokerGame : Game, IPokerGame
     private async Task ProceedToNextStreetAsync()
     {
         // No more than one player can still act: deal the rest of the board, then showdown.
-        if (_players.Count(player => player.CanAct) <= 1)
+        if (Seats.Count(player => player.CanAct) <= 1)
         {
             DealRemainingBoard();
             await ResolveHandAsync();
@@ -432,10 +388,10 @@ public class PokerGame : Game, IPokerGame
 
     private int FindNextActor(int startExclusive)
     {
-        for (var step = 1; step <= _players.Count; step++)
+        for (var step = 1; step <= Seats.Count; step++)
         {
-            var index = (startExclusive + step) % _players.Count;
-            var player = _players[index];
+            var index = (startExclusive + step) % Seats.Count;
+            var player = Seats[index];
             if (player.CanAct && (!player.HasActed || player.RoundBet < _currentBet))
             {
                 return index;
@@ -454,7 +410,7 @@ public class PokerGame : Game, IPokerGame
         StopTurnTimer();
         Phase = PokerPhase.Showdown;
 
-        var contenders = _players.Where(player => !player.HasFolded).ToList();
+        var contenders = Seats.Where(player => !player.HasFolded).ToList();
         WentToShowdown = contenders.Count >= 2;
 
         if (WentToShowdown)
@@ -466,7 +422,7 @@ public class PokerGame : Game, IPokerGame
         }
 
         _pots.Clear();
-        _pots.AddRange(PokerPotCalculator.BuildPots(_players));
+        _pots.AddRange(PokerPotCalculator.BuildPots(Seats));
 
         foreach (var pot in _pots)
         {
@@ -483,7 +439,7 @@ public class PokerGame : Game, IPokerGame
 
     private void AwardPot(PokerPot pot)
     {
-        var eligible = _players
+        var eligible = Seats
             .Where(player => !player.HasFolded && pot.EligiblePlayerIds.Contains(player.UserId))
             .ToList();
 
@@ -505,7 +461,7 @@ public class PokerGame : Game, IPokerGame
 
         // Odd chips go to the winners closest to the left of the dealer.
         winners = winners
-            .OrderBy(player => (_players.IndexOf(player) - _dealerIndex - 1 + _players.Count) % _players.Count)
+            .OrderBy(player => (SeatIndexOf(player) - _dealerIndex - 1 + Seats.Count) % Seats.Count)
             .ToList();
 
         var share = pot.Amount / winners.Count;
@@ -526,7 +482,7 @@ public class PokerGame : Game, IPokerGame
             return;
         }
 
-        foreach (var player in _players)
+        foreach (var player in Seats)
         {
             var amount = payout(player);
             if (amount <= 0)
@@ -538,96 +494,56 @@ public class PokerGame : Game, IPokerGame
         }
     }
 
-    public async Task CancelAsync()
+    public override Task CancelAsync() => RunActionAsync(async () =>
     {
-        await _actionLock.WaitAsync();
-        try
+        if (Phase == PokerPhase.Finished)
         {
-            if (Phase == PokerPhase.Finished)
-            {
-                return;
-            }
-
-            StopTurnTimer();
-
-            // Refund every player what they still own: their stack plus whatever they put in the pot.
-            await SettleAsync(player => player.Stack + player.Committed);
-
-            Phase = PokerPhase.Finished;
-            Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
-            foreach (var player in _players)
-            {
-                Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
-                    string.Empty, true);
-            }
-
-            OnEnd();
+            return;
         }
-        finally
+
+        StopTurnTimer();
+
+        // Refund every player what they still own: their stack plus whatever they put in the pot.
+        await SettleAsync(player => player.Stack + player.Committed);
+
+        Phase = PokerPhase.Finished;
+        Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
+        foreach (var player in Seats)
         {
-            _actionLock.Release();
+            Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
+                string.Empty, true);
         }
-    }
+
+        OnEnd();
+    });
 
     #endregion
 
-    #region Timeout & helpers
+    #region Timeouts & positions
 
-    private async Task RunActionAsync(Func<Task> action)
+    protected override async Task OnTurnTimeoutAsync()
     {
-        await _actionLock.WaitAsync();
-        try
+        var player = CurrentPlayer;
+        if (player is null || !IsAcceptingActions)
         {
-            await action();
+            return;
         }
-        finally
+
+        if (AmountToCall(player) == 0)
         {
-            _actionLock.Release();
+            await CheckCoreAsync(player.User);
+        }
+        else
+        {
+            await FoldCoreAsync(player.User);
         }
     }
 
-    private async Task OnTurnTimeoutAsync()
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            var player = CurrentPlayer;
-            if (player is null || Phase is not (PokerPhase.Preflop or PokerPhase.Flop or PokerPhase.Turn
-                    or PokerPhase.River))
-            {
-                return;
-            }
+    private int SmallBlindOffset() => Seats.Count == 2 ? 0 : 1;
+    private int BigBlindOffset() => Seats.Count == 2 ? 1 : 2;
 
-            if (AmountToCall(player) == 0)
-            {
-                await CheckCoreAsync(player.User);
-            }
-            else
-            {
-                await FoldCoreAsync(player.User);
-            }
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    private void RestartTurnTimer()
-    {
-        if (Phase is PokerPhase.Preflop or PokerPhase.Flop or PokerPhase.Turn or PokerPhase.River)
-        {
-            _turnTimer.Restart();
-        }
-    }
-
-    private void StopTurnTimer() => _turnTimer.Stop();
-
-    private int SmallBlindOffset() => _players.Count == 2 ? 0 : 1;
-    private int BigBlindOffset() => _players.Count == 2 ? 1 : 2;
-
-    private int PositionIndex(int offset) => (_dealerIndex + offset) % _players.Count;
-    private PokerPlayer PositionPlayer(int offset) => _players.Count > 0 ? _players[PositionIndex(offset)] : null;
+    private int PositionIndex(int offset) => (_dealerIndex + offset) % Seats.Count;
+    private PokerPlayer PositionPlayer(int offset) => Seats.Count > 0 ? Seats[PositionIndex(offset)] : null;
 
     #endregion
 
@@ -639,25 +555,15 @@ public class PokerGame : Game, IPokerGame
         await RenderHandsAsync();
     }
 
-    private async Task RenderPublicAsync()
-    {
-        var templateKey = Phase switch
-        {
-            PokerPhase.Lobby => "Games/Poker/PokerLobby",
-            PokerPhase.Finished => "Games/Poker/PokerResult",
-            _ => "Games/Poker/PokerTable"
-        };
-
-        var html = await _templatesManager.GetTemplateAsync(templateKey, BuildModel(null));
-        Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), _publicPanelInitialized);
-        _publicPanelInitialized = true;
-    }
-
+    /// <summary>
+    /// Pushes each player their hole cards and action buttons as a private chat panel. Poker uses
+    /// these rather than HTML pages so the buttons sit right next to the table in the room.
+    /// </summary>
     private async Task RenderHandsAsync()
     {
-        foreach (var player in _players)
+        foreach (var player in Seats)
         {
-            var html = await _templatesManager.GetTemplateAsync("Games/Poker/PokerHand", BuildModel(player));
+            var html = await TemplatesManager.GetTemplateAsync(TemplateKey("Hand"), BuildModel(player));
             var alreadyInitialized = _initializedHandPanels.Contains(player.UserId);
             Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
                 html.RemoveNewlines(), alreadyInitialized);
@@ -665,13 +571,16 @@ public class PokerGame : Game, IPokerGame
         }
     }
 
+    /// <summary>
+    /// Wipes every panel and moves on to the next segment, so the new street is posted at the bottom
+    /// of the chat instead of updating panels stuck high up in the scrollback.
+    /// </summary>
     private void RepostPanels()
     {
-        Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
+        WipePublicPanel();
         _publicPanelSegment++;
-        _publicPanelInitialized = false;
 
-        foreach (var player in _players)
+        foreach (var player in Seats)
         {
             Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
                 string.Empty, true);
@@ -681,7 +590,7 @@ public class PokerGame : Game, IPokerGame
         _initializedHandPanels.Clear();
     }
 
-    private PokerViewModel BuildModel(PokerPlayer viewer) => new()
+    protected override PokerViewModel BuildModel(PokerPlayer viewer) => new()
     {
         Culture = Context.Culture,
         BotName = _configuration.Name,

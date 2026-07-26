@@ -1,8 +1,9 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Tarot;
 
-public sealed class TarotPlayer
+public sealed class TarotPlayer : ISubstitutablePlayer
 {
     public TarotPlayer(IUser user)
     {

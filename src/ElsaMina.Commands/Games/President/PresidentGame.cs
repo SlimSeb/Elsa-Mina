@@ -1,36 +1,21 @@
-using ElsaMina.Core.Contexts;
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
-using ElsaMina.Core.Utils;
 using JetBrains.Annotations;
 
 namespace ElsaMina.Commands.Games.President;
 
-public class PresidentGame : Game, IPresidentGame
+public class PresidentGame : SubstitutableCardGame<PresidentPlayer>, IPresidentGame
 {
-    private static int _nextGameId;
-
     private readonly IRandomService _randomService;
-    private readonly ITemplatesManager _templatesManager;
     private readonly IConfiguration _configuration;
 
-    private readonly SemaphoreSlim _actionLock = new(1, 1);
-    private readonly PeriodicTimerRunner _turnTimer;
-    private readonly PeriodicTimerRunner _turnWarningTimer;
-    private readonly List<PresidentPlayer> _players = [];
     private readonly List<PresidentPlayer> _finishOrder = [];
     private readonly List<PresidentPlayer> _twoFinishers = [];
-    private readonly List<string> _log = [];
 
-    private int _currentTurnIndex;
     private bool _matchRequired;
-    private bool _publicPanelInitialized;
-    private bool _subPanelInitialized;
-    private bool _logPanelInitialized;
-    private int _renderedLogCount;
 
     [UsedImplicitly]
     public PresidentGame(IRandomService randomService, ITemplatesManager templatesManager,
@@ -41,38 +26,32 @@ public class PresidentGame : Game, IPresidentGame
 
     public PresidentGame(IRandomService randomService, ITemplatesManager templatesManager,
         IConfiguration configuration, TimeSpan turnTimeout)
+        : base(templatesManager, turnTimeout, PresidentConstants.TURN_TIMEOUT_WARNING_REMAINING)
     {
         _randomService = randomService;
-        _templatesManager = templatesManager;
         _configuration = configuration;
-        GameId = Interlocked.Increment(ref _nextGameId);
-        _turnTimer = new PeriodicTimerRunner(turnTimeout, OnTurnTimeoutAsync, runOnce: true);
-
-        // Warn the active player by PM once only the warning threshold of time is left on their turn.
-        var warningDelay = turnTimeout - PresidentConstants.TURN_TIMEOUT_WARNING_REMAINING;
-        if (warningDelay > TimeSpan.Zero)
-        {
-            _turnWarningTimer = new PeriodicTimerRunner(warningDelay, OnTurnWarningAsync, runOnce: true);
-        }
     }
 
-    public int GameId { get; }
     public override string Identifier => nameof(PresidentGame);
 
-    public IContext Context { get; set; }
-
-    public IReadOnlyList<PresidentPlayer> Players => _players;
-    public int PlayerCount => _players.Count;
     public PresidentPhase Phase { get; private set; } = PresidentPhase.Lobby;
 
-    public bool IsInLobby => Phase == PresidentPhase.Lobby;
+    public override bool IsInLobby => Phase == PresidentPhase.Lobby;
 
-    public bool HasPlayer(string userId) => _players.Any(player => player.UserId == userId);
+    protected override string ResourcePrefix => "president";
+    protected override string TemplateFolder => "President";
+    protected override int MinPlayers => PresidentConstants.MIN_PLAYERS;
+    protected override int MaxPlayers => PresidentConstants.MAX_PLAYERS;
+    protected override bool IsFinished => Phase == PresidentPhase.Finished;
+    protected override bool IsAcceptingActions => Phase is PresidentPhase.Exchange or PresidentPhase.Playing;
 
-    public PresidentPlayer CurrentPlayer =>
-        Phase == PresidentPhase.Playing && _currentTurnIndex >= 0 && _currentTurnIndex < _players.Count
-            ? _players[_currentTurnIndex]
-            : null;
+    protected override PresidentPlayer CreatePlayer(IUser user) => new(user);
+
+    protected override void MarkFinished() => Phase = PresidentPhase.Finished;
+
+    public Task<(bool Success, string MessageKey, object[] Args)> LeaveAsync(IUser user) => LeaveSeatAsync(user);
+
+    public PresidentPlayer CurrentPlayer => Phase == PresidentPhase.Playing ? CurrentSeat : null;
 
     public int RoundNumber { get; private set; }
     public int TotalRounds { get; set; } = PresidentConstants.DEFAULT_ROUNDS;
@@ -88,109 +67,17 @@ public class PresidentGame : Game, IPresidentGame
     public PresidentPlayer LastTrickWinner { get; private set; }
     public IReadOnlyList<PresidentPlayer> FinishOrder => _finishOrder;
 
-    public IReadOnlyList<string> Log => _log;
-
-    private string PublicPanelId => $"president-{GameId}";
-    private string PlayerPageId => $"president-{GameId}";
-    private string SubPanelId => $"president-{GameId}-sub";
-    private string LogPanelId => $"president-{GameId}-log";
-
-    private bool HasViceRoles => _players.Count >= PresidentConstants.VICE_ROLES_MIN_PLAYERS;
-
-    #region Lobby
-
-    public async Task BeginJoinPhaseAsync()
-    {
-        await RenderPublicAsync();
-    }
-
-    public async Task<(bool Success, string MessageKey, object[] Args)> JoinAsync(IUser user)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            if (Phase != PresidentPhase.Lobby)
-            {
-                return (false, "president_join_already_started", []);
-            }
-
-            if (_players.Count >= PresidentConstants.MAX_PLAYERS)
-            {
-                return (false, "president_join_full", []);
-            }
-
-            if (_players.Any(player => player.UserId == user.UserId))
-            {
-                return (false, "president_join_already_joined", []);
-            }
-
-            _players.Add(new PresidentPlayer(user));
-            await RenderPublicAsync();
-            return (true, "president_join_success", [user.Name]);
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    public async Task<(bool Success, string MessageKey, object[] Args)> LeaveAsync(IUser user)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            if (Phase != PresidentPhase.Lobby)
-            {
-                return (false, "president_quit_already_started", []);
-            }
-
-            var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
-            if (player is null)
-            {
-                return (false, "president_quit_not_joined", []);
-            }
-
-            _players.Remove(player);
-            await RenderPublicAsync();
-            return (true, "president_quit_success", [player.Name]);
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    public async Task StartAsync(IUser user)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            if (Phase != PresidentPhase.Lobby)
-            {
-                Context.ReplyLocalizedMessage("president_start_already_started");
-                return;
-            }
-
-            if (_players.Count < PresidentConstants.MIN_PLAYERS)
-            {
-                Context.ReplyLocalizedMessage("president_start_not_enough_players", PresidentConstants.MIN_PLAYERS);
-                return;
-            }
-
-            OnStart();
-            _randomService.ShuffleInPlace(_players);
-            RoundNumber = 1;
-            await BeginRoundAsync();
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    #endregion
+    private bool HasViceRoles => Seats.Count >= PresidentConstants.VICE_ROLES_MIN_PLAYERS;
 
     #region Dealing & exchange
+
+    protected override async Task StartDealAsync()
+    {
+        OnStart();
+        _randomService.ShuffleInPlace(Seats);
+        RoundNumber = 1;
+        await BeginRoundAsync();
+    }
 
     /// <summary>
     /// Resets all per-round state, deals a fresh hand to everyone, then either opens the card
@@ -210,7 +97,7 @@ public class PresidentGame : Game, IPresidentGame
             return;
         }
 
-        await BeginPlayingAsync(_players[0]);
+        await BeginPlayingAsync(Seats[0]);
     }
 
     /// <summary>
@@ -219,7 +106,7 @@ public class PresidentGame : Game, IPresidentGame
     /// </summary>
     private void ResetRoundState()
     {
-        foreach (var player in _players)
+        foreach (var player in Seats)
         {
             player.Hand.Clear();
             player.FinishPosition = 0;
@@ -248,10 +135,10 @@ public class PresidentGame : Game, IPresidentGame
 
         for (var cardIndex = 0; cardIndex < deck.Count; cardIndex++)
         {
-            _players[cardIndex % _players.Count].Hand.Add(deck[cardIndex]);
+            Seats[cardIndex % Seats.Count].Hand.Add(deck[cardIndex]);
         }
 
-        foreach (var player in _players)
+        foreach (var player in Seats)
         {
             SortHand(player.Hand);
         }
@@ -297,7 +184,7 @@ public class PresidentGame : Game, IPresidentGame
     }
 
     private PresidentPlayer FindByRole(PresidentRole role) =>
-        _players.FirstOrDefault(player => player.Role == role);
+        Seats.FirstOrDefault(player => player.Role == role);
 
     public Task GiveAsync(IUser user, IReadOnlyList<PresidentCard> cards) =>
         RunActionAsync(() => GiveCoreAsync(user, cards));
@@ -309,7 +196,7 @@ public class PresidentGame : Game, IPresidentGame
             return;
         }
 
-        var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
+        var player = FindSeat(user.UserId);
         if (player is null || player.CardsToGive == 0)
         {
             return;
@@ -376,10 +263,10 @@ public class PresidentGame : Game, IPresidentGame
 
         LogEvent("president_exchange_returned", giver.Name, cards.Count, receiver.Name);
 
-        if (_players.All(player => player.CardsToGive == 0))
+        if (Seats.All(player => player.CardsToGive == 0))
         {
             // The scum of the previous round opens the new one.
-            await BeginPlayingAsync(FindByRole(PresidentRole.Scum) ?? _players[0]);
+            await BeginPlayingAsync(FindByRole(PresidentRole.Scum) ?? Seats[0]);
             return;
         }
 
@@ -393,7 +280,7 @@ public class PresidentGame : Game, IPresidentGame
     private async Task BeginPlayingAsync(PresidentPlayer leader)
     {
         Phase = PresidentPhase.Playing;
-        _currentTurnIndex = _players.IndexOf(leader);
+        CurrentTurnIndex = SeatIndexOf(leader);
 
         LogEvent("president_round_started", RoundNumber, TotalRounds, leader.Name);
 
@@ -470,26 +357,7 @@ public class PresidentGame : Game, IPresidentGame
 
         if (player.Hand.Count == 0)
         {
-            if (rank == PresidentCard.TWO)
-            {
-                // Going out on a 2 relegates the player to the bottom of the finish order: they are
-                // kept out of the regular order and appended last when the round ends. Their display
-                // position is provisional until then; a later offender sinks even lower.
-                _twoFinishers.Add(player);
-                for (var offenderIndex = 0; offenderIndex < _twoFinishers.Count; offenderIndex++)
-                {
-                    _twoFinishers[offenderIndex].FinishPosition =
-                        _players.Count - _twoFinishers.Count + 1 + offenderIndex;
-                }
-
-                LogEvent("president_finished_on_two", player.Name);
-            }
-            else
-            {
-                _finishOrder.Add(player);
-                player.FinishPosition = _finishOrder.Count;
-                LogEvent("president_player_finished", player.Name, player.FinishPosition);
-            }
+            RecordFinisher(player, rank);
         }
 
         if (await TryFinishRoundAsync())
@@ -505,6 +373,31 @@ public class PresidentGame : Game, IPresidentGame
         }
 
         await AdvanceTurnAsync(player);
+    }
+
+    /// <summary>
+    /// Books a player who has just emptied their hand into the finish order. Going out on a 2 relegates
+    /// them to the bottom instead: they are kept out of the regular order and appended last when the
+    /// round ends. Their display position is provisional until then; a later offender sinks even lower.
+    /// </summary>
+    private void RecordFinisher(PresidentPlayer player, int rank)
+    {
+        if (rank != PresidentCard.TWO)
+        {
+            _finishOrder.Add(player);
+            player.FinishPosition = _finishOrder.Count;
+            LogEvent("president_player_finished", player.Name, player.FinishPosition);
+            return;
+        }
+
+        _twoFinishers.Add(player);
+        for (var offenderIndex = 0; offenderIndex < _twoFinishers.Count; offenderIndex++)
+        {
+            _twoFinishers[offenderIndex].FinishPosition =
+                Seats.Count - _twoFinishers.Count + 1 + offenderIndex;
+        }
+
+        LogEvent("president_finished_on_two", player.Name);
     }
 
     public Task PassAsync(IUser user) => RunActionAsync(() => PassCoreAsync(user));
@@ -543,9 +436,9 @@ public class PresidentGame : Game, IPresidentGame
     /// </summary>
     private async Task AdvanceTurnAsync(PresidentPlayer lastPlayer)
     {
-        for (var offset = 1; offset <= _players.Count; offset++)
+        for (var offset = 1; offset <= Seats.Count; offset++)
         {
-            var candidate = _players[(_currentTurnIndex + offset) % _players.Count];
+            var candidate = SeatFrom(CurrentTurnIndex, offset);
             if (candidate == lastPlayer)
             {
                 break;
@@ -563,7 +456,7 @@ public class PresidentGame : Game, IPresidentGame
                 continue;
             }
 
-            _currentTurnIndex = _players.IndexOf(candidate);
+            CurrentTurnIndex = SeatIndexOf(candidate);
             await RenderAllAsync();
             RestartTurnTimer();
             return;
@@ -578,7 +471,7 @@ public class PresidentGame : Game, IPresidentGame
     /// </summary>
     private async Task CloseTrickAsync(PresidentPlayer winner)
     {
-        foreach (var player in _players)
+        foreach (var player in Seats)
         {
             player.HasPassed = false;
         }
@@ -588,13 +481,13 @@ public class PresidentGame : Game, IPresidentGame
         _matchRequired = false;
         LogEvent("president_trick_won", winner.Name);
 
-        var winnerIndex = _players.IndexOf(winner);
-        for (var offset = 0; offset < _players.Count; offset++)
+        var winnerIndex = SeatIndexOf(winner);
+        for (var offset = 0; offset < Seats.Count; offset++)
         {
-            var candidate = _players[(winnerIndex + offset) % _players.Count];
+            var candidate = SeatFrom(winnerIndex, offset);
             if (candidate.Hand.Count > 0)
             {
-                _currentTurnIndex = _players.IndexOf(candidate);
+                CurrentTurnIndex = SeatIndexOf(candidate);
                 break;
             }
         }
@@ -616,7 +509,7 @@ public class PresidentGame : Game, IPresidentGame
     /// </summary>
     private async Task<bool> TryFinishRoundAsync()
     {
-        var stillPlaying = _players.Where(player => player.Hand.Count > 0).ToList();
+        var stillPlaying = Seats.Where(player => player.Hand.Count > 0).ToList();
         if (stillPlaying.Count > 1)
         {
             return false;
@@ -696,208 +589,29 @@ public class PresidentGame : Game, IPresidentGame
         OnEnd();
     }
 
-    public async Task ResendPlayerPageAsync(IUser user)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            if (Phase == PresidentPhase.Lobby)
-            {
-                return;
-            }
-
-            var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
-            if (player is null)
-            {
-                return;
-            }
-
-            await RenderPlayerPageAsync(player);
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    public async Task CancelAsync()
-    {
-        StopTurnTimer();
-
-        // Cancelled while still gathering players: replace the lobby panel (with its join/start buttons)
-        // by a clear "cancelled" notice so the public panel does not look like it is still open.
-        if (Phase == PresidentPhase.Lobby)
-        {
-            await RenderCancelledPublicAsync();
-        }
-
-        Phase = PresidentPhase.Finished;
-        ClearSubPanel();
-        ClearLogPanel();
-        OnEnd();
-    }
-
     #endregion
 
-    #region Substitutions
+    #region Timeouts
 
-    public async Task<(bool Success, string MessageKey, object[] Args)> RequestSubAsync(IUser user)
+    protected override async Task OnTurnTimeoutAsync()
     {
-        await _actionLock.WaitAsync();
-        try
+        switch (Phase)
         {
-            if (Phase is PresidentPhase.Lobby or PresidentPhase.Finished)
-            {
-                return (false, "president_sub_not_active", []);
-            }
+            case PresidentPhase.Exchange:
+                await AutoGiveAsync();
+                break;
+            case PresidentPhase.Playing when CurrentPlayer is not null:
+                if (CurrentTrick.IsEmpty)
+                {
+                    var (rank, count) = GetLegalPlays(CurrentPlayer)[0];
+                    await PlayCoreAsync(CurrentPlayer.User, rank, count);
+                }
+                else
+                {
+                    await PassCoreAsync(CurrentPlayer.User);
+                }
 
-            var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
-            if (player is null)
-            {
-                return (false, "president_sub_not_a_player", []);
-            }
-
-            // A second request from the same player cancels their pending sub.
-            if (player.WantsSub)
-            {
-                player.WantsSub = false;
-                Context.ReplyLocalizedMessage("president_sub_cancelled", player.Name);
-                await RenderSubPanelAsync();
-                return (true, null, []);
-            }
-
-            player.WantsSub = true;
-            Context.ReplyLocalizedMessage("president_sub_requested", player.Name);
-            // Re-post the panel so a fresh request drops to the bottom of the chat instead of staying
-            // stuck high up in the scrollback.
-            await RenderSubPanelAsync(forceResend: true);
-            return (true, null, []);
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    public async Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user,
-        string targetPlayerId)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            if (Phase is PresidentPhase.Lobby or PresidentPhase.Finished)
-            {
-                return (false, "president_sub_not_active", []);
-            }
-
-            if (_players.Any(currentPlayer => currentPlayer.UserId == user.UserId))
-            {
-                return (false, "president_sub_already_player", []);
-            }
-
-            var pending = _players.Where(currentPlayer => currentPlayer.WantsSub).ToList();
-            if (pending.Count == 0)
-            {
-                return (false, "president_sub_none_pending", []);
-            }
-
-            var target = string.IsNullOrWhiteSpace(targetPlayerId)
-                ? pending[0]
-                : pending.FirstOrDefault(currentPlayer => currentPlayer.UserId == targetPlayerId.ToLowerAlphaNum());
-            if (target is null)
-            {
-                return (false, "president_sub_invalid_target", []);
-            }
-
-            var leavingUserId = target.UserId;
-            var leavingName = target.Name;
-            Context.CloseHtmlPage(leavingUserId, PlayerPageId);
-            target.SubstituteWith(user);
-
-            Context.ReplyLocalizedMessage("president_sub_done", user.Name, leavingName);
-            await RenderAllAsync();
-            await RenderSubPanelAsync();
-            return (true, null, []);
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    private async Task RenderSubPanelAsync(bool forceResend = false)
-    {
-        if (_players.All(player => !player.WantsSub))
-        {
-            ClearSubPanel();
-            return;
-        }
-
-        if (forceResend)
-        {
-            ClearSubPanel();
-        }
-
-        var html = await _templatesManager.GetTemplateAsync("Games/President/PresidentSub", BuildModel(null));
-        Context.SendUpdatableHtml(SubPanelId, html.RemoveNewlines(), isChanging: _subPanelInitialized);
-        _subPanelInitialized = true;
-    }
-
-    private void ClearSubPanel()
-    {
-        if (!_subPanelInitialized)
-        {
-            return;
-        }
-
-        Context.SendUpdatableHtml(SubPanelId, string.Empty, isChanging: true);
-        _subPanelInitialized = false;
-    }
-
-    #endregion
-
-    #region Timeout & action helpers
-
-    private async Task RunActionAsync(Func<Task> action)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            await action();
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    private async Task OnTurnTimeoutAsync()
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            switch (Phase)
-            {
-                case PresidentPhase.Exchange:
-                    await AutoGiveAsync();
-                    break;
-                case PresidentPhase.Playing when CurrentPlayer is not null:
-                    if (CurrentTrick.IsEmpty)
-                    {
-                        var (rank, count) = GetLegalPlays(CurrentPlayer)[0];
-                        await PlayCoreAsync(CurrentPlayer.User, rank, count);
-                    }
-                    else
-                    {
-                        await PassCoreAsync(CurrentPlayer.User);
-                    }
-
-                    break;
-            }
-        }
-        finally
-        {
-            _actionLock.Release();
+                break;
         }
     }
 
@@ -907,171 +621,27 @@ public class PresidentGame : Game, IPresidentGame
     /// </summary>
     private async Task AutoGiveAsync()
     {
-        foreach (var player in _players.Where(currentPlayer => currentPlayer.CardsToGive > 0).ToList())
+        foreach (var player in Seats.Where(currentPlayer => currentPlayer.CardsToGive > 0).ToList())
         {
             var lowestCards = player.Hand.OrderBy(card => card.Rank).Take(player.CardsToGive).ToList();
             await ApplyGiveAsync(player, lowestCards);
         }
     }
 
-    private async Task OnTurnWarningAsync()
+    /// <summary>
+    /// While playing, only the player on turn is warned; during the exchange every player who still
+    /// owes cards is.
+    /// </summary>
+    protected override IEnumerable<PresidentPlayer> GetTurnWarningRecipients() => Phase switch
     {
-        await _actionLock.WaitAsync();
-        try
-        {
-            List<PresidentPlayer> pendingPlayers = Phase switch
-            {
-                PresidentPhase.Exchange => _players.Where(player => player.CardsToGive > 0).ToList(),
-                PresidentPhase.Playing when CurrentPlayer is not null => [CurrentPlayer],
-                _ => []
-            };
-
-            var seconds = (int)PresidentConstants.TURN_TIMEOUT_WARNING_REMAINING.TotalSeconds;
-            var message = Context.GetString("president_turn_timeout_warning", seconds);
-            foreach (var player in pendingPlayers)
-            {
-                Context.SendMessageIn(Context.RoomId, $"/pm {player.UserId}, {message}");
-            }
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    private void RestartTurnTimer()
-    {
-        if (Phase is PresidentPhase.Exchange or PresidentPhase.Playing)
-        {
-            _turnTimer.Restart();
-            _turnWarningTimer?.Restart();
-        }
-    }
-
-    private void StopTurnTimer()
-    {
-        _turnTimer.Stop();
-        _turnWarningTimer?.Stop();
-    }
+        PresidentPhase.Exchange => Seats.Where(player => player.CardsToGive > 0).ToList(),
+        PresidentPhase.Playing when CurrentPlayer is not null => [CurrentPlayer],
+        _ => []
+    };
 
     #endregion
 
-    #region Rendering
-
-    /// <summary>
-    /// Appends a localized game event to the running log shown (collapsed) on the public panel and the
-    /// player pages.
-    /// </summary>
-    private void LogEvent(string key, params object[] args)
-    {
-        _log.Add(Context.GetString(key, args));
-    }
-
-    private async Task RenderAllAsync(bool resendPublic = false, bool resendLog = false)
-    {
-        await RenderPublicAsync(resendPublic);
-        await RenderPublicLogAsync(resendLog);
-        await RenderPlayerPagesAsync();
-    }
-
-    /// <summary>
-    /// Renders the running game log into its own updatable chat panel, kept separate from the main table
-    /// panel so it only re-renders when a new event has actually been logged. When <paramref name="forceResend"/>
-    /// is set (a fresh pile or round), it is re-posted at the bottom of the chat instead of updated in place.
-    /// </summary>
-    private async Task RenderPublicLogAsync(bool forceResend = false)
-    {
-        // The final result panel embeds the whole log itself, so drop the live panel once the game ends.
-        if (Phase == PresidentPhase.Finished)
-        {
-            ClearLogPanel();
-            return;
-        }
-
-        if (_log.Count == 0 || (!forceResend && _logPanelInitialized && _renderedLogCount == _log.Count))
-        {
-            return;
-        }
-
-        var html = await _templatesManager.GetTemplateAsync("Games/President/PresidentLog", BuildModel(null));
-        Context.SendUpdatableHtml(LogPanelId, html.RemoveNewlines(), isChanging: _logPanelInitialized && !forceResend);
-        _logPanelInitialized = true;
-        _renderedLogCount = _log.Count;
-    }
-
-    private void ClearLogPanel()
-    {
-        if (!_logPanelInitialized)
-        {
-            return;
-        }
-
-        Context.SendUpdatableHtml(LogPanelId, string.Empty, isChanging: true);
-        _logPanelInitialized = false;
-        _renderedLogCount = 0;
-    }
-
-    /// <summary>
-    /// Renders the public table as a chat panel so spectators (and players) can follow the game from
-    /// the room itself. The lobby and the final result are only ever shown here. When
-    /// <paramref name="forceResend"/> is set, it is re-posted at the bottom of the chat instead of
-    /// updated in place high up in the scrollback.
-    /// </summary>
-    private async Task RenderPublicAsync(bool forceResend = false)
-    {
-        var templateKey = Phase switch
-        {
-            PresidentPhase.Lobby => "Games/President/PresidentLobby",
-            PresidentPhase.Finished => "Games/President/PresidentResult",
-            _ => "Games/President/PresidentTable"
-        };
-
-        var html = await _templatesManager.GetTemplateAsync(templateKey, BuildModel(null));
-        Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(),
-            isChanging: _publicPanelInitialized && !forceResend);
-        _publicPanelInitialized = true;
-    }
-
-    private async Task RenderCancelledPublicAsync()
-    {
-        var html = await _templatesManager.GetTemplateAsync("Games/President/PresidentCancelled", BuildModel(null));
-        Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), _publicPanelInitialized);
-        _publicPanelInitialized = true;
-    }
-
-    private async Task RenderPlayerPagesAsync()
-    {
-        foreach (var player in _players)
-        {
-            await RenderPlayerPageAsync(player);
-        }
-    }
-
-    /// <summary>
-    /// Renders a player's private HTML page: the public table (or result) on top and the player's own
-    /// hand with action buttons below. HTML pages update in place, so no chat re-posting is needed.
-    /// </summary>
-    private async Task RenderPlayerPageAsync(PresidentPlayer player)
-    {
-        var model = BuildModel(player);
-
-        if (Phase == PresidentPhase.Finished)
-        {
-            var resultHtml = await _templatesManager.GetTemplateAsync("Games/President/PresidentResult", model);
-            Context.SendHtmlPageTo(player.UserId, PlayerPageId, resultHtml.RemoveNewlines());
-            return;
-        }
-
-        var tableHtml = await _templatesManager.GetTemplateAsync("Games/President/PresidentTable", model);
-        var handHtml = await _templatesManager.GetTemplateAsync("Games/President/PresidentHand", model);
-        var logHtml = _log.Count > 0
-            ? await _templatesManager.GetTemplateAsync("Games/President/PresidentLog", model)
-            : string.Empty;
-        Context.SendHtmlPageTo(player.UserId, PlayerPageId,
-            tableHtml.RemoveNewlines() + logHtml.RemoveNewlines() + handHtml.RemoveNewlines());
-    }
-
-    private PresidentViewModel BuildModel(PresidentPlayer viewer) => new()
+    protected override PresidentViewModel BuildModel(PresidentPlayer viewer) => new()
     {
         Culture = Context.Culture,
         BotName = _configuration.Name,
@@ -1083,8 +653,6 @@ public class PresidentGame : Game, IPresidentGame
         ViewerLegalPlays = GetLegalPlays(viewer),
         ViewerCanPass = CanPass(viewer)
     };
-
-    #endregion
 
     private static void SortHand(List<PresidentCard> hand)
     {
