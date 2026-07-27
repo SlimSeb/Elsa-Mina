@@ -1,4 +1,5 @@
 using System.Globalization;
+using ElsaMina.Commands.Games.Cards;
 
 namespace ElsaMina.Commands.Games.Belote;
 
@@ -8,7 +9,7 @@ namespace ElsaMina.Commands.Games.Belote;
 /// the card belongs to the trump suit, so they are computed against the current trump rather than
 /// being intrinsic to the card.
 /// </summary>
-public sealed record BeloteCard(BeloteSuit Suit, int Rank)
+public sealed record BeloteCard(Suit Suit, int Rank)
 {
     public const int JACK = 11;
     public const int QUEEN = 12;
@@ -77,11 +78,11 @@ public sealed record BeloteCard(BeloteSuit Suit, int Rank)
         [7] = 1
     };
 
-    public bool IsTrump(BeloteSuit trump) => Suit == trump;
+    public bool IsTrump(Suit trump) => Suit == trump;
 
-    public int GetPoints(BeloteSuit trump) => IsTrump(trump) ? TrumpPoints[Rank] : PlainPoints[Rank];
+    public int GetPoints(Suit trump) => IsTrump(trump) ? TrumpPoints[Rank] : PlainPoints[Rank];
 
-    public int GetStrength(BeloteSuit trump) => IsTrump(trump) ? TrumpStrength[Rank] : PlainStrength[Rank];
+    public int GetStrength(Suit trump) => IsTrump(trump) ? TrumpStrength[Rank] : PlainStrength[Rank];
 
     public static BeloteCard Parse(string token)
     {
@@ -96,15 +97,7 @@ public sealed record BeloteCard(BeloteSuit Suit, int Rank)
             return null;
         }
 
-        var suit = normalized[^1] switch
-        {
-            'h' => BeloteSuit.Hearts,
-            's' => BeloteSuit.Spades,
-            'd' => BeloteSuit.Diamonds,
-            'c' => BeloteSuit.Clubs,
-            _ => (BeloteSuit?)null
-        };
-
+        var suit = CardToken.ParseSuitLetter(normalized[^1]);
         if (suit is null)
         {
             return null;
@@ -126,35 +119,10 @@ public sealed record BeloteCard(BeloteSuit Suit, int Rank)
         return rank == 0 ? null : new BeloteCard(suit.Value, rank);
     }
 
-    public static BeloteSuit? ParseSuit(string token)
-    {
-        if (string.IsNullOrWhiteSpace(token))
-        {
-            return null;
-        }
-
-        return token.Trim().ToLowerInvariant() switch
-        {
-            "h" or "hearts" or "coeur" or "coeurs" or "cœur" or "cœurs" or "heart" => BeloteSuit.Hearts,
-            "s" or "spades" or "pique" or "piques" or "spade" => BeloteSuit.Spades,
-            "d" or "diamonds" or "carreau" or "carreaux" or "diamond" => BeloteSuit.Diamonds,
-            "c" or "clubs" or "trefle" or "trefles" or "trèfle" or "trèfles" or "club" => BeloteSuit.Clubs,
-            _ => null
-        };
-    }
-
     /// <summary>
     /// Canonical lowercase token that <see cref="Parse"/> round-trips (used in button values).
     /// </summary>
-    public string ToToken() => $"{RankToken()}{SuitLetter()}";
-
-    private string SuitLetter() => Suit switch
-    {
-        BeloteSuit.Hearts => "h",
-        BeloteSuit.Spades => "s",
-        BeloteSuit.Diamonds => "d",
-        _ => "c"
-    };
+    public string ToToken() => $"{RankToken()}{CardToken.SuitLetter(Suit)}";
 
     private string RankToken() => Rank switch
     {
@@ -162,50 +130,23 @@ public sealed record BeloteCard(BeloteSuit Suit, int Rank)
         QUEEN => "q",
         KING => "k",
         ACE => "a",
-        _ => Rank.ToString(CultureInfo.InvariantCulture)
+        _ => CardToken.Number(Rank)
     };
 
     /// <summary>
     /// Human-readable display with suit emoji, e.g. "K♥", "10♠". When <paramref name="culture"/> is
     /// French, face cards use V/D/R (Valet, Dame, Roi) and the Ace stays "A".
     /// </summary>
-    public string ToDisplay(CultureInfo culture = null)
-    {
-        var isFrench = culture?.TwoLetterISOLanguageName == "fr";
-        var suitSymbol = Suit switch
-        {
-            BeloteSuit.Hearts => "♥",
-            BeloteSuit.Spades => "♠",
-            BeloteSuit.Diamonds => "♦",
-            _ => "♣"
-        };
-
-        return $"{DisplayRankToken(isFrench)}{suitSymbol}";
-    }
+    public string ToDisplay(CultureInfo culture = null) =>
+        $"{DisplayRankToken(CardToken.IsFrench(culture))}{CardToken.SuitSymbol(Suit)}";
 
     private string DisplayRankToken(bool isFrench) => Rank switch
     {
-        JACK => isFrench ? "V" : "J",
-        QUEEN => isFrench ? "D" : "Q",
-        KING => isFrench ? "R" : "K",
-        ACE => "A",
-        _ => Rank.ToString(CultureInfo.InvariantCulture)
-    };
-
-    public static string SuitDisplay(BeloteSuit suit) => suit switch
-    {
-        BeloteSuit.Hearts => "♥",
-        BeloteSuit.Spades => "♠",
-        BeloteSuit.Diamonds => "♦",
-        _ => "♣"
-    };
-
-    public static string SuitToken(BeloteSuit suit) => suit switch
-    {
-        BeloteSuit.Hearts => "h",
-        BeloteSuit.Spades => "s",
-        BeloteSuit.Diamonds => "d",
-        _ => "c"
+        JACK => CardToken.Jack(isFrench),
+        QUEEN => CardToken.Queen(isFrench),
+        KING => CardToken.King(isFrench),
+        ACE => CardToken.ACE,
+        _ => CardToken.Number(Rank)
     };
 
     public override string ToString() => ToDisplay();

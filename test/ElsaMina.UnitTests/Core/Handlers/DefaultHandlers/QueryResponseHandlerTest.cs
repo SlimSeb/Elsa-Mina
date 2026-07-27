@@ -1,5 +1,6 @@
 using ElsaMina.Core.Handlers.DefaultHandlers;
 using ElsaMina.Core.Services.BattleTracker;
+using ElsaMina.Core.Services.RoomInfo;
 using ElsaMina.Core.Services.UserDetails;
 using NSubstitute;
 
@@ -9,6 +10,7 @@ public class QueryResponseHandlerTest
 {
     private IUserDetailsManager _userDetailsManager;
     private IActiveBattlesManager _activeBattlesManager;
+    private IRoomInfoManager _roomInfoManager;
     private QueryResponseHandler _handler;
 
     [SetUp]
@@ -16,7 +18,8 @@ public class QueryResponseHandlerTest
     {
         _userDetailsManager = Substitute.For<IUserDetailsManager>();
         _activeBattlesManager = Substitute.For<IActiveBattlesManager>();
-        _handler = new QueryResponseHandler(_userDetailsManager, _activeBattlesManager);
+        _roomInfoManager = Substitute.For<IRoomInfoManager>();
+        _handler = new QueryResponseHandler(_userDetailsManager, _activeBattlesManager, _roomInfoManager);
     }
 
     [Test]
@@ -46,6 +49,19 @@ public class QueryResponseHandlerTest
     }
 
     [Test]
+    public async Task Test_HandleReceivedMessage_ShouldCallHandleReceivedRoomInfo_WhenCommandIsQueryResponseRoomInfo()
+    {
+        // Arrange
+        string[] parts = ["", "queryresponse", "roominfo", "roomInfoData"];
+
+        // Act
+        await _handler.HandleReceivedMessageAsync(parts);
+
+        // Assert
+        _roomInfoManager.Received(1).HandleReceivedRoomInfo("roomInfoData");
+    }
+
+    [Test]
     public async Task Test_HandleReceivedMessage_ShouldNotCallHandleReceivedUserDetails_WhenPartsLengthIsLessThanFour()
     {
         // Arrange
@@ -57,6 +73,7 @@ public class QueryResponseHandlerTest
         // Assert
         _userDetailsManager.DidNotReceive().HandleReceivedUserDetails(Arg.Any<string>());
         _activeBattlesManager.DidNotReceive().HandleReceivedRoomList(Arg.Any<string>());
+        _roomInfoManager.DidNotReceive().HandleReceivedRoomInfo(Arg.Any<string>());
     }
 
     [Test]
@@ -71,6 +88,7 @@ public class QueryResponseHandlerTest
         // Assert
         _userDetailsManager.DidNotReceive().HandleReceivedUserDetails(Arg.Any<string>());
         _activeBattlesManager.DidNotReceive().HandleReceivedRoomList(Arg.Any<string>());
+        _roomInfoManager.DidNotReceive().HandleReceivedRoomInfo(Arg.Any<string>());
     }
 
     [Test]
@@ -85,5 +103,6 @@ public class QueryResponseHandlerTest
         // Assert
         _userDetailsManager.DidNotReceive().HandleReceivedUserDetails(Arg.Any<string>());
         _activeBattlesManager.DidNotReceive().HandleReceivedRoomList(Arg.Any<string>());
+        _roomInfoManager.DidNotReceive().HandleReceivedRoomInfo(Arg.Any<string>());
     }
 }

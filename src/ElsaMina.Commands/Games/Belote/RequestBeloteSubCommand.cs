@@ -1,7 +1,6 @@
-using ElsaMina.Core.Contexts;
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Games.Belote;
 
@@ -11,34 +10,11 @@ namespace ElsaMina.Commands.Games.Belote;
 /// the room id).
 /// </summary>
 [NamedCommand("belotesub", Aliases = ["bsub"])]
-public class RequestBeloteSubCommand : Command
+public class RequestBeloteSubCommand : RequestSubGameCommand<IBeloteGame>
 {
-    private readonly IRoomsManager _roomsManager;
-
-    public RequestBeloteSubCommand(IRoomsManager roomsManager)
+    public RequestBeloteSubCommand(IRoomsManager roomsManager) : base(roomsManager)
     {
-        _roomsManager = roomsManager;
     }
 
-    public override bool IsAllowedInPrivateMessage => true;
-    public override Rank RequiredRank => Rank.Regular;
-
-    public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
-    {
-        var room = context.IsPrivateMessage
-            ? _roomsManager.GetRoom(context.Target.Trim().ToLowerAlphaNum())
-            : context.Room;
-
-        if (room?.Game is not IBeloteGame game)
-        {
-            context.ReplyLocalizedMessage("belote_not_running");
-            return;
-        }
-
-        var (success, messageKey, args) = await game.RequestSubAsync(context.Sender);
-        if (!success)
-        {
-            context.ReplyLocalizedMessage(messageKey, args);
-        }
-    }
+    protected override string ResourcePrefix => "belote";
 }

@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using System.Globalization;
 using ElsaMina.Commands.Games.President;
 
@@ -6,16 +7,16 @@ namespace ElsaMina.UnitTests.Commands.Games.President;
 [TestFixture]
 public class PresidentCardTest
 {
-    [TestCase("3h", PresidentSuit.Hearts, 3)]
-    [TestCase("10s", PresidentSuit.Spades, 10)]
-    [TestCase("ts", PresidentSuit.Spades, 10)]
-    [TestCase("jd", PresidentSuit.Diamonds, PresidentCard.JACK)]
-    [TestCase("qc", PresidentSuit.Clubs, PresidentCard.QUEEN)]
-    [TestCase("kh", PresidentSuit.Hearts, PresidentCard.KING)]
-    [TestCase("as", PresidentSuit.Spades, PresidentCard.ACE)]
-    [TestCase("2d", PresidentSuit.Diamonds, PresidentCard.TWO)]
-    [TestCase("  KH ", PresidentSuit.Hearts, PresidentCard.KING)]
-    public void Test_Parse_ShouldReturnCard_WhenTokenIsValid(string token, PresidentSuit expectedSuit,
+    [TestCase("3h", Suit.Hearts, 3)]
+    [TestCase("10s", Suit.Spades, 10)]
+    [TestCase("ts", Suit.Spades, 10)]
+    [TestCase("jd", Suit.Diamonds, PresidentCard.JACK)]
+    [TestCase("qc", Suit.Clubs, PresidentCard.QUEEN)]
+    [TestCase("kh", Suit.Hearts, PresidentCard.KING)]
+    [TestCase("as", Suit.Spades, PresidentCard.ACE)]
+    [TestCase("2d", Suit.Diamonds, PresidentCard.TWO)]
+    [TestCase("  KH ", Suit.Hearts, PresidentCard.KING)]
+    public void Test_Parse_ShouldReturnCard_WhenTokenIsValid(string token, Suit expectedSuit,
         int expectedRank)
     {
         var card = PresidentCard.Parse(token);
@@ -62,9 +63,9 @@ public class PresidentCardTest
     {
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(new PresidentCard(PresidentSuit.Hearts, PresidentCard.KING).ToDisplay(), Is.EqualTo("K♥"));
-            Assert.That(new PresidentCard(PresidentSuit.Spades, 10).ToDisplay(), Is.EqualTo("10♠"));
-            Assert.That(new PresidentCard(PresidentSuit.Diamonds, PresidentCard.TWO).ToDisplay(), Is.EqualTo("2♦"));
+            Assert.That(new PresidentCard(Suit.Hearts, PresidentCard.KING).ToDisplay(), Is.EqualTo("K♥"));
+            Assert.That(new PresidentCard(Suit.Spades, 10).ToDisplay(), Is.EqualTo("10♠"));
+            Assert.That(new PresidentCard(Suit.Diamonds, PresidentCard.TWO).ToDisplay(), Is.EqualTo("2♦"));
         }
     }
 
@@ -75,11 +76,11 @@ public class PresidentCardTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(new PresidentCard(PresidentSuit.Hearts, PresidentCard.KING).ToDisplay(french),
+            Assert.That(new PresidentCard(Suit.Hearts, PresidentCard.KING).ToDisplay(french),
                 Is.EqualTo("R♥"));
-            Assert.That(new PresidentCard(PresidentSuit.Clubs, PresidentCard.QUEEN).ToDisplay(french),
+            Assert.That(new PresidentCard(Suit.Clubs, PresidentCard.QUEEN).ToDisplay(french),
                 Is.EqualTo("D♣"));
-            Assert.That(new PresidentCard(PresidentSuit.Spades, PresidentCard.JACK).ToDisplay(french),
+            Assert.That(new PresidentCard(Suit.Spades, PresidentCard.JACK).ToDisplay(french),
                 Is.EqualTo("V♠"));
         }
     }

@@ -1,8 +1,9 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Poker;
 
-public sealed class PokerPlayer
+public sealed class PokerPlayer : ISeatedPlayer
 {
     public PokerPlayer(IUser user, long stack)
     {

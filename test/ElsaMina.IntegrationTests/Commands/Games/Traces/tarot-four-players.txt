@@ -1,0 +1,149 @@
+tpl Games/Tarot/TarotLobby
+panel tarot-# new
+<<repeat 5>>
+tpl Games/Tarot/TarotLobby
+panel tarot-# update
+<<end>>
+tpl Games/Tarot/TarotTable
+panel tarot-# new
+<<repeat 4>>
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+page player1 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+page player2 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+page player3 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+page player4 tarot-#
+tpl Games/Tarot/TarotTable
+panel tarot-# update
+<<end>>
+tpl Games/Tarot/TarotLog
+panel tarot-#-log new
+<<repeat 4>>
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player1 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player2 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player3 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player4 tarot-#
+tpl Games/Tarot/TarotTable
+panel tarot-# update
+<<end>>
+<<repeat 17>>
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player1 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player2 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player3 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player4 tarot-#
+tpl Games/Tarot/TarotTable
+panel tarot-# new
+tpl Games/Tarot/TarotLog
+panel tarot-#-log new
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player1 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player2 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player3 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player4 tarot-#
+tpl Games/Tarot/TarotTable
+panel tarot-# update
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player1 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player2 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player3 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player4 tarot-#
+tpl Games/Tarot/TarotTable
+panel tarot-# update
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player1 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player2 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player3 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player4 tarot-#
+tpl Games/Tarot/TarotTable
+panel tarot-# update
+<<end>>
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player1 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player2 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player3 tarot-#
+tpl Games/Tarot/TarotTable
+tpl Games/Tarot/TarotHand
+tpl Games/Tarot/TarotLog
+page player4 tarot-#
+tpl Games/Tarot/TarotResult
+panel tarot-# update
+panel tarot-#-log clear
+tpl Games/Tarot/TarotResult
+page player1 tarot-#
+tpl Games/Tarot/TarotResult
+page player2 tarot-#
+tpl Games/Tarot/TarotResult
+page player3 tarot-#
+tpl Games/Tarot/TarotResult
+page player4 tarot-#

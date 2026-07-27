@@ -1,3 +1,5 @@
+using ElsaMina.Commands.Games.Cards;
+
 namespace ElsaMina.Commands.Games.Belote;
 
 public static class BeloteConstants
@@ -39,12 +41,12 @@ public static class BeloteConstants
     /// </summary>
     public static readonly TimeSpan TURN_TIMEOUT_WARNING_REMAINING = TimeSpan.FromSeconds(30);
 
-    public static readonly IReadOnlyList<BeloteSuit> Suits =
+    public static readonly IReadOnlyList<Suit> Suits =
     [
-        BeloteSuit.Hearts,
-        BeloteSuit.Spades,
-        BeloteSuit.Diamonds,
-        BeloteSuit.Clubs
+        Suit.Hearts,
+        Suit.Spades,
+        Suit.Diamonds,
+        Suit.Clubs
     ];
 
     /// <summary>

@@ -1,0 +1,519 @@
+tpl Games/President/PresidentLobby
+panel president-# new
+<<repeat 4>>
+tpl Games/President/PresidentLobby
+panel president-# update
+<<end>>
+<<repeat 12>>
+tpl Games/President/PresidentTable
+panel president-# new
+tpl Games/President/PresidentLog
+panel president-#-log new
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+<<end>>
+<<repeat 4>>
+tpl Games/President/PresidentTable
+panel president-# new
+tpl Games/President/PresidentLog
+panel president-#-log new
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+<<end>>
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentLog
+panel president-#-log update
+<<repeat 4>>
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# new
+tpl Games/President/PresidentLog
+panel president-#-log new
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+<<end>>
+<<repeat 2>>
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# new
+tpl Games/President/PresidentLog
+panel president-#-log new
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+<<end>>
+<<repeat 2>>
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# new
+tpl Games/President/PresidentLog
+panel president-#-log new
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+<<end>>
+<<repeat 2>>
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# new
+tpl Games/President/PresidentLog
+panel president-#-log new
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+tpl Games/President/PresidentLog
+panel president-#-log update
+<<end>>
+<<repeat 2>>
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# update
+<<end>>
+<<repeat 2>>
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentTable
+panel president-# new
+tpl Games/President/PresidentLog
+panel president-#-log new
+<<end>>
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player1 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player2 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player3 president-#
+tpl Games/President/PresidentTable
+tpl Games/President/PresidentHand
+tpl Games/President/PresidentLog
+page player4 president-#
+tpl Games/President/PresidentResult
+panel president-# update
+panel president-#-log clear
+tpl Games/President/PresidentResult
+page player1 president-#
+tpl Games/President/PresidentResult
+page player2 president-#
+tpl Games/President/PresidentResult
+page player3 president-#
+tpl Games/President/PresidentResult
+page player4 president-#

@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
@@ -5,7 +6,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Tarot;
 
 [NamedCommand("tarotpoignee", Aliases = ["tarothandful"])]
-public class DeclarePoigneeTarotCommand : TarotActionCommandBase
+public class DeclarePoigneeTarotCommand : GameActionCommandBase<ITarotGame>
 {
     public DeclarePoigneeTarotCommand(IRoomsManager roomsManager) : base(roomsManager)
     {

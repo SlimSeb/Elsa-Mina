@@ -1,0 +1,96 @@
+tpl Games/Poker/PokerLobby
+panel poker-#-0 new
+<<repeat 3>>
+tpl Games/Poker/PokerLobby
+panel poker-#-0 update
+<<end>>
+tpl Games/Poker/PokerTable
+panel poker-#-0 update
+tpl Games/Poker/PokerHand
+privatepanel player1 poker-hand-#-player1-0 new
+tpl Games/Poker/PokerHand
+privatepanel player2 poker-hand-#-player2-0 new
+tpl Games/Poker/PokerHand
+privatepanel player3 poker-hand-#-player3-0 new
+<<repeat 2>>
+tpl Games/Poker/PokerTable
+panel poker-#-0 update
+tpl Games/Poker/PokerHand
+privatepanel player1 poker-hand-#-player1-0 update
+tpl Games/Poker/PokerHand
+privatepanel player2 poker-hand-#-player2-0 update
+tpl Games/Poker/PokerHand
+privatepanel player3 poker-hand-#-player3-0 update
+<<end>>
+panel poker-#-0 clear
+privatepanel player1 poker-hand-#-player1-0 clear
+privatepanel player2 poker-hand-#-player2-0 clear
+privatepanel player3 poker-hand-#-player3-0 clear
+tpl Games/Poker/PokerTable
+panel poker-#-1 new
+tpl Games/Poker/PokerHand
+privatepanel player1 poker-hand-#-player1-1 new
+tpl Games/Poker/PokerHand
+privatepanel player2 poker-hand-#-player2-1 new
+tpl Games/Poker/PokerHand
+privatepanel player3 poker-hand-#-player3-1 new
+<<repeat 2>>
+tpl Games/Poker/PokerTable
+panel poker-#-1 update
+tpl Games/Poker/PokerHand
+privatepanel player1 poker-hand-#-player1-1 update
+tpl Games/Poker/PokerHand
+privatepanel player2 poker-hand-#-player2-1 update
+tpl Games/Poker/PokerHand
+privatepanel player3 poker-hand-#-player3-1 update
+<<end>>
+panel poker-#-1 clear
+privatepanel player1 poker-hand-#-player1-1 clear
+privatepanel player2 poker-hand-#-player2-1 clear
+privatepanel player3 poker-hand-#-player3-1 clear
+tpl Games/Poker/PokerTable
+panel poker-#-2 new
+tpl Games/Poker/PokerHand
+privatepanel player1 poker-hand-#-player1-2 new
+tpl Games/Poker/PokerHand
+privatepanel player2 poker-hand-#-player2-2 new
+tpl Games/Poker/PokerHand
+privatepanel player3 poker-hand-#-player3-2 new
+<<repeat 2>>
+tpl Games/Poker/PokerTable
+panel poker-#-2 update
+tpl Games/Poker/PokerHand
+privatepanel player1 poker-hand-#-player1-2 update
+tpl Games/Poker/PokerHand
+privatepanel player2 poker-hand-#-player2-2 update
+tpl Games/Poker/PokerHand
+privatepanel player3 poker-hand-#-player3-2 update
+<<end>>
+panel poker-#-2 clear
+privatepanel player1 poker-hand-#-player1-2 clear
+privatepanel player2 poker-hand-#-player2-2 clear
+privatepanel player3 poker-hand-#-player3-2 clear
+tpl Games/Poker/PokerTable
+panel poker-#-3 new
+tpl Games/Poker/PokerHand
+privatepanel player1 poker-hand-#-player1-3 new
+tpl Games/Poker/PokerHand
+privatepanel player2 poker-hand-#-player2-3 new
+tpl Games/Poker/PokerHand
+privatepanel player3 poker-hand-#-player3-3 new
+<<repeat 2>>
+tpl Games/Poker/PokerTable
+panel poker-#-3 update
+tpl Games/Poker/PokerHand
+privatepanel player1 poker-hand-#-player1-3 update
+tpl Games/Poker/PokerHand
+privatepanel player2 poker-hand-#-player2-3 update
+tpl Games/Poker/PokerHand
+privatepanel player3 poker-hand-#-player3-3 update
+<<end>>
+panel poker-#-3 clear
+privatepanel player1 poker-hand-#-player1-3 clear
+privatepanel player2 poker-hand-#-player2-3 clear
+privatepanel player3 poker-hand-#-player3-3 clear
+tpl Games/Poker/PokerResult
+panel poker-#-4 new

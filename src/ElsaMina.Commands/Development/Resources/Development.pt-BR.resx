@@ -144,4 +144,13 @@
     <data name="handlerdashboard_btn_disable" xml:space="preserve">
         <value>Desativar</value>
     </data>
+    <data name="roominfo_no_room" xml:space="preserve">
+        <value>Por favor, especifique o identificador de uma sala.</value>
+    </data>
+    <data name="roominfo_timeout" xml:space="preserve">
+        <value>A solicitação de informações da sala expirou.</value>
+    </data>
+    <data name="roominfo_error" xml:space="preserve">
+        <value>Erro: {0}</value>
+    </data>
 </root>

@@ -38,6 +38,7 @@ public class AdminModule : Module
         builder.RegisterCommand<ChangelogCommand>();
         builder.RegisterCommand<MemoryUsageCommand>();
         builder.RegisterCommand<UptimeCommand>();
+        builder.RegisterCommand<RoomInfoCommand>();
         builder.RegisterCommand<RunningCommands>();
         builder.RegisterCommand<CancelRunningCommand>();
 

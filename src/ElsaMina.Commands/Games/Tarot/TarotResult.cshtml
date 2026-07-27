@@ -1,5 +1,6 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Tarot.TarotViewModel>
 @using ElsaMina.Commands.Games.Tarot
+@using ElsaMina.Commands.Games.Cards
 @using ElsaMina.Core.Utils
 
 @{
@@ -16,7 +17,7 @@
         {
             return "#7fc4ff";
         }
-        return card.Suit is TarotSuit.Hearts or TarotSuit.Diamonds ? "#ff7b7b" : "#ececec";
+        return card.Suit is Suit.Hearts or Suit.Diamonds ? "#ff7b7b" : "#ececec";
     }
 
     string CardSize(TarotCard card) => card.IsExcuse ? "1.45em" : "1.15em";
@@ -45,7 +46,7 @@
 
         @if (game.HighestBid is TarotBid.GardeSans or TarotBid.GardeContre && game.Dog.Count > 0)
         {
-            var dogCards = game.Dog.OrderBy(card => card.Suit).ThenBy(card => card.Rank).ToList();
+            var dogCards = game.Dog.OrderBy(card => card.Kind).ThenBy(card => card.Suit).ThenBy(card => card.Rank).ToList();
             <p style="text-align:center;margin:6px 0 2px 0;color:#b9a9c9;font-size:0.85em">@GetString("tarot_result_dog")</p>
             <div style="text-align:center;line-height:1.9em;margin-bottom:4px">
                 @foreach (var card in dogCards)
@@ -138,7 +139,8 @@
             {
                 var capturedPoints = player.CapturedPile.Sum(card => card.HalfPoints) / 2.0;
                 var orderedCards = player.CapturedPile
-                    .OrderBy(card => card.Suit)
+                    .OrderBy(card => card.Kind)
+                    .ThenBy(card => card.Suit)
                     .ThenBy(card => card.Rank)
                     .ToList();
                 <div style="margin:6px 0;padding:5px 8px;background:#241d2d;border-radius:5px">

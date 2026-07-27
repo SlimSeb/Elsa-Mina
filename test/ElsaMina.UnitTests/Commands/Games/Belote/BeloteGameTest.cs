@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using System.Globalization;
 using ElsaMina.Commands.Games.Belote;
 using ElsaMina.Core.Contexts;
@@ -97,7 +98,7 @@ public class BeloteGameTest
         {
             Assert.That(_game.Phase, Is.EqualTo(BelotePhase.Playing));
             Assert.That(_game.Taker?.UserId, Is.EqualTo(users[0].UserId));
-            Assert.That(_game.Trump, Is.EqualTo(BeloteSuit.Diamonds)); // turned card is the Jack of Diamonds
+            Assert.That(_game.Trump, Is.EqualTo(Suit.Diamonds)); // turned card is the Jack of Diamonds
             Assert.That(_game.Players.All(player => player.Hand.Count == 8), Is.True);
         }
     }
@@ -166,12 +167,12 @@ public class BeloteGameTest
         var users = await JoinAndStartAsync();
         await PassAsync(4);
 
-        await _game.BidAsync(_game.CurrentPlayer.User, pass: false, BeloteSuit.Hearts);
+        await _game.BidAsync(_game.CurrentPlayer.User, pass: false, Suit.Hearts);
 
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(BelotePhase.Playing));
-            Assert.That(_game.Trump, Is.EqualTo(BeloteSuit.Hearts));
+            Assert.That(_game.Trump, Is.EqualTo(Suit.Hearts));
             Assert.That(_game.Taker?.UserId, Is.EqualTo(users[0].UserId));
         }
     }
@@ -182,7 +183,7 @@ public class BeloteGameTest
         await JoinAndStartAsync();
         await PassAsync(4);
 
-        await _game.BidAsync(_game.CurrentPlayer.User, pass: false, BeloteSuit.Diamonds);
+        await _game.BidAsync(_game.CurrentPlayer.User, pass: false, Suit.Diamonds);
 
         using (Assert.EnterMultipleScope())
         {

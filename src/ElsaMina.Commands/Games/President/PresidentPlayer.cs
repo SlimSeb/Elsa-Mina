@@ -1,8 +1,9 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.President;
 
-public sealed class PresidentPlayer
+public sealed class PresidentPlayer : ISubstitutablePlayer
 {
     public PresidentPlayer(IUser user)
     {

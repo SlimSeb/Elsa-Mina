@@ -1,4 +1,5 @@
 using System.Globalization;
+using ElsaMina.Commands.Games.Cards;
 
 namespace ElsaMina.Commands.Games.President;
 
@@ -7,7 +8,7 @@ namespace ElsaMina.Commands.Games.President;
 /// 11 = Jack, 12 = Queen, 13 = King, 14 = Ace and 15 = the 2, the strongest card of the game
 /// (3 &lt; 4 &lt; ... &lt; K &lt; A &lt; 2).
 /// </summary>
-public sealed record PresidentCard(PresidentSuit Suit, int Rank)
+public sealed record PresidentCard(Suit Suit, int Rank)
 {
     public const int JACK = 11;
     public const int QUEEN = 12;
@@ -30,15 +31,7 @@ public sealed record PresidentCard(PresidentSuit Suit, int Rank)
             return null;
         }
 
-        var suit = normalized[^1] switch
-        {
-            'h' => PresidentSuit.Hearts,
-            's' => PresidentSuit.Spades,
-            'd' => PresidentSuit.Diamonds,
-            'c' => PresidentSuit.Clubs,
-            _ => (PresidentSuit?)null
-        };
-
+        var suit = CardToken.ParseSuitLetter(normalized[^1]);
         if (suit is null)
         {
             return null;
@@ -76,18 +69,7 @@ public sealed record PresidentCard(PresidentSuit Suit, int Rank)
     /// <summary>
     /// Canonical lowercase token that <see cref="Parse"/> round-trips (used in button values).
     /// </summary>
-    public string ToToken()
-    {
-        var suitLetter = Suit switch
-        {
-            PresidentSuit.Hearts => "h",
-            PresidentSuit.Spades => "s",
-            PresidentSuit.Diamonds => "d",
-            _ => "c"
-        };
-
-        return $"{RankToken(Rank)}{suitLetter}";
-    }
+    public string ToToken() => $"{RankToken(Rank)}{CardToken.SuitLetter(Suit)}";
 
     /// <summary>
     /// Canonical lowercase rank token that <see cref="ParseRank"/> round-trips (used in button values).
@@ -99,41 +81,31 @@ public sealed record PresidentCard(PresidentSuit Suit, int Rank)
         KING => "k",
         ACE => "a",
         TWO => "2",
-        _ => rank.ToString(CultureInfo.InvariantCulture)
+        _ => CardToken.Number(rank)
     };
 
     /// <summary>
     /// Human-readable display with suit symbol, e.g. "K♥", "10♠", "2♦". When <paramref name="culture"/>
     /// is French, face cards use V/D/R (Valet, Dame, Roi).
     /// </summary>
-    public string ToDisplay(CultureInfo culture = null)
-    {
-        var suitSymbol = Suit switch
-        {
-            PresidentSuit.Hearts => "♥",
-            PresidentSuit.Spades => "♠",
-            PresidentSuit.Diamonds => "♦",
-            _ => "♣"
-        };
-
-        return $"{DisplayRank(Rank, culture)}{suitSymbol}";
-    }
+    public string ToDisplay(CultureInfo culture = null) =>
+        $"{DisplayRank(Rank, culture)}{CardToken.SuitSymbol(Suit)}";
 
     /// <summary>
     /// Human-readable rank on its own, e.g. "K", "10", "2" (V/D/R in French).
     /// </summary>
     public static string DisplayRank(int rank, CultureInfo culture = null)
     {
-        var isFrench = culture?.TwoLetterISOLanguageName == "fr";
+        var isFrench = CardToken.IsFrench(culture);
 
         return rank switch
         {
-            JACK => isFrench ? "V" : "J",
-            QUEEN => isFrench ? "D" : "Q",
-            KING => isFrench ? "R" : "K",
-            ACE => "A",
+            JACK => CardToken.Jack(isFrench),
+            QUEEN => CardToken.Queen(isFrench),
+            KING => CardToken.King(isFrench),
+            ACE => CardToken.ACE,
             TWO => "2",
-            _ => rank.ToString(CultureInfo.InvariantCulture)
+            _ => CardToken.Number(rank)
         };
     }
 

@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Commands.Games.Belote;
 
 namespace ElsaMina.UnitTests.Commands.Games.Belote;
@@ -15,9 +16,9 @@ public class BeloteCardTest
     [TestCase(7, 0)]
     public void Test_GetPoints_ShouldUseTrumpValues_WhenCardIsTrump(int rank, int expected)
     {
-        var card = new BeloteCard(BeloteSuit.Hearts, rank);
+        var card = new BeloteCard(Suit.Hearts, rank);
 
-        Assert.That(card.GetPoints(BeloteSuit.Hearts), Is.EqualTo(expected));
+        Assert.That(card.GetPoints(Suit.Hearts), Is.EqualTo(expected));
     }
 
     [TestCase(BeloteCard.ACE, 11)]
@@ -30,46 +31,46 @@ public class BeloteCardTest
     [TestCase(7, 0)]
     public void Test_GetPoints_ShouldUsePlainValues_WhenCardIsNotTrump(int rank, int expected)
     {
-        var card = new BeloteCard(BeloteSuit.Hearts, rank);
+        var card = new BeloteCard(Suit.Hearts, rank);
 
-        Assert.That(card.GetPoints(BeloteSuit.Spades), Is.EqualTo(expected));
+        Assert.That(card.GetPoints(Suit.Spades), Is.EqualTo(expected));
     }
 
     [Test]
     public void Test_GetStrength_ShouldRankJackHighest_WhenTrump()
     {
-        var jack = new BeloteCard(BeloteSuit.Clubs, BeloteCard.JACK);
-        var nine = new BeloteCard(BeloteSuit.Clubs, 9);
-        var ace = new BeloteCard(BeloteSuit.Clubs, BeloteCard.ACE);
+        var jack = new BeloteCard(Suit.Clubs, BeloteCard.JACK);
+        var nine = new BeloteCard(Suit.Clubs, 9);
+        var ace = new BeloteCard(Suit.Clubs, BeloteCard.ACE);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(jack.GetStrength(BeloteSuit.Clubs), Is.GreaterThan(nine.GetStrength(BeloteSuit.Clubs)));
-            Assert.That(nine.GetStrength(BeloteSuit.Clubs), Is.GreaterThan(ace.GetStrength(BeloteSuit.Clubs)));
+            Assert.That(jack.GetStrength(Suit.Clubs), Is.GreaterThan(nine.GetStrength(Suit.Clubs)));
+            Assert.That(nine.GetStrength(Suit.Clubs), Is.GreaterThan(ace.GetStrength(Suit.Clubs)));
         }
     }
 
     [Test]
     public void Test_GetStrength_ShouldRankAceHighest_WhenPlain()
     {
-        var ace = new BeloteCard(BeloteSuit.Clubs, BeloteCard.ACE);
-        var ten = new BeloteCard(BeloteSuit.Clubs, 10);
-        var jack = new BeloteCard(BeloteSuit.Clubs, BeloteCard.JACK);
+        var ace = new BeloteCard(Suit.Clubs, BeloteCard.ACE);
+        var ten = new BeloteCard(Suit.Clubs, 10);
+        var jack = new BeloteCard(Suit.Clubs, BeloteCard.JACK);
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(ace.GetStrength(BeloteSuit.Hearts), Is.GreaterThan(ten.GetStrength(BeloteSuit.Hearts)));
-            Assert.That(ten.GetStrength(BeloteSuit.Hearts), Is.GreaterThan(jack.GetStrength(BeloteSuit.Hearts)));
+            Assert.That(ace.GetStrength(Suit.Hearts), Is.GreaterThan(ten.GetStrength(Suit.Hearts)));
+            Assert.That(ten.GetStrength(Suit.Hearts), Is.GreaterThan(jack.GetStrength(Suit.Hearts)));
         }
     }
 
-    [TestCase("ah", BeloteSuit.Hearts, BeloteCard.ACE)]
-    [TestCase("7h", BeloteSuit.Hearts, 7)]
-    [TestCase("10s", BeloteSuit.Spades, 10)]
-    [TestCase("kd", BeloteSuit.Diamonds, BeloteCard.KING)]
-    [TestCase("qc", BeloteSuit.Clubs, BeloteCard.QUEEN)]
-    [TestCase("jc", BeloteSuit.Clubs, BeloteCard.JACK)]
-    public void Test_Parse_ShouldReadValidTokens(string token, BeloteSuit suit, int rank)
+    [TestCase("ah", Suit.Hearts, BeloteCard.ACE)]
+    [TestCase("7h", Suit.Hearts, 7)]
+    [TestCase("10s", Suit.Spades, 10)]
+    [TestCase("kd", Suit.Diamonds, BeloteCard.KING)]
+    [TestCase("qc", Suit.Clubs, BeloteCard.QUEEN)]
+    [TestCase("jc", Suit.Clubs, BeloteCard.JACK)]
+    public void Test_Parse_ShouldReadValidTokens(string token, Suit suit, int rank)
     {
         Assert.That(BeloteCard.Parse(token), Is.EqualTo(new BeloteCard(suit, rank)));
     }
@@ -92,12 +93,12 @@ public class BeloteCardTest
         }
     }
 
-    [TestCase("h", BeloteSuit.Hearts)]
-    [TestCase("pique", BeloteSuit.Spades)]
-    [TestCase("carreau", BeloteSuit.Diamonds)]
-    [TestCase("clubs", BeloteSuit.Clubs)]
-    public void Test_ParseSuit_ShouldReadNamesAndLetters(string token, BeloteSuit expected)
+    [TestCase("h", Suit.Hearts)]
+    [TestCase("pique", Suit.Spades)]
+    [TestCase("carreau", Suit.Diamonds)]
+    [TestCase("clubs", Suit.Clubs)]
+    public void Test_ParseSuit_ShouldReadNamesAndLetters(string token, Suit expected)
     {
-        Assert.That(BeloteCard.ParseSuit(token), Is.EqualTo(expected));
+        Assert.That(CardToken.ParseSuitName(token), Is.EqualTo(expected));
     }
 }
