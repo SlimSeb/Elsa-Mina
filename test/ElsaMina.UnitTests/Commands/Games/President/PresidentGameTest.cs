@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using System.Globalization;
 using ElsaMina.Commands.Games.President;
 using ElsaMina.Core.Contexts;
@@ -561,7 +562,7 @@ public class PresidentGameTest
         // players' 2s are stripped so the greedy driver does not make them finish on a 2 too.
         var victim = _game.Players[1];
         victim.Hand.Clear();
-        victim.Hand.Add(new PresidentCard(PresidentSuit.Spades, PresidentCard.TWO));
+        victim.Hand.Add(new PresidentCard(Suit.Spades, PresidentCard.TWO));
         foreach (var other in new[] { _game.Players[0], _game.Players[2] })
         {
             other.Hand.RemoveAll(card => card.IsTwo);

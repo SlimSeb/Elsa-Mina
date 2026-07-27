@@ -1,5 +1,6 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Belote.BeloteViewModel>
 @using ElsaMina.Commands.Games.Belote
+@using ElsaMina.Commands.Games.Cards
 @using ElsaMina.Core.Utils
 
 @{
@@ -9,7 +10,7 @@
     var trump = game.Trump;
 
     string CardColor(BeloteCard card) =>
-        card.Suit is BeloteSuit.Hearts or BeloteSuit.Diamonds ? "#cc2b2b" : "#111";
+        card.Suit is Suit.Hearts or Suit.Diamonds ? "#cc2b2b" : "#111";
 
     bool IsTrumpCard(BeloteCard card) => trump != null && card.Suit == trump.Value;
 
@@ -31,7 +32,7 @@
         </p>
         @if (game.BiddingRound == 1)
         {
-            <p style="margin:4px 0">@GetString("belote_your_turn_bid_one", BeloteCard.SuitDisplay(game.TurnedCard.Suit))</p>
+            <p style="margin:4px 0">@GetString("belote_your_turn_bid_one", CardToken.SuitSymbol(game.TurnedCard.Suit))</p>
             <p style="margin:4px 0">
                 <button class="button" name="send" value="@BidAction("take")">@GetString("belote_bid_take_button")</button>
                 <button class="button" name="send" value="@BidAction("pass")">@GetString("belote_bid_pass_button")</button>
@@ -47,9 +48,9 @@
                     {
                         continue;
                     }
-                    var color = suit is BeloteSuit.Hearts or BeloteSuit.Diamonds ? "#cc2b2b" : "#111";
-                    <button class="button" name="send" value="@BidAction(BeloteCard.SuitToken(suit))" style="color:@color">
-                        @BeloteCard.SuitDisplay(suit) @GetString($"belote_suit_{suit.ToString().ToLowerInvariant()}")
+                    var color = suit is Suit.Hearts or Suit.Diamonds ? "#cc2b2b" : "#111";
+                    <button class="button" name="send" value="@BidAction(CardToken.SuitLetter(suit))" style="color:@color">
+                        @CardToken.SuitSymbol(suit) @GetString($"belote_suit_{suit.ToString().ToLowerInvariant()}")
                     </button>
                 }
                 <button class="button" name="send" value="@BidAction("pass")">@GetString("belote_bid_pass_button")</button>

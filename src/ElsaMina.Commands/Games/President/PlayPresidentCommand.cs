@@ -1,4 +1,5 @@
 using System.Globalization;
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
@@ -10,7 +11,7 @@ namespace ElsaMina.Commands.Games.President;
 /// <c>-prp k 2</c> for a pair of kings. Without an explicit count, the pile's required count is used.
 /// </summary>
 [NamedCommand("presidentplay", Aliases = ["prp"])]
-public class PlayPresidentCommand : PresidentActionCommandBase
+public class PlayPresidentCommand : GameActionCommandBase<IPresidentGame>
 {
     public PlayPresidentCommand(IRoomsManager roomsManager) : base(roomsManager)
     {

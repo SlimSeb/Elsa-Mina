@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
@@ -5,7 +6,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Belote;
 
 [NamedCommand("belotebid", Aliases = ["bb"])]
-public class BidBeloteCommand : BeloteActionCommandBase
+public class BidBeloteCommand : GameActionCommandBase<IBeloteGame>
 {
     public BidBeloteCommand(IRoomsManager roomsManager) : base(roomsManager)
     {
@@ -25,7 +26,7 @@ public class BidBeloteCommand : BeloteActionCommandBase
                 return;
         }
 
-        var suit = BeloteCard.ParseSuit(normalized);
+        var suit = CardToken.ParseSuitName(normalized);
         if (suit is null)
         {
             context.ReplyLocalizedMessage("belote_bid_unknown");

@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using System.Globalization;
 using ElsaMina.Commands.Games.Tarot;
 
@@ -6,13 +7,13 @@ namespace ElsaMina.UnitTests.Commands.Games.Tarot;
 [TestFixture]
 public class TarotCardTest
 {
-    [TestCase("kh", TarotSuit.Hearts, TarotCard.KING)]
-    [TestCase("10s", TarotSuit.Spades, 10)]
-    [TestCase("qd", TarotSuit.Diamonds, TarotCard.QUEEN)]
-    [TestCase("cc", TarotSuit.Clubs, TarotCard.CAVALIER)]
-    [TestCase("jh", TarotSuit.Hearts, TarotCard.JACK)]
-    [TestCase("1d", TarotSuit.Diamonds, 1)]
-    public void Test_Parse_ShouldReturnSuitCard_WhenTokenIsValid(string token, TarotSuit suit, int rank)
+    [TestCase("kh", Suit.Hearts, TarotCard.KING)]
+    [TestCase("10s", Suit.Spades, 10)]
+    [TestCase("qd", Suit.Diamonds, TarotCard.QUEEN)]
+    [TestCase("cc", Suit.Clubs, TarotCard.CAVALIER)]
+    [TestCase("jh", Suit.Hearts, TarotCard.JACK)]
+    [TestCase("1d", Suit.Diamonds, 1)]
+    public void Test_Parse_ShouldReturnSuitCard_WhenTokenIsValid(string token, Suit suit, int rank)
     {
         var card = TarotCard.Parse(token);
 
@@ -66,14 +67,13 @@ public class TarotCardTest
         }
     }
 
-    [TestCase(TarotSuit.Trump, 21, "T21")]
-    [TestCase(TarotSuit.Hearts, TarotCard.JACK, "J♥")]
-    [TestCase(TarotSuit.Hearts, TarotCard.CAVALIER, "C♥")]
-    [TestCase(TarotSuit.Hearts, TarotCard.QUEEN, "Q♥")]
-    [TestCase(TarotSuit.Hearts, TarotCard.KING, "K♥")]
-    public void Test_ToDisplay_ShouldUseDefaultNotation_WhenCultureIsNotFrench(TarotSuit suit, int rank, string expected)
+    [TestCase(Suit.Hearts, TarotCard.JACK, "J♥")]
+    [TestCase(Suit.Hearts, TarotCard.CAVALIER, "C♥")]
+    [TestCase(Suit.Hearts, TarotCard.QUEEN, "Q♥")]
+    [TestCase(Suit.Hearts, TarotCard.KING, "K♥")]
+    public void Test_ToDisplay_ShouldUseDefaultNotation_WhenCultureIsNotFrench(Suit suit, int rank, string expected)
     {
-        var card = new TarotCard(suit, rank);
+        var card = TarotCard.Suited(suit, rank);
 
         using (Assert.EnterMultipleScope())
         {
@@ -82,22 +82,34 @@ public class TarotCardTest
         }
     }
 
-    [TestCase(TarotSuit.Trump, 21, "A21")]
-    [TestCase(TarotSuit.Hearts, TarotCard.JACK, "V♥")]
-    [TestCase(TarotSuit.Hearts, TarotCard.CAVALIER, "C♥")]
-    [TestCase(TarotSuit.Hearts, TarotCard.QUEEN, "D♥")]
-    [TestCase(TarotSuit.Hearts, TarotCard.KING, "R♥")]
-    public void Test_ToDisplay_ShouldUseFrenchNotation_WhenCultureIsFrench(TarotSuit suit, int rank, string expected)
+    [TestCase(Suit.Hearts, TarotCard.JACK, "V♥")]
+    [TestCase(Suit.Hearts, TarotCard.CAVALIER, "C♥")]
+    [TestCase(Suit.Hearts, TarotCard.QUEEN, "D♥")]
+    [TestCase(Suit.Hearts, TarotCard.KING, "R♥")]
+    public void Test_ToDisplay_ShouldUseFrenchNotation_WhenCultureIsFrench(Suit suit, int rank, string expected)
     {
-        var card = new TarotCard(suit, rank);
+        var card = TarotCard.Suited(suit, rank);
 
         Assert.That(card.ToDisplay(new CultureInfo("fr-FR")), Is.EqualTo(expected));
+    }
+
+    [TestCase(21, "T21", "A21")]
+    [TestCase(1, "T1", "A1")]
+    public void Test_ToDisplay_ShouldPrefixTrumpsWithTheLocalLetter(int rank, string english, string french)
+    {
+        var card = TarotCard.Trump(rank);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(card.ToDisplay(new CultureInfo("en-US")), Is.EqualTo(english));
+            Assert.That(card.ToDisplay(new CultureInfo("fr-FR")), Is.EqualTo(french));
+        }
     }
 
     [Test]
     public void Test_ToDisplay_ShouldReturnExcuseEmoji_RegardlessOfCulture()
     {
-        var excuse = new TarotCard(TarotSuit.Excuse, 0);
+        var excuse = TarotCard.Excuse;
 
         using (Assert.EnterMultipleScope())
         {
@@ -111,15 +123,15 @@ public class TarotCardTest
     {
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(new TarotCard(TarotSuit.Hearts, TarotCard.KING).HalfPoints, Is.EqualTo(9));
-            Assert.That(new TarotCard(TarotSuit.Hearts, TarotCard.QUEEN).HalfPoints, Is.EqualTo(7));
-            Assert.That(new TarotCard(TarotSuit.Hearts, TarotCard.CAVALIER).HalfPoints, Is.EqualTo(5));
-            Assert.That(new TarotCard(TarotSuit.Hearts, TarotCard.JACK).HalfPoints, Is.EqualTo(3));
-            Assert.That(new TarotCard(TarotSuit.Hearts, 7).HalfPoints, Is.EqualTo(1));
-            Assert.That(new TarotCard(TarotSuit.Trump, 1).HalfPoints, Is.EqualTo(9));
-            Assert.That(new TarotCard(TarotSuit.Trump, 21).HalfPoints, Is.EqualTo(9));
-            Assert.That(new TarotCard(TarotSuit.Trump, 10).HalfPoints, Is.EqualTo(1));
-            Assert.That(new TarotCard(TarotSuit.Excuse, 0).HalfPoints, Is.EqualTo(9));
+            Assert.That(TarotCard.Suited(Suit.Hearts, TarotCard.KING).HalfPoints, Is.EqualTo(9));
+            Assert.That(TarotCard.Suited(Suit.Hearts, TarotCard.QUEEN).HalfPoints, Is.EqualTo(7));
+            Assert.That(TarotCard.Suited(Suit.Hearts, TarotCard.CAVALIER).HalfPoints, Is.EqualTo(5));
+            Assert.That(TarotCard.Suited(Suit.Hearts, TarotCard.JACK).HalfPoints, Is.EqualTo(3));
+            Assert.That(TarotCard.Suited(Suit.Hearts, 7).HalfPoints, Is.EqualTo(1));
+            Assert.That(TarotCard.Trump(1).HalfPoints, Is.EqualTo(9));
+            Assert.That(TarotCard.Trump(21).HalfPoints, Is.EqualTo(9));
+            Assert.That(TarotCard.Trump(10).HalfPoints, Is.EqualTo(1));
+            Assert.That(TarotCard.Excuse.HalfPoints, Is.EqualTo(9));
         }
     }
 

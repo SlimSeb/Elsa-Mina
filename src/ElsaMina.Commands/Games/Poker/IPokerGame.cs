@@ -1,12 +1,10 @@
-using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.Games;
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Poker;
 
-public interface IPokerGame : IGame
+public interface IPokerGame : ICardGame
 {
-    IContext Context { get; set; }
     long BuyIn { get; set; }
 
     IReadOnlyList<PokerPlayer> Players { get; }
@@ -50,12 +48,8 @@ public interface IPokerGame : IGame
     /// </summary>
     long MinimumRaiseTo();
 
-    Task BeginJoinPhaseAsync();
-    Task<(bool Success, string MessageKey, object[] Args)> JoinAsync(IUser user);
-    Task StartAsync(IUser user);
     Task FoldAsync(IUser user);
     Task CheckAsync(IUser user);
     Task CallAsync(IUser user);
     Task RaiseAsync(IUser user, long amountTo);
-    Task CancelAsync();
 }

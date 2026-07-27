@@ -1,15 +1,16 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Belote.BeloteViewModel>
 @using ElsaMina.Commands.Games.Belote
+@using ElsaMina.Commands.Games.Cards
 @using ElsaMina.Core.Utils
 
 @{
     var game = Model.Game;
 
     string CardColor(BeloteCard card) =>
-        card.Suit is BeloteSuit.Hearts or BeloteSuit.Diamonds ? "#ff7b7b" : "#ececec";
+        card.Suit is Suit.Hearts or Suit.Diamonds ? "#ff7b7b" : "#ececec";
 
-    string SuitColor(BeloteSuit suit) =>
-        suit is BeloteSuit.Hearts or BeloteSuit.Diamonds ? "#ff7b7b" : "#ececec";
+    string SuitColor(Suit suit) =>
+        suit is Suit.Hearts or Suit.Diamonds ? "#ff7b7b" : "#ececec";
 
     string TeamName(int team) => GetString(team == 0 ? "belote_team_one" : "belote_team_two");
 }
@@ -62,7 +63,7 @@
             <b>@GetString("belote_taker_label"):</b>
             <span style="color:@game.Taker?.Name.ToColorHexCodeWithCustoms()">@game.Taker?.Name</span>
             &nbsp;|&nbsp; <b>@GetString("belote_trump_label"):</b>
-            <span style="color:@SuitColor(trump);font-weight:bold;font-size:1.2em">@BeloteCard.SuitDisplay(trump)</span>
+            <span style="color:@SuitColor(trump);font-weight:bold;font-size:1.2em">@CardToken.SuitSymbol(trump)</span>
             @GetString($"belote_suit_{trump.ToString().ToLowerInvariant()}")
         </p>
 

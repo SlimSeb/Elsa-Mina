@@ -1,7 +1,6 @@
-using ElsaMina.Core.Contexts;
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Games.President;
 
@@ -11,34 +10,11 @@ namespace ElsaMina.Commands.Games.President;
 /// the room id).
 /// </summary>
 [NamedCommand("presidentsub", Aliases = ["prsub"])]
-public class RequestPresidentSubCommand : Command
+public class RequestPresidentSubCommand : RequestSubGameCommand<IPresidentGame>
 {
-    private readonly IRoomsManager _roomsManager;
-
-    public RequestPresidentSubCommand(IRoomsManager roomsManager)
+    public RequestPresidentSubCommand(IRoomsManager roomsManager) : base(roomsManager)
     {
-        _roomsManager = roomsManager;
     }
 
-    public override bool IsAllowedInPrivateMessage => true;
-    public override Rank RequiredRank => Rank.Regular;
-
-    public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
-    {
-        var room = context.IsPrivateMessage
-            ? _roomsManager.GetRoom(context.Target.Trim().ToLowerAlphaNum())
-            : context.Room;
-
-        if (room?.Game is not IPresidentGame game)
-        {
-            context.ReplyLocalizedMessage("president_not_running");
-            return;
-        }
-
-        var (success, messageKey, args) = await game.RequestSubAsync(context.Sender);
-        if (!success)
-        {
-            context.ReplyLocalizedMessage(messageKey, args);
-        }
-    }
+    protected override string ResourcePrefix => "president";
 }

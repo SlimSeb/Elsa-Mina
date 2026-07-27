@@ -1,3 +1,5 @@
+using ElsaMina.Commands.Games.Cards;
+
 namespace ElsaMina.Commands.Games.President;
 
 public static class PresidentConstants
@@ -39,7 +41,7 @@ public static class PresidentConstants
 
         foreach (var suit in new[]
                  {
-                     PresidentSuit.Hearts, PresidentSuit.Spades, PresidentSuit.Diamonds, PresidentSuit.Clubs
+                     Suit.Hearts, Suit.Spades, Suit.Diamonds, Suit.Clubs
                  })
         {
             for (var rank = 3; rank <= PresidentCard.TWO; rank++)

@@ -1,44 +1,29 @@
-using ElsaMina.Core.Contexts;
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
-using ElsaMina.Core.Utils;
 using JetBrains.Annotations;
 
 namespace ElsaMina.Commands.Games.Tarot;
 
-public class TarotGame : Game, ITarotGame
+public class TarotGame : SubstitutableCardGame<TarotPlayer>, ITarotGame
 {
-    private static int _nextGameId;
-
     private readonly IRandomService _randomService;
-    private readonly ITemplatesManager _templatesManager;
     private readonly IConfiguration _configuration;
     private readonly ITarotStatsService _statsService;
 
-    private readonly SemaphoreSlim _actionLock = new(1, 1);
-    private readonly PeriodicTimerRunner _turnTimer;
-    private readonly PeriodicTimerRunner _turnWarningTimer;
-    private readonly List<TarotPlayer> _players = [];
     private readonly List<TarotCard> _dog = [];
     private readonly List<TarotCard> _pendingDiscards = [];
     private readonly List<(TarotPlayer Player, int Tier)> _declaredPoignees = [];
     private readonly List<(TarotPlayer Player, TarotMisereType Type)> _declaredMiseres = [];
-    private readonly List<string> _log = [];
 
-    private int _currentTurnIndex;
     private int _firstLeaderIndex;
     private int _takerIndex = -1;
     private int _partnerIndex = -1;
     private int _takerSideTrickWins;
     private int _cardsPlayedTotal;
     private bool _slamAnnounced;
-    private bool _publicPanelInitialized;
-    private bool _subPanelInitialized;
-    private bool _logPanelInitialized;
-    private int _renderedLogCount;
 
     [UsedImplicitly]
     public TarotGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration,
@@ -49,42 +34,44 @@ public class TarotGame : Game, ITarotGame
 
     public TarotGame(IRandomService randomService, ITemplatesManager templatesManager, IConfiguration configuration,
         ITarotStatsService statsService, TimeSpan turnTimeout)
+        : base(templatesManager, turnTimeout, TarotConstants.TURN_TIMEOUT_WARNING_REMAINING)
     {
         _randomService = randomService;
-        _templatesManager = templatesManager;
         _configuration = configuration;
         _statsService = statsService;
-        GameId = Interlocked.Increment(ref _nextGameId);
-        _turnTimer = new PeriodicTimerRunner(turnTimeout, OnTurnTimeoutAsync, runOnce: true);
-
-        // Warn the active player by PM once only the warning threshold of time is left on their turn.
-        var warningDelay = turnTimeout - TarotConstants.TURN_TIMEOUT_WARNING_REMAINING;
-        if (warningDelay > TimeSpan.Zero)
-        {
-            _turnWarningTimer = new PeriodicTimerRunner(warningDelay, OnTurnWarningAsync, runOnce: true);
-        }
     }
 
-    public int GameId { get; }
     public override string Identifier => nameof(TarotGame);
 
-    public IContext Context { get; set; }
-
-    public IReadOnlyList<TarotPlayer> Players => _players;
-    public int PlayerCount => _players.Count;
     public TarotPhase Phase { get; private set; } = TarotPhase.Lobby;
 
-    public TarotPlayer CurrentPlayer =>
-        _currentTurnIndex >= 0 && _currentTurnIndex < _players.Count ? _players[_currentTurnIndex] : null;
+    public override bool IsInLobby => Phase == TarotPhase.Lobby;
 
-    public TarotPlayer Taker => _takerIndex >= 0 ? _players[_takerIndex] : null;
+    protected override string ResourcePrefix => "tarot";
+    protected override string TemplateFolder => "Tarot";
+    protected override int MinPlayers => TarotConstants.MIN_PLAYERS;
+    protected override int MaxPlayers => TarotConstants.MAX_PLAYERS;
+    protected override bool IsFinished => Phase == TarotPhase.Finished;
+
+    protected override bool IsAcceptingActions =>
+        Phase is TarotPhase.Bidding or TarotPhase.KingCall or TarotPhase.Discard or TarotPhase.Playing;
+
+    protected override TarotPlayer CreatePlayer(IUser user) => new(user);
+
+    protected override void MarkFinished() => Phase = TarotPhase.Finished;
+
+    public Task<(bool Success, string MessageKey, object[] Args)> LeaveAsync(IUser user) => LeaveSeatAsync(user);
+
+    public TarotPlayer CurrentPlayer => CurrentSeat;
+
+    public TarotPlayer Taker => _takerIndex >= 0 ? Seats[_takerIndex] : null;
     public TarotBid HighestBid { get; private set; } = TarotBid.Pass;
 
     public IReadOnlyList<TarotCard> Dog => _dog;
     public IReadOnlyList<TarotCard> PendingDiscards => _pendingDiscards;
     public bool DogRevealed { get; private set; }
     public TarotCard CalledKing { get; private set; }
-    public TarotPlayer Partner => _partnerIndex >= 0 ? _players[_partnerIndex] : null;
+    public TarotPlayer Partner => _partnerIndex >= 0 ? Seats[_partnerIndex] : null;
     public bool PartnerRevealed { get; private set; }
 
     public TarotTrick CurrentTrick { get; private set; } = new();
@@ -92,7 +79,7 @@ public class TarotGame : Game, ITarotGame
     public TarotPlayer LastTrickWinner { get; private set; }
     public TarotCard LastPlayedCard => CurrentTrick.Plays.Count > 0 ? CurrentTrick.Plays[^1].Card : null;
     public int TrickNumber { get; private set; }
-    public int TotalTricks => _players.Count > 0 ? TarotConstants.HAND_SIZE[_players.Count] : 0;
+    public int TotalTricks => Seats.Count > 0 ? TarotConstants.HAND_SIZE[Seats.Count] : 0;
 
     public TarotScoreResult ScoreResult { get; private set; }
 
@@ -100,111 +87,15 @@ public class TarotGame : Game, ITarotGame
     public IReadOnlyList<(TarotPlayer Player, int Tier)> DeclaredPoignees => _declaredPoignees;
     public IReadOnlyList<(TarotPlayer Player, TarotMisereType Type)> DeclaredMiseres => _declaredMiseres;
 
-    public IReadOnlyList<string> Log => _log;
-
-    private string PublicPanelId => $"tarot-{GameId}";
-    private string PlayerPageId => $"tarot-{GameId}";
-    private string SubPanelId => $"tarot-{GameId}-sub";
-    private string LogPanelId => $"tarot-{GameId}-log";
-
-    #region Lobby
-
-    public async Task BeginJoinPhaseAsync()
-    {
-        await RenderPublicAsync();
-    }
-
-    public async Task<(bool Success, string MessageKey, object[] Args)> JoinAsync(IUser user)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            if (Phase != TarotPhase.Lobby)
-            {
-                return (false, "tarot_join_already_started", []);
-            }
-
-            if (_players.Count >= TarotConstants.MAX_PLAYERS)
-            {
-                return (false, "tarot_join_full", []);
-            }
-
-            if (_players.Any(player => player.UserId == user.UserId))
-            {
-                return (false, "tarot_join_already_joined", []);
-            }
-
-            _players.Add(new TarotPlayer(user));
-            await RenderPublicAsync();
-            return (true, "tarot_join_success", [user.Name]);
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    public async Task<(bool Success, string MessageKey, object[] Args)> LeaveAsync(IUser user)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            if (Phase != TarotPhase.Lobby)
-            {
-                return (false, "tarot_quit_already_started", []);
-            }
-
-            var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
-            if (player is null)
-            {
-                return (false, "tarot_quit_not_joined", []);
-            }
-
-            _players.Remove(player);
-            await RenderPublicAsync();
-            return (true, "tarot_quit_success", [player.Name]);
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    public async Task StartAsync(IUser user)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            if (Phase != TarotPhase.Lobby)
-            {
-                Context.ReplyLocalizedMessage("tarot_start_already_started");
-                return;
-            }
-
-            if (_players.Count < TarotConstants.MIN_PLAYERS)
-            {
-                Context.ReplyLocalizedMessage("tarot_start_not_enough_players", TarotConstants.MIN_PLAYERS);
-                return;
-            }
-
-            await RenderPublicAsync();
-            await DealAndStartBiddingAsync();
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    #endregion
-
     #region Dealing & bidding
 
-    private async Task DealAndStartBiddingAsync()
+    protected override async Task StartDealAsync()
     {
+        await RenderPublicAsync();
+
         OnStart();
 
-        _randomService.ShuffleInPlace(_players);
+        _randomService.ShuffleInPlace(Seats);
 
         await DealNewHandAsync();
     }
@@ -220,11 +111,11 @@ public class TarotGame : Game, ITarotGame
         var deck = TarotConstants.BuildDeck();
         _randomService.ShuffleInPlace(deck);
 
-        var handSize = TarotConstants.HAND_SIZE[_players.Count];
-        var dogSize = TarotConstants.DOG_SIZE[_players.Count];
+        var handSize = TarotConstants.HAND_SIZE[Seats.Count];
+        var dogSize = TarotConstants.DOG_SIZE[Seats.Count];
 
         var cursor = 0;
-        foreach (var player in _players)
+        foreach (var player in Seats)
         {
             for (var card = 0; card < handSize; card++)
             {
@@ -241,7 +132,7 @@ public class TarotGame : Game, ITarotGame
 
         Phase = TarotPhase.Bidding;
         _firstLeaderIndex = 0;
-        _currentTurnIndex = 0;
+        CurrentTurnIndex = 0;
 
         // Re-post the public chat panel and the log panel so each fresh deal (the first one and any redeal
         // after every player passed) drops back to the bottom of the chat instead of staying in scrollback.
@@ -254,7 +145,7 @@ public class TarotGame : Game, ITarotGame
     /// </summary>
     private void ResetDealState()
     {
-        foreach (var player in _players)
+        foreach (var player in Seats)
         {
             player.Hand.Clear();
             player.CapturedPile.Clear();
@@ -315,7 +206,7 @@ public class TarotGame : Game, ITarotGame
             HighestBid = bid;
         }
 
-        if (_players.All(currentPlayer => currentPlayer.HasBid))
+        if (Seats.All(currentPlayer => currentPlayer.HasBid))
         {
             await ResolveBiddingAsync();
             return;
@@ -323,7 +214,7 @@ public class TarotGame : Game, ITarotGame
 
         do
         {
-            _currentTurnIndex = (_currentTurnIndex + 1) % _players.Count;
+            AdvanceTurn();
         } while (CurrentPlayer.HasBid);
 
         await RenderAllAsync();
@@ -339,13 +230,13 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
-        _takerIndex = _players.FindIndex(player => player.HasBid && player.Bid == HighestBid);
-        _players[_takerIndex].IsTaker = true;
-        _currentTurnIndex = _takerIndex;
+        _takerIndex = Seats.FindIndex(player => player.HasBid && player.Bid == HighestBid);
+        Seats[_takerIndex].IsTaker = true;
+        CurrentTurnIndex = _takerIndex;
 
         LogEvent("tarot_taker_announced", Taker.Name, GetBidName(HighestBid));
 
-        if (_players.Count == 5)
+        if (Seats.Count == 5)
         {
             Phase = TarotPhase.KingCall;
             await RenderAllAsync();
@@ -398,7 +289,7 @@ public class TarotGame : Game, ITarotGame
                 Taker.Hand.AddRange(_dog);
                 SortHand(Taker.Hand);
                 Phase = TarotPhase.Discard;
-                _currentTurnIndex = _takerIndex;
+                CurrentTurnIndex = _takerIndex;
                 await RenderAllAsync();
                 RestartTurnTimer();
                 return;
@@ -425,7 +316,7 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
-        var dogSize = TarotConstants.DOG_SIZE[_players.Count];
+        var dogSize = TarotConstants.DOG_SIZE[Seats.Count];
 
         // A full list (e.g. typed in one go) is applied directly; anything else toggles the selection.
         if (cards.Count == dogSize && cards.Distinct().Count() == dogSize)
@@ -514,7 +405,7 @@ public class TarotGame : Game, ITarotGame
 
     private async Task BeginPlayAsync()
     {
-        if (_players.Count == 5 && CalledKing is not null)
+        if (Seats.Count == 5 && CalledKing is not null)
         {
             DeterminePartner();
         }
@@ -524,7 +415,7 @@ public class TarotGame : Game, ITarotGame
         _takerSideTrickWins = 0;
         _cardsPlayedTotal = 0;
         CurrentTrick = new TarotTrick();
-        _currentTurnIndex = _firstLeaderIndex;
+        CurrentTurnIndex = _firstLeaderIndex;
 
         await RenderAllAsync();
         RestartTurnTimer();
@@ -532,11 +423,11 @@ public class TarotGame : Game, ITarotGame
 
     private void DeterminePartner()
     {
-        var holderIndex = _players.FindIndex(player => player.Hand.Contains(CalledKing));
+        var holderIndex = Seats.FindIndex(player => player.Hand.Contains(CalledKing));
         if (holderIndex >= 0 && holderIndex != _takerIndex)
         {
             _partnerIndex = holderIndex;
-            _players[holderIndex].IsPartner = true;
+            Seats[holderIndex].IsPartner = true;
         }
     }
 
@@ -573,9 +464,9 @@ public class TarotGame : Game, ITarotGame
             LogEvent("tarot_partner_revealed", player.Name);
         }
 
-        if (CurrentTrick.Plays.Count < _players.Count)
+        if (CurrentTrick.Plays.Count < Seats.Count)
         {
-            _currentTurnIndex = (_currentTurnIndex + 1) % _players.Count;
+            AdvanceTurn();
             await RenderAllAsync();
             RestartTurnTimer();
             return;
@@ -588,7 +479,7 @@ public class TarotGame : Game, ITarotGame
     {
         var winner = CurrentTrick.DetermineWinner();
         var winnerIsTakerSide = winner.IsTaker || winner.IsPartner;
-        var isLastTrick = _players.All(player => player.Hand.Count == 0);
+        var isLastTrick = Seats.All(player => player.Hand.Count == 0);
         var (excuseOwner, excusePlayCard) = CurrentTrick.Plays.FirstOrDefault(play => play.Card.IsExcuse);
 
         foreach (var (_, card) in CurrentTrick.Plays.Where(play => !play.Card.IsExcuse))
@@ -610,9 +501,9 @@ public class TarotGame : Game, ITarotGame
 
         LastTrick = CurrentTrick;
         LastTrickWinner = winner;
-        _currentTurnIndex = _players.IndexOf(winner);
+        CurrentTurnIndex = SeatIndexOf(winner);
 
-        if (_players.All(player => player.Hand.Count == 0))
+        if (Seats.All(player => player.Hand.Count == 0))
         {
             await FinishAsync();
             return;
@@ -661,79 +552,8 @@ public class TarotGame : Game, ITarotGame
     /// <summary>
     /// The cards the given player may legally play to the current trick.
     /// </summary>
-    public IReadOnlyCollection<TarotCard> GetLegalMoves(TarotPlayer player)
-    {
-        var hand = player.Hand;
-        var excuse = hand.FirstOrDefault(card => card.IsExcuse);
-
-        // Leading, or only the Excuse has been played so far: anything goes, except that in a
-        // five-handed game the suit of the call may not be led.
-        if (CurrentTrick.IsEmpty || CurrentTrick.LeadSuit is null)
-        {
-            return GetLegalLeadMoves(hand);
-        }
-
-        var legal = new List<TarotCard>();
-        var leadSuit = CurrentTrick.LeadSuit.Value;
-        var highestTrump = CurrentTrick.HighestTrumpRank;
-        var trumps = hand.Where(card => card.IsTrump).ToList();
-
-        if (leadSuit == TarotSuit.Trump)
-        {
-            AddTrumpMoves(legal, trumps, highestTrump, hand);
-        }
-        else
-        {
-            var suitCards = hand.Where(card => card.Suit == leadSuit).ToList();
-            if (suitCards.Count > 0)
-            {
-                legal.AddRange(suitCards);
-            }
-            else
-            {
-                AddTrumpMoves(legal, trumps, highestTrump, hand);
-            }
-        }
-
-        if (excuse is not null && !legal.Contains(excuse))
-        {
-            legal.Add(excuse);
-        }
-
-        return legal;
-    }
-
-    /// <summary>
-    /// The cards a player may lead a trick with. In a five-handed game the suit of the called card
-    /// cannot be led on the very first trick, the only exception being the called card itself (and a
-    /// fallback when the player holds nothing but cards of the called suit).
-    /// </summary>
-    private List<TarotCard> GetLegalLeadMoves(List<TarotCard> hand)
-    {
-        if (_players.Count != 5 || CalledKing is null || TrickNumber != 1)
-        {
-            return hand.ToList();
-        }
-
-        var leadable = hand
-            .Where(card => card.Suit != CalledKing.Suit || card == CalledKing)
-            .ToList();
-
-        return leadable.Count > 0 ? leadable : hand.ToList();
-    }
-
-    private static void AddTrumpMoves(List<TarotCard> legal, List<TarotCard> trumps, int? highestTrump,
-        List<TarotCard> hand)
-    {
-        if (trumps.Count == 0)
-        {
-            legal.AddRange(hand.Where(card => !card.IsExcuse));
-            return;
-        }
-
-        var overtrumps = trumps.Where(card => highestTrump is null || card.Rank > highestTrump).ToList();
-        legal.AddRange(overtrumps.Count > 0 ? overtrumps : trumps);
-    }
+    public IReadOnlyCollection<TarotCard> GetLegalMoves(TarotPlayer player) =>
+        TarotRules.GetLegalMoves(player.Hand, CurrentTrick, Seats.Count, CalledKing, TrickNumber);
 
     #endregion
 
@@ -743,40 +563,10 @@ public class TarotGame : Game, ITarotGame
     /// The poignée tier (1 single, 2 double, 3 triple, 0 none) the player could declare with their
     /// current hand. The Excuse may stand in for a missing trump to reach a tier.
     /// </summary>
-    public int GetDeclarablePoigneeTier(TarotPlayer player)
-    {
-        if (player is null || _players.Count == 0)
-        {
-            return 0;
-        }
-
-        var thresholds = TarotConstants.POIGNEE_THRESHOLDS[_players.Count];
-        var trumpCount = player.Hand.Count(card => card.IsTrump);
-        var hasExcuse = player.Hand.Any(card => card.IsExcuse);
-
-        var tier = TierForTrumpCount(trumpCount, thresholds);
-        if (hasExcuse)
-        {
-            tier = Math.Max(tier, TierForTrumpCount(trumpCount + 1, thresholds));
-        }
-
-        return tier;
-    }
-
-    private static int TierForTrumpCount(int count, int[] thresholds)
-    {
-        if (count >= thresholds[2])
-        {
-            return 3;
-        }
-
-        if (count >= thresholds[1])
-        {
-            return 2;
-        }
-
-        return count >= thresholds[0] ? 1 : 0;
-    }
+    public int GetDeclarablePoigneeTier(TarotPlayer player) =>
+        player is null || Seats.Count == 0
+            ? 0
+            : TarotRules.GetDeclarablePoigneeTier(player.Hand, Seats.Count);
 
     public bool CanDeclarePoignee(TarotPlayer player) =>
         Phase == TarotPhase.Playing && player is { HasPlayed: false, HasDeclaredPoignee: false }
@@ -789,26 +579,8 @@ public class TarotGame : Game, ITarotGame
     /// The misère types the player could declare with their current hand: a misère d'atout when they
     /// hold no trump (the Excuse is tolerated), a misère de tête when they hold no face card.
     /// </summary>
-    public IReadOnlyList<TarotMisereType> GetDeclarableMisereTypes(TarotPlayer player)
-    {
-        if (player is null || player.Hand.Count == 0)
-        {
-            return [];
-        }
-
-        var types = new List<TarotMisereType>();
-        if (player.Hand.All(card => !card.IsTrump))
-        {
-            types.Add(TarotMisereType.Trump);
-        }
-
-        if (player.Hand.All(card => !card.IsFaceCard))
-        {
-            types.Add(TarotMisereType.Head);
-        }
-
-        return types;
-    }
+    public IReadOnlyList<TarotMisereType> GetDeclarableMisereTypes(TarotPlayer player) =>
+        player is null || player.Hand.Count == 0 ? [] : TarotRules.GetDeclarableMisereTypes(player.Hand);
 
     public bool CanDeclareMisere(TarotPlayer player) =>
         Phase == TarotPhase.Playing && player is { HasPlayed: false, HasDeclaredMisere: false }
@@ -823,7 +595,7 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
-        var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
+        var player = FindSeat(user.UserId);
         if (player is null || player.HasPlayed || player.HasDeclaredPoignee)
         {
             return;
@@ -859,7 +631,7 @@ public class TarotGame : Game, ITarotGame
             return;
         }
 
-        var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
+        var player = FindSeat(user.UserId);
         if (player is null || player.HasPlayed || player.HasDeclaredMisere)
         {
             return;
@@ -879,7 +651,8 @@ public class TarotGame : Game, ITarotGame
             _declaredMiseres.Add((player, type));
         }
 
-        var typeNames = types.Select(type => Context.GetString($"tarot_misere_type_{type.ToString().ToLowerInvariant()}"));
+        var typeNames =
+            types.Select(type => Context.GetString($"tarot_misere_type_{type.ToString().ToLowerInvariant()}"));
         LogEvent("tarot_misere_declared", player.Name, string.Join(", ", typeNames));
 
         await RenderAllAsync();
@@ -905,26 +678,7 @@ public class TarotGame : Game, ITarotGame
         await RenderAllAsync();
     }
 
-    private int ComputePetitAuBoutSide()
-    {
-        if (LastTrick is null || LastTrickWinner is null)
-        {
-            return 0;
-        }
-
-        var petitInLastTrick = LastTrick.Plays
-            .Any(play => play.Card.IsTrump && play.Card.Rank == TarotCard.PETIT);
-        if (!petitInLastTrick)
-        {
-            return 0;
-        }
-
-        return LastTrickWinner.IsTaker || LastTrickWinner.IsPartner ? 1 : -1;
-    }
-
-    private bool TakerHoldsAllKings() =>
-        Taker is not null && new[] { TarotSuit.Hearts, TarotSuit.Spades, TarotSuit.Diamonds, TarotSuit.Clubs }
-            .All(suit => Taker.Hand.Contains(new TarotCard(suit, TarotCard.KING)));
+    private bool TakerHoldsAllKings() => Taker is not null && TarotRules.HoldsAllKings(Taker.Hand);
 
     #endregion
 
@@ -932,294 +686,81 @@ public class TarotGame : Game, ITarotGame
 
     private async Task FinishAsync()
     {
-        var takerSide = _players.Where(player => player.IsTaker || player.IsPartner).ToList();
+        var takerSide = Seats.Where(player => player.IsTaker || player.IsPartner).ToList();
         var takerHalfPoints = takerSide.Sum(player => player.CapturedPile.Sum(card => card.HalfPoints));
         var oudlerCount = takerSide.Sum(player => player.CapturedPile.Count(card => card.IsOudler));
 
-        var petitAuBoutSide = ComputePetitAuBoutSide();
+        var petitAuBoutSide = TarotRules.ComputePetitAuBoutSide(LastTrick, LastTrickWinner);
         var poigneeHalfPoints =
             _declaredPoignees.Sum(declaration => TarotConstants.POIGNEE_HALF_POINTS[declaration.Tier]);
         var slamWinnerSide = _takerSideTrickWins == TotalTricks ? 1 : _takerSideTrickWins == 0 ? -1 : 0;
 
-        var miserePlayerHalfPoints = new int[_players.Count];
+        var miserePlayerHalfPoints = new int[Seats.Count];
         foreach (var (player, _) in _declaredMiseres)
         {
-            miserePlayerHalfPoints[_players.IndexOf(player)] += TarotConstants.MISERE_HALF_POINTS;
+            miserePlayerHalfPoints[SeatIndexOf(player)] += TarotConstants.MISERE_HALF_POINTS;
         }
 
         ScoreResult = TarotScorer.Compute(takerHalfPoints, oudlerCount, HighestBid,
-            _players.Count, _takerIndex, _partnerIndex,
+            Seats.Count, _takerIndex, _partnerIndex,
             petitAuBoutSide, poigneeHalfPoints, slamWinnerSide, _slamAnnounced,
             miserePlayerHalfPoints);
 
         Phase = TarotPhase.Finished;
         StopTurnTimer();
         ClearSubPanel();
-        await _statsService.RecordDealAsync(_players, ScoreResult);
+        await _statsService.RecordDealAsync(Seats, ScoreResult);
         await RenderAllAsync();
         OnEnd();
     }
 
-    public async Task ResendPlayerPageAsync(IUser user)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            if (Phase == TarotPhase.Lobby)
-            {
-                return;
-            }
-
-            var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
-            if (player is null)
-            {
-                return;
-            }
-
-            await RenderPlayerPageAsync(player);
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    public async Task CancelAsync()
-    {
-        StopTurnTimer();
-
-        // Cancelled while still gathering players: replace the lobby panel (with its join/start buttons)
-        // by a clear "cancelled" notice so the public panel does not look like it is still open.
-        if (Phase == TarotPhase.Lobby)
-        {
-            await RenderCancelledPublicAsync();
-        }
-
-        Phase = TarotPhase.Finished;
-        ClearSubPanel();
-        ClearLogPanel();
-        OnEnd();
-    }
-
     #endregion
 
-    #region Substitutions
+    #region Timeouts
 
-    public async Task<(bool Success, string MessageKey, object[] Args)> RequestSubAsync(IUser user)
+    protected override async Task OnTurnTimeoutAsync()
     {
-        await _actionLock.WaitAsync();
-        try
+        switch (Phase)
         {
-            if (Phase is TarotPhase.Lobby or TarotPhase.Finished)
-            {
-                return (false, "tarot_sub_not_active", []);
-            }
-
-            var player = _players.FirstOrDefault(currentPlayer => currentPlayer.UserId == user.UserId);
-            if (player is null)
-            {
-                return (false, "tarot_sub_not_a_player", []);
-            }
-
-            // A second request from the same player cancels their pending sub.
-            if (player.WantsSub)
-            {
-                player.WantsSub = false;
-                Context.ReplyLocalizedMessage("tarot_sub_cancelled", player.Name);
-                await RenderSubPanelAsync();
-                return (true, null, []);
-            }
-
-            player.WantsSub = true;
-            Context.ReplyLocalizedMessage("tarot_sub_requested", player.Name);
-            // Re-post the panel so a fresh request drops to the bottom of the chat instead of staying
-            // stuck high up in the scrollback.
-            await RenderSubPanelAsync(forceResend: true);
-            return (true, null, []);
-        }
-        finally
-        {
-            _actionLock.Release();
+            case TarotPhase.Bidding:
+                await BidCoreAsync(CurrentPlayer.User, TarotBid.Pass);
+                break;
+            case TarotPhase.KingCall:
+                await CallKingCoreAsync(Taker.User, ChooseAutoKing());
+                break;
+            case TarotPhase.Discard:
+                await DiscardCoreAsync(Taker.User, ChooseAutoDiscards());
+                break;
+            case TarotPhase.Playing:
+                await PlayCoreAsync(CurrentPlayer.User, GetLegalMoves(CurrentPlayer).First());
+                break;
         }
     }
 
-    /// <summary>
-    /// Lets staff put a player up for substitution on their behalf, marking that seat as looking for a
-    /// replacement without the player having to ask themselves.
-    /// </summary>
-    public async Task<(bool Success, string MessageKey, object[] Args)> ForceRequestSubAsync(string targetPlayerId)
+    protected override IEnumerable<TarotPlayer> GetTurnWarningRecipients()
     {
-        await _actionLock.WaitAsync();
-        try
+        var player = Phase switch
         {
-            if (Phase is TarotPhase.Lobby or TarotPhase.Finished)
-            {
-                return (false, "tarot_sub_not_active", []);
-            }
+            TarotPhase.KingCall or TarotPhase.Discard => Taker,
+            TarotPhase.Bidding or TarotPhase.Playing => CurrentPlayer,
+            _ => null
+        };
 
-            if (string.IsNullOrWhiteSpace(targetPlayerId))
-            {
-                return (false, "tarot_sub_force_no_target", []);
-            }
-
-            var player = _players.FirstOrDefault(
-                currentPlayer => currentPlayer.UserId == targetPlayerId.ToLowerAlphaNum());
-            if (player is null)
-            {
-                return (false, "tarot_sub_force_not_a_player", []);
-            }
-
-            if (player.WantsSub)
-            {
-                return (false, "tarot_sub_force_already", [player.Name]);
-            }
-
-            player.WantsSub = true;
-            Context.ReplyLocalizedMessage("tarot_sub_force_requested", player.Name);
-            // Re-post the panel so a fresh request drops to the bottom of the chat instead of staying
-            // stuck high up in the scrollback.
-            await RenderSubPanelAsync(forceResend: true);
-            return (true, null, []);
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    public async Task<(bool Success, string MessageKey, object[] Args)> AcceptSubAsync(IUser user,
-        string targetPlayerId)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            if (Phase is TarotPhase.Lobby or TarotPhase.Finished)
-            {
-                return (false, "tarot_sub_not_active", []);
-            }
-
-            if (_players.Any(currentPlayer => currentPlayer.UserId == user.UserId))
-            {
-                return (false, "tarot_sub_already_player", []);
-            }
-
-            var pending = _players.Where(currentPlayer => currentPlayer.WantsSub).ToList();
-            if (pending.Count == 0)
-            {
-                return (false, "tarot_sub_none_pending", []);
-            }
-
-            var target = string.IsNullOrWhiteSpace(targetPlayerId)
-                ? pending[0]
-                : pending.FirstOrDefault(currentPlayer => currentPlayer.UserId == targetPlayerId.ToLowerAlphaNum());
-            if (target is null)
-            {
-                return (false, "tarot_sub_invalid_target", []);
-            }
-
-            var leavingUserId = target.UserId;
-            var leavingName = target.Name;
-            Context.CloseHtmlPage(leavingUserId, PlayerPageId);
-            target.SubstituteWith(user);
-
-            Context.ReplyLocalizedMessage("tarot_sub_done", user.Name, leavingName);
-            await RenderAllAsync();
-            await RenderSubPanelAsync();
-            return (true, null, []);
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    private async Task RenderSubPanelAsync(bool forceResend = false)
-    {
-        if (_players.All(player => !player.WantsSub))
-        {
-            ClearSubPanel();
-            return;
-        }
-
-        if (forceResend)
-        {
-            ClearSubPanel();
-        }
-
-        var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotSub", BuildModel(null));
-        Context.SendUpdatableHtml(SubPanelId, html.RemoveNewlines(), isChanging: _subPanelInitialized);
-        _subPanelInitialized = true;
-    }
-
-    private void ClearSubPanel()
-    {
-        if (!_subPanelInitialized)
-        {
-            return;
-        }
-
-        Context.SendUpdatableHtml(SubPanelId, string.Empty, isChanging: true);
-        _subPanelInitialized = false;
-    }
-
-    #endregion
-
-    #region Timeout & action helpers
-
-    private async Task RunActionAsync(Func<Task> action)
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            await action();
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    private async Task OnTurnTimeoutAsync()
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            switch (Phase)
-            {
-                case TarotPhase.Bidding:
-                    await BidCoreAsync(CurrentPlayer.User, TarotBid.Pass);
-                    break;
-                case TarotPhase.KingCall:
-                    await CallKingCoreAsync(Taker.User, ChooseAutoKing());
-                    break;
-                case TarotPhase.Discard:
-                    await DiscardCoreAsync(Taker.User, ChooseAutoDiscards());
-                    break;
-                case TarotPhase.Playing:
-                    await PlayCoreAsync(CurrentPlayer.User, GetLegalMoves(CurrentPlayer).First());
-                    break;
-            }
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
+        return player is null ? [] : [player];
     }
 
     private TarotCard ChooseAutoKing()
     {
-        var suits = new[] { TarotSuit.Hearts, TarotSuit.Spades, TarotSuit.Diamonds, TarotSuit.Clubs };
-
         // With all four kings in hand, a queen must be called instead. Otherwise call a king the taker
         // does not hold, so a partner is found.
         var rank = TakerHoldsAllKings() ? TarotCard.QUEEN : TarotCard.KING;
-        var candidates = suits.Select(suit => new TarotCard(suit, rank)).ToList();
+        var candidates = TarotConstants.Suits.Select(suit => TarotCard.Suited(suit, rank)).ToList();
         return candidates.FirstOrDefault(card => !Taker.Hand.Contains(card)) ?? candidates[0];
     }
 
     private List<TarotCard> ChooseAutoDiscards()
     {
-        var dogSize = TarotConstants.DOG_SIZE[_players.Count];
+        var dogSize = TarotConstants.DOG_SIZE[Seats.Count];
         var discardable = Taker.Hand
             .Where(card => !card.IsKing && !card.IsOudler && !card.IsTrump)
             .OrderBy(card => card.HalfPoints)
@@ -1236,173 +777,9 @@ public class TarotGame : Game, ITarotGame
         return discardable.Take(dogSize).ToList();
     }
 
-    private async Task OnTurnWarningAsync()
-    {
-        await _actionLock.WaitAsync();
-        try
-        {
-            var player = Phase switch
-            {
-                TarotPhase.KingCall or TarotPhase.Discard => Taker,
-                TarotPhase.Bidding or TarotPhase.Playing => CurrentPlayer,
-                _ => null
-            };
-
-            if (player is null)
-            {
-                return;
-            }
-
-            var seconds = (int)TarotConstants.TURN_TIMEOUT_WARNING_REMAINING.TotalSeconds;
-            var message = Context.GetString("tarot_turn_timeout_warning", seconds);
-            Context.SendMessageIn(Context.RoomId, $"/pm {player.UserId}, {message}");
-        }
-        finally
-        {
-            _actionLock.Release();
-        }
-    }
-
-    private void RestartTurnTimer()
-    {
-        if (Phase is TarotPhase.Bidding or TarotPhase.KingCall or TarotPhase.Discard or TarotPhase.Playing)
-        {
-            _turnTimer.Restart();
-            _turnWarningTimer?.Restart();
-        }
-    }
-
-    private void StopTurnTimer()
-    {
-        _turnTimer.Stop();
-        _turnWarningTimer?.Stop();
-    }
-
     #endregion
 
-    #region Rendering
-
-    /// <summary>
-    /// Appends a localized game event to the running log shown (collapsed) on the public panel and the
-    /// player pages. Replaces the old chat broadcasts so the narration lives inside the game HTML.
-    /// </summary>
-    private void LogEvent(string key, params object[] args)
-    {
-        _log.Add(Context.GetString(key, args));
-    }
-
-    private async Task RenderAllAsync(bool resendPublic = false, bool resendLog = false)
-    {
-        await RenderPublicAsync(resendPublic);
-        await RenderPublicLogAsync(resendLog);
-        await RenderPlayerPagesAsync();
-    }
-
-    /// <summary>
-    /// Renders the running game log into its own updatable chat panel, kept separate from the main table
-    /// panel so it only re-renders when a new event has actually been logged. When <paramref name="forceResend"/>
-    /// is set (a fresh deal), it is re-posted at the bottom of the chat instead of updated in place.
-    /// </summary>
-    private async Task RenderPublicLogAsync(bool forceResend = false)
-    {
-        // The final result panel embeds the whole log itself, so drop the live panel once the game ends.
-        if (Phase == TarotPhase.Finished)
-        {
-            ClearLogPanel();
-            return;
-        }
-
-        if (_log.Count == 0 || (!forceResend && _logPanelInitialized && _renderedLogCount == _log.Count))
-        {
-            return;
-        }
-
-        var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotLog", BuildModel(null));
-        Context.SendUpdatableHtml(LogPanelId, html.RemoveNewlines(), isChanging: _logPanelInitialized && !forceResend);
-        _logPanelInitialized = true;
-        _renderedLogCount = _log.Count;
-    }
-
-    private void ClearLogPanel()
-    {
-        if (!_logPanelInitialized)
-        {
-            return;
-        }
-
-        Context.SendUpdatableHtml(LogPanelId, string.Empty, isChanging: true);
-        _logPanelInitialized = false;
-        _renderedLogCount = 0;
-    }
-
-    /// <summary>
-    /// Renders the public table as a chat panel so spectators (and players) can follow the game from
-    /// the room itself. The lobby and the final result are only ever shown here. When
-    /// <paramref name="forceResend"/> is set, it is re-posted at the bottom of the chat instead of
-    /// updated in place high up in the scrollback.
-    /// </summary>
-    private async Task RenderPublicAsync(bool forceResend = false)
-    {
-        var templateKey = Phase switch
-        {
-            TarotPhase.Lobby => "Games/Tarot/TarotLobby",
-            TarotPhase.Finished => "Games/Tarot/TarotResult",
-            _ => "Games/Tarot/TarotTable"
-        };
-
-        var html = await _templatesManager.GetTemplateAsync(templateKey, BuildModel(null));
-        Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), isChanging: _publicPanelInitialized && !forceResend);
-        _publicPanelInitialized = true;
-    }
-
-    private async Task RenderCancelledPublicAsync()
-    {
-        var html = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotCancelled", BuildModel(null));
-        Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(), _publicPanelInitialized);
-        _publicPanelInitialized = true;
-    }
-
-    private async Task RenderPlayerPagesAsync()
-    {
-        foreach (var player in _players)
-        {
-            await RenderPlayerPageAsync(player);
-        }
-    }
-
-    /// <summary>
-    /// Renders a player's private HTML page: the public table (or result) on top and the player's own
-    /// hand with action buttons below. HTML pages update in place, so no chat re-posting is needed.
-    /// </summary>
-    private async Task RenderPlayerPageAsync(TarotPlayer player)
-    {
-        var model = BuildModel(player);
-
-        if (Phase == TarotPhase.Finished)
-        {
-            var resultHtml = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotResult", model);
-            Context.SendHtmlPageTo(player.UserId, PlayerPageId, resultHtml.RemoveNewlines());
-            return;
-        }
-
-        var tableHtml = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotTable", model);
-        var handHtml = await _templatesManager.GetTemplateAsync("Games/Tarot/TarotHand", model);
-        var logHtml = _log.Count > 0
-            ? await _templatesManager.GetTemplateAsync("Games/Tarot/TarotLog", model)
-            : string.Empty;
-        Context.SendHtmlPageTo(player.UserId, PlayerPageId,
-            tableHtml.RemoveNewlines() + logHtml.RemoveNewlines() + handHtml.RemoveNewlines());
-    }
-
-    private void ClosePlayerPages()
-    {
-        foreach (var player in _players)
-        {
-            Context.CloseHtmlPage(player.UserId, PlayerPageId);
-        }
-    }
-
-    private TarotViewModel BuildModel(TarotPlayer viewer) => new()
+    protected override TarotViewModel BuildModel(TarotPlayer viewer) => new()
     {
         Culture = Context.Culture,
         BotName = _configuration.Name,
@@ -1416,13 +793,21 @@ public class TarotGame : Game, ITarotGame
             : []
     };
 
-    #endregion
-
+    /// <summary>
+    /// Orders a hand the way it is displayed: the four suits first, then the trumps, then the Excuse,
+    /// each group ordered by rank.
+    /// </summary>
     private static void SortHand(List<TarotCard> hand)
     {
         hand.Sort((first, second) =>
         {
-            var suitComparison = first.Suit.CompareTo(second.Suit);
+            var kindComparison = first.Kind.CompareTo(second.Kind);
+            if (kindComparison != 0)
+            {
+                return kindComparison;
+            }
+
+            var suitComparison = Nullable.Compare(first.Suit, second.Suit);
             return suitComparison != 0 ? suitComparison : first.Rank.CompareTo(second.Rank);
         });
     }

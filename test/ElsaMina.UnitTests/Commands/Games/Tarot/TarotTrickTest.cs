@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Commands.Games.Tarot;
 using ElsaMina.Core.Services.Rooms;
 using NSubstitute;
@@ -19,10 +20,10 @@ public class TarotTrickTest
     public void Test_LeadSuit_ShouldBeFirstNonExcuseCard()
     {
         var trick = new TarotTrick();
-        trick.Add(Player("a"), new TarotCard(TarotSuit.Excuse, 0));
-        trick.Add(Player("b"), new TarotCard(TarotSuit.Spades, 5));
+        trick.Add(Player("a"), TarotCard.Excuse);
+        trick.Add(Player("b"), TarotCard.Suited(Suit.Spades, 5));
 
-        Assert.That(trick.LeadSuit, Is.EqualTo(TarotSuit.Spades));
+        Assert.That(trick.LeadSuit, Is.EqualTo(Suit.Spades));
     }
 
     [Test]
@@ -31,9 +32,9 @@ public class TarotTrickTest
         var trick = new TarotTrick();
         var leader = Player("a");
         var winner = Player("b");
-        trick.Add(leader, new TarotCard(TarotSuit.Hearts, 5));
-        trick.Add(winner, new TarotCard(TarotSuit.Hearts, TarotCard.KING));
-        trick.Add(Player("c"), new TarotCard(TarotSuit.Diamonds, TarotCard.KING)); // off-suit, ignored
+        trick.Add(leader, TarotCard.Suited(Suit.Hearts, 5));
+        trick.Add(winner, TarotCard.Suited(Suit.Hearts, TarotCard.KING));
+        trick.Add(Player("c"), TarotCard.Suited(Suit.Diamonds, TarotCard.KING)); // off-suit, ignored
 
         Assert.That(trick.DetermineWinner(), Is.EqualTo(winner));
     }
@@ -42,10 +43,10 @@ public class TarotTrickTest
     public void Test_DetermineWinner_ShouldBeHighestTrump_WhenTrumpPlayed()
     {
         var trick = new TarotTrick();
-        trick.Add(Player("a"), new TarotCard(TarotSuit.Hearts, TarotCard.KING));
+        trick.Add(Player("a"), TarotCard.Suited(Suit.Hearts, TarotCard.KING));
         var winner = Player("b");
-        trick.Add(winner, new TarotCard(TarotSuit.Trump, 12));
-        trick.Add(Player("c"), new TarotCard(TarotSuit.Trump, 8));
+        trick.Add(winner, TarotCard.Trump(12));
+        trick.Add(Player("c"), TarotCard.Trump(8));
 
         Assert.That(trick.DetermineWinner(), Is.EqualTo(winner));
     }
@@ -55,9 +56,9 @@ public class TarotTrickTest
     {
         var trick = new TarotTrick();
         var excusePlayer = Player("a");
-        trick.Add(excusePlayer, new TarotCard(TarotSuit.Excuse, 0));
+        trick.Add(excusePlayer, TarotCard.Excuse);
         var winner = Player("b");
-        trick.Add(winner, new TarotCard(TarotSuit.Hearts, 3));
+        trick.Add(winner, TarotCard.Suited(Suit.Hearts, 3));
 
         Assert.That(trick.DetermineWinner(), Is.EqualTo(winner));
     }

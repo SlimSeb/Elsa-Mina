@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
@@ -9,7 +10,7 @@ namespace ElsaMina.Commands.Games.President;
 /// <c>-prg 3h</c> to toggle a card or <c>-prg 3h 4c</c> to hand over both at once.
 /// </summary>
 [NamedCommand("presidentgive", Aliases = ["prg"])]
-public class GivePresidentCommand : PresidentActionCommandBase
+public class GivePresidentCommand : GameActionCommandBase<IPresidentGame>
 {
     public GivePresidentCommand(IRoomsManager roomsManager) : base(roomsManager)
     {

@@ -1,8 +1,9 @@
+using ElsaMina.Commands.Games.Cards;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Belote;
 
-public sealed class BelotePlayer
+public sealed class BelotePlayer : ISubstitutablePlayer
 {
     public BelotePlayer(IUser user)
     {
