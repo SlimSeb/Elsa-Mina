@@ -29,14 +29,14 @@ cp src/ElsaMina.Console/example.config.json src/ElsaMina.Console/config.json
 
 3. Restore dependencies and build
 ```bash
-./scripts/restore.sh
-./scripts/build.sh
+./scripts/Build/restore.sh
+./scripts/Build/build.sh
 ```
 
 4. Run the bot
 ```bash
 cd src/ElsaMina.Console
-dotnet run ElsaMina.Console.dll
+dotnet run
 ```
 
 ## Docker
@@ -50,7 +50,7 @@ docker run -d \
 ```
 
 ## Configuration
-Config lives at `src/ElsaMina.Console/config.json`. Use the example file and fill in the relevant values..
+Config lives at `src/ElsaMina.Console/config.json`. Use the example file and fill in the relevant values.
 
 ## Database
 We use PostgreSQL for persistence. The database connection is managed by Entity Framework Core.
@@ -69,7 +69,7 @@ The code is unit-tested with NUnit and NSubstitute. Two test projects are availa
 
 To run the tests, run the following command in the root directory:
 ```bash
-./scripts/test.sh
+./scripts/Build/test.sh
 ```
 
 ## Scripts

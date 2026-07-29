@@ -39,6 +39,7 @@ dotnet ef migrations remove --project src/ElsaMina.DataAccess
 | `ElsaMina.Core` | Bot runtime, handlers, services, context system |
 | `ElsaMina.Commands` | All command and handler implementations |
 | `ElsaMina.DataAccess` | EF Core DbContext, models, migrations (PostgreSQL) |
+| `ElsaMina.Battles` | Autonomous battle bot: protocol parsing, simulation, and decision strategies |
 | `ElsaMina.FileSharing` | S3 file upload abstraction |
 | `ElsaMina.Sheets` | Google Sheets integration |
 | `ElsaMina.Logging` | Thin logging abstraction over Serilog |
@@ -82,9 +83,10 @@ Two concrete implementations: `RoomContext` and `PmContext`.
 
 ### Dependency Injection
 
-Uses Autofac. Two main modules:
+Uses Autofac. Three modules, all registered in `Program.cs`:
 - `CoreModule` - all core services (bot, client, rooms, handlers, etc.)
 - `CommandModule` - all commands, feature-level handlers, and feature services
+- `BattlesModule` - battle service, message parser, decision strategies, and the battle commands/handler
 
 `DependencyContainerService` wraps the Autofac container and is used for late-bound resolution (e.g., `HandlerManager` resolves handlers after startup).
 
