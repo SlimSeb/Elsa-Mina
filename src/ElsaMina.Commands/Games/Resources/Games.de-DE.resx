@@ -408,6 +408,9 @@
     <data name="lo_panel_play_again" xml:space="preserve">
         <value>Nochmal spielen</value>
     </data>
+    <data name="lo_panel_total_stars" xml:space="preserve">
+        <value>Sterne: {0} ★</value>
+    </data>
     <data name="lo_game_started" xml:space="preserve">
         <value>Lights Out - Stufe {0}. Schalte alle Lichter aus!</value>
     </data>
@@ -446,6 +449,9 @@
     </data>
     <data name="lo_leaderboard_best_moves" xml:space="preserve">
         <value>Beste Wertung</value>
+    </data>
+    <data name="lo_leaderboard_stars" xml:space="preserve">
+        <value>Sterne</value>
     </data>
     <data name="lo_leaderboard_empty" xml:space="preserve">
         <value>Die Lights-Out-Bestenliste ist leer.</value>
@@ -638,6 +644,63 @@
     </data>
     <data name="tfe_leaderboard_empty" xml:space="preserve">
         <value>Die 2048-Bestenliste ist leer.</value>
+    </data>
+    <data name="bj_dealer" xml:space="preserve">
+        <value>Dealer</value>
+    </data>
+    <data name="bj_player" xml:space="preserve">
+        <value>{0}</value>
+    </data>
+    <data name="bj_hit" xml:space="preserve">
+        <value>Ziehen</value>
+    </data>
+    <data name="bj_stand" xml:space="preserve">
+        <value>Halten</value>
+    </data>
+    <data name="bj_outcome_blackjack" xml:space="preserve">
+        <value>Blackjack! Du gewinnst!</value>
+    </data>
+    <data name="bj_outcome_player_won" xml:space="preserve">
+        <value>Du gewinnst!</value>
+    </data>
+    <data name="bj_outcome_bust" xml:space="preserve">
+        <value>Überkauft! Du verlierst.</value>
+    </data>
+    <data name="bj_outcome_dealer_won" xml:space="preserve">
+        <value>Der Dealer gewinnt.</value>
+    </data>
+    <data name="bj_outcome_tie" xml:space="preserve">
+        <value>Push! Unentschieden.</value>
+    </data>
+    <data name="bj_game_already_active" xml:space="preserve">
+        <value>Du hast bereits ein laufendes Blackjack-Spiel.</value>
+    </data>
+    <data name="bj_panel_title" xml:space="preserve">
+        <value>Blackjack</value>
+    </data>
+    <data name="bj_panel_waiting_for_player" xml:space="preserve">
+        <value>Ein Spiel wartet auf einen Spieler!</value>
+    </data>
+    <data name="bj_panel_deal" xml:space="preserve">
+        <value>Austeilen</value>
+    </data>
+    <data name="bj_pm_missing_room" xml:space="preserve">
+        <value>Bitte gib einen Raum an. Verwendung: -blackjack Raumname</value>
+    </data>
+    <data name="bj_pm_invalid_room" xml:space="preserve">
+        <value>Der angegebene Raum wurde nicht gefunden oder der Bot befindet sich nicht darin.</value>
+    </data>
+    <data name="bj_game_already_running" xml:space="preserve">
+        <value>In diesem Raum läuft bereits ein anderes Spiel.</value>
+    </data>
+    <data name="bj_game_no_game" xml:space="preserve">
+        <value>Es läuft derzeit kein Blackjack-Spiel.</value>
+    </data>
+    <data name="bj_game_not_owner" xml:space="preserve">
+        <value>Nur der Spieler, der dieses Spiel gestartet hat, kann das tun.</value>
+    </data>
+    <data name="bj_game_cancelled" xml:space="preserve">
+        <value>Das Blackjack-Spiel wurde abgebrochen.</value>
     </data>
     <data name="rps_help" xml:space="preserve">
         <value>Startet ein Schere Stein Papier Spiel. Benutze -rpsjoin zum Mitmachen.</value>

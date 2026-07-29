@@ -52,4 +52,58 @@
     <data name="show_polls_entry_ended_at" xml:space="preserve">
         <value>Beendet am:</value>
     </data>
+    <data name="pollsuggest_help" xml:space="preserve">
+        <value>Syntax: -pollsuggest [Vorschlag]</value>
+    </data>
+    <data name="pollsuggest_banned" xml:space="preserve">
+        <value>Du wurdest von der Nutzung dieses Befehls ausgeschlossen.</value>
+    </data>
+    <data name="pollsuggest_success" xml:space="preserve">
+        <value>Dein Umfragevorschlag wurde gespeichert.</value>
+    </data>
+    <data name="pollsuggest_staff_title" xml:space="preserve">
+        <value>Neuer Umfragevorschlag:</value>
+    </data>
+    <data name="pollsuggest_staff_new" xml:space="preserve">
+        <value>Vorgeschlagen von {0}: {1}</value>
+    </data>
+    <data name="pollsuggest_staff_list" xml:space="preserve">
+        <value>Vorschlagsliste</value>
+    </data>
+    <data name="deletesuggpoll_help" xml:space="preserve">
+        <value>Syntax: -deletesuggpoll [ID]</value>
+    </data>
+    <data name="deletesuggpoll_not_found" xml:space="preserve">
+        <value>Kein Vorschlag mit der ID {0} gefunden.</value>
+    </data>
+    <data name="deletesuggpoll_success" xml:space="preserve">
+        <value>Vorschlag {0} wurde gelöscht.</value>
+    </data>
+    <data name="pollsuggestlist_empty" xml:space="preserve">
+        <value>Derzeit gibt es keine Umfragevorschläge.</value>
+    </data>
+    <data name="banpoll_help" xml:space="preserve">
+        <value>Syntax: -banpoll [Benutzername]</value>
+    </data>
+    <data name="banpoll_already_banned" xml:space="preserve">
+        <value>{0} ist bereits von -pollsuggest ausgeschlossen.</value>
+    </data>
+    <data name="banpoll_success" xml:space="preserve">
+        <value>{0} wurde von -pollsuggest ausgeschlossen.</value>
+    </data>
+    <data name="banpoll_staff_message" xml:space="preserve">
+        <value>{0} wurde von {1} von den Umfragevorschlägen ausgeschlossen.</value>
+    </data>
+    <data name="unbanpoll_help" xml:space="preserve">
+        <value>Syntax: -unbanpoll [Benutzername]</value>
+    </data>
+    <data name="unbanpoll_not_banned" xml:space="preserve">
+        <value>{0} ist nicht von -pollsuggest ausgeschlossen.</value>
+    </data>
+    <data name="unbanpoll_success" xml:space="preserve">
+        <value>{0} wurde wieder zu den Umfragevorschlägen zugelassen.</value>
+    </data>
+    <data name="unbanpoll_staff_message" xml:space="preserve">
+        <value>{0} wurde von {1} wieder zu den Umfragevorschlägen zugelassen.</value>
+    </data>
 </root>

@@ -150,6 +150,51 @@
     <data name="profile_no_game_record" xml:space="preserve">
         <value>Keine Spielaufzeichnung</value>
     </data>
+    <data name="edit_profile_panel_title" xml:space="preserve">
+        <value>Profil bearbeiten</value>
+    </data>
+    <data name="edit_profile_panel_emoji_section" xml:space="preserve">
+        <value>Profil-Emoji</value>
+    </data>
+    <data name="edit_profile_panel_current_emoji" xml:space="preserve">
+        <value>Aktuell:</value>
+    </data>
+    <data name="edit_profile_panel_no_emoji" xml:space="preserve">
+        <value>Keins</value>
+    </data>
+    <data name="edit_profile_panel_clear" xml:space="preserve">
+        <value>Entfernen</value>
+    </data>
+    <data name="set_emoji_success" xml:space="preserve">
+        <value>Profil-Emoji aktualisiert.</value>
+    </data>
+    <data name="set_emoji_failure" xml:space="preserve">
+        <value>Beim Aktualisieren des Emojis ist ein Fehler aufgetreten: {0}</value>
+    </data>
+    <data name="set_emoji_invalid" xml:space="preserve">
+        <value>Ungültiges Emoji.</value>
+    </data>
+    <data name="set_emoji_help_message" xml:space="preserve">
+        <value>Legt dein Profil-Emoji fest. Syntax: -setemoji &lt;Emoji&gt;</value>
+    </data>
+    <data name="edit_profile_panel_bg_color_section" xml:space="preserve">
+        <value>Profil-Hintergrundfarbe</value>
+    </data>
+    <data name="edit_profile_panel_no_color" xml:space="preserve">
+        <value>Keine</value>
+    </data>
+    <data name="set_profile_color_success" xml:space="preserve">
+        <value>Profil-Hintergrundfarbe aktualisiert.</value>
+    </data>
+    <data name="set_profile_color_failure" xml:space="preserve">
+        <value>Beim Aktualisieren der Hintergrundfarbe ist ein Fehler aufgetreten: {0}</value>
+    </data>
+    <data name="set_profile_color_invalid" xml:space="preserve">
+        <value>Ungültige Farbe. Gültige Farben: {0}</value>
+    </data>
+    <data name="set_profile_color_help_message" xml:space="preserve">
+        <value>Legt deine Profil-Hintergrundfarbe fest. Syntax: -setprofilecolor &lt;Farbe&gt;</value>
+    </data>
     <data name="color_blue" xml:space="preserve">
         <value>Blau</value>
     </data>
