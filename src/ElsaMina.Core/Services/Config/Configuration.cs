@@ -40,6 +40,7 @@ public class Configuration : IConfiguration
     public string ArcadeHallOfFameSheetName { get; set; }
     public string CaaSpreadsheetName { get; set; }
     public string CaaSheetName { get; set; }
+    public string DollsDriveName { get; set; }
     public IReadOnlyDictionary<string, IEnumerable<string>> EventAnnounces { get; set; }
     public IReadOnlyDictionary<string, string> DiscordWebhooks { get; set; } = new Dictionary<string, string>();
     public int UserUpdateBatchSize { get; set; }

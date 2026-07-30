@@ -1,0 +1,49 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Dolls.DollListViewModel>
+
+@{
+    const string cellStyle = "padding:0;border:0;vertical-align:bottom;text-align:center;";
+    const string plankFace = "display:block;height:5px;background:linear-gradient(#d9b183,#c2925f 55%,#9c6c3e);";
+    const string plankEdge = "display:block;height:3px;background:#6b4423;border-bottom:1px solid #4a2e17;";
+    const string nameStyle = "display:block;height:22px;overflow:hidden;padding:2px 2px 0;"
+                             + "font-size:8px;line-height:9px;color:#e6d4bd;font-family:monospace;";
+    const string captionStyle = "display:inline-block;margin-bottom:3px;padding:1px 7px;border-radius:3px;"
+                                + "background:rgba(0,0,0,0.3);color:#f0c987;font-size:9px;font-weight:bold;"
+                                + "letter-spacing:0.5px;font-family:monospace;";
+}
+
+<div style="max-height:320px;overflow:auto;padding:8px 8px 2px;border-radius:6px;background:#2a1d14;border:1px solid #14100c;">
+    @foreach (var (size, dolls) in Model.DollsBySize)
+    {
+        // Bigger dolls get fewer, wider columns. The table is what keeps every row the full width,
+        // so the plank pieces of a row join into one continuous board, last row included.
+        var dollsPerRow = size <= 16 ? 8 : size <= 24 ? 7 : 6;
+        <div style="margin-bottom:9px;">
+            <div style="@captionStyle">@GetString("doll_list_size_header", size, size, dolls.Count)</div>
+            <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+                <tbody>
+                @foreach (var row in dolls.Chunk(dollsPerRow))
+                {
+                    <tr>
+                        @for (var column = 0; column < dollsPerRow; column++)
+                        {
+                            var doll = column < row.Length ? row[column] : null;
+                            <td style="@cellStyle">
+                                <span style="display:block;height:@(size)px;line-height:@(size)px;font-size:0;">
+                                    @if (doll != null)
+                                    {
+                                        await IncludeAsync("Dolls/Doll", doll);
+                                    }
+                                </span>
+                                <span style="display:block;width:@(size * 3 / 4)px;height:3px;margin:0 auto;border-radius:50%;background:@(doll != null ? "rgba(0,0,0,0.4)" : "transparent");"></span>
+                                <span style="@plankFace"></span>
+                                <span style="@plankEdge"></span>
+                                <span style="@nameStyle" title="@doll?.Id">@doll?.Name</span>
+                            </td>
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

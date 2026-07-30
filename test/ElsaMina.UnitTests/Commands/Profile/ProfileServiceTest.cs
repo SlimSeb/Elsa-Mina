@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Dolls;
 using ElsaMina.Commands.Profile;
 using ElsaMina.Commands.Showdown.Ranking;
 using ElsaMina.Core.Services.Formats;
@@ -21,6 +22,7 @@ public class ProfileServiceTest
     private IFormatsManager _formatsManager;
     private IBotDbContextFactory _dbContextFactory;
     private IRoomsManager _roomsManager;
+    private IDollService _dollService;
     private BotDbContext _dbContext;
     private ProfileService _sut;
 
@@ -39,6 +41,7 @@ public class ProfileServiceTest
         _formatsManager = Substitute.For<IFormatsManager>();
         _dbContextFactory = Substitute.For<IBotDbContextFactory>();
         _roomsManager = Substitute.For<IRoomsManager>();
+        _dollService = Substitute.For<IDollService>();
 
         _dbContextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(_dbContext));
@@ -50,6 +53,8 @@ public class ProfileServiceTest
             .Returns((IEnumerable<RankingDataDto>)null);
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>())
             .Returns("rendered");
+        _dollService.ResolveDollsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns([]);
 
         _sut = new ProfileService(
             _userDetailsManager,
@@ -58,7 +63,8 @@ public class ProfileServiceTest
             _showdownRanksProvider,
             _formatsManager,
             _dbContextFactory,
-            _roomsManager);
+            _roomsManager,
+            _dollService);
     }
 
     [TearDown]
@@ -436,6 +442,68 @@ public class ProfileServiceTest
         await _templatesManager.Received(1).GetTemplateAsync(
             "Profile/Profile",
             Arg.Is<ProfileViewModel>(vm => vm.GameRecords.FloodIt == null));
+    }
+
+    #endregion
+
+    #region Dolls
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetDolls_ResolvedFromTheOwnedIds()
+    {
+        // Arrange
+        await AddDollHoldingsAsync("room1", "alice", "pikachu", "snorlax");
+        var resolvedDolls = new List<Doll>
+        {
+            new() { Id = "snorlax", Name = "Snorlax", Size = 32, Image = "https://images/snorlax.png" },
+            new() { Id = "pikachu", Name = "Pikachu", Size = 16, Image = "https://images/pikachu.png" }
+        };
+        _dollService.ResolveDollsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(resolvedDolls);
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _dollService.Received(1).ResolveDollsAsync(
+            Arg.Is<IEnumerable<string>>(dollIds => dollIds.OrderBy(dollId => dollId)
+                .SequenceEqual(new[] { "pikachu", "snorlax" })),
+            Arg.Any<CancellationToken>());
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(viewModel => viewModel.Dolls == resolvedDolls));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldNotResolveDollsOwnedInAnotherRoom()
+    {
+        // Arrange
+        await AddDollHoldingsAsync("room2", "alice", "pikachu");
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _dollService.Received(1).ResolveDollsAsync(
+            Arg.Is<IEnumerable<string>>(dollIds => !dollIds.Any()),
+            Arg.Any<CancellationToken>());
+    }
+
+    private async Task AddDollHoldingsAsync(string roomId, string userId, params string[] dollIds)
+    {
+        _dbContext.RoomUsers.Add(new RoomUser
+        {
+            Id = userId,
+            RoomId = roomId,
+            User = new SavedUser { UserId = userId, UserName = userId },
+            Dolls = dollIds.Select(dollId => new DollHolding
+            {
+                DollId = dollId,
+                RoomId = roomId,
+                UserId = userId
+            }).ToList()
+        });
+        await _dbContext.SaveChangesAsync();
     }
 
     #endregion

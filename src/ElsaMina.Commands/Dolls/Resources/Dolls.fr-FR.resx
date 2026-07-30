@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="doll_give_help_message" xml:space="preserve">
+        <value>Donne une poupée à un utilisateur. Syntaxe : -givedoll &lt;user&gt;, &lt;poupée&gt; [, &lt;room&gt;]</value>
+    </data>
+    <data name="doll_take_help_message" xml:space="preserve">
+        <value>Retire une poupée à un utilisateur. Syntaxe : -takedoll &lt;user&gt;, &lt;poupée&gt; [, &lt;room&gt;]</value>
+    </data>
+    <data name="doll_list_help_message" xml:space="preserve">
+        <value>Affiche le catalogue de poupées lu depuis le Google Drive. Syntaxe : -dolls</value>
+    </data>
+    <data name="doll_refresh_help_message" xml:space="preserve">
+        <value>Recharge le catalogue de poupées depuis le Google Drive. Syntaxe : -refreshdolls</value>
+    </data>
+    <data name="doll_not_found" xml:space="preserve">
+        <value>Impossible de trouver la poupée {0} dans le catalogue.</value>
+    </data>
+    <data name="doll_catalogue_unavailable" xml:space="preserve">
+        <value>Impossible de lire le catalogue de poupées depuis le drive : {0}</value>
+    </data>
+    <data name="doll_give_already_owned" xml:space="preserve">
+        <value>"{0}" possède déjà la poupée "{1}"</value>
+    </data>
+    <data name="doll_give_success" xml:space="preserve">
+        <value>"{0}" a reçu la poupée "{1}"</value>
+    </data>
+    <data name="doll_give_failure" xml:space="preserve">
+        <value>Une erreur est survenue lors de l'attribution de la poupée : {0}</value>
+    </data>
+    <data name="doll_take_success" xml:space="preserve">
+        <value>La poupée "{1}" a été retirée à "{0}"</value>
+    </data>
+    <data name="doll_take_not_owned" xml:space="preserve">
+        <value>"{0}" ne possède pas la poupée "{1}"</value>
+    </data>
+    <data name="doll_take_failure" xml:space="preserve">
+        <value>Une erreur est survenue lors du retrait de la poupée : {0}</value>
+    </data>
+    <data name="doll_refresh_success" xml:space="preserve">
+        <value>Catalogue de poupées rechargé : {0} poupées trouvées.</value>
+    </data>
+    <data name="doll_refresh_failure" xml:space="preserve">
+        <value>Impossible de recharger le catalogue de poupées : {0}</value>
+    </data>
+    <data name="doll_pm_missing_room" xml:space="preserve">
+        <value>En PM, veuillez préciser la room. Syntaxe : -givedoll user, poupée, room</value>
+    </data>
+    <data name="doll_pm_insufficient_rank" xml:space="preserve">
+        <value>Vous n'avez pas les permissions suffisantes dans cette room.</value>
+    </data>
+    <data name="doll_list_empty" xml:space="preserve">
+        <value>Le catalogue de poupées est vide.</value>
+    </data>
+    <data name="doll_list_size_header" xml:space="preserve">
+        <value>Poupées {0}x{1} ({2})</value>
+    </data>
+</root>

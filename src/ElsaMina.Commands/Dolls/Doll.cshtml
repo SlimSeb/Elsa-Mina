@@ -1,0 +1,10 @@
+@model ElsaMina.Commands.Dolls.Doll
+
+<img
+    class="pixelated"
+    src="@Model.Image?.Trim()"
+    width="@Model.Size"
+    height="@Model.Size"
+    title="@Model.Name"
+    alt="@Model.Name"
+    style="vertical-align: bottom;"/>

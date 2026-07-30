@@ -3,6 +3,7 @@ using System;
 using ElsaMina.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ElsaMina.DataAccess.Migrations
 {
     [DbContext(typeof(BotDbContext))]
-    partial class BotDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260729171913_AddDolls")]
+    partial class AddDolls
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -211,6 +214,28 @@ namespace ElsaMina.DataAccess.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("ConnectFourRatings");
+                });
+
+            modelBuilder.Entity("ElsaMina.DataAccess.Models.Doll", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Image")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsCustom")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Size")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Dolls");
                 });
 
             modelBuilder.Entity("ElsaMina.DataAccess.Models.DollHolding", b =>
@@ -954,11 +979,19 @@ namespace ElsaMina.DataAccess.Migrations
 
             modelBuilder.Entity("ElsaMina.DataAccess.Models.DollHolding", b =>
                 {
+                    b.HasOne("ElsaMina.DataAccess.Models.Doll", "Doll")
+                        .WithMany("DollHolders")
+                        .HasForeignKey("DollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ElsaMina.DataAccess.Models.RoomUser", "RoomUser")
                         .WithMany("Dolls")
                         .HasForeignKey("UserId", "RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Doll");
 
                     b.Navigation("RoomUser");
                 });
@@ -1148,6 +1181,11 @@ namespace ElsaMina.DataAccess.Migrations
             modelBuilder.Entity("ElsaMina.DataAccess.Models.Badge", b =>
                 {
                     b.Navigation("BadgeHolders");
+                });
+
+            modelBuilder.Entity("ElsaMina.DataAccess.Models.Doll", b =>
+                {
+                    b.Navigation("DollHolders");
                 });
 
             modelBuilder.Entity("ElsaMina.DataAccess.Models.RoomUser", b =>

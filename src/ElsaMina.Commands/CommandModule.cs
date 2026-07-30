@@ -59,6 +59,7 @@ public partial class CommandModule : Module
         builder.RegisterModule<AiModule>();
         builder.RegisterModule<ArcadeModule>();
         builder.RegisterModule<BadgesModule>();
+        builder.RegisterModule<DollsModule>();
         builder.RegisterModule<ProfileModule>();
         builder.RegisterModule<GamesModule>();
         builder.RegisterModule<MiscModule>();

@@ -14,6 +14,7 @@ public class BotDbContext : DbContext
     public DbSet<AddedCommand> AddedCommands { get; set; }
     public DbSet<SavedRoom> RoomInfo { get; set; }
     public DbSet<BadgeHolding> BadgeHoldings { get; set; }
+    public DbSet<DollHolding> DollHoldings { get; set; }
     public DbSet<Team> Teams { get; set; }
     public DbSet<RoomTeam> RoomTeams { get; set; }
     public DbSet<ArcadeLevel> ArcadeLevels { get; set; }

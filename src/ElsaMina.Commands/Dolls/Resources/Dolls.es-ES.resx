@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="doll_give_help_message" xml:space="preserve">
+        <value>Da un muñeco a un usuario. Sintaxis: -givedoll &lt;usuario&gt;, &lt;muñeco&gt; [, &lt;sala&gt;]</value>
+    </data>
+    <data name="doll_take_help_message" xml:space="preserve">
+        <value>Quita un muñeco a un usuario. Sintaxis: -takedoll &lt;usuario&gt;, &lt;muñeco&gt; [, &lt;sala&gt;]</value>
+    </data>
+    <data name="doll_list_help_message" xml:space="preserve">
+        <value>Muestra el catálogo de muñecos leído del Google Drive. Sintaxis: -dolls</value>
+    </data>
+    <data name="doll_refresh_help_message" xml:space="preserve">
+        <value>Recarga el catálogo de muñecos desde el Google Drive. Sintaxis: -refreshdolls</value>
+    </data>
+    <data name="doll_not_found" xml:space="preserve">
+        <value>No se ha encontrado el muñeco {0} en el catálogo.</value>
+    </data>
+    <data name="doll_catalogue_unavailable" xml:space="preserve">
+        <value>No se ha podido leer el catálogo de muñecos del drive : {0}</value>
+    </data>
+    <data name="doll_give_already_owned" xml:space="preserve">
+        <value>"{0}" ya tiene el muñeco "{1}"</value>
+    </data>
+    <data name="doll_give_success" xml:space="preserve">
+        <value>"{0}" ha recibido el muñeco "{1}"</value>
+    </data>
+    <data name="doll_give_failure" xml:space="preserve">
+        <value>Se ha producido un error al dar el muñeco : {0}</value>
+    </data>
+    <data name="doll_take_success" xml:space="preserve">
+        <value>El muñeco "{1}" le ha sido retirado a "{0}"</value>
+    </data>
+    <data name="doll_take_not_owned" xml:space="preserve">
+        <value>"{0}" no tiene el muñeco "{1}"</value>
+    </data>
+    <data name="doll_take_failure" xml:space="preserve">
+        <value>Se ha producido un error al retirar el muñeco : {0}</value>
+    </data>
+    <data name="doll_refresh_success" xml:space="preserve">
+        <value>Catálogo de muñecos recargado : {0} muñecos encontrados.</value>
+    </data>
+    <data name="doll_refresh_failure" xml:space="preserve">
+        <value>No se ha podido recargar el catálogo de muñecos : {0}</value>
+    </data>
+    <data name="doll_pm_missing_room" xml:space="preserve">
+        <value>En PM, especifica la sala. Sintaxis: -givedoll usuario, muñeco, sala</value>
+    </data>
+    <data name="doll_pm_insufficient_rank" xml:space="preserve">
+        <value>No tienes permisos suficientes en esta sala.</value>
+    </data>
+    <data name="doll_list_empty" xml:space="preserve">
+        <value>El catálogo de muñecos está vacío.</value>
+    </data>
+    <data name="doll_list_size_header" xml:space="preserve">
+        <value>Muñecos {0}x{1} ({2})</value>
+    </data>
+</root>

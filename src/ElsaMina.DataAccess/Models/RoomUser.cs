@@ -23,5 +23,6 @@ public class RoomUser
     public TournamentRecord TournamentRecord { get; set; }
     public BetRecord BetRecord { get; set; }
     public ICollection<BadgeHolding> Badges { get; set; } = new HashSet<BadgeHolding>();
+    public ICollection<DollHolding> Dolls { get; set; } = new HashSet<DollHolding>();
     public SavedUser User { get; set; }
 }

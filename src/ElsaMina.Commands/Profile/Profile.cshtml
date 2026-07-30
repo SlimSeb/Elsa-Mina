@@ -143,65 +143,83 @@
                 </div>
             }
 
+            @if (Model.Dolls != null && Model.Dolls.Any())
+            {
+                @* Dolls keep their native sprite size and sit on a common baseline, like on a shelf. *@
+                <div style="margin-top:4px;border-top:1px solid #2e2e4e;padding-top:6px;max-width:264px;line-height:1;">
+                    @foreach (var doll in Model.Dolls)
+                    {
+                        <span style="display:inline-block;margin:0 4px;vertical-align:bottom;">
+                            @{ await IncludeAsync("Dolls/Doll", doll); }
+                        </span>
+                    }
+                </div>
+            }
+
             @if (Model.GameRecords != null && Model.GameRecords.HasAnyRecord)
             {
                 var gr = Model.GameRecords;
                 <div style="margin-top:4px;border-top:1px solid #2e2e4e;padding-top:4px;">
-                    @if (gr.FloodIt != null)
-                    {
-                        <div style="margin-bottom:2px;">
-                            <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_flood_it"):</span>
-                            <span>
-                                <span title="@GetString("profile_game_max_level")">Lv. @gr.FloodIt.Level</span>
-                                · <span title="@GetString("profile_game_total_stars")">⭐ @gr.FloodIt.TotalStars</span>
-                            </span>
+                    <details>
+                        <summary style="color:#6a9fd8;font-weight:bold;cursor:pointer;">@GetString("profile_game_records")</summary>
+                        <div style="margin-top:3px;">
+                            @if (gr.FloodIt != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_flood_it"):</span>
+                                    <span>
+                                        <span title="@GetString("profile_game_max_level")">Lv. @gr.FloodIt.Level</span>
+                                        · <span title="@GetString("profile_game_total_stars")">⭐ @gr.FloodIt.TotalStars</span>
+                                    </span>
+                                </div>
+                            }
+                            @if (gr.LightsOut != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_lights_out"):</span>
+                                    <span>
+                                        <span title="@GetString("profile_game_max_level")">Lv. @gr.LightsOut.Level</span>
+                                        · <span title="@GetString("profile_game_total_stars")">⭐ @gr.LightsOut.TotalStars</span>
+                                    </span>
+                                </div>
+                            }
+                            @if (gr.VoltorbFlip != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_voltorb_flip"):</span>
+                                    <span>
+                                        <span title="@GetString("profile_game_max_level")">Lv. @gr.VoltorbFlip.MaxLevel</span>
+                                        · <span title="@GetString("profile_game_coins")">💰 @gr.VoltorbFlip.Coins</span>
+                                    </span>
+                                </div>
+                            }
+                            @if (gr.TwentyFortyEight != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_2048"):</span>
+                                    <span>
+                                        <span title="@GetString("profile_game_best_score")">@gr.TwentyFortyEight.BestScore</span>
+                                        · <span title="@GetString("profile_game_wins")">🏆 @gr.TwentyFortyEight.Wins</span>
+                                    </span>
+                                </div>
+                            }
+                            @if (gr.ConnectFour != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("c4_game_name"):</span>
+                                    <span>
+                                        <span title="@GetString("c4_leaderboard_rating")">@gr.ConnectFour.Rating</span>
+                                        · <span title="@GetString("c4_leaderboard_wins")">🏆 @gr.ConnectFour.Wins</span>
+                                        · <span title="@GetString("c4_leaderboard_losses")">💀 @gr.ConnectFour.Losses</span>
+                                        @if (gr.ConnectFour.Draws > 0)
+                                        {
+                                            <span>· <span title="@GetString("c4_leaderboard_draws")">🤝 @gr.ConnectFour.Draws</span></span>
+                                        }
+                                    </span>
+                                </div>
+                            }
                         </div>
-                    }
-                    @if (gr.LightsOut != null)
-                    {
-                        <div style="margin-bottom:2px;">
-                            <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_lights_out"):</span>
-                            <span>
-                                <span title="@GetString("profile_game_max_level")">Lv. @gr.LightsOut.Level</span>
-                                · <span title="@GetString("profile_game_total_stars")">⭐ @gr.LightsOut.TotalStars</span>
-                            </span>
-                        </div>
-                    }
-                    @if (gr.VoltorbFlip != null)
-                    {
-                        <div style="margin-bottom:2px;">
-                            <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_voltorb_flip"):</span>
-                            <span>
-                                <span title="@GetString("profile_game_max_level")">Lv. @gr.VoltorbFlip.MaxLevel</span>
-                                · <span title="@GetString("profile_game_coins")">💰 @gr.VoltorbFlip.Coins</span>
-                            </span>
-                        </div>
-                    }
-                    @if (gr.TwentyFortyEight != null)
-                    {
-                        <div style="margin-bottom:2px;">
-                            <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_2048"):</span>
-                            <span>
-                                <span title="@GetString("profile_game_best_score")">@gr.TwentyFortyEight.BestScore</span>
-                                · <span title="@GetString("profile_game_wins")">🏆 @gr.TwentyFortyEight.Wins</span>
-                            </span>
-                        </div>
-                    }
-                    @if (gr.ConnectFour != null)
-                    {
-                        <div style="margin-bottom:2px;">
-                            <span style="color:#6a9fd8;font-weight:bold;">@GetString("c4_game_name"):</span>
-                            <span>
-                                <span title="@GetString("c4_leaderboard_rating")">@gr.ConnectFour.Rating</span>
-                                · <span title="@GetString("c4_leaderboard_wins")">🏆 @gr.ConnectFour.Wins</span>
-                                · <span title="@GetString("c4_leaderboard_losses")">💀 @gr.ConnectFour.Losses</span>
-                                @if (gr.ConnectFour.Draws > 0)
-                                {
-                                    <span>· <span title="@GetString("c4_leaderboard_draws")">🤝 @gr.ConnectFour.Draws</span></span>
-                                }
-                            </span>
-                        </div>
-                    }
+                    </details>
                 </div>
             }
 

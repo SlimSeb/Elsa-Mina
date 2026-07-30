@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="doll_give_help_message" xml:space="preserve">
+        <value>Gives a doll to a user. Syntax: -givedoll &lt;user&gt;, &lt;doll&gt; [, &lt;room&gt;]</value>
+    </data>
+    <data name="doll_take_help_message" xml:space="preserve">
+        <value>Takes a doll back from a user. Syntax: -takedoll &lt;user&gt;, &lt;doll&gt; [, &lt;room&gt;]</value>
+    </data>
+    <data name="doll_list_help_message" xml:space="preserve">
+        <value>Shows the doll catalogue read from the Google Drive. Syntax: -dolls</value>
+    </data>
+    <data name="doll_refresh_help_message" xml:space="preserve">
+        <value>Reloads the doll catalogue from the Google Drive. Syntax: -refreshdolls</value>
+    </data>
+    <data name="doll_not_found" xml:space="preserve">
+        <value>Could not find doll {0} in the catalogue.</value>
+    </data>
+    <data name="doll_catalogue_unavailable" xml:space="preserve">
+        <value>Could not read the doll catalogue from the drive : {0}</value>
+    </data>
+    <data name="doll_give_already_owned" xml:space="preserve">
+        <value>"{0}" already owns the doll "{1}"</value>
+    </data>
+    <data name="doll_give_success" xml:space="preserve">
+        <value>"{0}" has received the doll "{1}"</value>
+    </data>
+    <data name="doll_give_failure" xml:space="preserve">
+        <value>An error occurred while giving the doll : {0}</value>
+    </data>
+    <data name="doll_take_success" xml:space="preserve">
+        <value>The doll "{1}" has been taken back from "{0}"</value>
+    </data>
+    <data name="doll_take_not_owned" xml:space="preserve">
+        <value>"{0}" does not own the doll "{1}"</value>
+    </data>
+    <data name="doll_take_failure" xml:space="preserve">
+        <value>An error occurred while taking the doll back : {0}</value>
+    </data>
+    <data name="doll_refresh_success" xml:space="preserve">
+        <value>Doll catalogue reloaded : {0} dolls found.</value>
+    </data>
+    <data name="doll_refresh_failure" xml:space="preserve">
+        <value>Could not reload the doll catalogue : {0}</value>
+    </data>
+    <data name="doll_pm_missing_room" xml:space="preserve">
+        <value>In PM, please specify the room. Syntax: -givedoll user, doll, room</value>
+    </data>
+    <data name="doll_pm_insufficient_rank" xml:space="preserve">
+        <value>You don't have sufficient permissions in this room.</value>
+    </data>
+    <data name="doll_list_empty" xml:space="preserve">
+        <value>The doll catalogue is empty.</value>
+    </data>
+    <data name="doll_list_size_header" xml:space="preserve">
+        <value>{0}x{1} dolls ({2})</value>
+    </data>
+</root>

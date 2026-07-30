@@ -14,6 +14,12 @@ public interface IRoomUserDataService
     Task TakeBadgeFromUserAsync(string roomId, string userId, string badgeId,
         CancellationToken cancellationToken = default);
 
+    Task GiveDollToUserAsync(string roomId, string userId, string dollId,
+        CancellationToken cancellationToken = default);
+
+    Task TakeDollFromUserAsync(string roomId, string userId, string dollId,
+        CancellationToken cancellationToken = default);
+
     Task SetUserTitleAsync(string roomId, string userId, string title, CancellationToken cancellationToken = default);
     Task SetUserAvatarAsync(string roomId, string userId, string avatar, CancellationToken cancellationToken = default);
 

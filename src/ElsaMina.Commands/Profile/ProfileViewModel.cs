@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Dolls;
 using ElsaMina.Commands.Showdown.Ranking;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.DataAccess.Models;
@@ -16,6 +17,7 @@ public class ProfileViewModel : LocalizableViewModel
     public string ProfileBackgroundColor { get; init; }
     public string ProfileBorderColor { get; init; }
     public IEnumerable<Badge> Badges { get; init; }
+    public IEnumerable<Doll> Dolls { get; init; }
     public DateTimeOffset RegisterDate { get; init; }
     public RankingDataDto BestRanking { get; init; }
     public TournamentRecord TournamentRecord { get; init; }

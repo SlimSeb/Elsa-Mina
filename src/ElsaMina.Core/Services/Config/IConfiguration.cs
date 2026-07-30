@@ -40,6 +40,7 @@ public interface IConfiguration : IS3CredentialsProvider, ILoggingConfiguration
     string ArcadeHallOfFameSheetName { get; }
     string CaaSpreadsheetName { get; }
     string CaaSheetName { get; }
+    string DollsDriveName { get; }
     IReadOnlyDictionary<string, IEnumerable<string>> EventAnnounces { get; }
     IReadOnlyDictionary<string, string> DiscordWebhooks { get; }
     int UserUpdateBatchSize { get; set; }

@@ -123,6 +123,49 @@ public class RoomUserDataService : IRoomUserDataService
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task GiveDollToUserAsync(
+        string roomId,
+        string userId,
+        string dollId,
+        CancellationToken cancellationToken = default)
+    {
+        await GetOrCreateRoomSpecificUserDataAsync(roomId, userId, cancellationToken);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var dollHolding = new DollHolding
+        {
+            DollId = dollId,
+            RoomId = roomId,
+            UserId = userId
+        };
+
+        await dbContext.DollHoldings.AddAsync(dollHolding, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task TakeDollFromUserAsync(
+        string roomId,
+        string userId,
+        string dollId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+
+        var existing = await dbContext.DollHoldings
+            .FirstOrDefaultAsync(
+                holding => holding.DollId == dollId && holding.UserId == userId && holding.RoomId == roomId,
+                cancellationToken);
+
+        if (existing == null)
+        {
+            throw new ArgumentException("Doll not found");
+        }
+
+        dbContext.DollHoldings.Remove(existing);
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task SetUserTitleAsync(
         string roomId,
         string userId,

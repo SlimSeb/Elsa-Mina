@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Dolls;
 using ElsaMina.Commands.Profile.EditProfilePanel;
 using ElsaMina.Commands.Showdown.Ranking;
 using ElsaMina.Core.Services.Formats;
@@ -25,6 +26,7 @@ public class ProfileService : IProfileService
     private readonly IFormatsManager _formatsManager;
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly IRoomsManager _roomsManager;
+    private readonly IDollService _dollService;
 
     public ProfileService(IUserDetailsManager userDetailsManager,
         ITemplatesManager templatesManager,
@@ -32,7 +34,8 @@ public class ProfileService : IProfileService
         IShowdownRanksProvider showdownRanksProvider,
         IFormatsManager formatsManager,
         IBotDbContextFactory dbContextFactory,
-        IRoomsManager roomsManager)
+        IRoomsManager roomsManager,
+        IDollService dollService)
     {
         _userDetailsManager = userDetailsManager;
         _templatesManager = templatesManager;
@@ -41,6 +44,7 @@ public class ProfileService : IProfileService
         _formatsManager = formatsManager;
         _dbContextFactory = dbContextFactory;
         _roomsManager = roomsManager;
+        _dollService = dollService;
     }
 
     public async Task<string> GetProfileHtmlAsync(string userId, string roomId,
@@ -58,6 +62,8 @@ public class ProfileService : IProfileService
             .Include(user => user.RoomData.Where(roomUser => roomUser.RoomId == roomId))
             .ThenInclude(roomUser => roomUser.Badges)
             .ThenInclude(badgeHolding => badgeHolding.Badge)
+            .Include(user => user.RoomData.Where(roomUser => roomUser.RoomId == roomId))
+            .ThenInclude(roomUser => roomUser.Dolls)
             .Include(user => user.RoomData.Where(roomUser => roomUser.RoomId == roomId))
             .ThenInclude(roomUser => roomUser.TournamentRecord)
             .Include(user => user.FloodItScore)
@@ -95,6 +101,9 @@ public class ProfileService : IProfileService
             ConnectFour = savedUser?.ConnectFourRating
         };
 
+        var ownedDollIds = storedUserData?.Dolls.Select(holding => holding.DollId) ?? [];
+        var dolls = await _dollService.ResolveDollsAsync(ownedDollIds, cancellationToken);
+
         var isOnline = showdownUserDetails?.Rooms != null;
         var lastSeenDate = savedUser?.LastOnline.HasValue == true
             ? TimeZoneInfo.ConvertTime(savedUser.LastOnline.Value, room?.TimeZone ?? TimeZoneInfo.Local)
@@ -109,6 +118,7 @@ public class ProfileService : IProfileService
             UserRoomRank = userRoomRank,
             Status = GetStatus(showdownUserDetails),
             Badges = storedUserData?.Badges.Select(holding => holding.Badge),
+            Dolls = dolls,
             Title = storedUserData?.Title,
             ProfileEmoji = storedUserData?.ProfileEmoji,
             ProfileBackgroundColor = storedUserData?.ProfileBackgroundColor,

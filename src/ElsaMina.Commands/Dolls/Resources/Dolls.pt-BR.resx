@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="doll_give_help_message" xml:space="preserve">
+        <value>Dá um boneco a um usuário. Sintaxe: -givedoll &lt;usuário&gt;, &lt;boneco&gt; [, &lt;sala&gt;]</value>
+    </data>
+    <data name="doll_take_help_message" xml:space="preserve">
+        <value>Retira um boneco de um usuário. Sintaxe: -takedoll &lt;usuário&gt;, &lt;boneco&gt; [, &lt;sala&gt;]</value>
+    </data>
+    <data name="doll_list_help_message" xml:space="preserve">
+        <value>Mostra o catálogo de bonecos lido do Google Drive. Sintaxe: -dolls</value>
+    </data>
+    <data name="doll_refresh_help_message" xml:space="preserve">
+        <value>Recarrega o catálogo de bonecos a partir do Google Drive. Sintaxe: -refreshdolls</value>
+    </data>
+    <data name="doll_not_found" xml:space="preserve">
+        <value>Não foi possível encontrar o boneco {0} no catálogo.</value>
+    </data>
+    <data name="doll_catalogue_unavailable" xml:space="preserve">
+        <value>Não foi possível ler o catálogo de bonecos do drive : {0}</value>
+    </data>
+    <data name="doll_give_already_owned" xml:space="preserve">
+        <value>"{0}" já possui o boneco "{1}"</value>
+    </data>
+    <data name="doll_give_success" xml:space="preserve">
+        <value>"{0}" recebeu o boneco "{1}"</value>
+    </data>
+    <data name="doll_give_failure" xml:space="preserve">
+        <value>Ocorreu um erro ao dar o boneco : {0}</value>
+    </data>
+    <data name="doll_take_success" xml:space="preserve">
+        <value>O boneco "{1}" foi retirado de "{0}"</value>
+    </data>
+    <data name="doll_take_not_owned" xml:space="preserve">
+        <value>"{0}" não possui o boneco "{1}"</value>
+    </data>
+    <data name="doll_take_failure" xml:space="preserve">
+        <value>Ocorreu um erro ao retirar o boneco : {0}</value>
+    </data>
+    <data name="doll_refresh_success" xml:space="preserve">
+        <value>Catálogo de bonecos recarregado : {0} bonecos encontrados.</value>
+    </data>
+    <data name="doll_refresh_failure" xml:space="preserve">
+        <value>Não foi possível recarregar o catálogo de bonecos : {0}</value>
+    </data>
+    <data name="doll_pm_missing_room" xml:space="preserve">
+        <value>No PM, especifique a sala. Sintaxe: -givedoll usuário, boneco, sala</value>
+    </data>
+    <data name="doll_pm_insufficient_rank" xml:space="preserve">
+        <value>Você não tem permissões suficientes nesta sala.</value>
+    </data>
+    <data name="doll_list_empty" xml:space="preserve">
+        <value>O catálogo de bonecos está vazio.</value>
+    </data>
+    <data name="doll_list_size_header" xml:space="preserve">
+        <value>Bonecos {0}x{1} ({2})</value>
+    </data>
+</root>
