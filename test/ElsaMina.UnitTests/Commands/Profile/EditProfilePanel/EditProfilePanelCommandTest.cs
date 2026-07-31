@@ -1,186 +1,63 @@
-using System.Globalization;
 using ElsaMina.Commands.Profile.EditProfilePanel;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.Templates;
-using ElsaMina.DataAccess;
-using ElsaMina.DataAccess.Models;
-using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Profile.EditProfilePanel;
 
 public class EditProfilePanelCommandTest
 {
-    private DbContextOptions<BotDbContext> CreateOptions() =>
-        new DbContextOptionsBuilder<BotDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
+    private IEditProfilePanelService _editProfilePanelService;
+    private IContext _context;
+    private EditProfilePanelCommand _sut;
 
-    private IBotDbContextFactory CreateFactoryReturning(BotDbContext ctx)
+    [SetUp]
+    public void SetUp()
     {
-        var factory = Substitute.For<IBotDbContextFactory>();
-        factory.CreateDbContextAsync(Arg.Any<CancellationToken>()).Returns(ctx);
-        return factory;
+        _editProfilePanelService = Substitute.For<IEditProfilePanelService>();
+        _context = Substitute.For<IContext>();
+        _context.RoomId.Returns("defaultroom");
+
+        _sut = new EditProfilePanelCommand(_editProfilePanelService);
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldRenderPanel_WithNoCurrentEmoji_WhenUserHasNoStoredData()
+    public async Task Test_RunAsync_ShouldSendThePanelForTheTargetedRoom()
     {
-        var options = CreateOptions();
-        await using var ctx = new BotDbContext(options);
-        await ctx.Database.EnsureCreatedAsync();
+        // Arrange
+        _context.Target.Returns(" TestRoom ");
 
-        var factory = CreateFactoryReturning(ctx);
-        var templatesManager = Substitute.For<ITemplatesManager>();
-        var configuration = Substitute.For<IConfiguration>();
-        configuration.Name.Returns("Elsa");
-        configuration.Trigger.Returns("-");
-        var roomsManager = Substitute.For<IRoomsManager>();
-        roomsManager.GetRoom("testroom").Returns((IRoom)null);
+        // Act
+        await _sut.RunAsync(_context);
 
-        var sender = Substitute.For<IUser>();
-        sender.UserId.Returns("alice");
-
-        var context = Substitute.For<IContext>();
-        context.Target.Returns("testroom");
-        context.RoomId.Returns("testroom");
-        context.IsPrivateMessage.Returns(false);
-        context.Culture.Returns(CultureInfo.InvariantCulture);
-        context.Sender.Returns(sender);
-
-        templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<EditProfilePanelViewModel>())
-            .Returns(Task.FromResult("<div>panel</div>"));
-
-        var command = new EditProfilePanelCommand(factory, templatesManager, configuration, roomsManager);
-
-        await command.RunAsync(context);
-
-        await templatesManager.Received(1).GetTemplateAsync(
-            "Profile/EditProfilePanel/EditProfilePanel",
-            Arg.Is<EditProfilePanelViewModel>(vm =>
-                vm.RoomId == "testroom" &&
-                vm.UserId == "alice" &&
-                vm.BotName == "Elsa" &&
-                vm.Trigger == "-" &&
-                string.IsNullOrEmpty(vm.CurrentEmoji)
-            ));
-
-        context.Received(1).ReplyHtmlPage("edit-profile-alice", "<div>panel</div>");
+        // Assert
+        await _editProfilePanelService.Received(1)
+            .SendPanelAsync(_context, "testroom", Arg.Any<CancellationToken>());
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldRenderPanel_WithCurrentEmoji_WhenUserHasStoredEmoji()
+    public async Task Test_RunAsync_ShouldSendThePanelForTheCurrentRoom_WhenNoRoomIsGiven()
     {
-        var options = CreateOptions();
-        await using (var setup = new BotDbContext(options))
-        {
-            await setup.Database.EnsureCreatedAsync();
-            setup.Users.Add(new SavedUser { UserId = "bob", UserName = "Bob" });
-            setup.RoomUsers.Add(new RoomUser
-            {
-                Id = "bob",
-                RoomId = "testroom",
-                ProfileEmoji = "🎮",
-                PlayTime = TimeSpan.Zero
-            });
-            await setup.SaveChangesAsync();
-        }
+        // Arrange
+        _context.Target.Returns(string.Empty);
 
-        await using var ctx = new BotDbContext(options);
-        var factory = CreateFactoryReturning(ctx);
-        var templatesManager = Substitute.For<ITemplatesManager>();
-        var configuration = Substitute.For<IConfiguration>();
-        configuration.Name.Returns("Elsa");
-        configuration.Trigger.Returns("-");
-        var roomsManager = Substitute.For<IRoomsManager>();
-        roomsManager.GetRoom("testroom").Returns((IRoom)null);
+        // Act
+        await _sut.RunAsync(_context);
 
-        var sender = Substitute.For<IUser>();
-        sender.UserId.Returns("bob");
-
-        var context = Substitute.For<IContext>();
-        context.Target.Returns(string.Empty);
-        context.RoomId.Returns("testroom");
-        context.IsPrivateMessage.Returns(false);
-        context.Culture.Returns(CultureInfo.InvariantCulture);
-        context.Sender.Returns(sender);
-
-        templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<EditProfilePanelViewModel>())
-            .Returns(Task.FromResult("<div>panel</div>"));
-
-        var command = new EditProfilePanelCommand(factory, templatesManager, configuration, roomsManager);
-
-        await command.RunAsync(context);
-
-        await templatesManager.Received(1).GetTemplateAsync(
-            "Profile/EditProfilePanel/EditProfilePanel",
-            Arg.Is<EditProfilePanelViewModel>(vm =>
-                vm.CurrentEmoji == "🎮"
-            ));
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldUseContextRoomId_WhenTargetIsEmpty()
-    {
-        var options = CreateOptions();
-        await using var ctx = new BotDbContext(options);
-        await ctx.Database.EnsureCreatedAsync();
-
-        var factory = CreateFactoryReturning(ctx);
-        var templatesManager = Substitute.For<ITemplatesManager>();
-        var configuration = Substitute.For<IConfiguration>();
-        configuration.Name.Returns("Elsa");
-        configuration.Trigger.Returns("-");
-        var roomsManager = Substitute.For<IRoomsManager>();
-        roomsManager.GetRoom("defaultroom").Returns((IRoom)null);
-
-        var sender = Substitute.For<IUser>();
-        sender.UserId.Returns("alice");
-
-        var context = Substitute.For<IContext>();
-        context.Target.Returns(string.Empty);
-        context.RoomId.Returns("defaultroom");
-        context.IsPrivateMessage.Returns(false);
-        context.Culture.Returns(CultureInfo.InvariantCulture);
-        context.Sender.Returns(sender);
-
-        templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<EditProfilePanelViewModel>())
-            .Returns(Task.FromResult("<div>panel</div>"));
-
-        var command = new EditProfilePanelCommand(factory, templatesManager, configuration, roomsManager);
-
-        await command.RunAsync(context);
-
-        await templatesManager.Received(1).GetTemplateAsync(
-            "Profile/EditProfilePanel/EditProfilePanel",
-            Arg.Is<EditProfilePanelViewModel>(vm => vm.RoomId == "defaultroom"));
+        // Assert
+        await _editProfilePanelService.Received(1)
+            .SendPanelAsync(_context, "defaultroom", Arg.Any<CancellationToken>());
     }
 
     [Test]
     public void Test_RequiredRank_ShouldBeRegular()
     {
-        var factory = Substitute.For<IBotDbContextFactory>();
-        var templatesManager = Substitute.For<ITemplatesManager>();
-        var configuration = Substitute.For<IConfiguration>();
-        var roomsManager = Substitute.For<IRoomsManager>();
-
-        var command = new EditProfilePanelCommand(factory, templatesManager, configuration, roomsManager);
-
-        Assert.That(command.RequiredRank, Is.EqualTo(Rank.Regular));
+        Assert.That(_sut.RequiredRank, Is.EqualTo(Rank.Regular));
     }
 
     [Test]
     public void Test_IsAllowedInPrivateMessage_ShouldBeTrue()
     {
-        var factory = Substitute.For<IBotDbContextFactory>();
-        var templatesManager = Substitute.For<ITemplatesManager>();
-        var configuration = Substitute.For<IConfiguration>();
-        var roomsManager = Substitute.For<IRoomsManager>();
-
-        var command = new EditProfilePanelCommand(factory, templatesManager, configuration, roomsManager);
-
-        Assert.That(command.IsAllowedInPrivateMessage, Is.True);
+        Assert.That(_sut.IsAllowedInPrivateMessage, Is.True);
     }
 }

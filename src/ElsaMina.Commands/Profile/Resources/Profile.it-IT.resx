@@ -264,4 +264,34 @@
     <data name="color_wooden" xml:space="preserve">
         <value>Legno</value>
     </data>
+    <data name="edit_profile_panel_dolls_section" xml:space="preserve">
+        <value>Bambole</value>
+    </data>
+    <data name="edit_profile_panel_dolls_hint" xml:space="preserve">
+        <value>Usa le frecce per riordinare le bambole mostrate sul tuo profilo.</value>
+    </data>
+    <data name="edit_profile_panel_no_dolls" xml:space="preserve">
+        <value>Non possiedi nessuna bambola in questa stanza.</value>
+    </data>
+    <data name="edit_profile_panel_move_left" xml:space="preserve">
+        <value>Sposta a sinistra</value>
+    </data>
+    <data name="edit_profile_panel_move_right" xml:space="preserve">
+        <value>Sposta a destra</value>
+    </data>
+    <data name="move_doll_help_message" xml:space="preserve">
+        <value>Sposta una delle tue bambole sul tuo profilo. Sintassi: -movedoll &lt;bambola&gt;, &lt;left|right&gt; [, &lt;stanza&gt;]</value>
+    </data>
+    <data name="move_doll_missing_room" xml:space="preserve">
+        <value>In PM, specifica la stanza. Sintassi: -movedoll bambola, left, stanza</value>
+    </data>
+    <data name="move_doll_not_owned" xml:space="preserve">
+        <value>Non possiedi la bambola "{0}".</value>
+    </data>
+    <data name="move_doll_at_edge" xml:space="preserve">
+        <value>Questa bambola è già all'estremità della fila.</value>
+    </data>
+    <data name="move_doll_failure" xml:space="preserve">
+        <value>Si è verificato un errore durante il riordino delle bambole: {0}</value>
+    </data>
 </root>

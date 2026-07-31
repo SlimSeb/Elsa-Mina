@@ -2,12 +2,9 @@ using System.Globalization;
 using System.Text;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
-using ElsaMina.DataAccess;
-using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Commands.Profile.EditProfilePanel;
 
@@ -78,61 +75,25 @@ public class EditProfilePanelCommand : Command
             ? border
             : StyleConstants.PRIMARY_BORDER_COLOR;
 
-    private readonly IBotDbContextFactory _dbContextFactory;
-    private readonly ITemplatesManager _templatesManager;
-    private readonly IConfiguration _configuration;
-    private readonly IRoomsManager _roomsManager;
+    private readonly IEditProfilePanelService _editProfilePanelService;
 
-    public EditProfilePanelCommand(IBotDbContextFactory dbContextFactory,
-        ITemplatesManager templatesManager,
-        IConfiguration configuration,
-        IRoomsManager roomsManager)
+    public EditProfilePanelCommand(IEditProfilePanelService editProfilePanelService)
     {
-        _dbContextFactory = dbContextFactory;
-        _templatesManager = templatesManager;
-        _configuration = configuration;
-        _roomsManager = roomsManager;
+        _editProfilePanelService = editProfilePanelService;
     }
 
     public override Rank RequiredRank => Rank.Regular;
     public override bool IsAllowedInPrivateMessage => true;
 
-    public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
+    public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var roomId = string.IsNullOrWhiteSpace(context.Target)
             ? context.RoomId
             : context.Target.Trim().ToLowerAlphaNum();
 
-        var room = _roomsManager.GetRoom(roomId);
-        if (context.IsPrivateMessage && room != null)
-        {
-            context.Culture = room.Culture;
-        }
-
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var userId = context.Sender.UserId;
-        var storedUser = await dbContext.RoomUsers
-            .FirstOrDefaultAsync(u => u.Id == userId && u.RoomId == roomId, cancellationToken);
-
-        var viewModel = new EditProfilePanelViewModel
-        {
-            Culture = context.Culture,
-            BotName = _configuration.Name,
-            Trigger = _configuration.Trigger,
-            RoomId = roomId,
-            UserId = userId,
-            CurrentEmoji = storedUser?.ProfileEmoji ?? string.Empty,
-            CurrentBackgroundColor = storedUser?.ProfileBackgroundColor ?? string.Empty,
-        };
-
-        var template = await _templatesManager.GetTemplateAsync(
-            "Profile/EditProfilePanel/EditProfilePanel", viewModel);
-        context.ReplyHtmlPage($"edit-profile-{userId}", template
-            .RemoveNewlines()
-            .CollapseAttributeWhitespace()
-            .RemoveWhitespacesBetweenTags());
+        return _editProfilePanelService.SendPanelAsync(context, roomId, cancellationToken);
     }
-    
+
     public static IEnumerable<(string Code, string Flag, string Name)> GetAllCountryFlags()
     {
         return CultureInfo

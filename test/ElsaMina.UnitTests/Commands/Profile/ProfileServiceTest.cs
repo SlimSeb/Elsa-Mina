@@ -53,7 +53,7 @@ public class ProfileServiceTest
             .Returns((IEnumerable<RankingDataDto>)null);
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>())
             .Returns("rendered");
-        _dollService.ResolveDollsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+        _dollService.ResolveDollsAsync(Arg.Any<IEnumerable<DollHolding>>(), Arg.Any<CancellationToken>())
             .Returns([]);
 
         _sut = new ProfileService(
@@ -449,7 +449,7 @@ public class ProfileServiceTest
     #region Dolls
 
     [Test]
-    public async Task Test_GetProfileHtmlAsync_ShouldSetDolls_ResolvedFromTheOwnedIds()
+    public async Task Test_GetProfileHtmlAsync_ShouldSetDolls_ResolvedFromTheOwnedHoldings()
     {
         // Arrange
         await AddDollHoldingsAsync("room1", "alice", "pikachu", "snorlax");
@@ -458,7 +458,7 @@ public class ProfileServiceTest
             new() { Id = "snorlax", Name = "Snorlax", Size = 32, Image = "https://images/snorlax.png" },
             new() { Id = "pikachu", Name = "Pikachu", Size = 16, Image = "https://images/pikachu.png" }
         };
-        _dollService.ResolveDollsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+        _dollService.ResolveDollsAsync(Arg.Any<IEnumerable<DollHolding>>(), Arg.Any<CancellationToken>())
             .Returns(resolvedDolls);
 
         // Act
@@ -466,7 +466,8 @@ public class ProfileServiceTest
 
         // Assert
         await _dollService.Received(1).ResolveDollsAsync(
-            Arg.Is<IEnumerable<string>>(dollIds => dollIds.OrderBy(dollId => dollId)
+            Arg.Is<IEnumerable<DollHolding>>(holdings => holdings.Select(holding => holding.DollId)
+                .OrderBy(dollId => dollId)
                 .SequenceEqual(new[] { "pikachu", "snorlax" })),
             Arg.Any<CancellationToken>());
         await _templatesManager.Received(1).GetTemplateAsync(
@@ -485,7 +486,7 @@ public class ProfileServiceTest
 
         // Assert
         await _dollService.Received(1).ResolveDollsAsync(
-            Arg.Is<IEnumerable<string>>(dollIds => !dollIds.Any()),
+            Arg.Is<IEnumerable<DollHolding>>(holdings => !holdings.Any()),
             Arg.Any<CancellationToken>());
     }
 

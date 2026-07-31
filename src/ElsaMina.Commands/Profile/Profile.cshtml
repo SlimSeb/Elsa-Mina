@@ -145,8 +145,11 @@
 
             @if (Model.Dolls != null && Model.Dolls.Any())
             {
-                @* Dolls keep their native sprite size and sit on a common baseline, like on a shelf. *@
-                <div style="margin-top:4px;border-top:1px solid #2e2e4e;padding-top:6px;max-width:264px;line-height:1;">
+                @* Dolls keep their native sprite size and sit on a single line, like on a shelf,
+                   which scrolls sideways rather than growing the profile when the shelf gets crowded.
+                   Setting overflow on one axis only makes the other one scrollable too, so the vertical
+                   scrollbar has to be turned off explicitly. *@
+                <div style="margin-top:4px;border-top:1px solid #2e2e4e;padding-top:6px;max-width:264px;line-height:1;white-space:nowrap;overflow-x:auto;overflow-y:hidden;">
                     @foreach (var doll in Model.Dolls)
                     {
                         <span style="display:inline-block;margin:0 4px;vertical-align:bottom;">

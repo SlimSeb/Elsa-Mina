@@ -264,4 +264,34 @@
     <data name="color_wooden" xml:space="preserve">
         <value>Holz</value>
     </data>
+    <data name="edit_profile_panel_dolls_section" xml:space="preserve">
+        <value>Puppen</value>
+    </data>
+    <data name="edit_profile_panel_dolls_hint" xml:space="preserve">
+        <value>Nutze die Pfeile, um die Puppen auf deinem Profil neu anzuordnen.</value>
+    </data>
+    <data name="edit_profile_panel_no_dolls" xml:space="preserve">
+        <value>Du besitzt in diesem Raum keine Puppe.</value>
+    </data>
+    <data name="edit_profile_panel_move_left" xml:space="preserve">
+        <value>Nach links verschieben</value>
+    </data>
+    <data name="edit_profile_panel_move_right" xml:space="preserve">
+        <value>Nach rechts verschieben</value>
+    </data>
+    <data name="move_doll_help_message" xml:space="preserve">
+        <value>Verschiebt eine deiner Puppen auf deinem Profil. Syntax: -movedoll &lt;Puppe&gt;, &lt;left|right&gt; [, &lt;Raum&gt;]</value>
+    </data>
+    <data name="move_doll_missing_room" xml:space="preserve">
+        <value>Im PM bitte den Raum angeben. Syntax: -movedoll doll, left, room</value>
+    </data>
+    <data name="move_doll_not_owned" xml:space="preserve">
+        <value>Du besitzt die Puppe "{0}" nicht.</value>
+    </data>
+    <data name="move_doll_at_edge" xml:space="preserve">
+        <value>Diese Puppe ist bereits am Ende der Reihe.</value>
+    </data>
+    <data name="move_doll_failure" xml:space="preserve">
+        <value>Beim Neuanordnen der Puppen ist ein Fehler aufgetreten: {0}</value>
+    </data>
 </root>

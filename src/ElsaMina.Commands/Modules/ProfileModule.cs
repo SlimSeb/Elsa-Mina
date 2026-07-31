@@ -15,9 +15,11 @@ public class ProfileModule : Module
         builder.RegisterCommand<SetEmojiCommand>();
         builder.RegisterCommand<SetProfileColorCommand>();
         builder.RegisterCommand<EditProfilePanelCommand>();
+        builder.RegisterCommand<MoveDollCommand>();
         builder.RegisterCommand<SetAvatarCommand>();
         builder.RegisterCommand<SetTitleCommand>();
 
         builder.RegisterType<ProfileService>().As<IProfileService>().SingleInstance();
+        builder.RegisterType<EditProfilePanelService>().As<IEditProfilePanelService>().SingleInstance();
     }
 }

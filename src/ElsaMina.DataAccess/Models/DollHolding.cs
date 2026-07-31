@@ -8,6 +8,12 @@ public class DollHolding
 {
     public string DollId { get; set; }
 
+    /// <summary>
+    /// Rank of the doll on the profile shelf, starting at 1. Zero means the user never reordered
+    /// their dolls, so the doll keeps its default place (biggest first) at the end of the shelf.
+    /// </summary>
+    public int Position { get; set; }
+
     public string RoomId { get; set; }
     public string UserId { get; set; }
     public virtual RoomUser RoomUser { get; set; }

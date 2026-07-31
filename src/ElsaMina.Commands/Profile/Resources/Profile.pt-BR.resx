@@ -264,4 +264,34 @@
     <data name="color_wooden" xml:space="preserve">
         <value>Madeira</value>
     </data>
+    <data name="edit_profile_panel_dolls_section" xml:space="preserve">
+        <value>Bonecas</value>
+    </data>
+    <data name="edit_profile_panel_dolls_hint" xml:space="preserve">
+        <value>Use as setas para reordenar as bonecas exibidas no seu perfil.</value>
+    </data>
+    <data name="edit_profile_panel_no_dolls" xml:space="preserve">
+        <value>Você não possui nenhuma boneca nesta sala.</value>
+    </data>
+    <data name="edit_profile_panel_move_left" xml:space="preserve">
+        <value>Mover para a esquerda</value>
+    </data>
+    <data name="edit_profile_panel_move_right" xml:space="preserve">
+        <value>Mover para a direita</value>
+    </data>
+    <data name="move_doll_help_message" xml:space="preserve">
+        <value>Move uma das suas bonecas no seu perfil. Sintaxe: -movedoll &lt;boneca&gt;, &lt;left|right&gt; [, &lt;sala&gt;]</value>
+    </data>
+    <data name="move_doll_missing_room" xml:space="preserve">
+        <value>No PM, especifique a sala. Sintaxe: -movedoll boneca, left, sala</value>
+    </data>
+    <data name="move_doll_not_owned" xml:space="preserve">
+        <value>Você não possui a boneca "{0}".</value>
+    </data>
+    <data name="move_doll_at_edge" xml:space="preserve">
+        <value>Esta boneca já está no fim da fileira.</value>
+    </data>
+    <data name="move_doll_failure" xml:space="preserve">
+        <value>Ocorreu um erro ao reordenar as bonecas: {0}</value>
+    </data>
 </root>

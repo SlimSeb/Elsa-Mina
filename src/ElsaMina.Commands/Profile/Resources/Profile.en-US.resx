@@ -264,4 +264,34 @@
     <data name="color_wooden" xml:space="preserve">
         <value>Wooden</value>
     </data>
+    <data name="edit_profile_panel_dolls_section" xml:space="preserve">
+        <value>Dolls</value>
+    </data>
+    <data name="edit_profile_panel_dolls_hint" xml:space="preserve">
+        <value>Use the arrows to reorder the dolls shown on your profile.</value>
+    </data>
+    <data name="edit_profile_panel_no_dolls" xml:space="preserve">
+        <value>You don't own any doll in this room.</value>
+    </data>
+    <data name="edit_profile_panel_move_left" xml:space="preserve">
+        <value>Move left</value>
+    </data>
+    <data name="edit_profile_panel_move_right" xml:space="preserve">
+        <value>Move right</value>
+    </data>
+    <data name="move_doll_help_message" xml:space="preserve">
+        <value>Moves one of your dolls on your profile. Syntax: -movedoll &lt;doll&gt;, &lt;left|right&gt; [, &lt;room&gt;]</value>
+    </data>
+    <data name="move_doll_missing_room" xml:space="preserve">
+        <value>In PM, please specify the room. Syntax: -movedoll doll, left, room</value>
+    </data>
+    <data name="move_doll_not_owned" xml:space="preserve">
+        <value>You don't own the doll "{0}".</value>
+    </data>
+    <data name="move_doll_at_edge" xml:space="preserve">
+        <value>This doll is already at the end of the row.</value>
+    </data>
+    <data name="move_doll_failure" xml:space="preserve">
+        <value>An error occurred while reordering the dolls: {0}</value>
+    </data>
 </root>

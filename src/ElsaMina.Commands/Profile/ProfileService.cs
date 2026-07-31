@@ -101,8 +101,7 @@ public class ProfileService : IProfileService
             ConnectFour = savedUser?.ConnectFourRating
         };
 
-        var ownedDollIds = storedUserData?.Dolls.Select(holding => holding.DollId) ?? [];
-        var dolls = await _dollService.ResolveDollsAsync(ownedDollIds, cancellationToken);
+        var dolls = await _dollService.ResolveDollsAsync(storedUserData?.Dolls ?? [], cancellationToken);
 
         var isOnline = showdownUserDetails?.Rooms != null;
         var lastSeenDate = savedUser?.LastOnline.HasValue == true

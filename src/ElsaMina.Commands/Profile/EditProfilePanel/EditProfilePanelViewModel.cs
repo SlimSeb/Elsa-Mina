@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Dolls;
 using ElsaMina.Core.Services.Templates;
 
 namespace ElsaMina.Commands.Profile.EditProfilePanel;
@@ -10,4 +11,9 @@ public class EditProfilePanelViewModel : LocalizableViewModel
     public string UserId { get; set; }
     public string CurrentEmoji { get; set; }
     public string CurrentBackgroundColor { get; set; }
+
+    /// <summary>
+    /// The user's dolls, in the order they show up on their profile.
+    /// </summary>
+    public IReadOnlyList<Doll> Dolls { get; set; } = [];
 }

@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.DataAccess;
+using ElsaMina.DataAccess.Models;
 using ElsaMina.Logging;
 using ElsaMina.Sheets.GoogleDrive;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,11 @@ public partial class DollService : IDollService
 {
     private const string DEFAULT_DRIVE_NAME = "Poupées";
     private const string PNG_MIME_TYPE = "image/png";
+
+    /// <summary>
+    /// Position of a doll the user never moved: it stays on its default place on the shelf.
+    /// </summary>
+    private const int UNPLACED_POSITION = 0;
 
     /// <summary>
     /// Direct image endpoint for a Drive file. The files must be shared with "anyone with the link",
@@ -81,7 +87,7 @@ public partial class DollService : IDollService
         return catalogue.GetValueOrDefault(dollId);
     }
 
-    public async Task<IReadOnlyList<Doll>> ResolveDollsAsync(IEnumerable<string> dollIds,
+    public async Task<IReadOnlyList<Doll>> ResolveDollsAsync(IEnumerable<DollHolding> holdings,
         CancellationToken cancellationToken = default)
     {
         IReadOnlyDictionary<string, Doll> catalogue;
@@ -95,12 +101,59 @@ public partial class DollService : IDollService
             return [];
         }
 
-        return dollIds
-            .Select(catalogue.GetValueOrDefault)
+        return OrderForShelf(holdings, catalogue)
+            .Select(holding => catalogue.GetValueOrDefault(holding.DollId))
             .Where(doll => doll != null)
-            .OrderByDescending(doll => doll.Size)
-            .ThenBy(doll => doll.Name)
             .ToList();
+    }
+
+    public async Task<DollMoveResult> MoveDollAsync(string roomId, string userId, string dollId, int offset,
+        CancellationToken cancellationToken = default)
+    {
+        var catalogue = await GetCatalogueAsync(cancellationToken);
+
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+        var holdings = await dbContext.DollHoldings
+            .Where(holding => holding.UserId == userId && holding.RoomId == roomId)
+            .ToListAsync(cancellationToken);
+
+        var shelf = OrderForShelf(holdings, catalogue).ToList();
+        var currentIndex = shelf.FindIndex(holding => holding.DollId == dollId);
+        if (currentIndex == -1)
+        {
+            return DollMoveResult.NotOwned;
+        }
+
+        var targetIndex = currentIndex + offset;
+        if (targetIndex < 0 || targetIndex >= shelf.Count)
+        {
+            return DollMoveResult.AlreadyAtEdge;
+        }
+
+        (shelf[currentIndex], shelf[targetIndex]) = (shelf[targetIndex], shelf[currentIndex]);
+
+        // The whole shelf is renumbered, so the dolls that were still on their default place keep
+        // the one they were displayed at rather than jumping around on the next move.
+        for (var i = 0; i < shelf.Count; i++)
+        {
+            shelf[i].Position = i + 1;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return DollMoveResult.Moved;
+    }
+
+    /// <summary>
+    /// Dolls the user placed come first, in their chosen order, then the ones left on their default
+    /// place, biggest first, so that a shelf that was never reordered looks exactly as it always did.
+    /// </summary>
+    private static IEnumerable<DollHolding> OrderForShelf(IEnumerable<DollHolding> holdings,
+        IReadOnlyDictionary<string, Doll> catalogue)
+    {
+        return holdings
+            .OrderBy(holding => holding.Position == UNPLACED_POSITION ? int.MaxValue : holding.Position)
+            .ThenByDescending(holding => catalogue.GetValueOrDefault(holding.DollId)?.Size ?? 0)
+            .ThenBy(holding => catalogue.GetValueOrDefault(holding.DollId)?.Name ?? holding.DollId);
     }
 
     public async Task<bool> IsDollOwnedByUserAsync(string roomId, string userId, string dollId,

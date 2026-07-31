@@ -264,4 +264,34 @@
     <data name="color_wooden" xml:space="preserve">
         <value>Madera</value>
     </data>
+    <data name="edit_profile_panel_dolls_section" xml:space="preserve">
+        <value>Muñecas</value>
+    </data>
+    <data name="edit_profile_panel_dolls_hint" xml:space="preserve">
+        <value>Usa las flechas para reordenar las muñecas que aparecen en tu perfil.</value>
+    </data>
+    <data name="edit_profile_panel_no_dolls" xml:space="preserve">
+        <value>No tienes ninguna muñeca en esta sala.</value>
+    </data>
+    <data name="edit_profile_panel_move_left" xml:space="preserve">
+        <value>Mover a la izquierda</value>
+    </data>
+    <data name="edit_profile_panel_move_right" xml:space="preserve">
+        <value>Mover a la derecha</value>
+    </data>
+    <data name="move_doll_help_message" xml:space="preserve">
+        <value>Mueve una de tus muñecas en tu perfil. Sintaxis: -movedoll &lt;muñeca&gt;, &lt;left|right&gt; [, &lt;sala&gt;]</value>
+    </data>
+    <data name="move_doll_missing_room" xml:space="preserve">
+        <value>En PM, indica la sala. Sintaxis: -movedoll muñeca, left, sala</value>
+    </data>
+    <data name="move_doll_not_owned" xml:space="preserve">
+        <value>No tienes la muñeca «{0}».</value>
+    </data>
+    <data name="move_doll_at_edge" xml:space="preserve">
+        <value>Esta muñeca ya está al final de la fila.</value>
+    </data>
+    <data name="move_doll_failure" xml:space="preserve">
+        <value>Se produjo un error al reordenar las muñecas: {0}</value>
+    </data>
 </root>

@@ -12,6 +12,10 @@
     const string currentEmojiStyle = "font-size: 1.6em; margin-left: .5rem; vertical-align: middle;";
     const string colorSwatchStyle = "display: inline-block; width: 20px; height: 20px; border-radius: 3px;" +
                                     $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; vertical-align: middle; margin-right: 4px;";
+    const string dollCellStyle = "text-align: center; padding: 0 .25rem;";
+    // The pointer triangles are used instead of the play/reverse ones, which carry an emoji
+    // presentation and end up with mismatched sizes. The fixed metrics keep both arrows identical.
+    const string dollArrowStyle = "width: 1.8rem; padding: 0 .2rem; font-size: .8rem; line-height: 1.4;";
 
     var flags = EditProfilePanelCommand.GetAllCountryFlags().ToList();
 }
@@ -99,5 +103,63 @@
                 }
             </tbody>
         </table>
+    </div>
+
+    <div style="@sectionStyle">
+        <div style="@sectionTitleStyle">@GetString("edit_profile_panel_dolls_section")</div>
+        @if (Model.Dolls == null || Model.Dolls.Count == 0)
+        {
+            <em>@GetString("edit_profile_panel_no_dolls")</em>
+        }
+        else
+        {
+            <div style="margin-bottom: .4rem;">@GetString("edit_profile_panel_dolls_hint")</div>
+            @* The sprites sit on the same row as on the profile, with their arrows right underneath,
+               so the panel doubles as a preview of the shelf being reordered. *@
+            <div style="overflow-x: auto;">
+                <table style="border-collapse: collapse;">
+                    <tbody>
+                    <tr>
+                        @foreach (var doll in Model.Dolls)
+                        {
+                            <td style="@dollCellStyle vertical-align: bottom;">
+                                @{ await IncludeAsync("Dolls/Doll", doll); }
+                            </td>
+                        }
+                    </tr>
+                    <tr>
+                        @for (var i = 0; i < Model.Dolls.Count; i++)
+                        {
+                            var doll = Model.Dolls[i];
+                            <td style="@dollCellStyle padding-top: .25rem; white-space: nowrap;">
+                                @if (i > 0)
+                                {
+                                    <button
+                                        class="button"
+                                        name="send"
+                                        value="/w @Model.BotName,@(Model.Trigger)movedoll @doll.Id, left, @Model.RoomId"
+                                        title="@GetString("edit_profile_panel_move_left")"
+                                        style="@dollArrowStyle">
+                                        &#9668;
+                                    </button>
+                                }
+                                @if (i < Model.Dolls.Count - 1)
+                                {
+                                    <button
+                                        class="button"
+                                        name="send"
+                                        value="/w @Model.BotName,@(Model.Trigger)movedoll @doll.Id, right, @Model.RoomId"
+                                        title="@GetString("edit_profile_panel_move_right")"
+                                        style="@dollArrowStyle">
+                                        &#9658;
+                                    </button>
+                                }
+                            </td>
+                        }
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 </div>

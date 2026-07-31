@@ -62,11 +62,37 @@ public class DollServiceTest
         }
     }
 
-    private async Task SeedHoldingAsync(string dollId, string roomId, string userId)
+    private async Task SeedHoldingAsync(string dollId, string roomId, string userId, int position = 0)
     {
         await using var dbContext = new BotDbContext(_options);
-        dbContext.DollHoldings.Add(new DollHolding { DollId = dollId, RoomId = roomId, UserId = userId });
+        dbContext.DollHoldings.Add(new DollHolding
+        {
+            DollId = dollId,
+            RoomId = roomId,
+            UserId = userId,
+            Position = position
+        });
         await dbContext.SaveChangesAsync();
+    }
+
+    private async Task<IEnumerable<string>> GetShelfAsync(string roomId, string userId)
+    {
+        await using var dbContext = new BotDbContext(_options);
+        var holdings = await dbContext.DollHoldings
+            .Where(holding => holding.RoomId == roomId && holding.UserId == userId)
+            .ToListAsync();
+        return (await _sut.ResolveDollsAsync(holdings)).Select(doll => doll.Id);
+    }
+
+    private static IEnumerable<DollHolding> Holdings(params (string DollId, int Position)[] holdings)
+    {
+        return holdings.Select(holding => new DollHolding
+        {
+            DollId = holding.DollId,
+            Position = holding.Position,
+            RoomId = "room1",
+            UserId = "alice"
+        });
     }
 
     [Test]
@@ -271,10 +297,26 @@ public class DollServiceTest
             ("Grandes 32x32", ["snorlax.png", "clefairy.png"]));
 
         // Act
-        var dolls = await _sut.ResolveDollsAsync(["pikachu", "snorlax", "clefairy", "deleted_from_drive"]);
+        var dolls = await _sut.ResolveDollsAsync(Holdings(
+            ("pikachu", 0), ("snorlax", 0), ("clefairy", 0), ("deleted_from_drive", 0)));
 
         // Assert
         Assert.That(dolls.Select(doll => doll.Id), Is.EqualTo(new[] { "clefairy", "snorlax", "pikachu" }));
+    }
+
+    [Test]
+    public async Task Test_ResolveDollsAsync_ShouldPutThePlacedDollsFirst_InTheirChosenOrder()
+    {
+        // Arrange
+        SetUpDrive(
+            ("Petites 16x16", ["pikachu.png"]),
+            ("Grandes 32x32", ["snorlax.png", "clefairy.png"]));
+
+        // Act
+        var dolls = await _sut.ResolveDollsAsync(Holdings(("pikachu", 2), ("snorlax", 1), ("clefairy", 0)));
+
+        // Assert
+        Assert.That(dolls.Select(doll => doll.Id), Is.EqualTo(new[] { "snorlax", "pikachu", "clefairy" }));
     }
 
     [Test]
@@ -285,10 +327,83 @@ public class DollServiceTest
             .Throws(new HttpRequestException("drive down"));
 
         // Act
-        var dolls = await _sut.ResolveDollsAsync(["pikachu"]);
+        var dolls = await _sut.ResolveDollsAsync(Holdings(("pikachu", 0)));
 
         // Assert
         Assert.That(dolls, Is.Empty);
+    }
+
+    [Test]
+    public async Task Test_MoveDollAsync_ShouldSwapTheDollWithItsNeighbour_AndNumberTheWholeShelf()
+    {
+        // Arrange
+        SetUpDrive(
+            ("Petites 16x16", ["pikachu.png"]),
+            ("Grandes 32x32", ["snorlax.png", "clefairy.png"]));
+        await SeedHoldingAsync("pikachu", "room1", "alice");
+        await SeedHoldingAsync("snorlax", "room1", "alice");
+        await SeedHoldingAsync("clefairy", "room1", "alice");
+
+        // Act
+        var result = await _sut.MoveDollAsync("room1", "alice", "pikachu", -1);
+
+        // Assert
+        Assert.That(result, Is.EqualTo(DollMoveResult.Moved));
+        Assert.That(await GetShelfAsync("room1", "alice"),
+            Is.EqualTo(new[] { "clefairy", "pikachu", "snorlax" }));
+
+        await using var dbContext = new BotDbContext(_options);
+        Assert.That(await dbContext.DollHoldings.CountAsync(holding => holding.Position == 0), Is.Zero);
+    }
+
+    [Test]
+    public async Task Test_MoveDollAsync_ShouldKeepTheNewOrder_WhenTheDollIsMovedAgain()
+    {
+        // Arrange
+        SetUpDrive(
+            ("Petites 16x16", ["pikachu.png"]),
+            ("Grandes 32x32", ["snorlax.png", "clefairy.png"]));
+        await SeedHoldingAsync("pikachu", "room1", "alice");
+        await SeedHoldingAsync("snorlax", "room1", "alice");
+        await SeedHoldingAsync("clefairy", "room1", "alice");
+
+        // Act
+        await _sut.MoveDollAsync("room1", "alice", "pikachu", -1);
+        await _sut.MoveDollAsync("room1", "alice", "pikachu", -1);
+
+        // Assert
+        Assert.That(await GetShelfAsync("room1", "alice"),
+            Is.EqualTo(new[] { "pikachu", "clefairy", "snorlax" }));
+    }
+
+    [Test]
+    public async Task Test_MoveDollAsync_ShouldLeaveTheShelfAlone_WhenTheDollIsAlreadyAtTheEdge()
+    {
+        // Arrange
+        SetUpDrive(("Petites 16x16", ["pikachu.png", "clefairy.png"]));
+        await SeedHoldingAsync("pikachu", "room1", "alice");
+        await SeedHoldingAsync("clefairy", "room1", "alice");
+
+        // Act
+        var result = await _sut.MoveDollAsync("room1", "alice", "clefairy", -1);
+
+        // Assert
+        Assert.That(result, Is.EqualTo(DollMoveResult.AlreadyAtEdge));
+        Assert.That(await GetShelfAsync("room1", "alice"), Is.EqualTo(new[] { "clefairy", "pikachu" }));
+    }
+
+    [Test]
+    public async Task Test_MoveDollAsync_ShouldReturnNotOwned_WhenTheDollIsNotOnTheUsersShelf()
+    {
+        // Arrange
+        SetUpDrive(("Petites 16x16", ["pikachu.png"]));
+        await SeedHoldingAsync("pikachu", "room1", "bob");
+
+        // Act
+        var result = await _sut.MoveDollAsync("room1", "alice", "pikachu", -1);
+
+        // Assert
+        Assert.That(result, Is.EqualTo(DollMoveResult.NotOwned));
     }
 
     [Test]

@@ -1,3 +1,5 @@
+using ElsaMina.DataAccess.Models;
+
 namespace ElsaMina.Commands.Dolls;
 
 public interface IDollService
@@ -16,10 +18,18 @@ public interface IDollService
     Task<Doll> GetDollAsync(string dollId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Maps owned doll ids to catalogue entries, largest first. Ids missing from the drive are skipped,
+    /// Maps owned holdings to catalogue entries, in shelf order: the order the user picked first,
+    /// then largest first for the dolls they never moved. Ids missing from the drive are skipped,
     /// and an unreachable drive yields an empty list rather than an error, so profiles still render.
     /// </summary>
-    Task<IReadOnlyList<Doll>> ResolveDollsAsync(IEnumerable<string> dollIds,
+    Task<IReadOnlyList<Doll>> ResolveDollsAsync(IEnumerable<DollHolding> holdings,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Shifts a doll by <paramref name="offset"/> slots on the user's shelf, and renumbers all of their
+    /// holdings so the new order sticks.
+    /// </summary>
+    Task<DollMoveResult> MoveDollAsync(string roomId, string userId, string dollId, int offset,
         CancellationToken cancellationToken = default);
 
     Task<bool> IsDollOwnedByUserAsync(string roomId, string userId, string dollId,

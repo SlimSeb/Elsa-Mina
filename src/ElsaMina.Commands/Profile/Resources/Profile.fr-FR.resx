@@ -264,4 +264,34 @@
     <data name="color_wooden" xml:space="preserve">
         <value>Boisé</value>
     </data>
+    <data name="edit_profile_panel_dolls_section" xml:space="preserve">
+        <value>Poupées</value>
+    </data>
+    <data name="edit_profile_panel_dolls_hint" xml:space="preserve">
+        <value>Utilise les flèches pour réorganiser les poupées affichées sur ton profil.</value>
+    </data>
+    <data name="edit_profile_panel_no_dolls" xml:space="preserve">
+        <value>Tu ne possèdes aucune poupée dans cette room.</value>
+    </data>
+    <data name="edit_profile_panel_move_left" xml:space="preserve">
+        <value>Déplacer vers la gauche</value>
+    </data>
+    <data name="edit_profile_panel_move_right" xml:space="preserve">
+        <value>Déplacer vers la droite</value>
+    </data>
+    <data name="move_doll_help_message" xml:space="preserve">
+        <value>Déplace une de tes poupées sur ton profil. Syntaxe : -movedoll &lt;poupée&gt;, &lt;left|right&gt; [, &lt;room&gt;]</value>
+    </data>
+    <data name="move_doll_missing_room" xml:space="preserve">
+        <value>En PM, veuillez préciser la room. Syntaxe : -movedoll poupée, left, room</value>
+    </data>
+    <data name="move_doll_not_owned" xml:space="preserve">
+        <value>Tu ne possèdes pas la poupée « {0} ».</value>
+    </data>
+    <data name="move_doll_at_edge" xml:space="preserve">
+        <value>Cette poupée est déjà au bout de la rangée.</value>
+    </data>
+    <data name="move_doll_failure" xml:space="preserve">
+        <value>Une erreur est survenue lors de la réorganisation des poupées : {0}</value>
+    </data>
 </root>
