@@ -1,6 +1,7 @@
 using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Dex;
 using ElsaMina.Core.Services.PlayTime;
+using ElsaMina.Core.Services.Repeats;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.Templates;
@@ -15,13 +16,15 @@ public class StartManager : IStartManager
     private readonly IRoomUserDataService _roomUserDataService;
     private readonly IDexManager _dexManager;
     private readonly IPlayTimeUpdateService _playTimeUpdateService;
+    private readonly IRepeatsManager _repeatsManager;
 
     public StartManager(ITemplatesManager templatesManager,
         ICustomColorsManager customColorsManager,
         IRoomColorsCache roomColorsCache,
         IRoomUserDataService roomUserDataService,
         IDexManager dexManager,
-        IPlayTimeUpdateService playTimeUpdateService)
+        IPlayTimeUpdateService playTimeUpdateService,
+        IRepeatsManager repeatsManager)
     {
         _templatesManager = templatesManager;
         _customColorsManager = customColorsManager;
@@ -29,6 +32,7 @@ public class StartManager : IStartManager
         _roomUserDataService = roomUserDataService;
         _dexManager = dexManager;
         _playTimeUpdateService = playTimeUpdateService;
+        _repeatsManager = repeatsManager;
     }
 
     public async Task LoadStaticDataAsync(CancellationToken cancellationToken = default)
@@ -39,7 +43,8 @@ public class StartManager : IStartManager
             _customColorsManager.FetchCustomColorsAsync(cancellationToken),
             _roomColorsCache.LoadAsync(cancellationToken),
             _roomUserDataService.InitializeJoinPhrasesAsync(cancellationToken),
-            _dexManager.LoadDexAsync(cancellationToken)
+            _dexManager.LoadDexAsync(cancellationToken),
+            _repeatsManager.InitializeAsync(cancellationToken)
         );
     }
 }

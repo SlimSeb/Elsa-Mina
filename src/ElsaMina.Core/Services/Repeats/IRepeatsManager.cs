@@ -1,11 +1,11 @@
-﻿using ElsaMina.Core.Contexts;
-
 namespace ElsaMina.Core.Services.Repeats;
 
 public interface IRepeatsManager
 {
-    void StartRepeat(IContext context, string roomId, string message, TimeSpan interval);
+    Task InitializeAsync(CancellationToken cancellationToken = default);
+    Task StartRepeatAsync(string roomId, string message, TimeSpan interval,
+        CancellationToken cancellationToken = default);
     IRepeat GetRepeat(Guid repeatId);
     IEnumerable<IRepeat> GetRepeats(string roomId);
-    bool StopRepeat(Guid repeatId);
+    Task<bool> StopRepeatAsync(Guid repeatId, CancellationToken cancellationToken = default);
 }

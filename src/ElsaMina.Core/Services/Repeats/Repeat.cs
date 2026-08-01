@@ -1,17 +1,17 @@
-﻿using System.Timers;
-using ElsaMina.Core.Contexts;
+using System.Timers;
+using ElsaMina.Logging;
 using Timer = System.Timers.Timer;
 
 namespace ElsaMina.Core.Services.Repeats;
 
 public sealed class Repeat : IRepeat
 {
-    private readonly IContext _context;
+    private readonly IBot _bot;
     private Timer _timer;
 
-    public Repeat(IContext context, Guid repeatId, string roomId, string message, TimeSpan interval)
+    public Repeat(IBot bot, Guid repeatId, string roomId, string message, TimeSpan interval)
     {
-        _context = context;
+        _bot = bot;
         RepeatId = repeatId;
         RoomId = roomId;
         Message = message;
@@ -51,7 +51,14 @@ public sealed class Repeat : IRepeat
 
     private void HandleTimerElapsed(object sender, ElapsedEventArgs e)
     {
-        var prefix = Message.StartsWith("/wall") || Message.StartsWith("/announce") ? string.Empty : "[[]]";
-        _context.SendMessageIn(RoomId, $"{prefix}{Message}");
+        try
+        {
+            var prefix = Message.StartsWith("/wall") || Message.StartsWith("/announce") ? string.Empty : "[[]]";
+            _bot.Say(RoomId, $"{prefix}{Message}");
+        }
+        catch (Exception exception)
+        {
+            Log.Error(exception, "Repeat {0} failed to send message in room {1}", RepeatId, RoomId);
+        }
     }
 }

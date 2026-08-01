@@ -46,7 +46,8 @@ public class StartRepeatCommand : Command
             return;
         }
 
-        _repeatsManager.StartRepeat(context, roomId, message, TimeSpan.FromMinutes(delayInMinutes));
+        await _repeatsManager.StartRepeatAsync(roomId, message, TimeSpan.FromMinutes(delayInMinutes),
+            cancellationToken);
         context.ReplyLocalizedMessage("repeat_start_success");
     }
 }
