@@ -39,7 +39,7 @@ public class StopRepeatCommand : Command
             return;
         }
 
-        var ended = _repeatsManager.StopRepeat(guid);
+        var ended = await _repeatsManager.StopRepeatAsync(guid, cancellationToken);
         if (!ended)
         {
             context.ReplyLocalizedMessage("repeat_stop_error");
