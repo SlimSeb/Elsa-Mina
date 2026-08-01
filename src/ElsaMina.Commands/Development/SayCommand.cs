@@ -19,7 +19,13 @@ public class SayCommand : DevelopmentCommand
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var parts = context.Target.Split(';');
+        var parts = context.Target.Split(';', 2);
+        if (parts.Length < 2)
+        {
+            context.Reply("Usage: say <roomId>;<message>");
+            return Task.CompletedTask;
+        }
+
         Log.Information("Say command used: {0}", context.Target);
         _bot.Say(parts[0], parts[1]);
         return Task.CompletedTask;
