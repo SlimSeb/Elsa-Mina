@@ -9,11 +9,11 @@ namespace ElsaMina.Commands.Misc.RandomImages;
 [NamedCommand("randheart")]
 public class RandHeartGifCommand : Command
 {
-    private readonly ITenorService _tenorService;
+    private readonly IKlipyService _klipyService;
 
-    public RandHeartGifCommand(ITenorService tenorService)
+    public RandHeartGifCommand(IKlipyService klipyService)
     {
-        _tenorService = tenorService;
+        _klipyService = klipyService;
     }
 
     public override Rank RequiredRank => Rank.Voiced;
@@ -22,10 +22,11 @@ public class RandHeartGifCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var media = await _tenorService.GetRandomMediaAsync("hearts", "tinygifpreview", cancellationToken);
+        var media = await _klipyService.GetRandomMediaAsync("hearts", KlipyMediaSize.Sm,
+            KlipyMediaFormat.Gif, cancellationToken);
         if (media == null)
         {
-            Log.Error("Tenor returned no result for hearts query.");
+            Log.Error("Klipy returned no result for hearts query.");
             context.ReplyLocalizedMessage("random_image_error");
             return;
         }

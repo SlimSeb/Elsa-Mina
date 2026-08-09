@@ -66,8 +66,8 @@ public class MiscModule : Module
 
         builder.RegisterType<GithubIssueService>().As<IGithubIssueService>().SingleInstance();
         builder.RegisterType<UnsplashService>().As<IUnsplashService>().SingleInstance();
-        builder.RegisterType<TenorService>().As<ITenorService>().SingleInstance();
-        builder.RegisterType<TenorCooldownService>().As<ITenorCooldownService>().SingleInstance();
+        builder.RegisterType<KlipyService>().As<IKlipyService>().SingleInstance();
+        builder.RegisterType<GifCooldownService>().As<IGifCooldownService>().SingleInstance();
         builder.RegisterType<SpoonacularService>().As<ISpoonacularService>().SingleInstance();
 
         RegisterRandomImagesCommands(builder);
@@ -104,8 +104,8 @@ public class MiscModule : Module
         builder.RegisterCommand<RandCommand>();
         builder.RegisterCommand<RandGifCommand>();
         builder.RegisterCommand<RandMp4Command>();
-        builder.RegisterCommand<TenorSearchCommand>();
-        builder.RegisterCommand<TenorGifCommand>();
+        builder.RegisterCommand<KlipySearchCommand>();
+        builder.RegisterCommand<KlipyGifCommand>();
         builder.RegisterCommand<RandFurretCommand>();
         builder.RegisterCommand<WalkCommand>();
         builder.RegisterCommand<RandHelpCommand>();

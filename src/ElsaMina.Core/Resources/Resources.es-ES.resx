@@ -101,11 +101,11 @@
     <data name="bucks_disabled" xml:space="preserve">
         <value>La economía de bucks está desactivada en esta sala.</value>
     </data>
-    <data name="parameter_name_tenor_gif_enabled" xml:space="preserve">
-        <value>GIFs de Tenor</value>
+    <data name="parameter_name_klipy_gif_enabled" xml:space="preserve">
+        <value>GIFs de KLIPY</value>
     </data>
-    <data name="parameter_description_tenor_gif_enabled" xml:space="preserve">
-        <value>Habilita los comandos tenorgif y tenorsearch en la sala</value>
+    <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
+        <value>Habilita los comandos klipygif y klipysearch en la sala</value>
     </data>
     <data name="command_execution_error" xml:space="preserve">
         <value>La ejecución del comando produjo un error.</value>

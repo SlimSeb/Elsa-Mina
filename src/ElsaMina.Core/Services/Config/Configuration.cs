@@ -31,7 +31,7 @@ public class Configuration : IConfiguration
     public string ChatGptApiKey { get; set; }
     public string GeminiApiKey { get; set; }
     public string ElevenLabsApiKey { get; set; }
-    public string TenorApiKey { get; set; }
+    public string KlipyApiKey { get; set; }
     public string UnsplashApiKey { get; set; }
     public string SpoonacularApiKey { get; set; }
     public TimeSpan PlayTimeUpdatesInterval { get; set; }

@@ -10,11 +10,11 @@ namespace ElsaMina.Commands.Misc.RandomImages;
 [NamedCommand("randgif")]
 public class RandGifCommand : Command
 {
-    private readonly ITenorService _tenorService;
+    private readonly IKlipyService _klipyService;
 
-    public RandGifCommand(ITenorService tenorService)
+    public RandGifCommand(IKlipyService klipyService)
     {
-        _tenorService = tenorService;
+        _klipyService = klipyService;
     }
 
     public override Rank RequiredRank => Rank.Driver;
@@ -27,16 +27,18 @@ public class RandGifCommand : Command
             ? "bot"
             : context.Target.ToLowerAlphaNum();
 
-        var media = await _tenorService.GetRandomMediaAsync(searchTerm, "gif", cancellationToken);
+        // sm is already chat-sized (~220px), so it is shown as-is; md and hd routinely run several MB.
+        var media = await _klipyService.GetRandomMediaAsync(searchTerm, KlipyMediaSize.Sm,
+            KlipyMediaFormat.Gif, cancellationToken);
         if (media == null)
         {
-            Log.Error("Tenor returned no gif for query: {Query}", searchTerm);
+            Log.Error("Klipy returned no gif for query: {Query}", searchTerm);
             context.ReplyLocalizedMessage("random_image_error");
             return;
         }
 
         context.ReplyHtml(
-            $"<img src=\"{media.Url}\" style=\"transform:rotate(0deg);\" width=\"{media.Width / 2}\" height=\"{media.Height / 2}\">",
+            $"<img src=\"{media.Url}\" style=\"transform:rotate(0deg);\" width=\"{media.Width}\" height=\"{media.Height}\">",
             rankAware: true);
     }
 }

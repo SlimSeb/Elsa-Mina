@@ -12,15 +12,15 @@ using NSubstitute;
 namespace ElsaMina.UnitTests.Commands.Misc.RandomImages;
 
 [TestFixture]
-public class TenorGifCommandTest
+public class KlipyGifCommandTest
 {
     private IImageService _imageService;
     private ITemplatesManager _templatesManager;
     private IClockService _clockService;
     private IArcadeEventsService _arcadeEventsService;
-    private ITenorCooldownService _cooldownService;
+    private IGifCooldownService _cooldownService;
     private IRoom _room;
-    private TenorGifCommand _command;
+    private KlipyGifCommand _command;
 
     [SetUp]
     public void SetUp()
@@ -29,18 +29,18 @@ public class TenorGifCommandTest
         _templatesManager = Substitute.For<ITemplatesManager>();
         _clockService = Substitute.For<IClockService>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
-        _cooldownService = Substitute.For<ITenorCooldownService>();
+        _cooldownService = Substitute.For<IGifCooldownService>();
         _room = Substitute.For<IRoom>();
 
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("<img/>");
-        _room.GetParameterValueAsync(Parameter.TenorGifEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(Parameter.KlipyGifEnabled, Arg.Any<CancellationToken>())
             .Returns("true");
         _clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
         _arcadeEventsService.AreGamesMuted(Arg.Any<string>()).Returns(false);
         _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
             .Returns((TimeSpan.Zero, TimeSpan.Zero));
 
-        _command = new TenorGifCommand(_imageService, _templatesManager, _clockService, _arcadeEventsService,
+        _command = new KlipyGifCommand(_imageService, _templatesManager, _clockService, _arcadeEventsService,
             _cooldownService);
     }
 
@@ -66,11 +66,11 @@ public class TenorGifCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldDoNothing_WhenTenorGifIsDisabled()
+    public async Task Test_RunAsync_ShouldDoNothing_WhenKlipyGifIsDisabled()
     {
-        _room.GetParameterValueAsync(Parameter.TenorGifEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(Parameter.KlipyGifEnabled, Arg.Any<CancellationToken>())
             .Returns("false");
-        var context = MakeContext("https://media.tenor.com/a.gif|200|100");
+        var context = MakeContext("https://static.klipy.com/a.gif|200|100");
 
         await _command.RunAsync(context);
 
@@ -83,11 +83,11 @@ public class TenorGifCommandTest
     public async Task Test_RunAsync_ShouldReplyMutedMessage_WhenGamesAreMutedForEvents()
     {
         _arcadeEventsService.AreGamesMuted(Arg.Any<string>()).Returns(true);
-        var context = MakeContext("https://media.tenor.com/a.gif|200|100");
+        var context = MakeContext("https://static.klipy.com/a.gif|200|100");
 
         await _command.RunAsync(context);
 
-        context.Received(1).ReplyLocalizedMessage("tenorgif_muted_for_events");
+        context.Received(1).ReplyLocalizedMessage("klipygif_muted_for_events");
         context.DidNotReceive().ReplyHtml(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>());
     }
 
@@ -98,8 +98,8 @@ public class TenorGifCommandTest
         var userRemaining = TimeSpan.FromSeconds(10);
         _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
             .Returns((roomRemaining, userRemaining));
-        var context = MakeContext("https://media.tenor.com/a.gif|200|100");
-        context.GetString("tenorgif_room_cooldown", Arg.Any<object[]>()).Returns("room on cooldown");
+        var context = MakeContext("https://static.klipy.com/a.gif|200|100");
+        context.GetString("klipygif_room_cooldown", Arg.Any<object[]>()).Returns("room on cooldown");
 
         await _command.RunAsync(context);
 
@@ -110,7 +110,7 @@ public class TenorGifCommandTest
     [Test]
     public async Task Test_RunAsync_ShouldBypassRoomCooldown_WhenSenderIsWhitelisted()
     {
-        var context = MakeContext("https://media.tenor.com/a.gif|200|100");
+        var context = MakeContext("https://static.klipy.com/a.gif|200|100");
         context.IsSenderWhitelisted.Returns(true);
         var roomRemaining = TimeSpan.FromSeconds(60);
         _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
@@ -131,9 +131,9 @@ public class TenorGifCommandTest
         _clockService.CurrentUtcDateTimeOffset.Returns(now);
         _cooldownService.GetRemainingCooldowns(roomId, userId, now)
             .Returns((TimeSpan.FromMilliseconds(1), TimeSpan.FromMinutes(5)));
-        var context = MakeContext("https://media.tenor.com/a.gif|200|100", roomId, userId);
+        var context = MakeContext("https://static.klipy.com/a.gif|200|100", roomId, userId);
         context.IsSenderWhitelisted.Returns(true);
-        context.GetString("tenorgif_user_cooldown", Arg.Any<object[]>()).Returns("user on cooldown");
+        context.GetString("klipygif_user_cooldown", Arg.Any<object[]>()).Returns("user on cooldown");
 
         await _command.RunAsync(context);
 
@@ -148,8 +148,8 @@ public class TenorGifCommandTest
         var userRemaining = TimeSpan.FromMinutes(14);
         _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
             .Returns((roomRemaining, userRemaining));
-        var context = MakeContext("https://media.tenor.com/a.gif|200|100");
-        context.GetString("tenorgif_user_cooldown", Arg.Any<object[]>()).Returns("user on cooldown");
+        var context = MakeContext("https://static.klipy.com/a.gif|200|100");
+        context.GetString("klipygif_user_cooldown", Arg.Any<object[]>()).Returns("user on cooldown");
 
         await _command.RunAsync(context);
 
@@ -163,8 +163,8 @@ public class TenorGifCommandTest
         var remaining = TimeSpan.FromSeconds(30);
         _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
             .Returns((remaining, remaining));
-        var context = MakeContext("https://media.tenor.com/a.gif|200|100");
-        context.GetString("tenorgif_room_cooldown", Arg.Any<object[]>()).Returns("room on cooldown");
+        var context = MakeContext("https://static.klipy.com/a.gif|200|100");
+        context.GetString("klipygif_room_cooldown", Arg.Any<object[]>()).Returns("room on cooldown");
 
         await _command.RunAsync(context);
 
@@ -184,24 +184,24 @@ public class TenorGifCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReplyInvalidUrl_WhenUrlIsNotTenorCdn()
+    public async Task Test_RunAsync_ShouldReplyInvalidUrl_WhenUrlIsNotKlipyCdn()
     {
         var context = MakeContext("https://example.com/image.gif");
 
         await _command.RunAsync(context);
 
-        context.Received(1).ReplyLocalizedMessage("tenorgif_invalid_url");
+        context.Received(1).ReplyLocalizedMessage("klipygif_invalid_url");
         context.DidNotReceive().ReplyHtml(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool>());
     }
 
     [Test]
     public async Task Test_RunAsync_ShouldReplyInvalidUrl_WhenUrlIsHttp()
     {
-        var context = MakeContext("http://media.tenor.com/a.gif");
+        var context = MakeContext("http://static.klipy.com/a.gif");
 
         await _command.RunAsync(context);
 
-        context.Received(1).ReplyLocalizedMessage("tenorgif_invalid_url");
+        context.Received(1).ReplyLocalizedMessage("klipygif_invalid_url");
     }
 
     [Test]
@@ -211,7 +211,7 @@ public class TenorGifCommandTest
 
         await _command.RunAsync(context);
 
-        context.Received(1).ReplyLocalizedMessage("tenorgif_invalid_url");
+        context.Received(1).ReplyLocalizedMessage("klipygif_invalid_url");
     }
 
     [Test]
@@ -227,39 +227,39 @@ public class TenorGifCommandTest
     [Test]
     public async Task Test_RunAsync_ShouldUseEncodedDimensions_WhenPresentInTarget()
     {
-        var context = MakeContext("https://media.tenor.com/a.gif|400|200");
+        var context = MakeContext("https://static.klipy.com/a.gif|400|200");
 
         await _command.RunAsync(context);
 
         await _imageService.DidNotReceiveWithAnyArgs().GetRemoteImageDimensions(default);
         await _templatesManager.Received(1).GetTemplateAsync(
-            "Misc/RandomImages/TenorGif",
-            Arg.Is<TenorGifViewModel>(vm =>
-                vm.Url == "https://media.tenor.com/a.gif" &&
-                vm.Width == 200 &&
-                vm.Height == 100));
+            "Misc/RandomImages/KlipyGif",
+            Arg.Is<KlipyGifViewModel>(vm =>
+                vm.Url == "https://static.klipy.com/a.gif" &&
+                vm.Width == 250 &&
+                vm.Height == 125));
     }
 
     [Test]
     public async Task Test_RunAsync_ShouldFetchDimensionsFromImageService_WhenNotEncodedInTarget()
     {
-        var context = MakeContext("https://media.tenor.com/a.gif");
+        var context = MakeContext("https://static.klipy.com/a.gif");
         _imageService.GetRemoteImageDimensions(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((600, 300));
 
         await _command.RunAsync(context);
 
         await _imageService.Received(1).GetRemoteImageDimensions(
-            "https://media.tenor.com/a.gif", Arg.Any<CancellationToken>());
+            "https://static.klipy.com/a.gif", Arg.Any<CancellationToken>());
         await _templatesManager.Received(1).GetTemplateAsync(
-            "Misc/RandomImages/TenorGif",
-            Arg.Is<TenorGifViewModel>(vm => vm.Width == 300 && vm.Height == 150));
+            "Misc/RandomImages/KlipyGif",
+            Arg.Is<KlipyGifViewModel>(vm => vm.Width == 250 && vm.Height == 125));
     }
 
     [Test]
     public async Task Test_RunAsync_ShouldReplyHtml_WithRenderedTemplate()
     {
-        var context = MakeContext("https://media.tenor.com/a.gif|200|100");
+        var context = MakeContext("https://static.klipy.com/a.gif|200|100");
 
         await _command.RunAsync(context);
 
@@ -273,7 +273,7 @@ public class TenorGifCommandTest
         var roomId = Guid.NewGuid().ToString();
         var userId = Guid.NewGuid().ToString();
         _clockService.CurrentUtcDateTimeOffset.Returns(now);
-        var context = MakeContext("https://media.tenor.com/a.gif|200|100", roomId, userId);
+        var context = MakeContext("https://static.klipy.com/a.gif|200|100", roomId, userId);
 
         await _command.RunAsync(context);
 

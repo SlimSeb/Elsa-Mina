@@ -10,11 +10,11 @@ namespace ElsaMina.Commands.Misc.RandomImages;
 [NamedCommand("rand")]
 public class RandCommand : Command
 {
-    private readonly ITenorService _tenorService;
+    private readonly IKlipyService _klipyService;
 
-    public RandCommand(ITenorService tenorService)
+    public RandCommand(IKlipyService klipyService)
     {
-        _tenorService = tenorService;
+        _klipyService = klipyService;
     }
 
     public override Rank RequiredRank => Rank.Driver;
@@ -27,10 +27,11 @@ public class RandCommand : Command
             ? "bot"
             : context.Target.ToLowerAlphaNum();
 
-        var media = await _tenorService.GetRandomMediaAsync(searchTerm, "tinygifpreview", cancellationToken);
+        var media = await _klipyService.GetRandomMediaAsync(searchTerm, KlipyMediaSize.Sm,
+            KlipyMediaFormat.Gif, cancellationToken);
         if (media == null)
         {
-            Log.Error("Tenor returned no result for query: {Query}", searchTerm);
+            Log.Error("Klipy returned no result for query: {Query}", searchTerm);
             context.ReplyLocalizedMessage("random_image_error");
             return;
         }

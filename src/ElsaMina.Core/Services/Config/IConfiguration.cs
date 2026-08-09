@@ -31,7 +31,7 @@ public interface IConfiguration : IS3CredentialsProvider, ILoggingConfiguration
     string ChatGptApiKey { get; }
     string GeminiApiKey { get; }
     string ElevenLabsApiKey { get; }
-    string TenorApiKey { get; }
+    string KlipyApiKey { get; }
     string UnsplashApiKey { get; }
     string SpoonacularApiKey { get; }
     TimeSpan PlayTimeUpdatesInterval { get; }

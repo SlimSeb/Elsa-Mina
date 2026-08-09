@@ -10,19 +10,25 @@ using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Misc.RandomImages;
 
-[NamedCommand("tenorgif")]
-public class TenorGifCommand : Command
+[NamedCommand("klipygif")]
+public class KlipyGifCommand : Command
 {
-    private const string TENOR_CDN_HOST = "media.tenor.com";
+    private const string KLIPY_CDN_HOST = "static.klipy.com";
+
+    /// <summary>
+    /// KLIPY serves several size tiers off the same host, so the image is scaled to fit rather than
+    /// blindly halved: a sm gif (~220px) stays as-is while a pasted md or hd link gets scaled down.
+    /// </summary>
+    private const int MAX_DISPLAY_WIDTH = 250;
 
     private readonly IImageService _imageService;
     private readonly ITemplatesManager _templatesManager;
     private readonly IClockService _clockService;
     private readonly IArcadeEventsService _eventsService;
-    private readonly ITenorCooldownService _cooldownService;
+    private readonly IGifCooldownService _cooldownService;
 
-    public TenorGifCommand(IImageService imageService, ITemplatesManager templatesManager, IClockService clockService,
-        IArcadeEventsService eventsService, ITenorCooldownService cooldownService)
+    public KlipyGifCommand(IImageService imageService, ITemplatesManager templatesManager, IClockService clockService,
+        IArcadeEventsService eventsService, IGifCooldownService cooldownService)
     {
         _imageService = imageService;
         _templatesManager = templatesManager;
@@ -32,11 +38,11 @@ public class TenorGifCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Regular;
-    public override string HelpMessageKey => "tenorgif_help";
+    public override string HelpMessageKey => "klipygif_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var isEnabled = (await context.Room.GetParameterValueAsync(Parameter.TenorGifEnabled,
+        var isEnabled = (await context.Room.GetParameterValueAsync(Parameter.KlipyGifEnabled,
             cancellationToken)).ToBoolean();
         if (!isEnabled)
         {
@@ -45,7 +51,7 @@ public class TenorGifCommand : Command
 
         if (_eventsService.AreGamesMuted(context.RoomId))
         {
-            context.ReplyLocalizedMessage("tenorgif_muted_for_events");
+            context.ReplyLocalizedMessage("klipygif_muted_for_events");
             return;
         }
 
@@ -57,11 +63,11 @@ public class TenorGifCommand : Command
             string reply;
             if (roomRemaining >= userRemaining)
             {
-                reply = context.GetString("tenorgif_room_cooldown", (int)roomRemaining.TotalSeconds);
+                reply = context.GetString("klipygif_room_cooldown", (int)roomRemaining.TotalSeconds);
             }
             else
             {
-                reply = context.GetString("tenorgif_user_cooldown",
+                reply = context.GetString("klipygif_user_cooldown",
                     (int)userRemaining.TotalMinutes, userRemaining.Seconds);
             }
 
@@ -103,10 +109,10 @@ public class TenorGifCommand : Command
         }
 
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)
-            || !uri.Host.Equals(TENOR_CDN_HOST, StringComparison.OrdinalIgnoreCase)
+            || !uri.Host.Equals(KLIPY_CDN_HOST, StringComparison.OrdinalIgnoreCase)
             || uri.Scheme != "https")
         {
-            context.ReplyLocalizedMessage("tenorgif_invalid_url");
+            context.ReplyLocalizedMessage("klipygif_invalid_url");
             return;
         }
 
@@ -115,16 +121,28 @@ public class TenorGifCommand : Command
             (width, height) = await _imageService.GetRemoteImageDimensions(url, cancellationToken);
         }
 
-        var template = await _templatesManager.GetTemplateAsync("Misc/RandomImages/TenorGif",
-            new TenorGifViewModel
+        var (displayWidth, displayHeight) = ScaleToMaxWidth(width, height);
+
+        var template = await _templatesManager.GetTemplateAsync("Misc/RandomImages/KlipyGif",
+            new KlipyGifViewModel
             {
                 Culture = context.Culture,
                 Url = url,
-                Width = width / 2,
-                Height = height / 2
+                Width = displayWidth,
+                Height = displayHeight
             });
 
         context.ReplyHtml(template.RemoveNewlines());
         _cooldownService.SetCooldown(context.RoomId, context.Sender.UserId, now);
+    }
+
+    private static (int Width, int Height) ScaleToMaxWidth(int width, int height)
+    {
+        if (width <= MAX_DISPLAY_WIDTH)
+        {
+            return (width, height);
+        }
+
+        return (MAX_DISPLAY_WIDTH, height * MAX_DISPLAY_WIDTH / width);
     }
 }

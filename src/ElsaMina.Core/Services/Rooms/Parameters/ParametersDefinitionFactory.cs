@@ -110,11 +110,11 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
                 Type = RoomBotConfigurationType.Boolean,
                 DefaultValue = false.ToString()
             },
-            [Parameter.TenorGifEnabled] = new ParameterDefinition
+            [Parameter.KlipyGifEnabled] = new ParameterDefinition
             {
                 Identifier = "tgf",
-                NameKey = "parameter_name_tenor_gif_enabled",
-                DescriptionKey = "parameter_description_tenor_gif_enabled",
+                NameKey = "parameter_name_klipy_gif_enabled",
+                DescriptionKey = "parameter_description_klipy_gif_enabled",
                 Type = RoomBotConfigurationType.Boolean,
                 DefaultValue = true.ToString()
             },

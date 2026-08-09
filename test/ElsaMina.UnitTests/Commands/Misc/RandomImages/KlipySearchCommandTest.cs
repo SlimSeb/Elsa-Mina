@@ -12,38 +12,38 @@ using NSubstitute;
 namespace ElsaMina.UnitTests.Commands.Misc.RandomImages;
 
 [TestFixture]
-public class TenorSearchCommandTest
+public class KlipySearchCommandTest
 {
-    private ITenorService _tenorService;
+    private IKlipyService _klipyService;
     private IConfiguration _configuration;
     private ITemplatesManager _templatesManager;
     private IClockService _clockService;
     private IArcadeEventsService _eventsService;
-    private ITenorCooldownService _cooldownService;
+    private IGifCooldownService _cooldownService;
     private IRoom _room;
-    private TenorSearchCommand _command;
+    private KlipySearchCommand _command;
 
     [SetUp]
     public void SetUp()
     {
-        _tenorService = Substitute.For<ITenorService>();
+        _klipyService = Substitute.For<IKlipyService>();
         _configuration = Substitute.For<IConfiguration>();
         _templatesManager = Substitute.For<ITemplatesManager>();
         _eventsService = Substitute.For<IArcadeEventsService>();
         _clockService = Substitute.For<IClockService>();
-        _cooldownService = Substitute.For<ITenorCooldownService>();
+        _cooldownService = Substitute.For<IGifCooldownService>();
         _room = Substitute.For<IRoom>();
 
         _configuration.Trigger.Returns("-");
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("<html/>");
-        _room.GetParameterValueAsync(Parameter.TenorGifEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(Parameter.KlipyGifEnabled, Arg.Any<CancellationToken>())
             .Returns("true");
         _clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
         _eventsService.AreGamesMuted(Arg.Any<string>()).Returns(false);
         _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
             .Returns((TimeSpan.Zero, TimeSpan.Zero));
 
-        _command = new TenorSearchCommand(_tenorService, _configuration, _templatesManager, _clockService,
+        _command = new KlipySearchCommand(_klipyService, _configuration, _templatesManager, _clockService,
             _eventsService, _cooldownService);
     }
 
@@ -62,6 +62,13 @@ public class TenorSearchCommandTest
         return context;
     }
 
+    /// <summary>
+    /// A search hit whose full variant carries the given dimensions and whose preview is half as wide.
+    /// </summary>
+    private static GifSearchResult MakeSearchResult(string slug, int fullWidth, int fullHeight) =>
+        new(new GifMediaInfo($"https://static.klipy.com/{slug}-xs.gif", fullWidth / 2, fullHeight / 2),
+            new GifMediaInfo($"https://static.klipy.com/{slug}-sm.gif", fullWidth, fullHeight));
+
     [Test]
     public void Test_RequiredRank_ShouldBeRegular()
     {
@@ -75,15 +82,15 @@ public class TenorSearchCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldDoNothing_WhenTenorGifIsDisabled()
+    public async Task Test_RunAsync_ShouldDoNothing_WhenKlipyGifIsDisabled()
     {
-        _room.GetParameterValueAsync(Parameter.TenorGifEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(Parameter.KlipyGifEnabled, Arg.Any<CancellationToken>())
             .Returns("false");
         var context = MakeContext("cats");
 
         await _command.RunAsync(context);
 
-        await _tenorService.DidNotReceiveWithAnyArgs().GetMultipleMediaAsync(default, default, default);
+        await _klipyService.DidNotReceiveWithAnyArgs().SearchAsync(default, default);
         context.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
         context.DidNotReceive().Reply(Arg.Any<string>(), rankAware: Arg.Any<bool>());
     }
@@ -96,7 +103,7 @@ public class TenorSearchCommandTest
 
         await _command.RunAsync(context);
 
-        context.Received(1).ReplyLocalizedMessage("tenorgif_muted_for_events");
+        context.Received(1).ReplyLocalizedMessage("klipygif_muted_for_events");
     }
 
     [Test]
@@ -110,7 +117,7 @@ public class TenorSearchCommandTest
 
         await _command.RunAsync(context);
 
-        context.Received(1).ReplyLocalizedMessage("tenorsearch_room_cooldown", Arg.Any<object[]>());
+        context.Received(1).ReplyLocalizedMessage("klipysearch_room_cooldown", Arg.Any<object[]>());
         context.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
 
@@ -122,13 +129,12 @@ public class TenorSearchCommandTest
         var roomRemaining = TimeSpan.FromSeconds(60);
         _cooldownService.GetRemainingCooldowns(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<DateTimeOffset>())
             .Returns((roomRemaining, TimeSpan.Zero));
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
-            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
+        _klipyService.SearchAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns([MakeSearchResult("a", 200, 100)]);
 
         await _command.RunAsync(context);
 
-        context.DidNotReceive().ReplyLocalizedMessage("tenorsearch_room_cooldown", Arg.Any<object[]>());
+        context.DidNotReceive().ReplyLocalizedMessage("klipysearch_room_cooldown", Arg.Any<object[]>());
         context.Received(1).SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
 
@@ -137,10 +143,8 @@ public class TenorSearchCommandTest
     {
         const string userId = "user";
         const string roomId = "room";
-        const string url = "https://media.tenor.com/a.gif";
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
-            .Returns([new TenorMediaInfo(url, 200, 100)]);
+        _klipyService.SearchAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns([MakeSearchResult("a", 200, 100)]);
 
         var now = DateTimeOffset.UtcNow;
         _clockService.CurrentUtcDateTimeOffset.Returns(now);
@@ -151,7 +155,7 @@ public class TenorSearchCommandTest
 
         await _command.RunAsync(context);
 
-        context.DidNotReceive().ReplyLocalizedMessage("tenorsearch_user_cooldown", Arg.Any<object[]>());
+        context.DidNotReceive().ReplyLocalizedMessage("klipysearch_user_cooldown", Arg.Any<object[]>());
         context.Received(1).SendHtmlTo(userId, Arg.Any<string>(), Arg.Any<string>());
     }
 
@@ -166,7 +170,7 @@ public class TenorSearchCommandTest
 
         await _command.RunAsync(context);
 
-        context.Received(1).ReplyLocalizedMessage("tenorsearch_user_cooldown", Arg.Any<object[]>());
+        context.Received(1).ReplyLocalizedMessage("klipysearch_user_cooldown", Arg.Any<object[]>());
         context.DidNotReceive().SendHtmlTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
 
@@ -180,7 +184,7 @@ public class TenorSearchCommandTest
 
         await _command.RunAsync(context);
 
-        context.Received(1).ReplyLocalizedMessage("tenorsearch_room_cooldown", Arg.Any<object[]>());
+        context.Received(1).ReplyLocalizedMessage("klipysearch_room_cooldown", Arg.Any<object[]>());
     }
 
     [Test]
@@ -192,15 +196,14 @@ public class TenorSearchCommandTest
         await _command.RunAsync(context);
 
         context.Received(1).Reply(Arg.Any<string>(), rankAware: Arg.Any<bool>());
-        await _tenorService.DidNotReceiveWithAnyArgs().GetMultipleMediaAsync(default, default, default);
+        await _klipyService.DidNotReceiveWithAnyArgs().SearchAsync(default, default);
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReplyError_WhenTenorReturnsNoResults()
+    public async Task Test_RunAsync_ShouldReplyError_WhenKlipyReturnsNoResults()
     {
         var context = MakeContext("cats");
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
+        _klipyService.SearchAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns([]);
 
         await _command.RunAsync(context);
@@ -210,11 +213,10 @@ public class TenorSearchCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldNotSetCooldown_WhenTenorReturnsNoResults()
+    public async Task Test_RunAsync_ShouldNotSetCooldown_WhenKlipyReturnsNoResults()
     {
         var context = MakeContext("cats");
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
+        _klipyService.SearchAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns([]);
 
         await _command.RunAsync(context);
@@ -223,12 +225,11 @@ public class TenorSearchCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldSendPrivateHtml_WhenTenorReturnsResults()
+    public async Task Test_RunAsync_ShouldSendPrivateHtml_WhenKlipyReturnsResults()
     {
         var context = MakeContext("cats");
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
-            .Returns([new TenorMediaInfo("https://media.tenor.com/a.gif", 200, 100)]);
+        _klipyService.SearchAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns([MakeSearchResult("a", 200, 100)]);
 
         await _command.RunAsync(context);
 
@@ -239,36 +240,35 @@ public class TenorSearchCommandTest
     public async Task Test_RunAsync_ShouldFetchGifsWithCorrectSearchTerm()
     {
         var context = MakeContext("  funny cats  ");
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
+        _klipyService.SearchAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns([]);
 
         await _command.RunAsync(context);
 
-        await _tenorService.Received(1).GetMultipleMediaAsync(
-            "funny cats", "gif", Arg.Any<int>(), Arg.Any<CancellationToken>());
+        await _klipyService.Received(1).SearchAsync(
+            "funny cats", Arg.Any<int>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
     public async Task Test_RunAsync_ShouldRenderTemplate_WithCorrectViewModel()
     {
         var context = MakeContext("dogs");
-        _tenorService.GetMultipleMediaAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>(),
-                Arg.Any<CancellationToken>())
+        _klipyService.SearchAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns([
-                new TenorMediaInfo("https://media.tenor.com/a.gif", 400, 200),
-                new TenorMediaInfo("https://media.tenor.com/b.gif", 300, 150)
+                MakeSearchResult("a", 400, 200),
+                MakeSearchResult("b", 300, 150)
             ]);
 
         await _command.RunAsync(context);
 
         await _templatesManager.Received(1).GetTemplateAsync(
-            "Misc/RandomImages/TenorSearch",
-            Arg.Is<TenorSearchViewModel>(vm =>
+            "Misc/RandomImages/KlipySearch",
+            Arg.Is<KlipySearchViewModel>(vm =>
                 vm.Gifs.Count == 2 &&
-                vm.Gifs[0].Url == "https://media.tenor.com/a.gif" &&
-                vm.Gifs[0].OriginalWidth == 400 &&
-                vm.Gifs[0].OriginalHeight == 200 &&
+                vm.Gifs[0].PreviewUrl == "https://static.klipy.com/a-xs.gif" &&
+                vm.Gifs[0].FullUrl == "https://static.klipy.com/a-sm.gif" &&
+                vm.Gifs[0].FullWidth == 400 &&
+                vm.Gifs[0].FullHeight == 200 &&
                 vm.Trigger == "-"));
     }
 }

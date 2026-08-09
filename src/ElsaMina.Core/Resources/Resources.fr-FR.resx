@@ -96,11 +96,11 @@
     <data name="bucks_disabled" xml:space="preserve">
         <value>L'économie de bucks est désactivée dans cette room.</value>
     </data>
-    <data name="parameter_name_tenor_gif_enabled" xml:space="preserve">
-        <value>GIFs Tenor</value>
+    <data name="parameter_name_klipy_gif_enabled" xml:space="preserve">
+        <value>GIFs KLIPY</value>
     </data>
-    <data name="parameter_description_tenor_gif_enabled" xml:space="preserve">
-        <value>Active les commandes tenorgif et tenorsearch dans le salon</value>
+    <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
+        <value>Active les commandes klipygif et klipysearch dans le salon</value>
     </data>
     <data name="command_execution_error" xml:space="preserve">
         <value>L'exécution de la commande a soulevé une erreur.</value>

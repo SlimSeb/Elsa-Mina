@@ -127,7 +127,7 @@ The following scripts are available:
 - **Lyrics Search**: Look up song lyrics via Genius
 - **Wikipedia / Bulbapedia / Pokepedia**: Inline wiki searches
 - **Random Images**: Animal and themed image commands (cat, dog, bird, capybara, and 20+ more) via Unsplash
-- **Tenor GIF Search**: Search and display GIF mosaics from Tenor, with per-user and per-room cooldowns and a room-level enable/disable toggle
+- **KLIPY GIF Search**: Search and display GIF mosaics from KLIPY, with per-user and per-room cooldowns and a room-level enable/disable toggle
 - **URL Previews**: Automatic Open Graph-based link previews in chat
 - **Recipe Search**: Random and keyword-based food recipe lookup via Spoonacular
 - **Random Facts**: Fetch random trivia facts

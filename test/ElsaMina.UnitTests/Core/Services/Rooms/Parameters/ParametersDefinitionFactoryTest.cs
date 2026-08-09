@@ -113,7 +113,7 @@ public class ParametersDefinitionFactoryTest
     [TestCase(Parameter.ShowReplaysPreview, true)]
     [TestCase(Parameter.TournamentBettingEnabled, true)]
     [TestCase(Parameter.ShowYoutubeLinkPreview, true)]
-    [TestCase(Parameter.TenorGifEnabled, true)]
+    [TestCase(Parameter.KlipyGifEnabled, true)]
     [TestCase(Parameter.ShowUrlPreview, false)]
     [TestCase(Parameter.BucksEnabled, false)]
     public void Test_BooleanParameters_ShouldHaveExpectedDefault(Parameter parameter, bool expectedDefault)

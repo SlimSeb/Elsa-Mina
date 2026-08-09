@@ -10,24 +10,24 @@ using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Misc.RandomImages;
 
-[NamedCommand("tenorsearch", "gifs", "gifsearch", "tenor")]
-public class TenorSearchCommand : Command
+[NamedCommand("klipysearch", "gifs", "gifsearch", "klipy")]
+public class KlipySearchCommand : Command
 {
     private const int GIF_COUNT = 8;
     private const int THUMBNAIL_MAX_WIDTH = 150;
 
-    private readonly ITenorService _tenorService;
+    private readonly IKlipyService _klipyService;
     private readonly IConfiguration _configuration;
     private readonly ITemplatesManager _templatesManager;
     private readonly IClockService _clockService;
     private readonly IArcadeEventsService _eventsService;
-    private readonly ITenorCooldownService _cooldownService;
+    private readonly IGifCooldownService _cooldownService;
 
-    public TenorSearchCommand(ITenorService tenorService, IConfiguration configuration,
+    public KlipySearchCommand(IKlipyService klipyService, IConfiguration configuration,
         ITemplatesManager templatesManager, IClockService clockService, IArcadeEventsService eventsService,
-        ITenorCooldownService cooldownService)
+        IGifCooldownService cooldownService)
     {
-        _tenorService = tenorService;
+        _klipyService = klipyService;
         _configuration = configuration;
         _templatesManager = templatesManager;
         _clockService = clockService;
@@ -37,11 +37,11 @@ public class TenorSearchCommand : Command
 
     public override Rank RequiredRank => Rank.Regular;
     public override bool IsAllowedInPrivateMessage => false;
-    public override string HelpMessageKey => "tenorsearch_help";
+    public override string HelpMessageKey => "klipysearch_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var isEnabled = (await context.Room.GetParameterValueAsync(Parameter.TenorGifEnabled,
+        var isEnabled = (await context.Room.GetParameterValueAsync(Parameter.KlipyGifEnabled,
             cancellationToken)).ToBoolean();
         if (!isEnabled)
         {
@@ -50,7 +50,7 @@ public class TenorSearchCommand : Command
 
         if (_eventsService.AreGamesMuted(context.RoomId))
         {
-            context.ReplyLocalizedMessage("tenorgif_muted_for_events");
+            context.ReplyLocalizedMessage("klipygif_muted_for_events");
             return;
         }
 
@@ -61,11 +61,11 @@ public class TenorSearchCommand : Command
         {
             if (roomRemaining >= userRemaining)
             {
-                context.ReplyLocalizedMessage("tenorsearch_room_cooldown", (int)roomRemaining.TotalSeconds);
+                context.ReplyLocalizedMessage("klipysearch_room_cooldown", (int)roomRemaining.TotalSeconds);
             }
             else
             {
-                context.ReplyLocalizedMessage("tenorsearch_user_cooldown",
+                context.ReplyLocalizedMessage("klipysearch_user_cooldown",
                     (int)userRemaining.TotalMinutes, userRemaining.Seconds);
             }
 
@@ -78,8 +78,7 @@ public class TenorSearchCommand : Command
             return;
         }
 
-        var gifs = await _tenorService.GetMultipleMediaAsync(
-            context.Target.Trim(), "gif", GIF_COUNT, cancellationToken);
+        var gifs = await _klipyService.SearchAsync(context.Target.Trim(), GIF_COUNT, cancellationToken);
 
         if (gifs == null || gifs.Count == 0)
         {
@@ -89,20 +88,23 @@ public class TenorSearchCommand : Command
 
         var thumbnails = gifs.Select(gif =>
         {
-            var thumbWidth = Math.Min(gif.Width / 2, THUMBNAIL_MAX_WIDTH);
-            var thumbHeight = gif.Width > 0 ? gif.Height * thumbWidth / gif.Width : thumbWidth;
-            return new TenorGifThumbnail
+            var thumbWidth = Math.Min(gif.Preview.Width, THUMBNAIL_MAX_WIDTH);
+            var thumbHeight = gif.Preview.Width > 0
+                ? gif.Preview.Height * thumbWidth / gif.Preview.Width
+                : thumbWidth;
+            return new KlipyGifThumbnail
             {
-                Url = gif.Url,
-                OriginalWidth = gif.Width,
-                OriginalHeight = gif.Height,
+                PreviewUrl = gif.Preview.Url,
+                FullUrl = gif.Full.Url,
+                FullWidth = gif.Full.Width,
+                FullHeight = gif.Full.Height,
                 ThumbWidth = thumbWidth,
                 ThumbHeight = thumbHeight
             };
         }).ToList();
 
-        var template = await _templatesManager.GetTemplateAsync("Misc/RandomImages/TenorSearch",
-            new TenorSearchViewModel
+        var template = await _templatesManager.GetTemplateAsync("Misc/RandomImages/KlipySearch",
+            new KlipySearchViewModel
             {
                 Culture = context.Culture,
                 Gifs = thumbnails,

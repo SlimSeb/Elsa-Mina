@@ -101,11 +101,11 @@
     <data name="bucks_disabled" xml:space="preserve">
         <value>The bucks economy is disabled in this room.</value>
     </data>
-    <data name="parameter_name_tenor_gif_enabled" xml:space="preserve">
-        <value>Tenor GIFs</value>
+    <data name="parameter_name_klipy_gif_enabled" xml:space="preserve">
+        <value>KLIPY GIFs</value>
     </data>
-    <data name="parameter_description_tenor_gif_enabled" xml:space="preserve">
-        <value>Enables the tenorgif and tenorsearch commands in the room</value>
+    <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
+        <value>Enables the klipygif and klipysearch commands in the room</value>
     </data>
     <data name="command_execution_error" xml:space="preserve">
         <value>Command execution threw an error.</value>

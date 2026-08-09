@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 
 namespace ElsaMina.Commands.Misc.RandomImages;
 
-public class TenorCooldownService : ITenorCooldownService
+public class GifCooldownService : IGifCooldownService
 {
     private readonly ConcurrentDictionary<string, DateTimeOffset> _roomCooldowns = new();
     private readonly ConcurrentDictionary<string, DateTimeOffset> _userCooldowns = new();
@@ -13,14 +13,14 @@ public class TenorCooldownService : ITenorCooldownService
         var roomRemaining = TimeSpan.Zero;
         if (_roomCooldowns.TryGetValue(roomId, out var lastRoomUse))
         {
-            roomRemaining = TenorConstants.PER_ROOM_COOLDOWN - (now - lastRoomUse);
+            roomRemaining = GifConstants.PER_ROOM_COOLDOWN - (now - lastRoomUse);
             if (roomRemaining < TimeSpan.Zero) roomRemaining = TimeSpan.Zero;
         }
 
         var userRemaining = TimeSpan.Zero;
         if (_userCooldowns.TryGetValue(userId, out var lastUserUse))
         {
-            userRemaining = TenorConstants.PER_USER_COOLDOWN - (now - lastUserUse);
+            userRemaining = GifConstants.PER_USER_COOLDOWN - (now - lastUserUse);
             if (userRemaining < TimeSpan.Zero) userRemaining = TimeSpan.Zero;
         }
 

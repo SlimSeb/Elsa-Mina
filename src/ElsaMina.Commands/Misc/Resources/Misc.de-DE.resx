@@ -145,13 +145,13 @@
         <value>Zeigt ein zufälliges Unsplash-Bild.</value>
     </data>
     <data name="rand_help" xml:space="preserve">
-        <value>Zeigt ein zufälliges GIF von Tenor. Syntax: -rand [&lt;Suche&gt;]</value>
+        <value>Zeigt ein zufälliges GIF von KLIPY. Syntax: -rand [&lt;Suche&gt;]</value>
     </data>
     <data name="randgif_help" xml:space="preserve">
-        <value>Zeigt ein zufälliges GIF von Tenor. Syntax: -randgif [&lt;Suche&gt;]</value>
+        <value>Zeigt ein zufälliges GIF von KLIPY. Syntax: -randgif [&lt;Suche&gt;]</value>
     </data>
     <data name="randmp4_help" xml:space="preserve">
-        <value>Zeigt ein zufälliges MP4 von Tenor. Syntax: -randmp4 [&lt;Suche&gt;]</value>
+        <value>Zeigt ein zufälliges MP4 von KLIPY. Syntax: -randmp4 [&lt;Suche&gt;]</value>
     </data>
     <data name="randfurret_help" xml:space="preserve">
         <value>Zeigt ein zufälliges Furret-GIF.</value>
@@ -348,31 +348,31 @@
     <data name="lolhistory_game_entry" xml:space="preserve">
         <value>[{0}] {1} {2}/{3}/{4} {5}cs ({6}, {7}m)</value>
     </data>
-    <data name="tenorsearch_help" xml:space="preserve">
-        <value>Sucht auf Tenor und zeigt ein Mosaik mit 4 GIFs als PM. Klicke auf eines, um es im Chat zu senden. Syntax: -tenorsearch &lt;Suchbegriffe&gt;</value>
+    <data name="klipysearch_help" xml:space="preserve">
+        <value>Sucht auf KLIPY und zeigt ein Mosaik mit 8 GIFs als PM. Klicke auf eines, um es im Chat zu senden. Syntax: -klipysearch &lt;Suchbegriffe&gt;</value>
     </data>
-    <data name="tenorgif_help" xml:space="preserve">
-        <value>Sendet ein Tenor-GIF im Chat. Syntax: -tenorgif &lt;url&gt;</value>
+    <data name="klipygif_help" xml:space="preserve">
+        <value>Sendet ein KLIPY-GIF im Chat. Syntax: -klipygif &lt;url&gt;</value>
     </data>
-    <data name="tenorgif_invalid_url" xml:space="preserve">
-        <value>Ungültige GIF-URL. Es werden nur Links vom Tenor-CDN akzeptiert.</value>
+    <data name="klipygif_invalid_url" xml:space="preserve">
+        <value>Ungültige GIF-URL. Es werden nur Links vom KLIPY-CDN akzeptiert.</value>
     </data>
-    <data name="tenorgif_muted_for_events" xml:space="preserve">
-        <value>Der Befehl tenorgif ist vorübergehend nicht verfügbar, während ein Arcade-Event läuft.</value>
+    <data name="klipygif_muted_for_events" xml:space="preserve">
+        <value>Der Befehl klipygif ist vorübergehend nicht verfügbar, während ein Arcade-Event läuft.</value>
     </data>
-    <data name="tenorgif_room_cooldown" xml:space="preserve">
+    <data name="klipygif_room_cooldown" xml:space="preserve">
         <value>Dieser Befehl hat einen Cooldown in diesem Raum. Versuche es in {0} Sekunden erneut.</value>
     </data>
-    <data name="tenorgif_user_cooldown" xml:space="preserve">
+    <data name="klipygif_user_cooldown" xml:space="preserve">
         <value>Du hast einen persönlichen Cooldown für diesen Befehl. Versuche es in {0} Minuten und {1} Sekunden erneut.</value>
     </data>
-    <data name="tenorsearch_room_cooldown" xml:space="preserve">
+    <data name="klipysearch_room_cooldown" xml:space="preserve">
         <value>Dieser Befehl hat einen Cooldown in diesem Raum. Versuche es in {0} Sekunden erneut.</value>
     </data>
-    <data name="tenorsearch_user_cooldown" xml:space="preserve">
+    <data name="klipysearch_user_cooldown" xml:space="preserve">
         <value>Du hast einen persönlichen Cooldown für diesen Befehl. Versuche es in {0} Minuten und {1} Sekunden erneut.</value>
     </data>
-    <data name="tenorsearch_send" xml:space="preserve">
+    <data name="klipysearch_send" xml:space="preserve">
         <value>Senden</value>
     </data>
     <data name="help_handler_greeting" xml:space="preserve">

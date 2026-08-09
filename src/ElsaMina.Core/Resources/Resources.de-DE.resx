@@ -96,11 +96,11 @@
     <data name="bucks_disabled" xml:space="preserve">
         <value>Die Bucks-Wirtschaft ist in diesem Raum deaktiviert.</value>
     </data>
-    <data name="parameter_name_tenor_gif_enabled" xml:space="preserve">
-        <value>Tenor-GIFs</value>
+    <data name="parameter_name_klipy_gif_enabled" xml:space="preserve">
+        <value>KLIPY-GIFs</value>
     </data>
-    <data name="parameter_description_tenor_gif_enabled" xml:space="preserve">
-        <value>Aktiviert die Befehle tenorgif und tenorsearch im Raum</value>
+    <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
+        <value>Aktiviert die Befehle klipygif und klipysearch im Raum</value>
     </data>
     <data name="command_execution_error" xml:space="preserve">
         <value>Bei der Befehlsausführung ist ein Fehler aufgetreten.</value>

@@ -11,11 +11,11 @@ namespace ElsaMina.Commands.Misc.RandomImages;
 [NamedCommand("randmp4")]
 public class RandMp4Command : Command
 {
-    private readonly ITenorService _tenorService;
+    private readonly IKlipyService _klipyService;
 
-    public RandMp4Command(ITenorService tenorService)
+    public RandMp4Command(IKlipyService klipyService)
     {
-        _tenorService = tenorService;
+        _klipyService = klipyService;
     }
 
     public override Rank RequiredRank => Rank.Driver;
@@ -28,10 +28,11 @@ public class RandMp4Command : Command
             ? "bot"
             : context.Target.ToLowerAlphaNum();
 
-        var media = await _tenorService.GetRandomMediaAsync(searchTerm, "mp4", cancellationToken);
+        var media = await _klipyService.GetRandomMediaAsync(searchTerm, KlipyMediaSize.Md,
+            KlipyMediaFormat.Mp4, cancellationToken);
         if (media == null)
         {
-            Log.Error("Tenor returned no mp4 for query: {Query}", searchTerm);
+            Log.Error("Klipy returned no mp4 for query: {Query}", searchTerm);
             context.ReplyLocalizedMessage("random_image_error");
             return;
         }

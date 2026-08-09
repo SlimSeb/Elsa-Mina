@@ -1,4 +1,4 @@
-@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Misc.RandomImages.TenorSearchViewModel>
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Misc.RandomImages.KlipySearchViewModel>
 
 <table>
     <tbody>
@@ -9,10 +9,10 @@
             {
                 var gif = Model.Gifs[j];
                 <td style="padding:4px;text-align:center;">
-                    <img src="@gif.Url" width="@gif.ThumbWidth" height="@gif.ThumbHeight"
+                    <img src="@gif.PreviewUrl" width="@gif.ThumbWidth" height="@gif.ThumbHeight"
                          style="transform:rotate(0deg);display:block;" alt="Gif thumbnail"/>
                     <button class="button" name="send"
-                            value="@Model.Trigger@("tenorgif") @gif.Url|@gif.OriginalWidth|@gif.OriginalHeight">@GetString("tenorsearch_send")
+                            value="@Model.Trigger@("klipygif") @gif.FullUrl|@gif.FullWidth|@gif.FullHeight">@GetString("klipysearch_send")
                     </button>
                 </td>
             }
