@@ -24,6 +24,7 @@ public interface IWordleGame : IGame
     Task StartNewRound();
     Task ResumeAsync();
     Task<WordleGuessOutcome> SubmitGuess(IUser user, string word);
+    Task<WordleGuessOutcome> SubmitWord(IUser user, string word);
     Task AppendLetter(IUser user, char letter);
     Task RemoveLetter(IUser user);
     Task SubmitCurrentInput(IUser user);

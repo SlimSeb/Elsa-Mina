@@ -339,4 +339,87 @@ public class WordleGameTest
         Assert.That(_game.KeyboardStates['C'], Is.EqualTo(WordleLetterState.Correct));
         Assert.That(_game.KeyboardStates['B'], Is.EqualTo(WordleLetterState.Absent));
     }
+
+    [Test]
+    public async Task Test_SubmitWord_ShouldPrivateMessageOwner_WhenGuessHasWrongLength()
+    {
+        // Arrange
+        _context.RoomId.Returns("room");
+        _context.GetString("wordle_guess_invalid_length", Arg.Any<object[]>()).Returns("Wrong length");
+        await StartWithAnswer("crane");
+        _context.ClearReceivedCalls();
+
+        // Act
+        var outcome = await _game.SubmitWord(_owner, "cran");
+
+        // Assert
+        Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.InvalidLength));
+        _context.Received().SendMessageIn("room", "/pm player, Wrong length");
+        _context.DidNotReceive().ReplyLocalizedMessage(Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    [Test]
+    public async Task Test_SubmitWord_ShouldNotLeakAnything_WhenSubmitterIsNotTheOwner()
+    {
+        // Arrange
+        _context.RoomId.Returns("room");
+        await StartWithAnswer("crane");
+        var intruder = Substitute.For<IUser>();
+        intruder.UserId.Returns("spectator");
+        _context.ClearReceivedCalls();
+
+        // Act
+        var outcome = await _game.SubmitWord(intruder, "crane");
+
+        // Assert
+        Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.NotOwner));
+        Assert.That(_game.Guesses, Is.Empty);
+        _context.DidNotReceive().SendMessageIn(Arg.Any<string>(), Arg.Any<string>());
+        _context.DidNotReceive().ReplyLocalizedMessage(Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    [Test]
+    public async Task Test_SubmitCurrentInput_ShouldPrivateMessageOwner_WhenGuessIsNotInWordList()
+    {
+        // Arrange
+        _context.RoomId.Returns("room");
+        _context.GetString("wordle_guess_not_in_list", Arg.Any<object[]>()).Returns("Not in list");
+        await StartWithAnswer("crane");
+        foreach (var letter in "zzzzz")
+        {
+            await _game.AppendLetter(_owner, letter);
+        }
+
+        _context.ClearReceivedCalls();
+
+        // Act
+        await _game.SubmitCurrentInput(_owner);
+
+        // Assert
+        _context.Received().SendMessageIn("room", "/pm player, Not in list");
+        _context.DidNotReceive().ReplyLocalizedMessage(Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    [Test]
+    public async Task Test_SubmitCurrentInput_ShouldPrivateMessageOwner_WhenGuessWasAlreadyGuessed()
+    {
+        // Arrange
+        _context.RoomId.Returns("room");
+        _context.GetString("wordle_guess_already_guessed", Arg.Any<object[]>()).Returns("Already guessed");
+        await StartWithAnswer("crane");
+        await _game.SubmitGuess(_owner, "about");
+        foreach (var letter in "about")
+        {
+            await _game.AppendLetter(_owner, letter);
+        }
+
+        _context.ClearReceivedCalls();
+
+        // Act
+        await _game.SubmitCurrentInput(_owner);
+
+        // Assert
+        _context.Received().SendMessageIn("room", "/pm player, Already guessed");
+        _context.DidNotReceive().ReplyLocalizedMessage(Arg.Any<string>(), Arg.Any<object[]>());
+    }
 }

@@ -1210,7 +1210,7 @@
         <value>Jugador: {0}</value>
     </data>
     <data name="wordle_panel_spoiler_warning" xml:space="preserve">
-        <value>Usa el teclado de abajo para jugar. ¡No escribas la palabra en el chat para no estropearla a los demás!</value>
+        <value>Usa el campo de texto o el teclado de abajo para jugar. ¡No escribas la palabra en el chat para no estropearla a los demás!</value>
     </data>
     <data name="wordle_panel_solved" xml:space="preserve">
         <value>¡Resuelto en {0} intentos!</value>
@@ -1244,6 +1244,12 @@
     </data>
     <data name="wordle_panel_enter" xml:space="preserve">
         <value>Enviar</value>
+    </data>
+    <data name="wordle_panel_input_placeholder" xml:space="preserve">
+        <value>Palabra de {0} letras...</value>
+    </data>
+    <data name="wordle_panel_submit" xml:space="preserve">
+        <value>Adivinar</value>
     </data>
     <data name="wordle_panel_backspace" xml:space="preserve">
         <value>Borrar</value>

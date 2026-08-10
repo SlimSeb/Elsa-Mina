@@ -26,6 +26,9 @@
     var keyRow3 = isAzerty ? "WXCVBN" : "ZXCVBNM";
 
     var keyCommand = $"/botmsg {Model.BotName},{Model.Trigger}wlkey {Model.RoomId}, ";
+    // Always whispered to the bot, even outside private mode: a guess sent to the room would spoil the
+    // daily word for every spectator.
+    var guessCommand = $"/w {Model.BotName},{Model.Trigger}wlg {Model.RoomId}, {{word}}";
 }
 
 <table style="border-collapse: collapse; width: 100%;">
@@ -89,6 +92,17 @@
                     <span style="font-weight: bold; color: #c04a4a; font-size: 1.05em;">@GetString("wordle_panel_answer_was", game.RevealedAnswer)</span><br/>
                 }
                 <br/>
+                @if (game.IsRoundActive)
+                {
+                    <div style="text-align: center; margin-bottom: 8px;">
+                        <form data-submitsend="@guessCommand">
+                            <input class="textbox" type="text" name="word"
+                                   placeholder="@GetString("wordle_panel_input_placeholder", game.WordLength)"
+                                   style="width: 140px; text-transform: uppercase;" required/>
+                            <button class="button" type="submit"><strong>@GetString("wordle_panel_submit")</strong></button>
+                        </form>
+                    </div>
+                }
                 <div style="text-align: center;">
                     @foreach (var keyRow in new[] { keyRow1, keyRow2, keyRow3 })
                     {

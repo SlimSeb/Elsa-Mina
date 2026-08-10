@@ -193,16 +193,47 @@ public class WordleGame : Game, IWordleGame
             return;
         }
 
-        var outcome = await SubmitGuess(user, CurrentInput);
+        await SubmitWord(user, CurrentInput);
+    }
+
+    /// <summary>
+    /// Submits a word and reports a rejected guess privately to the player. The rejection reason is
+    /// never sent to the room: it would tell spectators which words the player already ruled out.
+    /// </summary>
+    public async Task<WordleGuessOutcome> SubmitWord(IUser user, string word)
+    {
+        var outcome = await SubmitGuess(user, word);
         switch (outcome)
         {
+            case WordleGuessOutcome.InvalidLength:
+                SendPrivateLocalizedMessageToOwner("wordle_guess_invalid_length", WordLength);
+                break;
+            case WordleGuessOutcome.NotAlphabetic:
+                SendPrivateLocalizedMessageToOwner("wordle_guess_not_alphabetic");
+                break;
             case WordleGuessOutcome.NotInWordList:
-                Context.ReplyLocalizedMessage("wordle_guess_not_in_list");
+                SendPrivateLocalizedMessageToOwner("wordle_guess_not_in_list");
                 break;
             case WordleGuessOutcome.AlreadyGuessed:
-                Context.ReplyLocalizedMessage("wordle_guess_already_guessed");
+                SendPrivateLocalizedMessageToOwner("wordle_guess_already_guessed");
                 break;
         }
+
+        return outcome;
+    }
+
+    /// <summary>
+    /// Sends feedback about a rejected guess privately to the player, so the room is not spammed
+    /// with typing mistakes while the board is being filled.
+    /// </summary>
+    private void SendPrivateLocalizedMessageToOwner(string key, params object[] formatArguments)
+    {
+        if (Owner == null)
+        {
+            return;
+        }
+
+        Context.SendMessageIn(EffectiveRoomId, $"/pm {Owner.UserId}, {Context.GetString(key, formatArguments)}");
     }
 
     public async Task CancelAsync()

@@ -98,6 +98,7 @@ public class GamesModule : Module
 
         builder.RegisterCommand<StartWordleCommand>();
         builder.RegisterCommand<WordleKeyCommand>();
+        builder.RegisterCommand<GuessWordleCommand>();
         builder.RegisterCommand<EndWordleCommand>();
         builder.RegisterCommand<WordleLeaderboardCommand>();
 

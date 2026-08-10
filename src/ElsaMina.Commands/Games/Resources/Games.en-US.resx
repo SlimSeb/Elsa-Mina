@@ -1216,7 +1216,7 @@
         <value>Player: {0}</value>
     </data>
     <data name="wordle_panel_spoiler_warning" xml:space="preserve">
-        <value>Use the keyboard below to play. Don't type the word in the chat to avoid spoiling it for others!</value>
+        <value>Use the field or the keyboard below to play. Don't type the word in the chat to avoid spoiling it for others!</value>
     </data>
     <data name="wordle_panel_solved" xml:space="preserve">
         <value>Solved in {0} guesses!</value>
@@ -1250,6 +1250,12 @@
     </data>
     <data name="wordle_panel_enter" xml:space="preserve">
         <value>Enter</value>
+    </data>
+    <data name="wordle_panel_input_placeholder" xml:space="preserve">
+        <value>{0}-letter word...</value>
+    </data>
+    <data name="wordle_panel_submit" xml:space="preserve">
+        <value>Guess</value>
     </data>
     <data name="wordle_panel_backspace" xml:space="preserve">
         <value>Backspace</value>
