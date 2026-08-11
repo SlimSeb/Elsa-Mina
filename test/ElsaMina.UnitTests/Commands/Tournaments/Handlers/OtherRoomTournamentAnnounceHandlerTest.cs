@@ -29,7 +29,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
 
         await _handler.HandleReceivedMessageAsync(parts, "sourceroom");
 
-        _eventAnnouncer.DidNotReceiveWithAnyArgs()
+        await _eventAnnouncer.DidNotReceiveWithAnyArgs()
             .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 
@@ -40,7 +40,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
 
         await _handler.HandleReceivedMessageAsync(parts, "sourceroom");
 
-        _eventAnnouncer.DidNotReceiveWithAnyArgs()
+        await _eventAnnouncer.DidNotReceiveWithAnyArgs()
             .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 
@@ -51,7 +51,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
 
         await _handler.HandleReceivedMessageAsync(parts, "sourceroom");
 
-        _eventAnnouncer.DidNotReceiveWithAnyArgs()
+        await _eventAnnouncer.DidNotReceiveWithAnyArgs()
             .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 
@@ -73,7 +73,7 @@ public class OtherRoomTournamentAnnounceHandlerTest
 
         await _handler.HandleReceivedMessageAsync(parts, "broadcastroom");
 
-        _eventAnnouncer.Received(1).AnnounceToLinkedRoomsAsync("broadcastroom", EventAnnounceType.Tournament,
+        await _eventAnnouncer.Received(1).AnnounceToLinkedRoomsAsync("broadcastroom", EventAnnounceType.Tournament,
             "tour_announce_message",
             Arg.Is<object[]>(arguments => arguments.Length == 2
                                           && (string)arguments[0] == "[Gen 9] OU"

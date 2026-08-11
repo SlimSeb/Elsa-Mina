@@ -28,7 +28,7 @@ public class HangmanAnnounceHandlerTest
 
         await _handler.HandleReceivedMessageAsync(parts, "someroom");
 
-        _eventAnnouncer.DidNotReceiveWithAnyArgs()
+        await _eventAnnouncer.DidNotReceiveWithAnyArgs()
             .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 
@@ -39,7 +39,7 @@ public class HangmanAnnounceHandlerTest
 
         await _handler.HandleReceivedMessageAsync(parts, "someroom");
 
-        _eventAnnouncer.DidNotReceiveWithAnyArgs()
+        await _eventAnnouncer.DidNotReceiveWithAnyArgs()
             .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 
@@ -50,7 +50,7 @@ public class HangmanAnnounceHandlerTest
 
         await _handler.HandleReceivedMessageAsync(parts, "broadcastroom");
 
-        _eventAnnouncer.Received(1).AnnounceToLinkedRoomsAsync("broadcastroom", EventAnnounceType.Game,
+        await _eventAnnouncer.Received(1).AnnounceToLinkedRoomsAsync("broadcastroom", EventAnnounceType.Game,
             "hangman_started_in",
             Arg.Is<object[]>(arguments => arguments.Length == 1 && (string)arguments[0] == "broadcastroom"),
             Arg.Any<CancellationToken>());
@@ -64,7 +64,7 @@ public class HangmanAnnounceHandlerTest
         await _handler.HandleReceivedMessageAsync(parts, "broadcastroom");
         await _handler.HandleReceivedMessageAsync(parts, "broadcastroom");
 
-        _eventAnnouncer.ReceivedWithAnyArgs(1)
+        await _eventAnnouncer.ReceivedWithAnyArgs(1)
             .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 
@@ -74,7 +74,7 @@ public class HangmanAnnounceHandlerTest
         await _handler.HandleReceivedMessageAsync(HANGMAN_100_PARTS, "broadcastroom");
         await _handler.HandleReceivedMessageAsync(HANGMAN_50_PARTS, "broadcastroom");
 
-        _eventAnnouncer.ReceivedWithAnyArgs(1)
+        await _eventAnnouncer.ReceivedWithAnyArgs(1)
             .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 
@@ -84,7 +84,7 @@ public class HangmanAnnounceHandlerTest
         await _handler.HandleReceivedMessageAsync(HANGMAN_1_PARTS, "broadcastroom");
         await _handler.HandleReceivedMessageAsync(HANGMAN_2_PARTS, "broadcastroom");
 
-        _eventAnnouncer.ReceivedWithAnyArgs(2)
+        await _eventAnnouncer.ReceivedWithAnyArgs(2)
             .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }
 }

@@ -1,8 +1,4 @@
-﻿using System.Net.WebSockets;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using ElsaMina.Battles;
 using ElsaMina.Commands;
 using ElsaMina.Console;
@@ -81,38 +77,52 @@ var dependencyContainerService = container.Resolve<IDependencyContainerService>(
 dependencyContainerService.SetContainer(container);
 DependencyContainerService.Current = dependencyContainerService;
 
-// Subscribe to message event
+// Handle incoming messages, one at a time, in the order they arrive
 var bot = dependencyContainerService.Resolve<IBot>();
 var client = dependencyContainerService.Resolve<IClient>();
-client.MessageReceived
-    .Select(message => bot.HandleReceivedMessageAsync(message).ToObservable())
-    .Concat()
-    .Catch((Exception exception) =>
-    {
-        Log.Error(exception, "Error while handling message");
-        return Observable.Throw<Unit>(exception);
-    })
-    .Subscribe();
+
+_ = Task.Run(async () =>
+{
+    await Parallel.ForEachAsync(
+        client.Messages,
+        async (message, _) => // mettre un token ?
+        {
+            try
+            {
+                await bot.HandleReceivedMessageAsync(message);
+            }
+            catch (Exception exception)
+            {
+                Log.Error(exception, "Error while handling message");
+            }
+        });
+});
 
 // Disconnect event
-client.DisconnectionHappened.Subscribe(info =>
+client.Disconnected += (_, info) =>
 {
     Log.Warning(
-        "Disconnected. Type: {type}, Status: {status}, Desc: {desc}, Exception: {ex}",
-        info.Type,
-        info.CloseStatus ?? WebSocketCloseStatus.Empty,
+        "Disconnected. Reason: {reason}, Status: {status}, Desc: {desc}, Exception: {ex}, Reconnecting: {reconnecting}",
+        info.Reason,
+        info.CloseStatus?.ToString() ?? string.Empty,
         info.CloseStatusDescription ?? string.Empty,
-        info.Exception?.Message ?? string.Empty
+        info.Exception?.Message ?? string.Empty,
+        info.WillReconnect
     );
     bot.OnDisconnect();
-});
+};
 
 // Reconnection
-client.ReconnectionHappened.Subscribe(info =>
+client.Connected += (_, info) =>
 {
-    Log.Warning("Reconnecting : {0}", info.Type);
+    if (!info.IsReconnect)
+    {
+        return;
+    }
+
+    Log.Warning("Reconnected after {0} attempt(s), downtime : {1}", info.Attempt, info.Downtime);
     bot.OnReconnect();
-});
+};
 
 AppDomain.CurrentDomain.ProcessExit += (_, _) =>
 {

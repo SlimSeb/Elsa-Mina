@@ -268,7 +268,7 @@ public class DollServiceTest
             .Throws(new HttpRequestException("drive down"));
 
         // Act
-        Assert.ThatAsync(() => _sut.GetCatalogueAsync(), Throws.TypeOf<HttpRequestException>());
+        await Assert.ThatAsync(() => _sut.GetCatalogueAsync(), Throws.TypeOf<HttpRequestException>());
         _driveProvider.FindFolderIdAsync("Poupées", null, Arg.Any<CancellationToken>()).Returns(DRIVE_ID);
         _driveProvider.ListChildrenAsync(DRIVE_ID, GoogleDriveProvider.FOLDER_MIME_TYPE, Arg.Any<CancellationToken>())
             .Returns([]);

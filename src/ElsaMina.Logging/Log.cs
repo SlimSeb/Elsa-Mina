@@ -79,6 +79,9 @@ public static class Log
 
     public static void Warning(string messageTemplate, params object[] propertyValues) =>
         Instance.Warning(messageTemplate, propertyValues);
+    
+    public static void Warning(Exception ex, string messageTemplate, params object[] propertyValues) =>
+        Instance.Warning(ex, messageTemplate, propertyValues);
 
     public static void Error(string messageTemplate, params object[] propertyValues) =>
         Instance.Error(messageTemplate, propertyValues);
