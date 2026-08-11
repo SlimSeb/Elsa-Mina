@@ -85,7 +85,8 @@ _ = Task.Run(async () =>
 {
     await Parallel.ForEachAsync(
         client.Messages,
-        async (message, _) => // mettre un token ?
+        new ParallelOptions { MaxDegreeOfParallelism = int.MaxValue },
+        async (message, _) =>
         {
             try
             {
