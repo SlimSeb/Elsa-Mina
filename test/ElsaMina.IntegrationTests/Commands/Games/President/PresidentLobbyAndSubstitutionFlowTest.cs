@@ -158,6 +158,24 @@ public class PresidentLobbyAndSubstitutionFlowTest
     }
 
     [Test]
+    public async Task Test_Start_ShouldBeRejected_WhenTriggeredByANonPlayer()
+    {
+        foreach (var user in GameUsers.Players(PresidentConstants.MIN_PLAYERS))
+        {
+            await _game.JoinAsync(user);
+        }
+
+        await _game.StartAsync(GameUsers.User("spectator"));
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Phase, Is.EqualTo(PresidentPhase.Lobby));
+            Assert.That(_recorder.EntriesOfKind("reply"),
+                Is.EqualTo(new[] { "reply president_start_not_a_player" }));
+        }
+    }
+
+    [Test]
     public async Task Test_Start_ShouldBeRejected_WhenTheGameHasAlreadyStarted()
     {
         await StartGameAsync();
@@ -187,6 +205,22 @@ public class PresidentLobbyAndSubstitutionFlowTest
                 "panel president-# update"
             }));
         }
+    }
+
+    /// <summary>
+    /// A cancelled game has no result to show, so the hand pages are closed rather than left open on
+    /// a stale hand.
+    /// </summary>
+    [Test]
+    public async Task Test_Cancel_ShouldCloseThePlayerPages_WhenTheGameHasStarted()
+    {
+        await StartGameAsync();
+        _recorder.Clear();
+
+        await _game.CancelAsync();
+
+        Assert.That(_recorder.EntriesOfKind("close"), Is.EqualTo(
+            _users.Select(user => $"close {user.UserId} president-#").ToArray()));
     }
 
     [Test]

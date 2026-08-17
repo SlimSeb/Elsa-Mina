@@ -1,11 +1,12 @@
 tpl Games/Belote/BeloteLobby
 panel belote-# new
-<<repeat 5>>
+<<repeat 4>>
 tpl Games/Belote/BeloteLobby
 panel belote-# update
 <<end>>
+panel belote-# clear
 tpl Games/Belote/BeloteTable
-panel belote-# update
+panel belote-# new
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
 page player1 belote-#
@@ -36,68 +37,85 @@ tpl Games/Belote/BeloteHand
 page player4 belote-#
 <<end>>
 <<repeat 7>>
-reply belote_trick_won
 panel belote-# clear
 tpl Games/Belote/BeloteTable
 panel belote-# new
+tpl Games/Belote/BeloteLog
+panel belote-#-log new
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player1 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player2 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player3 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player4 belote-#
 tpl Games/Belote/BeloteTable
 panel belote-# update
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player1 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player2 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player3 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player4 belote-#
 tpl Games/Belote/BeloteTable
 panel belote-# update
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player1 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player2 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player3 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player4 belote-#
 tpl Games/Belote/BeloteTable
 panel belote-# update
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player1 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player2 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player3 belote-#
 tpl Games/Belote/BeloteTable
 tpl Games/Belote/BeloteHand
+tpl Games/Belote/BeloteLog
 page player4 belote-#
 <<end>>
-reply belote_trick_won
 tpl Games/Belote/BeloteResult
 panel belote-# update
+panel belote-#-log clear
 tpl Games/Belote/BeloteResult
 page player1 belote-#
 tpl Games/Belote/BeloteResult

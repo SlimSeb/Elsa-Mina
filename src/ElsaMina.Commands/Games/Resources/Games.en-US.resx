@@ -1500,6 +1500,9 @@
     <data name="belote_start_already_started" xml:space="preserve">
         <value>The game has already started.</value>
     </data>
+    <data name="belote_start_not_a_player" xml:space="preserve">
+        <value>Only a player who joined can start the game.</value>
+    </data>
     <data name="belote_start_not_enough_players" xml:space="preserve">
         <value>Belote needs exactly {0} players to start.</value>
     </data>
@@ -1727,6 +1730,9 @@
     </data>
     <data name="belote_result_score_label" xml:space="preserve">
         <value>Score</value>
+    </data>
+    <data name="belote_log_title" xml:space="preserve">
+        <value>Game log</value>
     </data>
     <data name="belote_cards_won_title" xml:space="preserve">
         <value>Cards won</value>
@@ -2129,6 +2135,9 @@
     </data>
     <data name="president_start_already_started" xml:space="preserve">
         <value>The game has already started.</value>
+    </data>
+    <data name="president_start_not_a_player" xml:space="preserve">
+        <value>Only a player who joined can start the game.</value>
     </data>
     <data name="president_start_not_enough_players" xml:space="preserve">
         <value>At least {0} players are needed to start.</value>

@@ -189,11 +189,11 @@ public class TarotLobbyFlowTest
     }
 
     /// <summary>
-    /// Tarot deliberately lets anyone in the room start a seated game, unlike poker where only a
-    /// player may. Pinned here so the guard is not accidentally tightened while refactoring.
+    /// Every seated card game refuses a start from someone who is not sitting at the table, so a
+    /// spectator cannot close the lobby and deal on the players' behalf.
     /// </summary>
     [Test]
-    public async Task Test_Start_ShouldBeAccepted_WhenTriggeredByANonPlayer()
+    public async Task Test_Start_ShouldBeRejected_WhenTriggeredByANonPlayer()
     {
         foreach (var user in GameUsers.Players(TarotConstants.MIN_PLAYERS))
         {
@@ -204,8 +204,9 @@ public class TarotLobbyFlowTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_game.Phase, Is.EqualTo(TarotPhase.Bidding));
-            Assert.That(_recorder.EntriesOfKind("reply"), Is.Empty);
+            Assert.That(_game.Phase, Is.EqualTo(TarotPhase.Lobby));
+            Assert.That(_recorder.EntriesOfKind("reply"),
+                Is.EqualTo(new[] { "reply tarot_start_not_a_player" }));
         }
     }
 

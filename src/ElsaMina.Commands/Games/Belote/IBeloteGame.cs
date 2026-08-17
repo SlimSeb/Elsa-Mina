@@ -26,6 +26,8 @@ public interface IBeloteGame : IResendableCardGame, ISubstitutableCardGame
 
     BeloteScoreResult ScoreResult { get; }
 
+    IReadOnlyList<string> Log { get; }
+
     Task BidAsync(IUser user, bool pass, Suit? chosenSuit);
     Task PlayAsync(IUser user, BeloteCard card);
     IReadOnlyCollection<BeloteCard> GetLegalMoves(BelotePlayer player);

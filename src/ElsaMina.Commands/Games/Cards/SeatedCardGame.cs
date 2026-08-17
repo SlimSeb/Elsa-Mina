@@ -19,7 +19,9 @@ namespace ElsaMina.Commands.Games.Cards;
 /// <typeparam name="TPlayer">The game's own seat type.</typeparam>
 public abstract class SeatedCardGame<TPlayer> : Game, ICardGame where TPlayer : class, ISeatedPlayer
 {
-    // Generic statics are per closed type, so each game keeps its own counter.
+    // Generic statics are per closed type, so each game keeps its own counter: tarot, belote, président
+    // and poker all number their panels from 1. Do not hoist this into a non-generic base or otherwise
+    // share it: every panel id would silently shift.
     private static int _nextGameId;
 
     private readonly SemaphoreSlim _actionLock = new(1, 1);
@@ -250,10 +252,20 @@ public abstract class SeatedCardGame<TPlayer> : Game, ICardGame where TPlayer : 
     }
 
     /// <summary>
-    /// An extra guard applied before the player count is checked, with the rejection message left to
-    /// the game. Poker uses it to refuse a start from someone who is not seated.
+    /// Whether <paramref name="user"/> may close the lobby and deal. By default only someone sitting at
+    /// the table may: a spectator has nothing at stake and should not be able to deal on the players'
+    /// behalf, and a poker seat additionally holds real bucks.
     /// </summary>
-    protected virtual bool CanStart(IUser user) => true;
+    protected virtual bool CanStart(IUser user)
+    {
+        if (HasPlayer(user.UserId))
+        {
+            return true;
+        }
+
+        Context.ReplyLocalizedMessage(Key("start_not_a_player"));
+        return false;
+    }
 
     public abstract Task CancelAsync();
 

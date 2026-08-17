@@ -88,6 +88,10 @@ public class BelotePlaythroughTest
         }
     }
 
+    /// <summary>
+    /// Only the announcement of the taker reaches the room: the tricks are narrated into the game log
+    /// panel instead, so a whole deal costs the room a single chat message.
+    /// </summary>
     [Test]
     public async Task Test_Deal_ShouldReplyTheExpectedResourceKeysInOrder()
     {
@@ -95,11 +99,18 @@ public class BelotePlaythroughTest
 
         var replies = _recorder.EntriesOfKind("reply").Select(entry => entry["reply ".Length..]).ToList();
 
+        Assert.That(replies, Is.EqualTo(new[] { "belote_taker_announced" }));
+    }
+
+    [Test]
+    public async Task Test_Deal_ShouldLogTheExpectedEventsInOrder()
+    {
+        await PlayDealAsync();
+
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(replies[0], Is.EqualTo("belote_taker_announced"));
-            Assert.That(replies.Skip(1), Is.All.EqualTo("belote_trick_won"));
-            Assert.That(replies, Has.Count.EqualTo(1 + BeloteConstants.TRICK_COUNT));
+            Assert.That(_game.Log, Is.All.EqualTo("belote_trick_won"));
+            Assert.That(_game.Log, Has.Count.EqualTo(BeloteConstants.TRICK_COUNT));
         }
     }
 

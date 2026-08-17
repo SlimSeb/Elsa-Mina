@@ -132,8 +132,8 @@ public class BeloteLobbyAndSubstitutionFlowTest
     }
 
     /// <summary>
-    /// Unlike the other games, belote re-posts its public panel when the deal starts rather than
-    /// updating the lobby panel in place.
+    /// The lobby panel is wiped and the table posted afresh at the bottom of the chat, the same way
+    /// every resolved trick re-posts it, rather than being updated in place high up in the scrollback.
     /// </summary>
     [Test]
     public async Task Test_Start_ShouldRepostThePublicPanel()
@@ -146,7 +146,25 @@ public class BeloteLobbyAndSubstitutionFlowTest
         _recorder.Clear();
         await _game.StartAsync(GameUsers.User("player1"));
 
-        Assert.That(_recorder.PanelTrace().First(), Is.EqualTo("belote-# update"));
+        Assert.That(_recorder.PanelTrace().Take(2), Is.EqualTo(new[] { "belote-# clear", "belote-# new" }));
+    }
+
+    [Test]
+    public async Task Test_Start_ShouldBeRejected_WhenTriggeredByANonPlayer()
+    {
+        foreach (var user in GameUsers.Players(BeloteConstants.PLAYER_COUNT))
+        {
+            await _game.JoinAsync(user);
+        }
+
+        await _game.StartAsync(GameUsers.User("spectator"));
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Phase, Is.EqualTo(BelotePhase.Lobby));
+            Assert.That(_recorder.EntriesOfKind("reply"),
+                Is.EqualTo(new[] { "reply belote_start_not_a_player" }));
+        }
     }
 
     [Test]

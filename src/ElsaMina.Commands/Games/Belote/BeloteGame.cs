@@ -79,8 +79,9 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
 
     protected override async Task StartDealAsync()
     {
-        // At least one player has joined by now, so the lobby panel is up: this updates it in place.
-        await RenderPublicAsync();
+        // Drop the lobby panel and let the deal post a fresh one at the bottom of the chat, the same way
+        // every resolved trick does, instead of updating it in place high up in the scrollback.
+        WipePublicPanel();
 
         OnStart();
 
@@ -293,7 +294,7 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
             _team1Tricks++;
         }
 
-        Context.ReplyLocalizedMessage("belote_trick_won", winner.Name, TrickNumber);
+        LogEvent("belote_trick_won", winner.Name, TrickNumber);
 
         LastTrick = CurrentTrick;
         LastTrickWinner = winner;
@@ -306,14 +307,14 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
             return;
         }
 
-        // Force re-post the public chat panel so it drops back to the bottom of the chat instead of
-        // staying stuck high up in the scrollback. Player hands and tables live in HTML pages that
-        // update in place, so they need no such workaround.
+        // Force re-post the public chat panel and its log so they drop back to the bottom of the chat
+        // instead of staying stuck high up in the scrollback. Player hands and tables live in HTML pages
+        // that update in place, so they need no such workaround.
         WipePublicPanel();
 
         TrickNumber++;
         CurrentTrick = new BeloteTrick(Trump!.Value);
-        await RenderAllAsync();
+        await RenderAllAsync(resendLog: true);
         RestartTurnTimer();
     }
 

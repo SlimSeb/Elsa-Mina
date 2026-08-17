@@ -116,20 +116,6 @@ public class PokerGame : SeatedCardGame<PokerPlayer>, IPokerGame
 
     protected override object[] JoinSuccessArguments(IUser user) => [user.Name, BuyIn];
 
-    /// <summary>
-    /// A poker seat holds real bucks, so only someone sitting at the table may deal the hand.
-    /// </summary>
-    protected override bool CanStart(IUser user)
-    {
-        if (HasPlayer(user.UserId))
-        {
-            return true;
-        }
-
-        Context.ReplyLocalizedMessage("poker_start_not_a_player");
-        return false;
-    }
-
     #endregion
 
     #region Dealing

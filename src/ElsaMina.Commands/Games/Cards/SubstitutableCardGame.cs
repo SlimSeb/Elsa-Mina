@@ -310,6 +310,12 @@ public abstract class SubstitutableCardGame<TPlayer> : SeatedCardGame<TPlayer>, 
         {
             await RenderCancelledPublicAsync();
         }
+        else
+        {
+            // A cancelled deal has no result to show, so close the hand pages rather than leave every
+            // player looking at a stale hand of a game that is over.
+            ClosePlayerPages();
+        }
 
         MarkFinished();
         ClearSubPanel();

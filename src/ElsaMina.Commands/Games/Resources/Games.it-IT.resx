@@ -1494,6 +1494,9 @@
     <data name="belote_start_already_started" xml:space="preserve">
         <value>La partita è già iniziata.</value>
     </data>
+    <data name="belote_start_not_a_player" xml:space="preserve">
+        <value>Solo un giocatore iscritto può avviare la partita.</value>
+    </data>
     <data name="belote_start_not_enough_players" xml:space="preserve">
         <value>La Belote richiede esattamente {0} giocatori per iniziare.</value>
     </data>
@@ -1721,6 +1724,9 @@
     </data>
     <data name="belote_result_score_label" xml:space="preserve">
         <value>Punteggio</value>
+    </data>
+    <data name="belote_log_title" xml:space="preserve">
+        <value>Registro della partita</value>
     </data>
     <data name="belote_cards_won_title" xml:space="preserve">
         <value>Carte vinte</value>
@@ -2123,6 +2129,9 @@
     </data>
     <data name="president_start_already_started" xml:space="preserve">
         <value>La partita è già iniziata.</value>
+    </data>
+    <data name="president_start_not_a_player" xml:space="preserve">
+        <value>Solo un giocatore iscritto può avviare la partita.</value>
     </data>
     <data name="president_start_not_enough_players" xml:space="preserve">
         <value>Servono almeno {0} giocatori per iniziare.</value>

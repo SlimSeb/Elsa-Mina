@@ -1,0 +1,22 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.Belote.BeloteViewModel>
+
+@{
+    var log = Model.Game.Log;
+}
+
+@if (log.Count > 0)
+{
+    var lastLine = log[log.Count - 1];
+    <details style="margin:0;background:#1f3326;border:1px solid #3f6a4f;border-radius:5px">
+        <summary style="cursor:pointer;padding:6px 8px;color:#f7d774;font-weight:bold">
+            📜 @lastLine
+        </summary>
+        <div style="padding:4px 10px 8px 10px;border-top:1px solid #3f6a4f">
+            @for (var i = 0; i < log.Count; i++)
+            {
+                var isLastLine = i == log.Count - 1;
+                <div style="margin:3px 0;font-size:0.85em;color:@(isLastLine ? "#f7d774" : "#9fc4ad");@(isLastLine ? "font-weight:bold" : "")">@log[i]</div>
+            }
+        </div>
+    </details>
+}

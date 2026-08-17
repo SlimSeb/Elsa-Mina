@@ -109,4 +109,17 @@
             }
         </details>
     }
+
+    @if (game.Log.Count > 0)
+    {
+        <details style="margin-top:12px;background:#18271e;border:1px solid #3f6a4f;border-radius:5px">
+            <summary style="cursor:pointer;padding:6px 8px;text-align:center;font-weight:bold">@GetString("belote_log_title")</summary>
+            <div style="padding:4px 10px 8px 10px;border-top:1px solid #3f6a4f">
+                @foreach (var line in game.Log)
+                {
+                    <div style="margin:3px 0;font-size:0.85em;color:#9fc4ad">@line</div>
+                }
+            </div>
+        </details>
+    }
 </div>
