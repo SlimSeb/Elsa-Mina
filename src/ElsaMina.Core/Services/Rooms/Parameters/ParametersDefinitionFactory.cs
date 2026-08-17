@@ -138,27 +138,24 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
                     new EnumerationValue
                     {
                         InternalValue = EventAnnouncesTypeValues.All,
-                        DisplayedValue = GetDefaultLocaleString("parameter_value_event_announces_all")
+                        DisplayedValueKey = "parameter_value_event_announces_all"
                     },
                     new EnumerationValue
                     {
                         InternalValue = EventAnnouncesTypeValues.TournamentsOnly,
-                        DisplayedValue = GetDefaultLocaleString("parameter_value_event_announces_tournaments")
+                        DisplayedValueKey = "parameter_value_event_announces_tournaments"
                     },
                     new EnumerationValue
                     {
                         InternalValue = EventAnnouncesTypeValues.GamesOnly,
-                        DisplayedValue = GetDefaultLocaleString("parameter_value_event_announces_games")
+                        DisplayedValueKey = "parameter_value_event_announces_games"
                     },
                     new EnumerationValue
                     {
                         InternalValue = EventAnnouncesTypeValues.None,
-                        DisplayedValue = GetDefaultLocaleString("parameter_value_event_announces_none")
+                        DisplayedValueKey = "parameter_value_event_announces_none"
                     }
                 ]
             }
         };
-
-    private string GetDefaultLocaleString(string key) =>
-        _resourcesService.GetString(key, new CultureInfo(_configuration.DefaultLocaleCode));
 }

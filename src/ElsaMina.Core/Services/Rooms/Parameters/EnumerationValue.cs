@@ -2,6 +2,7 @@ namespace ElsaMina.Core.Services.Rooms.Parameters;
 
 public class EnumerationValue
 {
-    public required string DisplayedValue { get; set; }
+    public string DisplayedValue { get; set; }
+    public string DisplayedValueKey { get; set; }
     public required string InternalValue { get; set; }
 }

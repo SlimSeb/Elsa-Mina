@@ -33,10 +33,11 @@
                     style="@selectStyle">
                     @foreach (var option in Model.RoomParameterDefinition.PossibleValues)
                     {
+                        var label = option.DisplayedValue ?? GetString(option.DisplayedValueKey);
                         <option
                             value="@option.InternalValue"
                             @(string.Equals(option.InternalValue, Model.CurrentValue, StringComparison.InvariantCultureIgnoreCase) ? "selected" : string.Empty)>
-                            @option.DisplayedValue
+                            @label
                         </option>
                     }
                 </select>

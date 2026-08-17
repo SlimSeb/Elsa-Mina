@@ -1,11 +1,12 @@
-﻿using ElsaMina.Core.Services.Rooms;
+﻿using System.Collections.Concurrent;
+using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Core.Services.PrivateMessages;
 
 public class PmSendersManager : IPmSendersManager
 {
-    private readonly Dictionary<string, IUser> _users = new();
+    private readonly ConcurrentDictionary<string, IUser> _users = new();
 
     public bool HasUser(string userId)
     {
