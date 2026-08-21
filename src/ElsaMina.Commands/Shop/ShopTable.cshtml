@@ -15,9 +15,10 @@
     </tr>
     @foreach (var (tier, articles) in Model.Items)
     {
-        for (var index = 0; index < articles.Count; index++)
+        var orderedArticles = articles.OrderBy(item => item.Price).ToList();
+        for (var index = 0; index < orderedArticles.Count; index++)
         {
-            var article = articles[index];
+            var article = orderedArticles[index];
             <tr>
                 <td style="@cellStyle">
                     @if (index == 0)

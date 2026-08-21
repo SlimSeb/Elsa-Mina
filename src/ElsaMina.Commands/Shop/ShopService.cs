@@ -16,7 +16,7 @@ public class ShopService : IShopService
     public async Task<Dictionary<string, List<ShopItem>>> GetShopDataAsync()
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var items = await dbContext.ShopItems.OrderBy(item => item.Id).ToListAsync();
+        var items = await dbContext.ShopItems.ToListAsync();
         return items
             .GroupBy(item => item.Tier)
             .ToDictionary(group => group.Key, group => group.ToList());
