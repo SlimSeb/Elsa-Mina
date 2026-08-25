@@ -195,6 +195,21 @@
     <data name="set_profile_color_help_message" xml:space="preserve">
         <value>Définit la couleur de fond de votre profil. Syntaxe : -setprofilecolor &lt;couleur&gt;</value>
     </data>
+    <data name="edit_profile_panel_text_color_section" xml:space="preserve">
+        <value>Couleur du texte du profil</value>
+    </data>
+    <data name="set_profile_text_color_success" xml:space="preserve">
+        <value>Couleur du texte du profil mise à jour.</value>
+    </data>
+    <data name="set_profile_text_color_failure" xml:space="preserve">
+        <value>Une erreur est survenue lors de la mise à jour de la couleur du texte : {0}</value>
+    </data>
+    <data name="set_profile_text_color_invalid" xml:space="preserve">
+        <value>Couleur invalide. Couleurs valides : {0}</value>
+    </data>
+    <data name="set_profile_text_color_help_message" xml:space="preserve">
+        <value>Définit la couleur du texte de votre profil. Syntaxe : -setprofiletextcolor &lt;couleur&gt;</value>
+    </data>
     <data name="color_blue" xml:space="preserve">
         <value>Bleu</value>
     </data>

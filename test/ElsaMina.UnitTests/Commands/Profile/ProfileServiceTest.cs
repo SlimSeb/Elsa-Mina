@@ -110,6 +110,35 @@ public class ProfileServiceTest
             Arg.Is<ProfileViewModel>(vm => vm.PlayTime == TimeSpan.Zero));
     }
 
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetProfileColorsAndEmoji_FromStoredUserData()
+    {
+        // Arrange
+        _dbContext.RoomUsers.Add(new RoomUser
+        {
+            Id = "alice",
+            RoomId = "room1",
+            ProfileBackgroundColor = "#8867aa73",
+            ProfileTextColor = "#e0d060",
+            ProfileEmoji = "🎮",
+            Title = "Master",
+            User = new SavedUser { UserId = "alice", UserName = "Alice" }
+        });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm =>
+                vm.ProfileBackgroundColor == "#8867aa73" &&
+                vm.ProfileTextColor == "#e0d060" &&
+                vm.ProfileEmoji == "🎮" &&
+                vm.Title == "Master"));
+    }
+
     #endregion
 
     #region UserName

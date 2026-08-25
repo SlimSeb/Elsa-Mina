@@ -265,4 +265,44 @@ public class RoomUserDataServiceTest
             Assert.That(_service.JoinPhrases[Tuple.Create(userId, roomId)], Is.EqualTo(joinPhrase));
         }
     }
+
+    [Test]
+    public async Task Test_SetUserBackgroundColor_ShouldUpdateUserDataBackgroundColor()
+    {
+        // Arrange
+        var roomId = "room1";
+        var userId = "user1";
+        var color = "#8867aa73";
+        var userData = new RoomUser { Id = userId, RoomId = roomId };
+        await _db.RoomUsers.AddAsync(userData);
+        await _db.SaveChangesAsync();
+
+        // Act
+        await _service.SetUserBackgroundColorAsync(roomId, userId, color);
+
+        // Assert
+        await using var dbContext = new BotDbContext(_options);
+        var dbUser = await dbContext.RoomUsers.FindAsync(userId, roomId);
+        Assert.That(dbUser.ProfileBackgroundColor, Is.EqualTo(color));
+    }
+
+    [Test]
+    public async Task Test_SetUserTextColor_ShouldUpdateUserDataTextColor()
+    {
+        // Arrange
+        var roomId = "room1";
+        var userId = "user1";
+        var color = "#e0d060";
+        var userData = new RoomUser { Id = userId, RoomId = roomId };
+        await _db.RoomUsers.AddAsync(userData);
+        await _db.SaveChangesAsync();
+
+        // Act
+        await _service.SetUserTextColorAsync(roomId, userId, color);
+
+        // Assert
+        await using var dbContext = new BotDbContext(_options);
+        var dbUser = await dbContext.RoomUsers.FindAsync(userId, roomId);
+        Assert.That(dbUser.ProfileTextColor, Is.EqualTo(color));
+    }
 }

@@ -16,8 +16,29 @@
     // The pointer triangles are used instead of the play/reverse ones, which carry an emoji
     // presentation and end up with mismatched sizes. The fixed metrics keep both arrows identical.
     const string dollArrowStyle = "width: 1.8rem; padding: 0 .2rem; font-size: .8rem; line-height: 1.4;";
+    const int colorColumns = 3;
 
     var flags = EditProfilePanelCommand.GetAllCountryFlags().ToList();
+
+    // Background and text colors are picked the same way, so both swatch grids are rendered from
+    // the same markup, each one wired to its own pair of set/clear commands.
+    var colorSections = new[]
+    {
+        (
+            TitleKey: "edit_profile_panel_bg_color_section",
+            Current: Model.CurrentBackgroundColor,
+            SetCommand: "setprofilecolor",
+            ClearCommand: "clearprofilecolor",
+            Colors: EditProfilePanelCommand.PROFILE_COLORS
+        ),
+        (
+            TitleKey: "edit_profile_panel_text_color_section",
+            Current: Model.CurrentTextColor,
+            SetCommand: "setprofiletextcolor",
+            ClearCommand: "clearprofiletextcolor",
+            Colors: EditProfilePanelCommand.PROFILE_TEXT_COLORS
+        )
+    };
 }
 
 <div style="@containerStyle">
@@ -54,24 +75,25 @@
         </form>
     </div>
 
-    <div style="@sectionStyle">
-        <div style="@sectionTitleStyle">@GetString("edit_profile_panel_bg_color_section")</div>
-        <div style="margin-bottom: .4rem;">
-            <span>@GetString("edit_profile_panel_current_emoji")</span>
-            @if (!string.IsNullOrEmpty(Model.CurrentBackgroundColor))
-            {
-                <span style="@colorSwatchStyle background: @Model.CurrentBackgroundColor;"></span>
-            }
-            else
-            {
-                <em style="margin-left: .5rem;">@GetString("edit_profile_panel_no_color")</em>
-            }
-        </div>
-        <table style="border-collapse: separate; border-spacing: .3rem; margin-top: .35rem; table-layout: fixed; width: 100%;">
-            <tbody>
+    @foreach (var colorSection in colorSections)
+    {
+        <div style="@sectionStyle">
+            <div style="@sectionTitleStyle">@GetString(colorSection.TitleKey)</div>
+            <div style="margin-bottom: .4rem;">
+                <span>@GetString("edit_profile_panel_current_emoji")</span>
+                @if (!string.IsNullOrEmpty(colorSection.Current))
+                {
+                    <span style="@colorSwatchStyle background: @colorSection.Current;"></span>
+                }
+                else
+                {
+                    <em style="margin-left: .5rem;">@GetString("edit_profile_panel_no_color")</em>
+                }
+            </div>
+            <table style="border-collapse: separate; border-spacing: .3rem; margin-top: .35rem; table-layout: fixed; width: 100%;">
+                <tbody>
                 @{
-                    const int colorColumns = 3;
-                    var colorEntries = EditProfilePanelCommand.PROFILE_COLORS
+                    var colorEntries = colorSection.Colors
                         .Select(kvp => (kvp.Key, kvp.Value))
                         .Append((Key: string.Empty, Value: string.Empty))
                         .ToList();
@@ -83,9 +105,10 @@
                         {
                             var (colorKey, colorValue) = colorEntries[j];
                             var isClear = string.IsNullOrEmpty(colorKey);
+                            var commandName = isClear ? colorSection.ClearCommand : colorSection.SetCommand;
                             var sendValue = isClear
-                                ? $"/w {Model.BotName},{Model.Trigger}clearprofilecolor {Model.RoomId}"
-                                : $"/w {Model.BotName},{Model.Trigger}setprofilecolor {Model.RoomId}, {colorKey}";
+                                ? $"/w {Model.BotName},{Model.Trigger}{commandName} {Model.RoomId}"
+                                : $"/w {Model.BotName},{Model.Trigger}{commandName} {Model.RoomId}, {colorKey}";
                             var swatchBg = isClear ? "transparent" : colorValue;
                             var label = isClear ? GetString("edit_profile_panel_clear") : GetString($"color_{colorKey}");
                             <td>
@@ -93,17 +116,18 @@
                                     class="button"
                                     name="send"
                                     value="@sendValue"
-                                    style="display: flex; align-items: center; gap: 5px; width: 100%;">
-                                    <span style="@colorSwatchStyle background: @swatchBg; margin-right: 0; flex-shrink: 0;"></span>
+                                    style="width: 100%; text-align: left;">
+                                    <span style="@colorSwatchStyle background: @swatchBg;"></span>
                                     @label
                                 </button>
                             </td>
                         }
                     </tr>
                 }
-            </tbody>
-        </table>
-    </div>
+                </tbody>
+            </table>
+        </div>
+    }
 
     <div style="@sectionStyle">
         <div style="@sectionTitleStyle">@GetString("edit_profile_panel_dolls_section")</div>

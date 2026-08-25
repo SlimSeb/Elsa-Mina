@@ -195,6 +195,21 @@
     <data name="set_profile_color_help_message" xml:space="preserve">
         <value>Sets your profile background color. Syntax: -setprofilecolor &lt;color&gt;</value>
     </data>
+    <data name="edit_profile_panel_text_color_section" xml:space="preserve">
+        <value>Profile Text Color</value>
+    </data>
+    <data name="set_profile_text_color_success" xml:space="preserve">
+        <value>Profile text color updated.</value>
+    </data>
+    <data name="set_profile_text_color_failure" xml:space="preserve">
+        <value>An error occurred while updating the text color: {0}</value>
+    </data>
+    <data name="set_profile_text_color_invalid" xml:space="preserve">
+        <value>Invalid color. Valid colors: {0}</value>
+    </data>
+    <data name="set_profile_text_color_help_message" xml:space="preserve">
+        <value>Sets your profile text color. Syntax: -setprofiletextcolor &lt;color&gt;</value>
+    </data>
     <data name="color_blue" xml:space="preserve">
         <value>Blue</value>
     </data>

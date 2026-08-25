@@ -106,6 +106,7 @@ public class EditProfilePanelServiceTest
             RoomId = "testroom",
             ProfileEmoji = "🎮",
             ProfileBackgroundColor = "#8867aa73",
+            ProfileTextColor = "#e0d060",
             PlayTime = TimeSpan.Zero
         });
 
@@ -116,7 +117,8 @@ public class EditProfilePanelServiceTest
         await _templatesManager.Received(1).GetTemplateAsync(TEMPLATE_KEY,
             Arg.Is<EditProfilePanelViewModel>(viewModel =>
                 viewModel.CurrentEmoji == "🎮" &&
-                viewModel.CurrentBackgroundColor == "#8867aa73"));
+                viewModel.CurrentBackgroundColor == "#8867aa73" &&
+                viewModel.CurrentTextColor == "#e0d060"));
     }
 
     [Test]

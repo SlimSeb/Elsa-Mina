@@ -16,6 +16,7 @@ public class RoomUser
     public string JoinPhrase { get; set; }
     public string ProfileEmoji { get; set; }
     public string ProfileBackgroundColor { get; set; }
+    public string ProfileTextColor { get; set; }
     public TimeSpan PlayTime { get; set; }
     public int CurrentStreak { get; set; }
     public int LongestStreak { get; set; }
