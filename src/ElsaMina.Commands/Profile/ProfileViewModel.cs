@@ -16,6 +16,7 @@ public class ProfileViewModel : LocalizableViewModel
     public string ProfileEmoji { get; init; }
     public string ProfileBackgroundColor { get; init; }
     public string ProfileTextColor { get; init; }
+    public string ProfileLabelColor { get; init; }
     public string ProfileBorderColor { get; init; }
     public IEnumerable<Badge> Badges { get; init; }
     public IEnumerable<Doll> Dolls { get; init; }

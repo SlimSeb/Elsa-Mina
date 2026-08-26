@@ -56,6 +56,7 @@ public class EditProfilePanelService : IEditProfilePanelService
             CurrentEmoji = storedUser?.ProfileEmoji ?? string.Empty,
             CurrentBackgroundColor = storedUser?.ProfileBackgroundColor ?? string.Empty,
             CurrentTextColor = storedUser?.ProfileTextColor ?? string.Empty,
+            CurrentLabelColor = storedUser?.ProfileLabelColor ?? string.Empty,
             Dolls = await _dollService.ResolveDollsAsync(storedUser?.Dolls ?? [], cancellationToken)
         };
 

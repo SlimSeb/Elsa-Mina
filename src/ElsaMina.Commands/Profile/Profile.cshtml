@@ -9,6 +9,10 @@
 
     var hasCustomTextColor = !string.IsNullOrEmpty(Model.ProfileTextColor);
     var textColor = hasCustomTextColor ? Model.ProfileTextColor : "#e0e0e0";
+    var labelColor = !string.IsNullOrEmpty(Model.ProfileLabelColor)
+        ? Model.ProfileLabelColor
+        : "#6a9fd8";
+    var labelStyle = $"color:{labelColor};font-weight:bold;";
     // The muted shades are only readable against the default palette, so a custom text color
     // takes them over too, dimmed to keep the same hierarchy the fixed grays gave.
     var mutedStyle = hasCustomTextColor
@@ -90,7 +94,7 @@
                     _ => null
                 };
                 <div style="margin-bottom:2px;">
-                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_last_seen"):</span>
+                    <span style="@labelStyle">@GetString("profile_last_seen"):</span>
                     <span>@Model.LastSeenDate.Value.ToString("g", Model.Culture)
                         @if (!string.IsNullOrEmpty(actionKey))
                         {
@@ -103,7 +107,7 @@
             @if (!string.IsNullOrEmpty(Model.Status))
             {
                 <div style="margin-bottom:2px;">
-                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_status"):</span>
+                    <span style="@labelStyle">@GetString("profile_status"):</span>
                     <span>@Model.Status</span>
                 </div>
             }
@@ -111,7 +115,7 @@
             @if (Model.RegisterDate > DateTimeOffset.MinValue)
             {
                 <div style="margin-bottom:2px;">
-                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_register_date"):</span>
+                    <span style="@labelStyle">@GetString("profile_register_date"):</span>
                     <span>@Model.RegisterDate.ToString("d", Model.Culture)</span>
                 </div>
             }
@@ -119,7 +123,7 @@
             @if (Model.PlayTime > TimeSpan.Zero)
             {
                 <div style="margin-bottom:2px;">
-                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_play_time"):</span>
+                    <span style="@labelStyle">@GetString("profile_play_time"):</span>
                     <span>@Model.PlayTime.ToString(GetString("play_time_format"))</span>
                 </div>
             }
@@ -127,7 +131,7 @@
             @if (Model.BestRanking != null)
             {
                 <div style="margin-bottom:2px;">
-                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_best_rank"):</span>
+                    <span style="@labelStyle">@GetString("profile_best_rank"):</span>
                     <span>@Model.BestRanking.FormatId (@Model.BestRanking.Elo.ToString("F0", Model.Culture))</span>
                 </div>
             }
@@ -139,7 +143,7 @@
                     ? GetString("profile_tournament_wl", record.WonGames, record.PlayedGames - record.WonGames)
                     : "-";
                 <div style="margin-bottom:2px;">
-                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_tournament_records"):</span>
+                    <span style="@labelStyle">@GetString("profile_tournament_records"):</span>
                     <span>
                         <span title="@GetString("top_tournament_players_wins")">🏆 @record.WinsCount</span>
                         ·
@@ -174,12 +178,12 @@
                 var gr = Model.GameRecords;
                 <div style="margin-top:4px;border-top:1px solid #2e2e4e;padding-top:4px;">
                     <details>
-                        <summary style="color:#6a9fd8;font-weight:bold;cursor:pointer;">@GetString("profile_game_records")</summary>
+                        <summary style="@labelStyle cursor:pointer;">@GetString("profile_game_records")</summary>
                         <div style="margin-top:3px;">
                             @if (gr.FloodIt != null)
                             {
                                 <div style="margin-bottom:2px;">
-                                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_flood_it"):</span>
+                                    <span style="@labelStyle">@GetString("profile_flood_it"):</span>
                                     <span>
                                         <span title="@GetString("profile_game_max_level")">Lv. @gr.FloodIt.Level</span>
                                         · <span title="@GetString("profile_game_total_stars")">⭐ @gr.FloodIt.TotalStars</span>
@@ -189,7 +193,7 @@
                             @if (gr.LightsOut != null)
                             {
                                 <div style="margin-bottom:2px;">
-                                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_lights_out"):</span>
+                                    <span style="@labelStyle">@GetString("profile_lights_out"):</span>
                                     <span>
                                         <span title="@GetString("profile_game_max_level")">Lv. @gr.LightsOut.Level</span>
                                         · <span title="@GetString("profile_game_total_stars")">⭐ @gr.LightsOut.TotalStars</span>
@@ -199,7 +203,7 @@
                             @if (gr.VoltorbFlip != null)
                             {
                                 <div style="margin-bottom:2px;">
-                                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_voltorb_flip"):</span>
+                                    <span style="@labelStyle">@GetString("profile_voltorb_flip"):</span>
                                     <span>
                                         <span title="@GetString("profile_game_max_level")">Lv. @gr.VoltorbFlip.MaxLevel</span>
                                         · <span title="@GetString("profile_game_coins")">💰 @gr.VoltorbFlip.Coins</span>
@@ -209,7 +213,7 @@
                             @if (gr.TwentyFortyEight != null)
                             {
                                 <div style="margin-bottom:2px;">
-                                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("profile_2048"):</span>
+                                    <span style="@labelStyle">@GetString("profile_2048"):</span>
                                     <span>
                                         <span title="@GetString("profile_game_best_score")">@gr.TwentyFortyEight.BestScore</span>
                                         · <span title="@GetString("profile_game_wins")">🏆 @gr.TwentyFortyEight.Wins</span>
@@ -219,7 +223,7 @@
                             @if (gr.ConnectFour != null)
                             {
                                 <div style="margin-bottom:2px;">
-                                    <span style="color:#6a9fd8;font-weight:bold;">@GetString("c4_game_name"):</span>
+                                    <span style="@labelStyle">@GetString("c4_game_name"):</span>
                                     <span>
                                         <span title="@GetString("c4_leaderboard_rating")">@gr.ConnectFour.Rating</span>
                                         · <span title="@GetString("c4_leaderboard_wins")">🏆 @gr.ConnectFour.Wins</span>

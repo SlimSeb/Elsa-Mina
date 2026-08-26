@@ -29,6 +29,8 @@ public interface IRoomUserDataService
 
     Task SetUserTextColorAsync(string roomId, string userId, string color, CancellationToken cancellationToken = default);
 
+    Task SetUserLabelColorAsync(string roomId, string userId, string color, CancellationToken cancellationToken = default);
+
     Task SetUserJoinPhraseAsync(string roomId, string userId, string joinPhrase,
         CancellationToken cancellationToken = default);
 }

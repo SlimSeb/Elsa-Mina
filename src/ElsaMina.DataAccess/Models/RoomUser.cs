@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ElsaMina.DataAccess.Models;
 
@@ -17,6 +17,7 @@ public class RoomUser
     public string ProfileEmoji { get; set; }
     public string ProfileBackgroundColor { get; set; }
     public string ProfileTextColor { get; set; }
+    public string ProfileLabelColor { get; set; }
     public TimeSpan PlayTime { get; set; }
     public int CurrentStreak { get; set; }
     public int LongestStreak { get; set; }

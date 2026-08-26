@@ -120,6 +120,7 @@ public class ProfileServiceTest
             RoomId = "room1",
             ProfileBackgroundColor = "#8867aa73",
             ProfileTextColor = "#e0d060",
+            ProfileLabelColor = "#6ad0d0",
             ProfileEmoji = "🎮",
             Title = "Master",
             User = new SavedUser { UserId = "alice", UserName = "Alice" }
@@ -135,6 +136,7 @@ public class ProfileServiceTest
             Arg.Is<ProfileViewModel>(vm =>
                 vm.ProfileBackgroundColor == "#8867aa73" &&
                 vm.ProfileTextColor == "#e0d060" &&
+                vm.ProfileLabelColor == "#6ad0d0" &&
                 vm.ProfileEmoji == "🎮" &&
                 vm.Title == "Master"));
     }

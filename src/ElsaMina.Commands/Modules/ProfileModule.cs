@@ -15,6 +15,7 @@ public class ProfileModule : Module
         builder.RegisterCommand<SetEmojiCommand>();
         builder.RegisterCommand<SetProfileColorCommand>();
         builder.RegisterCommand<SetProfileTextColorCommand>();
+        builder.RegisterCommand<SetProfileLabelColorCommand>();
         builder.RegisterCommand<EditProfilePanelCommand>();
         builder.RegisterCommand<MoveDollCommand>();
         builder.RegisterCommand<SetAvatarCommand>();

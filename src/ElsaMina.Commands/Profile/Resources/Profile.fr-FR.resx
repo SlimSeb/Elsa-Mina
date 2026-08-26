@@ -210,6 +210,21 @@
     <data name="set_profile_text_color_help_message" xml:space="preserve">
         <value>Définit la couleur du texte de votre profil. Syntaxe : -setprofiletextcolor &lt;couleur&gt;</value>
     </data>
+    <data name="edit_profile_panel_label_color_section" xml:space="preserve">
+        <value>Couleur des libellés du profil</value>
+    </data>
+    <data name="set_profile_label_color_success" xml:space="preserve">
+        <value>Couleur des libellés du profil mise à jour.</value>
+    </data>
+    <data name="set_profile_label_color_failure" xml:space="preserve">
+        <value>Une erreur est survenue lors de la mise à jour de la couleur des libellés : {0}</value>
+    </data>
+    <data name="set_profile_label_color_invalid" xml:space="preserve">
+        <value>Couleur invalide. Couleurs valides : {0}</value>
+    </data>
+    <data name="set_profile_label_color_help_message" xml:space="preserve">
+        <value>Définit la couleur des libellés de votre profil. Syntaxe : -setprofilelabelcolor &lt;couleur&gt;</value>
+    </data>
     <data name="color_blue" xml:space="preserve">
         <value>Bleu</value>
     </data>

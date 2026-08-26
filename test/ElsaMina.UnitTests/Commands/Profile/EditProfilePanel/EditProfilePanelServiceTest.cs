@@ -107,6 +107,7 @@ public class EditProfilePanelServiceTest
             ProfileEmoji = "🎮",
             ProfileBackgroundColor = "#8867aa73",
             ProfileTextColor = "#e0d060",
+            ProfileLabelColor = "#6ad0d0",
             PlayTime = TimeSpan.Zero
         });
 
@@ -118,7 +119,8 @@ public class EditProfilePanelServiceTest
             Arg.Is<EditProfilePanelViewModel>(viewModel =>
                 viewModel.CurrentEmoji == "🎮" &&
                 viewModel.CurrentBackgroundColor == "#8867aa73" &&
-                viewModel.CurrentTextColor == "#e0d060"));
+                viewModel.CurrentTextColor == "#e0d060" &&
+                viewModel.CurrentLabelColor == "#6ad0d0"));
     }
 
     [Test]

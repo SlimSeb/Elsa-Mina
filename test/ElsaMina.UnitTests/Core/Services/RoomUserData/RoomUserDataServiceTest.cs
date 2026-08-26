@@ -305,4 +305,24 @@ public class RoomUserDataServiceTest
         var dbUser = await dbContext.RoomUsers.FindAsync(userId, roomId);
         Assert.That(dbUser.ProfileTextColor, Is.EqualTo(color));
     }
+
+    [Test]
+    public async Task Test_SetUserLabelColor_ShouldUpdateUserDataLabelColor()
+    {
+        // Arrange
+        var roomId = "room1";
+        var userId = "user1";
+        var color = "#6ad0d0";
+        var userData = new RoomUser { Id = userId, RoomId = roomId };
+        await _db.RoomUsers.AddAsync(userData);
+        await _db.SaveChangesAsync();
+
+        // Act
+        await _service.SetUserLabelColorAsync(roomId, userId, color);
+
+        // Assert
+        await using var dbContext = new BotDbContext(_options);
+        var dbUser = await dbContext.RoomUsers.FindAsync(userId, roomId);
+        Assert.That(dbUser.ProfileLabelColor, Is.EqualTo(color));
+    }
 }

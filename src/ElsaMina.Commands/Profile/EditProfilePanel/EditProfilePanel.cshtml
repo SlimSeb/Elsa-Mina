@@ -20,7 +20,7 @@
 
     var flags = EditProfilePanelCommand.GetAllCountryFlags().ToList();
 
-    // Background and text colors are picked the same way, so both swatch grids are rendered from
+    // Background, text and label colors are picked the same way, so the swatch grids are rendered from
     // the same markup, each one wired to its own pair of set/clear commands.
     var colorSections = new[]
     {
@@ -37,6 +37,13 @@
             SetCommand: "setprofiletextcolor",
             ClearCommand: "clearprofiletextcolor",
             Colors: EditProfilePanelCommand.PROFILE_TEXT_COLORS
+        ),
+        (
+            TitleKey: "edit_profile_panel_label_color_section",
+            Current: Model.CurrentLabelColor,
+            SetCommand: "setprofilelabelcolor",
+            ClearCommand: "clearprofilelabelcolor",
+            Colors: EditProfilePanelCommand.PROFILE_LABEL_COLORS
         )
     };
 }

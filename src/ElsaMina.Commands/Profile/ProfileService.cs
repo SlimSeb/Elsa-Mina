@@ -122,6 +122,7 @@ public class ProfileService : IProfileService
             ProfileEmoji = storedUserData?.ProfileEmoji,
             ProfileBackgroundColor = storedUserData?.ProfileBackgroundColor,
             ProfileTextColor = storedUserData?.ProfileTextColor,
+            ProfileLabelColor = storedUserData?.ProfileLabelColor,
             ProfileBorderColor = EditProfilePanelCommand.GetBorderColor(storedUserData?.ProfileBackgroundColor),
             RegisterDate = TimeZoneInfo.ConvertTime(registerDate, room?.TimeZone ?? TimeZoneInfo.Local),
             BestRanking = bestRanking,

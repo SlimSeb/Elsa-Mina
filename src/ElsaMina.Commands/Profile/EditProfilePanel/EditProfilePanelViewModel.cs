@@ -12,6 +12,7 @@ public class EditProfilePanelViewModel : LocalizableViewModel
     public string CurrentEmoji { get; set; }
     public string CurrentBackgroundColor { get; set; }
     public string CurrentTextColor { get; set; }
+    public string CurrentLabelColor { get; set; }
 
     /// <summary>
     /// The user's dolls, in the order they show up on their profile.

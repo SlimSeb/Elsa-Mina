@@ -91,6 +91,8 @@ public class EditProfilePanelCommand : Command
             ["brown"] = "#b08050",
         };
 
+    public static readonly IReadOnlyDictionary<string, string> PROFILE_LABEL_COLORS = PROFILE_TEXT_COLORS;
+
     public static string GetBorderColor(string backgroundColorValue) =>
         PROFILE_COLORS.FirstOrDefault(kvp => kvp.Value == backgroundColorValue) is { Key: { } key }
             && PROFILE_BORDER_COLORS.TryGetValue(key, out var border)

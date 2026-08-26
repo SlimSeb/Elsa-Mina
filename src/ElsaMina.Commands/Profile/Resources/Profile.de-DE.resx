@@ -210,6 +210,21 @@
     <data name="set_profile_text_color_help_message" xml:space="preserve">
         <value>Legt deine Profil-Textfarbe fest. Syntax: -setprofiletextcolor &lt;Farbe&gt;</value>
     </data>
+    <data name="edit_profile_panel_label_color_section" xml:space="preserve">
+        <value>Profil-Beschriftungsfarbe</value>
+    </data>
+    <data name="set_profile_label_color_success" xml:space="preserve">
+        <value>Profil-Beschriftungsfarbe aktualisiert.</value>
+    </data>
+    <data name="set_profile_label_color_failure" xml:space="preserve">
+        <value>Beim Aktualisieren der Beschriftungsfarbe ist ein Fehler aufgetreten: {0}</value>
+    </data>
+    <data name="set_profile_label_color_invalid" xml:space="preserve">
+        <value>Ungültige Farbe. Gültige Farben: {0}</value>
+    </data>
+    <data name="set_profile_label_color_help_message" xml:space="preserve">
+        <value>Legt deine Profil-Beschriftungsfarbe fest. Syntax: -setprofilelabelcolor &lt;Farbe&gt;</value>
+    </data>
     <data name="color_blue" xml:space="preserve">
         <value>Blau</value>
     </data>
