@@ -1,5 +1,5 @@
 using ElsaMina.Commands.Ai.Chat;
-using ElsaMina.Commands.Ai.LanguageModel;
+using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using NSubstitute;

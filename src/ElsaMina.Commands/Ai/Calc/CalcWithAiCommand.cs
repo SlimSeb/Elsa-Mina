@@ -1,5 +1,5 @@
 using System.Net;
-using ElsaMina.Commands.Ai.LanguageModel;
+using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Resources;

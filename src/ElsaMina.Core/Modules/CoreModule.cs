@@ -1,4 +1,4 @@
-﻿using System.Resources;
+using System.Resources;
 using Autofac;
 using Assembly = System.Reflection.Assembly;
 using ElsaMina.Core.Contexts;
@@ -27,6 +27,10 @@ using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.FeatureSwitches;
+using ElsaMina.Core.Services.LanguageModel;
+using ElsaMina.Core.Services.LanguageModel.Google;
+using ElsaMina.Core.Services.LanguageModel.Mistral;
+using ElsaMina.Core.Services.LanguageModel.OpenAi;
 using ElsaMina.Core.Services.Smogon;
 using ElsaMina.Core.Services.Start;
 using ElsaMina.Core.Services.System;
@@ -85,7 +89,11 @@ public class CoreModule : Module
         builder.RegisterType<DexManager>().As<IDexManager>().SingleInstance();
         builder.RegisterType<StartManager>().As<IStartManager>().SingleInstance();
         builder.RegisterType<ImageService>().As<IImageService>().SingleInstance();
-builder.RegisterType<EfRoomParameterStore>().As<IRoomParameterStore>();
+        builder.RegisterType<Gemini25FlashProvider>().AsSelf().SingleInstance();
+        builder.RegisterType<MistralSmallProvider>().AsSelf().SingleInstance();
+        builder.RegisterType<Gpt4OMiniProvider>().AsSelf().SingleInstance();
+        builder.RegisterType<LanguageModelResolver>().As<ILanguageModelProvider>().SingleInstance();
+        builder.RegisterType<EfRoomParameterStore>().As<IRoomParameterStore>();
         builder.RegisterType<UserSaveQueue>().As<IUserSaveQueue>().SingleInstance();
         builder.RegisterType<EventAnnouncer>().As<IEventAnnouncer>().SingleInstance();
 

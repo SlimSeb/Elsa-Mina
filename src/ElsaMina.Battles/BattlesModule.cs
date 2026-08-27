@@ -1,6 +1,7 @@
 using Autofac;
 using ElsaMina.Battles.Commands;
 using ElsaMina.Battles.Strategies;
+using ElsaMina.Battles.Strategies.Llm;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
 using ElsaMina.Core.Utils;
@@ -17,7 +18,13 @@ public class BattlesModule : Module
         builder.RegisterType<SmogonOpponentMovesPredictor>().As<IOpponentMovesPredictor>().SingleInstance();
         // Swap MinimaxSearch for MonteCarloTreeSearch to use MCTS instead
         builder.RegisterType<MinimaxSearch>().As<IBattleSearchAlgorithm>().SingleInstance();
-        builder.RegisterType<CalcBasedBattleDecisionService>().As<IBattleDecisionService>().SingleInstance();
+        builder.RegisterType<CalcBasedBattleDecisionService>().AsSelf().SingleInstance();
+        builder.RegisterType<RandomBattleDecisionService>().AsSelf().SingleInstance();
+        builder.RegisterType<TypeMatchupBattleDecisionService>().AsSelf().SingleInstance();
+        builder.RegisterType<LlmBattlePromptBuilder>().As<ILlmBattlePromptBuilder>().SingleInstance();
+        builder.RegisterType<LlmBattleDecisionParser>().As<ILlmBattleDecisionParser>().SingleInstance();
+        builder.RegisterType<LlmBattleDecisionService>().AsSelf().SingleInstance();
+        builder.RegisterType<BattleDecisionManager>().As<IBattleDecisionService>().As<IBattleDecisionManager>().SingleInstance();
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
         builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();
         builder.RegisterType<LadderingService>().As<ILadderingService>().SingleInstance();
@@ -27,5 +34,6 @@ public class BattlesModule : Module
         builder.RegisterCommand<SearchCommand>();
         builder.RegisterCommand<UseTeamCommand>();
         builder.RegisterCommand<LadderingCommand>();
+        builder.RegisterCommand<BattleStrategyCommand>();
     }
 }

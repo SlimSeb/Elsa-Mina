@@ -15,6 +15,11 @@ public static class CalcPokemonFactory
     public static bool TryBuildOurPokemon(BattlePokemonState state, out Pokemon pokemon)
     {
         pokemon = null;
+        if (state == null || string.IsNullOrWhiteSpace(state.Details))
+        {
+            return false;
+        }
+
         var species = ExtractSpeciesFromDetails(state.Details);
         var level = ExtractLevelFromDetails(state.Details);
 
@@ -30,22 +35,25 @@ public static class CalcPokemonFactory
                 CurHP = state.CurrentHp > 0 ? state.CurrentHp : null
             });
 
-            // Override with the exact in-battle stats from the request JSON
-            pokemon.RawStats = new StatsTable
+            if (state.Stats != null)
             {
-                Hp = state.MaxHp,
-                Atk = state.Stats.Atk,
-                Def = state.Stats.Def,
-                Spa = state.Stats.SpA,
-                Spd = state.Stats.SpD,
-                Spe = state.Stats.Spe
-            };
+                // Override with the exact in-battle stats from the request JSON
+                pokemon.RawStats = new StatsTable
+                {
+                    Hp = state.MaxHp,
+                    Atk = state.Stats.Atk,
+                    Def = state.Stats.Def,
+                    Spa = state.Stats.SpA,
+                    Spd = state.Stats.SpD,
+                    Spe = state.Stats.Spe
+                };
+            }
 
             return true;
         }
         catch (Exception exception)
         {
-            Log.Error(exception, "Failed to build calc Pokemon for {Species}", species);
+            Log.Error(exception, "Failed to build calc Pokemon for {Species}", species ?? "unknown");
             return false;
         }
     }
@@ -54,6 +62,10 @@ public static class CalcPokemonFactory
         PredictedSpread spread = null)
     {
         pokemon = null;
+        if (state == null || string.IsNullOrWhiteSpace(state.Species))
+        {
+            return false;
+        }
 
         try
         {
@@ -76,19 +88,29 @@ public static class CalcPokemonFactory
         }
         catch (Exception exception)
         {
-            Log.Error(exception, "Failed to build calc Pokemon for opponent {Species}", state.Species);
+            Log.Error(exception, "Failed to build calc Pokemon for opponent {Species}", state?.Species ?? "unknown");
             return false;
         }
     }
 
     public static string ExtractSpeciesFromDetails(string details)
     {
+        if (string.IsNullOrWhiteSpace(details))
+        {
+            return string.Empty;
+        }
+
         var commaIndex = details.IndexOf(',');
         return commaIndex < 0 ? details : details[..commaIndex];
     }
 
     public static int ExtractLevelFromDetails(string details)
     {
+        if (string.IsNullOrWhiteSpace(details))
+        {
+            return 100;
+        }
+
         foreach (var token in details.Split(", ").AsSpan(1))
         {
             if (token.StartsWith('L') && int.TryParse(token.AsSpan(1), out var level))
@@ -132,6 +154,11 @@ public static class CalcPokemonFactory
 
     private static StatsTableInput BuildBoostsInput(Dictionary<string, int> boosts)
     {
+        if (boosts == null)
+        {
+            return new StatsTableInput();
+        }
+
         return new StatsTableInput
         {
             Atk = GetBoost(boosts, "atk"),
@@ -143,5 +170,5 @@ public static class CalcPokemonFactory
     }
 
     private static int? GetBoost(Dictionary<string, int> boosts, string key) =>
-        boosts.TryGetValue(key, out var value) && value != 0 ? value : null;
+        boosts != null && boosts.TryGetValue(key, out var value) && value != 0 ? value : null;
 }

@@ -1,6 +1,6 @@
 using System.Globalization;
 using ElsaMina.Commands.Ai.Chat;
-using ElsaMina.Commands.Ai.LanguageModel;
+using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Commands.Ai.TextToSpeech;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
