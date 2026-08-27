@@ -1,4 +1,4 @@
-﻿using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
@@ -13,13 +13,17 @@ public class HelpCommand : Command
     private readonly IVersionProvider _versionProvider;
     private readonly ITemplatesManager _templatesManager;
     private readonly IConfiguration _configuration;
+    private readonly ICommandExecutor _commandExecutor;
 
-    public HelpCommand(IVersionProvider versionProvider, ITemplatesManager templatesManager,
-        IConfiguration configuration)
+    public HelpCommand(IVersionProvider versionProvider,
+        ITemplatesManager templatesManager,
+        IConfiguration configuration,
+        ICommandExecutor commandExecutor)
     {
         _versionProvider = versionProvider;
         _templatesManager = templatesManager;
         _configuration = configuration;
+        _commandExecutor = commandExecutor;
     }
 
     public override bool IsAllowedInPrivateMessage => true;
@@ -28,15 +32,41 @@ public class HelpCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var template = await _templatesManager.GetTemplateAsync("Misc/Help/Help", new HelpViewModel
+        var target = context.Target?.Trim();
+        if (string.IsNullOrWhiteSpace(target))
         {
-            Culture = context.Culture,
-            Version = _versionProvider.Version,
-            BotName = _configuration.Name,
-            Trigger = _configuration.Trigger,
-            ReportBugLink = _configuration.BugReportLink,
-            RepositoryLink = "https://github.com/SlimSeb/Elsa-Mina"
-        });
-        context.ReplyHtml(template.RemoveNewlines(), rankAware: true);
+            var template = await _templatesManager.GetTemplateAsync("Misc/Help/Help", new HelpViewModel
+            {
+                Culture = context.Culture,
+                Version = _versionProvider.Version,
+                BotName = _configuration.Name,
+                Trigger = _configuration.Trigger,
+                ReportBugLink = _configuration.BugReportLink,
+                RepositoryLink = "https://github.com/SlimSeb/Elsa-Mina"
+            });
+            context.ReplyHtml(template.RemoveNewlines(), rankAware: true);
+            return;
+        }
+
+        var query = target.TrimStart((_configuration.Trigger ?? string.Empty).ToCharArray());
+        var command = _commandExecutor.GetAllCommands()
+            .FirstOrDefault(candidate =>
+                string.Equals(candidate.Name, query, StringComparison.OrdinalIgnoreCase)
+                || candidate.Aliases.Any(alias => string.Equals(alias, query, StringComparison.OrdinalIgnoreCase)));
+
+        if (command == null || (command.IsHidden && !context.IsSenderWhitelisted))
+        {
+            context.ReplyLocalizedMessage("command_info_not_found", query);
+            return;
+        }
+
+        var commandInfoTemplate = await _templatesManager.GetTemplateAsync("Misc/Help/CommandInfo",
+            new CommandInfoViewModel
+            {
+                Command = command,
+                Trigger = _configuration.Trigger,
+                Culture = context.Culture
+            });
+        context.ReplyHtml(commandInfoTemplate.RemoveNewlines(), rankAware: true);
     }
 }
