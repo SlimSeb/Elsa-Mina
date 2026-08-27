@@ -22,7 +22,7 @@ public abstract class MistralLanguageModelProvider : ILanguageModelProvider
     
     protected abstract string Model { get; }
 
-    public async Task<string> AskLanguageModelAsync(string prompt, CancellationToken cancellationToken = default)
+    public virtual async Task<string> AskLanguageModelAsync(string prompt, CancellationToken cancellationToken = default)
     {
         var key = _configuration.MistralApiKey;
         if (string.IsNullOrWhiteSpace(key))
@@ -58,7 +58,7 @@ public abstract class MistralLanguageModelProvider : ILanguageModelProvider
         return choice?.Message?.Content;
     }
 
-    public async Task<string> AskLanguageModelAsync(LanguageModelRequest request,
+    public virtual async Task<string> AskLanguageModelAsync(LanguageModelRequest request,
         CancellationToken cancellationToken = default)
     {
         var key = _configuration.MistralApiKey;

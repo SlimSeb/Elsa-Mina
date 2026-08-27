@@ -22,7 +22,7 @@ public abstract class GptLanguageModelProvider : ILanguageModelProvider
 
     protected abstract string Model { get; }
 
-    public async Task<string> AskLanguageModelAsync(string prompt, CancellationToken cancellationToken = default)
+    public virtual async Task<string> AskLanguageModelAsync(string prompt, CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration.ChatGptApiKey;
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -58,7 +58,7 @@ public abstract class GptLanguageModelProvider : ILanguageModelProvider
         return assistantMessage?.Content;
     }
 
-    public async Task<string> AskLanguageModelAsync(LanguageModelRequest request,
+    public virtual async Task<string> AskLanguageModelAsync(LanguageModelRequest request,
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration.ChatGptApiKey;

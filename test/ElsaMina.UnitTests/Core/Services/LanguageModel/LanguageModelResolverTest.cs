@@ -67,7 +67,7 @@ public class LanguageModelResolverTest
         // Assert
         Assert.That(result, Is.EqualTo("gpt response"));
         await _gptProvider.Received(1).AskLanguageModelAsync("hello", Arg.Any<CancellationToken>());
-        await _geminiProvider.DidNotReceiveWithAnyArgs().AskLanguageModelAsync(Arg.Any<string>());
+        await _geminiProvider.DidNotReceive().AskLanguageModelAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]

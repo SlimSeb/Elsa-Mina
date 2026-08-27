@@ -21,7 +21,7 @@ public abstract class GeminiLanguageModelProvider : ILanguageModelProvider
     protected abstract string Model { get; }
     private string Url => string.Format(BASE_URL, Model);
 
-    public async Task<string> AskLanguageModelAsync(string prompt, CancellationToken cancellationToken = default)
+    public virtual async Task<string> AskLanguageModelAsync(string prompt, CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration.GeminiApiKey;
         if (string.IsNullOrEmpty(apiKey))
@@ -50,7 +50,7 @@ public abstract class GeminiLanguageModelProvider : ILanguageModelProvider
         return response.Data?.Candidates?.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text ?? string.Empty;
     }
 
-    public async Task<string> AskLanguageModelAsync(LanguageModelRequest request,
+    public virtual async Task<string> AskLanguageModelAsync(LanguageModelRequest request,
         CancellationToken cancellationToken = default)
     {
         var apiKey = _configuration.GeminiApiKey;
