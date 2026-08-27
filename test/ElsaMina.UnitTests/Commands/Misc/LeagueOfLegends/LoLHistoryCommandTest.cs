@@ -254,6 +254,28 @@ public class LeagueOfLegendsHistoryCommandTest
     }
 
     [Test]
+    public async Task Test_RunAsync_ShouldConvertGameDateToRoomTimeZone_WhenRoomTimeZoneIsSet()
+    {
+        const string puuid = "test-puuid";
+        SetupAccountResponse(puuid);
+        SetupMatchIdsResponse(["EUW1_001"]);
+        SetupMatchResponse(puuid, gameCreation: 1700000000000, gameEndTimestamp: 1700001500000);
+        var context = MakeContext("Player#EUW");
+        var room = Substitute.For<IRoom>();
+        var timeZone = TimeZoneInfo.CreateCustomTimeZone("TestTZ", TimeSpan.FromHours(5), "TestTZ", "TestTZ");
+        room.TimeZone.Returns(timeZone);
+        context.Room.Returns(room);
+
+        LeagueHistoryViewModel capturedVm = null;
+        await _templatesManager.GetTemplateAsync(Arg.Any<string>(),
+            Arg.Do<LeagueHistoryViewModel>(vm => capturedVm = vm));
+
+        await _command.RunAsync(context);
+
+        Assert.That(capturedVm.Games[0].GameDate.Offset, Is.EqualTo(TimeSpan.FromHours(5)));
+    }
+
+    [Test]
     public async Task Test_RunAsync_ShouldSetWinStatusCorrectly_WhenParticipantLost()
     {
         const string puuid = "test-puuid";

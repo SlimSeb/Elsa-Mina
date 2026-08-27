@@ -126,7 +126,9 @@ public class LeagueOfLegendsHistoryCommand : Command
                 var gameDate = timestamp > 0
                     ? DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
                     : DateTimeOffset.UtcNow;
-                var formattedDate = gameDate.ToString("d", context.Culture);
+                var timeZone = context.Room?.TimeZone ?? TimeZoneInfo.Utc;
+                var convertedDate = TimeZoneInfo.ConvertTime(gameDate, timeZone);
+                var formattedDate = convertedDate.ToString("d", context.Culture);
 
                 games.Add(new LeagueHistoryGameViewModel
                 {
@@ -142,7 +144,7 @@ public class LeagueOfLegendsHistoryCommand : Command
                     CsPerMinute = LeagueApiHelper.CalculateCsPerMinute(cs, durationMinutes),
                     QueueName = queueName,
                     DurationMinutes = durationMinutes,
-                    GameDate = TimeZoneInfo.ConvertTime(gameDate, context.Room.TimeZone),
+                    GameDate = convertedDate,
                     FormattedDate = formattedDate
                 });
             }
