@@ -1,9 +1,10 @@
-using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Templates;
+using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Misc.LeagueOfLegends;
@@ -16,11 +17,15 @@ public class LeagueRankCommand : Command
 
     private readonly IHttpService _httpService;
     private readonly IConfiguration _configuration;
+    private readonly ITemplatesManager _templatesManager;
 
-    public LeagueRankCommand(IHttpService httpService, IConfiguration configuration)
+    public LeagueRankCommand(IHttpService httpService,
+        IConfiguration configuration,
+        ITemplatesManager templatesManager)
     {
         _httpService = httpService;
         _configuration = configuration;
+        _templatesManager = templatesManager;
     }
 
     public override bool IsAllowedInPrivateMessage => true;
@@ -80,23 +85,18 @@ public class LeagueRankCommand : Command
             var soloEntry = entries.FirstOrDefault(e => e.QueueType == SOLO_QUEUE);
             var flexEntry = entries.FirstOrDefault(e => e.QueueType == FLEX_QUEUE);
 
-            var lines = new List<string> { context.GetString("lolrank_header", gameName, tagLine) };
-            if (soloEntry != null)
+            var viewModel = new LeagueRankViewModel
             {
-                lines.Add(FormatEntry(context, "lolrank_solo", soloEntry));
-            }
+                GameName = gameName,
+                TagLine = tagLine,
+                Platform = platform,
+                SoloQueue = BuildQueueViewModel(soloEntry),
+                FlexQueue = BuildQueueViewModel(flexEntry),
+                Culture = context.Culture
+            };
 
-            if (flexEntry != null)
-            {
-                lines.Add(FormatEntry(context, "lolrank_flex", flexEntry));
-            }
-
-            if (soloEntry == null && flexEntry == null)
-            {
-                lines.Add(context.GetString("lolrank_unranked_queues"));
-            }
-
-            context.Reply(string.Join(" | ", lines), rankAware: true);
+            var template = await _templatesManager.GetTemplateAsync("Misc/LeagueOfLegends/LeagueRank", viewModel);
+            context.ReplyHtml(template.RemoveNewlines(), rankAware: true);
         }
         catch (Exception ex)
         {
@@ -105,12 +105,35 @@ public class LeagueRankCommand : Command
         }
     }
 
-    private static string FormatEntry(IContext context, string queueKey, LeagueEntryDto entry)
+    private static LeagueRankQueueViewModel BuildQueueViewModel(LeagueEntryDto entry)
     {
+        if (entry == null)
+        {
+            return new LeagueRankQueueViewModel
+            {
+                IsUnranked = true,
+                EmblemUrl = LeagueApiHelper.GetRankEmblemUrl(null),
+                TierColor = LeagueApiHelper.GetTierColor(null)
+            };
+        }
+
         var winRate = entry.Wins + entry.Losses > 0
             ? (int)Math.Round(100.0 * entry.Wins / (entry.Wins + entry.Losses))
             : 0;
-        return context.GetString(queueKey, entry.Tier, entry.Rank, entry.LeaguePoints, entry.Wins, entry.Losses,
-            winRate);
+
+        return new LeagueRankQueueViewModel
+        {
+            QueueType = entry.QueueType,
+            Tier = entry.Tier,
+            Rank = entry.Rank,
+            FormattedRank = LeagueApiHelper.FormatTierRank(entry.Tier, entry.Rank),
+            LeaguePoints = entry.LeaguePoints,
+            Wins = entry.Wins,
+            Losses = entry.Losses,
+            WinRate = winRate,
+            EmblemUrl = LeagueApiHelper.GetRankEmblemUrl(entry.Tier),
+            TierColor = LeagueApiHelper.GetTierColor(entry.Tier),
+            IsUnranked = false
+        };
     }
 }

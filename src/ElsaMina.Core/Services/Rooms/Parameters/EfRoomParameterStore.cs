@@ -22,6 +22,7 @@ public class EfRoomParameterStore : IRoomParameterStore
 
     public void InitializeFromRoomEntity(SavedRoom savedRoomEntity)
     {
+        // C'est cher moche + pb de synchronisation
         _dbSavedRoom = savedRoomEntity;
     }
 
@@ -119,13 +120,13 @@ public class EfRoomParameterStore : IRoomParameterStore
 
     private static bool IsValueValid(IParameterDefinition parameterDefinition, string value)
     {
+        // This shit needs refactoring - ne devrait pas être là ou fait comme ça ^^
         switch (parameterDefinition.Type)
         {
-            case RoomBotConfigurationType.Boolean:
-                return bool.TryParse(value, out _);
             case RoomBotConfigurationType.Enumeration:
                 return parameterDefinition.PossibleValues != null
                        && parameterDefinition.PossibleValues.Any(possible => possible.InternalValue == value);
+            case RoomBotConfigurationType.Boolean:
             case RoomBotConfigurationType.String:
             default:
                 return true;

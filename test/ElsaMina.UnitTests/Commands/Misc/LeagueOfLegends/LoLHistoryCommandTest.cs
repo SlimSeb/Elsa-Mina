@@ -3,6 +3,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Templates;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -13,6 +14,7 @@ public class LeagueOfLegendsHistoryCommandTest
 {
     private IHttpService _httpService;
     private IConfiguration _configuration;
+    private ITemplatesManager _templatesManager;
     private LeagueOfLegendsHistoryCommand _command;
 
     [SetUp]
@@ -20,9 +22,11 @@ public class LeagueOfLegendsHistoryCommandTest
     {
         _httpService = Substitute.For<IHttpService>();
         _configuration = Substitute.For<IConfiguration>();
+        _templatesManager = Substitute.For<ITemplatesManager>();
         _configuration.RiotApiKey.Returns("test-api-key");
+        _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("<html/>");
 
-        _command = new LeagueOfLegendsHistoryCommand(_httpService, _configuration);
+        _command = new LeagueOfLegendsHistoryCommand(_httpService, _configuration, _templatesManager);
     }
 
     private IContext MakeContext(string target)
@@ -47,7 +51,8 @@ public class LeagueOfLegendsHistoryCommandTest
     }
 
     private void SetupMatchResponse(string puuid, bool win = true, string championName = "Jinx",
-        int kills = 5, int deaths = 2, int assists = 8, int queueId = 420, int gameDuration = 1500)
+        int kills = 5, int deaths = 2, int assists = 8, int queueId = 420, int gameDuration = 1500, int championId = 222,
+        long gameCreation = 1700000000000, long gameEndTimestamp = 1700001500000)
     {
         _httpService
             .SendAsync<MatchDto>(Arg.Any<HttpRequest>(), Arg.Any<CancellationToken>())
@@ -59,11 +64,14 @@ public class LeagueOfLegendsHistoryCommandTest
                     {
                         QueueId = queueId,
                         GameDuration = gameDuration,
+                        GameCreation = gameCreation,
+                        GameEndTimestamp = gameEndTimestamp,
                         Participants =
                         [
                             new MatchParticipantDto
                             {
                                 Puuid = puuid,
+                                ChampionId = championId,
                                 ChampionName = championName,
                                 Kills = kills,
                                 Deaths = deaths,
@@ -208,35 +216,45 @@ public class LeagueOfLegendsHistoryCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReply_WhenMatchesAreReturned()
+    public async Task Test_RunAsync_ShouldRenderTemplateAndReplyHtml_WhenMatchesAreReturned()
     {
         const string puuid = "test-puuid";
         SetupAccountResponse(puuid);
         SetupMatchIdsResponse(["EUW1_001"]);
-        SetupMatchResponse(puuid);
+        SetupMatchResponse(puuid, win: true, championName: "Jinx", kills: 5, deaths: 2, assists: 8, championId: 222);
         var context = MakeContext("Player#EUW");
+
+        LeagueHistoryViewModel capturedVm = null;
+        await _templatesManager.GetTemplateAsync(Arg.Any<string>(),
+            Arg.Do<LeagueHistoryViewModel>(vm => capturedVm = vm));
 
         await _command.RunAsync(context);
 
-        context.Received(1).Reply(Arg.Any<string>(), rankAware: true);
+        await _templatesManager.Received(1).GetTemplateAsync("Misc/LeagueOfLegends/LeagueHistory", Arg.Any<LeagueHistoryViewModel>());
+        context.Received(1).ReplyHtml(Arg.Any<string>(), rankAware: true);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedVm, Is.Not.Null);
+            Assert.That(capturedVm.GameName, Is.EqualTo("Player"));
+            Assert.That(capturedVm.TagLine, Is.EqualTo("EUW"));
+            Assert.That(capturedVm.Games.Count, Is.EqualTo(1));
+            Assert.That(capturedVm.Games[0].ChampionName, Is.EqualTo("Jinx"));
+            Assert.That(capturedVm.Games[0].ChampionId, Is.EqualTo(222));
+            Assert.That(capturedVm.Games[0].ChampionIconUrl, Does.Contain("222.png"));
+            Assert.That(capturedVm.Games[0].Win, Is.True);
+            Assert.That(capturedVm.Games[0].Kills, Is.EqualTo(5));
+            Assert.That(capturedVm.Games[0].Deaths, Is.EqualTo(2));
+            Assert.That(capturedVm.Games[0].Assists, Is.EqualTo(8));
+            Assert.That(capturedVm.Games[0].KdaRatio, Is.EqualTo("6.50"));
+            Assert.That(capturedVm.Games[0].Cs, Is.EqualTo(170));
+            Assert.That(capturedVm.Games[0].DurationMinutes, Is.EqualTo(25));
+            Assert.That(capturedVm.Games[0].FormattedDate, Is.Not.Null.And.Not.Empty);
+        }
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldCallGetStringForWin_WhenParticipantWon()
-    {
-        const string puuid = "test-puuid";
-        SetupAccountResponse(puuid);
-        SetupMatchIdsResponse(["EUW1_001"]);
-        SetupMatchResponse(puuid, win: true);
-        var context = MakeContext("Player#EUW");
-
-        await _command.RunAsync(context);
-
-        context.Received(1).GetString("lolhistory_win");
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldCallGetStringForLoss_WhenParticipantLost()
+    public async Task Test_RunAsync_ShouldSetWinStatusCorrectly_WhenParticipantLost()
     {
         const string puuid = "test-puuid";
         SetupAccountResponse(puuid);
@@ -244,24 +262,13 @@ public class LeagueOfLegendsHistoryCommandTest
         SetupMatchResponse(puuid, win: false);
         var context = MakeContext("Player#EUW");
 
-        await _command.RunAsync(context);
-
-        context.Received(1).GetString("lolhistory_loss");
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldPassCorrectKdaToGameEntry()
-    {
-        const string puuid = "test-puuid";
-        SetupAccountResponse(puuid);
-        SetupMatchIdsResponse(["EUW1_001"]);
-        SetupMatchResponse(puuid, kills: 10, deaths: 3, assists: 7);
-        var context = MakeContext("Player#EUW");
+        LeagueHistoryViewModel capturedVm = null;
+        await _templatesManager.GetTemplateAsync(Arg.Any<string>(),
+            Arg.Do<LeagueHistoryViewModel>(vm => capturedVm = vm));
 
         await _command.RunAsync(context);
 
-        context.Received(1).GetString("lolhistory_game_entry",
-            Arg.Is<object[]>(args => (int)args[2] == 10 && (int)args[3] == 3 && (int)args[4] == 7));
+        Assert.That(capturedVm.Games[0].Win, Is.False);
     }
 
     [Test]
@@ -285,6 +292,8 @@ public class LeagueOfLegendsHistoryCommandTest
                             new MatchParticipantDto
                             {
                                 Puuid = puuid,
+                                ChampionName = "Ahri",
+                                ChampionId = 103,
                                 TotalMinionsKilled = 180,
                                 NeutralMinionsKilled = 20,
                                 Win = true
@@ -295,11 +304,14 @@ public class LeagueOfLegendsHistoryCommandTest
             });
         var context = MakeContext("Player#EUW");
 
+        LeagueHistoryViewModel capturedVm = null;
+        await _templatesManager.GetTemplateAsync(Arg.Any<string>(),
+            Arg.Do<LeagueHistoryViewModel>(vm => capturedVm = vm));
+
         await _command.RunAsync(context);
 
         // CS = 180 + 20 = 200
-        context.Received(1).GetString("lolhistory_game_entry",
-            Arg.Is<object[]>(args => (int)args[5] == 200));
+        Assert.That(capturedVm.Games[0].Cs, Is.EqualTo(200));
     }
 
     [Test]
@@ -311,10 +323,13 @@ public class LeagueOfLegendsHistoryCommandTest
         SetupMatchResponse(puuid, gameDuration: 1800); // 30 minutes
         var context = MakeContext("Player#EUW");
 
+        LeagueHistoryViewModel capturedVm = null;
+        await _templatesManager.GetTemplateAsync(Arg.Any<string>(),
+            Arg.Do<LeagueHistoryViewModel>(vm => capturedVm = vm));
+
         await _command.RunAsync(context);
 
-        context.Received(1).GetString("lolhistory_game_entry",
-            Arg.Is<object[]>(args => (int)args[7] == 30));
+        Assert.That(capturedVm.Games[0].DurationMinutes, Is.EqualTo(30));
     }
 
     // --- Error handling ---

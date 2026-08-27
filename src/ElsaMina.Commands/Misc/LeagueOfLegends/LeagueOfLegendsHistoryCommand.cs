@@ -4,6 +4,8 @@ using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Templates;
+using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Misc.LeagueOfLegends;
@@ -14,11 +16,12 @@ public class LeagueOfLegendsHistoryCommand : Command
     private static readonly Dictionary<int, string> QUEUE_NAMES =
         new()
         {
-            [420] = "Solo",
-            [440] = "Flex",
-            [400] = "Normal",
-            [430] = "Blind",
+            [420] = "Ranked Solo",
+            [440] = "Ranked Flex",
+            [400] = "Draft Pick",
+            [430] = "Blind Pick",
             [450] = "ARAM",
+            [490] = "Quickplay",
             [1700] = "Arena",
             [0] = "Custom"
         };
@@ -27,11 +30,15 @@ public class LeagueOfLegendsHistoryCommand : Command
 
     private readonly IHttpService _httpService;
     private readonly IConfiguration _configuration;
+    private readonly ITemplatesManager _templatesManager;
 
-    public LeagueOfLegendsHistoryCommand(IHttpService httpService, IConfiguration configuration)
+    public LeagueOfLegendsHistoryCommand(IHttpService httpService,
+        IConfiguration configuration,
+        ITemplatesManager templatesManager)
     {
         _httpService = httpService;
         _configuration = configuration;
+        _templatesManager = templatesManager;
     }
 
     public override bool IsAllowedInPrivateMessage => true;
@@ -101,36 +108,62 @@ public class LeagueOfLegendsHistoryCommand : Command
             });
             var matchResponses = await Task.WhenAll(matchTasks);
 
-            var entries = new List<string>();
+            var games = new List<LeagueHistoryGameViewModel>();
             foreach (var match in matchResponses.Select(matchResponse => matchResponse.Data))
             {
                 var participant = match?.Info?.Participants?.FirstOrDefault(p => p.Puuid == puuid);
                 if (participant == null)
+                {
                     continue;
+                }
 
-                var queueName = QUEUE_NAMES.GetValueOrDefault(match.Info.QueueId, "?");
+                var queueName = QUEUE_NAMES.GetValueOrDefault(match.Info.QueueId, "Other");
                 var durationMinutes = match.Info.GameDuration / 60;
                 var cs = participant.TotalMinionsKilled + participant.NeutralMinionsKilled;
-                var resultKey = participant.Win ? "lolhistory_win" : "lolhistory_loss";
-                entries.Add(context.GetString("lolhistory_game_entry",
-                    context.GetString(resultKey),
-                    participant.ChampionName,
-                    participant.Kills,
-                    participant.Deaths,
-                    participant.Assists,
-                    cs,
-                    queueName,
-                    durationMinutes));
+                var timestamp = match.Info.GameEndTimestamp > 0
+                    ? match.Info.GameEndTimestamp
+                    : match.Info.GameCreation;
+                var gameDate = timestamp > 0
+                    ? DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
+                    : DateTimeOffset.UtcNow;
+                var formattedDate = gameDate.ToString("d", context.Culture);
+
+                games.Add(new LeagueHistoryGameViewModel
+                {
+                    ChampionName = participant.ChampionName,
+                    ChampionId = participant.ChampionId,
+                    ChampionIconUrl = LeagueApiHelper.GetChampionIconUrl(participant.ChampionId, participant.ChampionName),
+                    Win = participant.Win,
+                    Kills = participant.Kills,
+                    Deaths = participant.Deaths,
+                    Assists = participant.Assists,
+                    KdaRatio = LeagueApiHelper.CalculateKdaRatio(participant.Kills, participant.Deaths, participant.Assists),
+                    Cs = cs,
+                    CsPerMinute = LeagueApiHelper.CalculateCsPerMinute(cs, durationMinutes),
+                    QueueName = queueName,
+                    DurationMinutes = durationMinutes,
+                    GameDate = TimeZoneInfo.ConvertTime(gameDate, context.Room.TimeZone),
+                    FormattedDate = formattedDate
+                });
             }
 
-            if (entries.Count == 0)
+            if (games.Count == 0)
             {
                 context.ReplyLocalizedMessage("lolhistory_no_games", gameName, tagLine);
                 return;
             }
 
-            var header = context.GetString("lolhistory_header", gameName, tagLine);
-            context.Reply($"!code {header}\n{string.Join("\n", entries)}", rankAware: true);
+            var viewModel = new LeagueHistoryViewModel
+            {
+                GameName = gameName,
+                TagLine = tagLine,
+                Platform = platform,
+                Games = games,
+                Culture = context.Culture
+            };
+
+            var template = await _templatesManager.GetTemplateAsync("Misc/LeagueOfLegends/LeagueHistory", viewModel);
+            context.ReplyHtml(template.RemoveNewlines(), rankAware: true);
         }
         catch (Exception ex)
         {

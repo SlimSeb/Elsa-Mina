@@ -1,0 +1,69 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Misc.LeagueOfLegends.LeagueHistoryViewModel>
+
+<div style="display:inline-block;background:#091428;border:1px solid #785a28;border-radius:8px;padding:8px 12px;color:#f0e6d2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,0.5);min-width:360px;max-width:520px;">
+    <table style="width:100%;border-bottom:1px solid #1e282d;margin-bottom:6px;padding-bottom:4px;">
+        <tr>
+            <td style="text-align:left;font-size:13px;font-weight:bold;color:#f0e6d2;vertical-align:middle;">
+                <span>@Model.GameName</span><span style="color:#a09b8c;font-weight:normal;">#@Model.TagLine</span>
+            </td>
+            <td style="text-align:right;vertical-align:middle;">
+                <span style="font-size:10px;background:#1e282d;color:#c8aa6e;padding:2px 6px;border-radius:4px;font-weight:bold;text-transform:uppercase;border:1px solid #3c3c41;">
+                    @Model.Platform
+                </span>
+            </td>
+        </tr>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;">
+        <tbody>
+        @for (var i = 0; i < Model.Games.Count; i++)
+        {
+            var game = Model.Games[i];
+            var winBg = game.Win ? "#1a382b" : "#3c1a24";
+            var winBorder = game.Win ? "#27ad6f" : "#e84057";
+            var resultColor = game.Win ? "#57c482" : "#e84057";
+            var resultText = game.Win ? GetString("lolhistory_win") : GetString("lolhistory_loss");
+            var borderBottom = i < Model.Games.Count - 1 ? "border-bottom:1px solid #142032;" : "";
+
+            <tr style="@borderBottom">
+                <td style="padding:5px 6px 5px 0;vertical-align:middle;white-space:nowrap;min-width:75px;">
+                    <div style="display:inline-block;background:@winBg;border-left:3px solid @winBorder;padding:1px 5px;border-radius:2px;font-size:10px;font-weight:bold;color:@resultColor;text-align:center;">
+                        @resultText
+                    </div>
+                    <div style="font-size:10px;color:#a09b8c;margin-top:2px;">
+                        @game.QueueName
+                    </div>
+                    <div style="font-size:9px;color:#7c8b9e;">
+                        @game.FormattedDate · @game.DurationMinutes m
+                    </div>
+                </td>
+
+                <td style="padding:5px 6px;vertical-align:middle;white-space:nowrap;">
+                    <img src="@game.ChampionIconUrl" width="32" height="32" alt="@game.ChampionName" style="border-radius:4px;border:1px solid #785a28;vertical-align:middle;margin-right:6px;display:inline-block;object-fit:cover;" />
+                    <span style="font-weight:bold;font-size:12px;color:#f0e6d2;vertical-align:middle;">
+                        @game.ChampionName
+                    </span>
+                </td>
+
+                <td style="padding:5px 6px;vertical-align:middle;text-align:right;white-space:nowrap;">
+                    <div style="font-size:12px;font-weight:bold;">
+                        <span style="color:#f0e6d2;">@game.Kills</span>/<span style="color:#e84057;">@game.Deaths</span>/<span style="color:#f0e6d2;">@game.Assists</span>
+                    </div>
+                    <div style="font-size:10px;color:#c8aa6e;font-weight:600;">
+                        @game.KdaRatio KDA
+                    </div>
+                </td>
+
+                <td style="padding:5px 0 5px 6px;vertical-align:middle;text-align:right;white-space:nowrap;">
+                    <div style="font-size:11px;color:#cdbe91;font-weight:bold;">
+                        @game.Cs CS
+                    </div>
+                    <div style="font-size:9px;color:#a09b8c;">
+                        (@game.CsPerMinute/m)
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

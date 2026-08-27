@@ -131,4 +131,100 @@ public class LeagueApiHelperTest
 
         Assert.That(headers["X-Riot-Token"], Is.EqualTo("my-api-key"));
     }
+
+    // --- GetRankEmblemUrl ---
+
+    [TestCase("GOLD", "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-gold.png")]
+    [TestCase("diamond", "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-diamond.png")]
+    [TestCase("CHALLENGER", "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-challenger.png")]
+    public void Test_GetRankEmblemUrl_ShouldReturnCorrectUrl_ForTier(string tier, string expectedUrl)
+    {
+        Assert.That(LeagueApiHelper.GetRankEmblemUrl(tier), Is.EqualTo(expectedUrl));
+    }
+
+    [Test]
+    public void Test_GetRankEmblemUrl_ShouldReturnUnrankedUrl_WhenTierIsNullOrEmpty()
+    {
+        Assert.That(LeagueApiHelper.GetRankEmblemUrl(null),
+            Is.EqualTo("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"));
+        Assert.That(LeagueApiHelper.GetRankEmblemUrl(""),
+            Is.EqualTo("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"));
+    }
+
+    // --- GetChampionIconUrl ---
+
+    [Test]
+    public void Test_GetChampionIconUrl_ShouldReturnCommunityDragonUrl_WhenChampionIdIsPositive()
+    {
+        Assert.That(LeagueApiHelper.GetChampionIconUrl(222, "Jinx"),
+            Is.EqualTo("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/222.png"));
+    }
+
+    [Test]
+    public void Test_GetChampionIconUrl_ShouldReturnDDragonUrl_WhenChampionIdIsZeroAndNameProvided()
+    {
+        Assert.That(LeagueApiHelper.GetChampionIconUrl(0, "Ahri"),
+            Is.EqualTo("https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/Ahri.png"));
+    }
+
+    [Test]
+    public void Test_GetChampionIconUrl_ShouldReturnFallbackUrl_WhenNoIdOrNameProvided()
+    {
+        Assert.That(LeagueApiHelper.GetChampionIconUrl(0, null),
+            Is.EqualTo("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/-1.png"));
+    }
+
+    // --- GetTierColor ---
+
+    [TestCase("GOLD", "#eec152")]
+    [TestCase("diamond", "#6ba6ff")]
+    [TestCase("CHALLENGER", "#fde047")]
+    [TestCase("iron", "#9e948d")]
+    [TestCase(null, "#8a96a3")]
+    public void Test_GetTierColor_ShouldReturnExpectedHexCode(string tier, string expectedHex)
+    {
+        Assert.That(LeagueApiHelper.GetTierColor(tier), Is.EqualTo(expectedHex));
+    }
+
+    // --- FormatTierRank ---
+
+    [TestCase("GOLD", "II", "GOLD II")]
+    [TestCase("diamond", "iv", "DIAMOND IV")]
+    [TestCase("CHALLENGER", "I", "CHALLENGER")]
+    [TestCase("MASTER", "I", "MASTER")]
+    [TestCase("GRANDMASTER", "I", "GRANDMASTER")]
+    [TestCase("SILVER", null, "SILVER")]
+    [TestCase(null, null, "Unranked")]
+    public void Test_FormatTierRank_ShouldFormatCorrectly(string tier, string rank, string expected)
+    {
+        Assert.That(LeagueApiHelper.FormatTierRank(tier, rank), Is.EqualTo(expected));
+    }
+
+    // --- CalculateKdaRatio ---
+
+    [Test]
+    public void Test_CalculateKdaRatio_ShouldReturnPerfect_WhenDeathsIsZero()
+    {
+        Assert.That(LeagueApiHelper.CalculateKdaRatio(5, 0, 10), Is.EqualTo("Perfect"));
+    }
+
+    [Test]
+    public void Test_CalculateKdaRatio_ShouldComputeCorrectRatio_WhenDeathsIsPositive()
+    {
+        Assert.That(LeagueApiHelper.CalculateKdaRatio(5, 2, 8), Is.EqualTo("6.50"));
+    }
+
+    // --- CalculateCsPerMinute ---
+
+    [Test]
+    public void Test_CalculateCsPerMinute_ShouldComputeCorrectCsPerMinute()
+    {
+        Assert.That(LeagueApiHelper.CalculateCsPerMinute(200, 25), Is.EqualTo("8.0"));
+    }
+
+    [Test]
+    public void Test_CalculateCsPerMinute_ShouldReturnZero_WhenDurationIsZero()
+    {
+        Assert.That(LeagueApiHelper.CalculateCsPerMinute(100, 0), Is.EqualTo("0.0"));
+    }
 }

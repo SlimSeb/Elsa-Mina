@@ -7,6 +7,9 @@ public class MatchParticipantDto
     [JsonProperty("puuid")]
     public string Puuid { get; set; }
 
+    [JsonProperty("championId")]
+    public int ChampionId { get; set; }
+
     [JsonProperty("championName")]
     public string ChampionName { get; set; }
 

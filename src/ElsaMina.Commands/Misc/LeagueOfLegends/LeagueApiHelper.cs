@@ -62,4 +62,80 @@ public static class LeagueApiHelper
         var puuid = response.Data?.Puuid;
         return string.IsNullOrEmpty(puuid) ? null : puuid;
     }
+
+    public static string GetRankEmblemUrl(string tier)
+    {
+        if (string.IsNullOrWhiteSpace(tier))
+        {
+            return "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png";
+        }
+
+        return $"https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-{tier.Trim().ToLowerInvariant()}.png";
+    }
+
+    public static string GetChampionIconUrl(int championId, string championName = null)
+    {
+        if (championId > 0)
+        {
+            return $"https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/{championId}.png";
+        }
+
+        if (!string.IsNullOrWhiteSpace(championName))
+        {
+            return $"https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/{Uri.EscapeDataString(championName)}.png";
+        }
+
+        return "https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/-1.png";
+    }
+
+    public static string GetTierColor(string tier) => tier?.ToUpperInvariant() switch
+    {
+        "IRON" => "#9e948d",
+        "BRONZE" => "#cd885d",
+        "SILVER" => "#a3b8c8",
+        "GOLD" => "#eec152",
+        "PLATINUM" => "#49c5b1",
+        "EMERALD" => "#32d583",
+        "DIAMOND" => "#6ba6ff",
+        "MASTER" => "#c084fc",
+        "GRANDMASTER" => "#f87171",
+        "CHALLENGER" => "#fde047",
+        _ => "#8a96a3"
+    };
+
+    public static string FormatTierRank(string tier, string rank)
+    {
+        if (string.IsNullOrWhiteSpace(tier))
+        {
+            return "Unranked";
+        }
+
+        var upperTier = tier.ToUpperInvariant();
+        if (upperTier is "MASTER" or "GRANDMASTER" or "CHALLENGER" || string.IsNullOrWhiteSpace(rank))
+        {
+            return upperTier;
+        }
+
+        return $"{upperTier} {rank.ToUpperInvariant()}";
+    }
+
+    public static string CalculateKdaRatio(int kills, int deaths, int assists)
+    {
+        if (deaths == 0)
+        {
+            return "Perfect";
+        }
+
+        return ((double)(kills + assists) / deaths).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    public static string CalculateCsPerMinute(int cs, int durationMinutes)
+    {
+        if (durationMinutes <= 0)
+        {
+            return "0.0";
+        }
+
+        return ((double)cs / durationMinutes).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+    }
 }

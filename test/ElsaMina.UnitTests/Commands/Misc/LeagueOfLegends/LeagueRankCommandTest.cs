@@ -3,6 +3,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Templates;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -13,6 +14,7 @@ public class LeagueRankCommandTest
 {
     private IHttpService _httpService;
     private IConfiguration _configuration;
+    private ITemplatesManager _templatesManager;
     private LeagueRankCommand _command;
 
     [SetUp]
@@ -20,9 +22,11 @@ public class LeagueRankCommandTest
     {
         _httpService = Substitute.For<IHttpService>();
         _configuration = Substitute.For<IConfiguration>();
+        _templatesManager = Substitute.For<ITemplatesManager>();
         _configuration.RiotApiKey.Returns("test-api-key");
+        _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("<html/>");
 
-        _command = new LeagueRankCommand(_httpService, _configuration);
+        _command = new LeagueRankCommand(_httpService, _configuration, _templatesManager);
     }
 
     private IContext MakeContext(string target)
@@ -159,7 +163,7 @@ public class LeagueRankCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldCallGetStringForSoloAndFlex_WhenBothQueuesPresent()
+    public async Task Test_RunAsync_ShouldRenderTemplateAndReplyHtml_WhenBothQueuesPresent()
     {
         SetupAccountResponse("test-puuid");
         SetupEntriesResponse([
@@ -168,15 +172,39 @@ public class LeagueRankCommandTest
         ]);
         var context = MakeContext("Player#EUW");
 
+        LeagueRankViewModel capturedVm = null;
+        await _templatesManager.GetTemplateAsync(Arg.Any<string>(),
+            Arg.Do<LeagueRankViewModel>(vm => capturedVm = vm));
+
         await _command.RunAsync(context);
 
-        context.Received(1).GetString("lolrank_solo", Arg.Any<object[]>());
-        context.Received(1).GetString("lolrank_flex", Arg.Any<object[]>());
-        context.Received(1).Reply(Arg.Any<string>(), rankAware: true);
+        await _templatesManager.Received(1).GetTemplateAsync("Misc/LeagueOfLegends/LeagueRank", Arg.Any<LeagueRankViewModel>());
+        context.Received(1).ReplyHtml(Arg.Any<string>(), rankAware: true);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedVm, Is.Not.Null);
+            Assert.That(capturedVm.GameName, Is.EqualTo("Player"));
+            Assert.That(capturedVm.TagLine, Is.EqualTo("EUW"));
+            Assert.That(capturedVm.SoloQueue.IsUnranked, Is.False);
+            Assert.That(capturedVm.SoloQueue.Tier, Is.EqualTo("GOLD"));
+            Assert.That(capturedVm.SoloQueue.FormattedRank, Is.EqualTo("GOLD II"));
+            Assert.That(capturedVm.SoloQueue.LeaguePoints, Is.EqualTo(50));
+            Assert.That(capturedVm.SoloQueue.Wins, Is.EqualTo(60));
+            Assert.That(capturedVm.SoloQueue.Losses, Is.EqualTo(40));
+            Assert.That(capturedVm.SoloQueue.WinRate, Is.EqualTo(60));
+            Assert.That(capturedVm.SoloQueue.EmblemUrl, Does.Contain("emblem-gold.png"));
+            Assert.That(capturedVm.FlexQueue.IsUnranked, Is.False);
+            Assert.That(capturedVm.FlexQueue.Tier, Is.EqualTo("SILVER"));
+            Assert.That(capturedVm.FlexQueue.FormattedRank, Is.EqualTo("SILVER I"));
+            Assert.That(capturedVm.FlexQueue.LeaguePoints, Is.EqualTo(80));
+            Assert.That(capturedVm.FlexQueue.WinRate, Is.EqualTo(60));
+            Assert.That(capturedVm.FlexQueue.EmblemUrl, Does.Contain("emblem-silver.png"));
+        }
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldCallGetStringForSoloOnly_WhenOnlySoloQueuePresent()
+    public async Task Test_RunAsync_ShouldMarkFlexAsUnranked_WhenOnlySoloQueuePresent()
     {
         SetupAccountResponse("test-puuid");
         SetupEntriesResponse([
@@ -184,15 +212,24 @@ public class LeagueRankCommandTest
         ]);
         var context = MakeContext("Player#EUW");
 
+        LeagueRankViewModel capturedVm = null;
+        await _templatesManager.GetTemplateAsync(Arg.Any<string>(),
+            Arg.Do<LeagueRankViewModel>(vm => capturedVm = vm));
+
         await _command.RunAsync(context);
 
-        context.Received(1).GetString("lolrank_solo", Arg.Any<object[]>());
-        context.DidNotReceive().GetString("lolrank_flex", Arg.Any<object[]>());
-        context.Received(1).Reply(Arg.Any<string>(), rankAware: true);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedVm, Is.Not.Null);
+            Assert.That(capturedVm.SoloQueue.IsUnranked, Is.False);
+            Assert.That(capturedVm.SoloQueue.Tier, Is.EqualTo("PLATINUM"));
+            Assert.That(capturedVm.FlexQueue.IsUnranked, Is.True);
+            Assert.That(capturedVm.FlexQueue.EmblemUrl, Does.Contain("unranked.png"));
+        }
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldCallGetStringForFlexOnly_WhenOnlyFlexQueuePresent()
+    public async Task Test_RunAsync_ShouldMarkSoloAsUnranked_WhenOnlyFlexQueuePresent()
     {
         SetupAccountResponse("test-puuid");
         SetupEntriesResponse([
@@ -200,26 +237,20 @@ public class LeagueRankCommandTest
         ]);
         var context = MakeContext("Player#EUW");
 
-        await _command.RunAsync(context);
-
-        context.DidNotReceive().GetString("lolrank_solo", Arg.Any<object[]>());
-        context.Received(1).GetString("lolrank_flex", Arg.Any<object[]>());
-        context.Received(1).Reply(Arg.Any<string>(), rankAware: true);
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldCallGetStringForUnrankedQueues_WhenEntriesContainNoSoloOrFlex()
-    {
-        SetupAccountResponse("test-puuid");
-        SetupEntriesResponse([
-            new LeagueEntryDto { QueueType = "RANKED_TFT", Tier = "GOLD", Rank = "I", LeaguePoints = 0, Wins = 10, Losses = 5 }
-        ]);
-        var context = MakeContext("Player#EUW");
+        LeagueRankViewModel capturedVm = null;
+        await _templatesManager.GetTemplateAsync(Arg.Any<string>(),
+            Arg.Do<LeagueRankViewModel>(vm => capturedVm = vm));
 
         await _command.RunAsync(context);
 
-        context.Received(1).GetString("lolrank_unranked_queues");
-        context.Received(1).Reply(Arg.Any<string>(), rankAware: true);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(capturedVm, Is.Not.Null);
+            Assert.That(capturedVm.SoloQueue.IsUnranked, Is.True);
+            Assert.That(capturedVm.SoloQueue.EmblemUrl, Does.Contain("unranked.png"));
+            Assert.That(capturedVm.FlexQueue.IsUnranked, Is.False);
+            Assert.That(capturedVm.FlexQueue.Tier, Is.EqualTo("DIAMOND"));
+        }
     }
 
     [Test]
@@ -232,10 +263,13 @@ public class LeagueRankCommandTest
         ]);
         var context = MakeContext("Player#EUW");
 
+        LeagueRankViewModel capturedVm = null;
+        await _templatesManager.GetTemplateAsync(Arg.Any<string>(),
+            Arg.Do<LeagueRankViewModel>(vm => capturedVm = vm));
+
         await _command.RunAsync(context);
 
-        context.Received(1).GetString("lolrank_solo",
-            Arg.Is<object[]>(args => (int)args[5] == 75));
+        Assert.That(capturedVm.SoloQueue.WinRate, Is.EqualTo(75));
     }
 
     [Test]
@@ -247,10 +281,13 @@ public class LeagueRankCommandTest
         ]);
         var context = MakeContext("Player#EUW");
 
+        LeagueRankViewModel capturedVm = null;
+        await _templatesManager.GetTemplateAsync(Arg.Any<string>(),
+            Arg.Do<LeagueRankViewModel>(vm => capturedVm = vm));
+
         await _command.RunAsync(context);
 
-        context.Received(1).GetString("lolrank_solo",
-            Arg.Is<object[]>(args => (int)args[5] == 0));
+        Assert.That(capturedVm.SoloQueue.WinRate, Is.EqualTo(0));
     }
 
     [Test]

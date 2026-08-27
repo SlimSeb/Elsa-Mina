@@ -315,8 +315,14 @@
     <data name="lolrank_solo" xml:space="preserve">
         <value>Solo/Duo: {0} {1} {2} LP ({3}V/{4}S, {5}%)</value>
     </data>
+    <data name="lolrank_solo_title" xml:space="preserve">
+        <value>Classificata Solo / Duo</value>
+    </data>
     <data name="lolrank_flex" xml:space="preserve">
         <value>Flex: {0} {1} {2} LP ({3}V/{4}S, {5}%)</value>
+    </data>
+    <data name="lolrank_flex_title" xml:space="preserve">
+        <value>Classificata Flex</value>
     </data>
     <data name="lolhistory_help" xml:space="preserve">
         <value>Mostra le ultime 5 partite di un giocatore. Sintassi: -lolhistory &lt;nome#tag&gt; [regione]</value>
