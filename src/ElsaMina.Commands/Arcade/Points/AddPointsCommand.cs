@@ -21,6 +21,7 @@ public class AddPointsCommand : Command
     }
 
     public override Rank RequiredRank => Rank.Voiced;
+    public override string[] RoomRestriction => ["arcade", "franais", "frenchstaff"];
     public override string HelpMessageKey => "add_points_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
