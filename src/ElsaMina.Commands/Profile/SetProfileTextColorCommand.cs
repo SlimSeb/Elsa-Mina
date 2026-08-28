@@ -14,10 +14,13 @@ namespace ElsaMina.Commands.Profile;
 public class SetProfileTextColorCommand : Command
 {
     private readonly IRoomUserDataService _roomUserDataService;
+    private readonly IEditProfilePanelService _editProfilePanelService;
 
-    public SetProfileTextColorCommand(IRoomUserDataService roomUserDataService)
+    public SetProfileTextColorCommand(IRoomUserDataService roomUserDataService,
+        IEditProfilePanelService editProfilePanelService)
     {
         _roomUserDataService = roomUserDataService;
+        _editProfilePanelService = editProfilePanelService;
     }
 
     public override Rank RequiredRank => Rank.Regular;
@@ -65,6 +68,7 @@ public class SetProfileTextColorCommand : Command
             await _roomUserDataService.SetUserTextColorAsync(
                 roomId, context.Sender.UserId, colorValue, cancellationToken);
             context.ReplyLocalizedMessage("set_profile_text_color_success");
+            await _editProfilePanelService.SendPanelAsync(context, roomId, cancellationToken);
         }
         catch (Exception exception)
         {

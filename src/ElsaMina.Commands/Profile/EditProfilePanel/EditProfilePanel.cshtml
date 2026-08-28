@@ -51,6 +51,16 @@
 <div style="@containerStyle">
     <h2>@GetString("edit_profile_panel_title")</h2>
 
+    @if (Model.ProfilePreview != null)
+    {
+        <div style="@sectionStyle">
+            <div style="@sectionTitleStyle">@GetString("edit_profile_panel_preview_section")</div>
+            <div>
+                @{ await IncludeAsync("Profile/Profile", Model.ProfilePreview); }
+            </div>
+        </div>
+    }
+
     <div style="@sectionStyle">
         <div style="@sectionTitleStyle">@GetString("edit_profile_panel_emoji_section")</div>
         <div>

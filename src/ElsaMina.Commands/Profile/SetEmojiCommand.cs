@@ -1,3 +1,4 @@
+using ElsaMina.Commands.Profile.EditProfilePanel;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
@@ -11,10 +12,13 @@ namespace ElsaMina.Commands.Profile;
 public class SetEmojiCommand : Command
 {
     private readonly IRoomUserDataService _roomUserDataService;
+    private readonly IEditProfilePanelService _editProfilePanelService;
 
-    public SetEmojiCommand(IRoomUserDataService roomUserDataService)
+    public SetEmojiCommand(IRoomUserDataService roomUserDataService,
+        IEditProfilePanelService editProfilePanelService)
     {
         _roomUserDataService = roomUserDataService;
+        _editProfilePanelService = editProfilePanelService;
     }
 
     public override Rank RequiredRank => Rank.Regular;
@@ -55,6 +59,7 @@ public class SetEmojiCommand : Command
         {
             await _roomUserDataService.SetUserEmojiAsync(roomId, context.Sender.UserId, emoji, cancellationToken);
             context.ReplyLocalizedMessage("set_emoji_success");
+            await _editProfilePanelService.SendPanelAsync(context, roomId, cancellationToken);
         }
         catch (Exception exception)
         {

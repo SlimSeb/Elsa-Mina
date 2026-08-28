@@ -47,7 +47,7 @@ public class ProfileService : IProfileService
         _dollService = dollService;
     }
 
-    public async Task<string> GetProfileHtmlAsync(string userId, string roomId,
+    public async Task<ProfileViewModel> GetProfileViewModelAsync(string userId, string roomId,
         CancellationToken cancellationToken = default)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
@@ -108,7 +108,7 @@ public class ProfileService : IProfileService
             ? TimeZoneInfo.ConvertTime(savedUser.LastOnline.Value, room?.TimeZone ?? TimeZoneInfo.Local)
             : (DateTimeOffset?)null;
 
-        var viewModel = new ProfileViewModel
+        return new ProfileViewModel
         {
             Culture = culture,
             Avatar = avatarUrl,
@@ -133,7 +133,12 @@ public class ProfileService : IProfileService
             LastSeenDate = lastSeenDate,
             LastSeenAction = savedUser?.LastSeenAction
         };
+    }
 
+    public async Task<string> GetProfileHtmlAsync(string userId, string roomId,
+        CancellationToken cancellationToken = default)
+    {
+        var viewModel = await GetProfileViewModelAsync(userId, roomId, cancellationToken);
         return await _templatesManager.GetTemplateAsync("Profile/Profile", viewModel);
     }
 

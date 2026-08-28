@@ -18,4 +18,9 @@ public class EditProfilePanelViewModel : LocalizableViewModel
     /// The user's dolls, in the order they show up on their profile.
     /// </summary>
     public IReadOnlyList<Doll> Dolls { get; set; } = [];
+
+    /// <summary>
+    /// The user's profile preview.
+    /// </summary>
+    public ProfileViewModel ProfilePreview { get; set; }
 }

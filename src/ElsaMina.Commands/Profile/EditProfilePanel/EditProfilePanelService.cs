@@ -1,11 +1,8 @@
-using ElsaMina.Commands.Dolls;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
-using ElsaMina.DataAccess;
-using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Commands.Profile.EditProfilePanel;
 
@@ -13,23 +10,20 @@ public class EditProfilePanelService : IEditProfilePanelService
 {
     private const string TEMPLATE_KEY = "Profile/EditProfilePanel/EditProfilePanel";
 
-    private readonly IBotDbContextFactory _dbContextFactory;
     private readonly ITemplatesManager _templatesManager;
     private readonly IConfiguration _configuration;
     private readonly IRoomsManager _roomsManager;
-    private readonly IDollService _dollService;
+    private readonly IProfileService _profileService;
 
-    public EditProfilePanelService(IBotDbContextFactory dbContextFactory,
-        ITemplatesManager templatesManager,
+    public EditProfilePanelService(ITemplatesManager templatesManager,
         IConfiguration configuration,
         IRoomsManager roomsManager,
-        IDollService dollService)
+        IProfileService profileService)
     {
-        _dbContextFactory = dbContextFactory;
         _templatesManager = templatesManager;
         _configuration = configuration;
         _roomsManager = roomsManager;
-        _dollService = dollService;
+        _profileService = profileService;
     }
 
     public async Task SendPanelAsync(IContext context, string roomId, CancellationToken cancellationToken = default)
@@ -40,11 +34,12 @@ public class EditProfilePanelService : IEditProfilePanelService
             context.Culture = room.Culture;
         }
 
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var userId = context.Sender.UserId;
-        var storedUser = await dbContext.RoomUsers
-            .Include(roomUser => roomUser.Dolls)
-            .FirstOrDefaultAsync(roomUser => roomUser.Id == userId && roomUser.RoomId == roomId, cancellationToken);
+        var profileViewModel = await _profileService.GetProfileViewModelAsync(userId, roomId, cancellationToken);
+        if (context.Culture != null)
+        {
+            profileViewModel.Culture = context.Culture;
+        }
 
         var viewModel = new EditProfilePanelViewModel
         {
@@ -53,11 +48,12 @@ public class EditProfilePanelService : IEditProfilePanelService
             Trigger = _configuration.Trigger,
             RoomId = roomId,
             UserId = userId,
-            CurrentEmoji = storedUser?.ProfileEmoji ?? string.Empty,
-            CurrentBackgroundColor = storedUser?.ProfileBackgroundColor ?? string.Empty,
-            CurrentTextColor = storedUser?.ProfileTextColor ?? string.Empty,
-            CurrentLabelColor = storedUser?.ProfileLabelColor ?? string.Empty,
-            Dolls = await _dollService.ResolveDollsAsync(storedUser?.Dolls ?? [], cancellationToken)
+            CurrentEmoji = profileViewModel.ProfileEmoji ?? string.Empty,
+            CurrentBackgroundColor = profileViewModel.ProfileBackgroundColor ?? string.Empty,
+            CurrentTextColor = profileViewModel.ProfileTextColor ?? string.Empty,
+            CurrentLabelColor = profileViewModel.ProfileLabelColor ?? string.Empty,
+            Dolls = profileViewModel.Dolls?.ToList() ?? [],
+            ProfilePreview = profileViewModel
         };
 
         var template = await _templatesManager.GetTemplateAsync(TEMPLATE_KEY, viewModel);

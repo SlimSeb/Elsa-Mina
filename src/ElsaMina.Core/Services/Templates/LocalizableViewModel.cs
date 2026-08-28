@@ -4,5 +4,5 @@ namespace ElsaMina.Core.Services.Templates;
 
 public class LocalizableViewModel
 {
-    public required CultureInfo Culture { get; init; }
+    public CultureInfo Culture { get; set; }
 }

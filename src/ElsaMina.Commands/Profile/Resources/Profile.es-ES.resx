@@ -153,6 +153,9 @@
     <data name="edit_profile_panel_title" xml:space="preserve">
         <value>Editar perfil</value>
     </data>
+    <data name="edit_profile_panel_preview_section" xml:space="preserve">
+        <value>Vista previa</value>
+    </data>
     <data name="edit_profile_panel_emoji_section" xml:space="preserve">
         <value>Emoji de perfil</value>
     </data>

@@ -1,4 +1,5 @@
 using ElsaMina.Commands.Profile;
+using ElsaMina.Commands.Profile.EditProfilePanel;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.RoomUserData;
@@ -11,6 +12,7 @@ public class SetProfileColorCommandTest
 {
     private SetProfileColorCommand _command;
     private IRoomUserDataService _roomUserDataService;
+    private IEditProfilePanelService _editProfilePanelService;
     private IContext _context;
     private IUser _sender;
 
@@ -18,7 +20,8 @@ public class SetProfileColorCommandTest
     public void SetUp()
     {
         _roomUserDataService = Substitute.For<IRoomUserDataService>();
-        _command = new SetProfileColorCommand(_roomUserDataService);
+        _editProfilePanelService = Substitute.For<IEditProfilePanelService>();
+        _command = new SetProfileColorCommand(_roomUserDataService, _editProfilePanelService);
         _context = Substitute.For<IContext>();
         _sender = Substitute.For<IUser>();
         _sender.UserId.Returns("testuser");
@@ -37,6 +40,7 @@ public class SetProfileColorCommandTest
 
         await _roomUserDataService.Received(1).SetUserBackgroundColorAsync("testroom", "testuser", "#8867aa73");
         _context.Received(1).ReplyLocalizedMessage("set_profile_color_success");
+        await _editProfilePanelService.Received(1).SendPanelAsync(_context, "testroom", Arg.Any<CancellationToken>());
     }
 
     [Test]

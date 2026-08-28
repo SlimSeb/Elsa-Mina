@@ -682,4 +682,33 @@ public class ProfileServiceTest
     }
 
     #endregion
+
+    #region GetProfileViewModelAsync
+
+    [Test]
+    public async Task Test_GetProfileViewModelAsync_ShouldReturnPopulatedViewModel()
+    {
+        // Arrange
+        _dbContext.RoomUsers.Add(new RoomUser
+        {
+            Id = "alice",
+            RoomId = "room1",
+            ProfileEmoji = "⭐",
+            ProfileBackgroundColor = "#8867aa73",
+            User = new SavedUser { UserId = "alice", UserName = "Alice" }
+        });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        var result = await _sut.GetProfileViewModelAsync("alice", "room1");
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.UserId, Is.EqualTo("alice"));
+        Assert.That(result.UserName, Is.EqualTo("Alice"));
+        Assert.That(result.ProfileEmoji, Is.EqualTo("⭐"));
+        Assert.That(result.ProfileBackgroundColor, Is.EqualTo("#8867aa73"));
+    }
+
+    #endregion
 }

@@ -14,10 +14,13 @@ namespace ElsaMina.Commands.Profile;
 public class SetProfileLabelColorCommand : Command
 {
     private readonly IRoomUserDataService _roomUserDataService;
+    private readonly IEditProfilePanelService _editProfilePanelService;
 
-    public SetProfileLabelColorCommand(IRoomUserDataService roomUserDataService)
+    public SetProfileLabelColorCommand(IRoomUserDataService roomUserDataService,
+        IEditProfilePanelService editProfilePanelService)
     {
         _roomUserDataService = roomUserDataService;
+        _editProfilePanelService = editProfilePanelService;
     }
 
     public override Rank RequiredRank => Rank.Regular;
@@ -65,6 +68,7 @@ public class SetProfileLabelColorCommand : Command
             await _roomUserDataService.SetUserLabelColorAsync(
                 roomId, context.Sender.UserId, colorValue, cancellationToken);
             context.ReplyLocalizedMessage("set_profile_label_color_success");
+            await _editProfilePanelService.SendPanelAsync(context, roomId, cancellationToken);
         }
         catch (Exception exception)
         {
