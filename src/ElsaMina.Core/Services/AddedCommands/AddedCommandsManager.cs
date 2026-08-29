@@ -98,7 +98,10 @@ public class AddedCommandsManager : IAddedCommandsManager
             {
                 if (name == function.Key)
                 {
-                    args.Result = function.Value.DynamicInvoke((object)args.EvaluateParameters(CancellationToken.None));
+                    var evaluatedParams = Enumerable.Range(0, args.Parameters.Count)
+                        .Select(index => args.Parameters.Evaluate(index))
+                        .ToArray();
+                    args.Result = function.Value.DynamicInvoke((object)evaluatedParams);
                 }
             };
         }
