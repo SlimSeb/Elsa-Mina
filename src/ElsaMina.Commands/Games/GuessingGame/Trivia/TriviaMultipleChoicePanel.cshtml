@@ -19,12 +19,9 @@
     <tbody>
     <tr>
         <td colspan="2" style="@headerStyle">
-            <b>🎮 @GetString("trivia_title")</b> &bull; @Model.Category &bull; <i>@Model.Difficulty</i>
-            <br/>
-            <b>@Model.CurrentTurn / @Model.TurnsCount</b>
-            @if (!Model.ShowCorrectAnswer)
+            <b>🎮 @GetString("trivia_title")</b> &bull; @Model.Category &bull; <i>@Model.Difficulty</i> &bull; <b>@Model.CurrentTurn / @Model.TurnsCount</b>@if (!Model.ShowCorrectAnswer)
             {
-                <text>&nbsp;&bull; @Model.RemainingTime.Seconds s</text>
+                <text> &bull; @Model.RemainingTime.Seconds s</text>
             }
         </td>
     </tr>
