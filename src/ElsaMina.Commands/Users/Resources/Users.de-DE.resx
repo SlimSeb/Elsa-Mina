@@ -66,6 +66,9 @@
     <data name="streak_error" xml:space="preserve">
         <value>Seriendaten konnten nicht abgerufen werden.</value>
     </data>
+    <data name="streak_disabled" xml:space="preserve">
+        <value>Serien sind in diesem Raum deaktiviert.</value>
+    </data>
     <data name="streak_help" xml:space="preserve">
         <value>Verwendung: streak [Nutzername] - zeigt die tägliche Aktivitätsserie eines Nutzers.</value>
     </data>

@@ -13,5 +13,6 @@ public enum Parameter
     ShowUrlPreview,
     KlipyGifEnabled,
     BucksEnabled,
-    EventAnnouncesType
+    EventAnnouncesType,
+    StreaksEnabled
 }

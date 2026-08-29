@@ -66,6 +66,9 @@
     <data name="streak_error" xml:space="preserve">
         <value>No se pudieron obtener los datos de racha.</value>
     </data>
+    <data name="streak_disabled" xml:space="preserve">
+        <value>Las rachas están desactivadas en esta sala.</value>
+    </data>
     <data name="streak_help" xml:space="preserve">
         <value>Uso: streak [usuario] - muestra la racha de actividad diaria de un usuario.</value>
     </data>

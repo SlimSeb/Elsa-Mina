@@ -152,4 +152,10 @@
     <data name="parameter_value_event_announces_none" xml:space="preserve">
         <value>Ninguno</value>
     </data>
+    <data name="parameter_name_streaks_enabled" xml:space="preserve">
+        <value>Rachas</value>
+    </data>
+    <data name="parameter_description_streaks_enabled" xml:space="preserve">
+        <value>Activar o desactivar las rachas y clasificaciones de rachas para esta sala.</value>
+    </data>
 </root>

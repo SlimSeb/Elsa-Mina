@@ -147,4 +147,10 @@
     <data name="parameter_value_event_announces_none" xml:space="preserve">
         <value>Nenhum</value>
     </data>
+    <data name="parameter_name_streaks_enabled" xml:space="preserve">
+        <value>Sequências</value>
+    </data>
+    <data name="parameter_description_streaks_enabled" xml:space="preserve">
+        <value>Ativar ou desativar sequências e tabelas de classificação de sequências para esta sala.</value>
+    </data>
 </root>

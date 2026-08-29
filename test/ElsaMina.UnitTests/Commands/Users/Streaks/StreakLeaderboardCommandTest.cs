@@ -1,6 +1,7 @@
 using ElsaMina.Commands.Users.Streaks;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
@@ -30,7 +31,10 @@ public class StreakLeaderboardCommandTest
 
         _context.RoomId.Returns("testroom");
         _context.Target.Returns(string.Empty);
+        _context.Room.Returns(_room);
         _room.Name.Returns("Test Room");
+        _room.GetParameterValueAsync(Parameter.StreaksEnabled, Arg.Any<CancellationToken>())
+            .Returns(true.ToString());
         _roomsManager.GetRoom("testroom").Returns(_room);
 
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>())
@@ -166,5 +170,21 @@ public class StreakLeaderboardCommandTest
 
         // Assert
         _context.Received(1).ReplyLocalizedMessage("streak_leaderboard_error");
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyDisabled_WhenStreaksAreDisabled()
+    {
+        // Arrange
+        _room.GetParameterValueAsync(Parameter.StreaksEnabled, Arg.Any<CancellationToken>())
+            .Returns(false.ToString());
+
+        // Act
+        await new StreakLeaderboardCommand(_dbContextFactory, _templatesManager, _roomsManager)
+            .RunAsync(_context);
+
+        // Assert
+        _context.Received(1).ReplyLocalizedMessage("streak_disabled");
+        await _dbContextFactory.DidNotReceiveWithAnyArgs().CreateDbContextAsync(default);
     }
 }

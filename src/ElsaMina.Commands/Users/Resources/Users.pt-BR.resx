@@ -66,6 +66,9 @@
     <data name="streak_error" xml:space="preserve">
         <value>Não foi possível recuperar os dados de sequência.</value>
     </data>
+    <data name="streak_disabled" xml:space="preserve">
+        <value>As sequências estão desativadas nesta sala.</value>
+    </data>
     <data name="streak_help" xml:space="preserve">
         <value>Uso: streak [usuário] - exibe a sequência de atividade diária de um usuário.</value>
     </data>

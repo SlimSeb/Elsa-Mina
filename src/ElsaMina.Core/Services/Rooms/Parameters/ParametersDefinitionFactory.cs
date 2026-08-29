@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Resources;
@@ -156,6 +156,14 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
                         DisplayedValueKey = "parameter_value_event_announces_none"
                     }
                 ]
+            },
+            [Parameter.StreaksEnabled] = new ParameterDefinition
+            {
+                Identifier = "stk",
+                NameKey = "parameter_name_streaks_enabled",
+                DescriptionKey = "parameter_description_streaks_enabled",
+                Type = RoomBotConfigurationType.Boolean,
+                DefaultValue = true.ToString()
             }
         };
 }

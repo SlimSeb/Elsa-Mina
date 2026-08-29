@@ -1,6 +1,7 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
 
@@ -22,6 +23,12 @@ public class StreakCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
+        if (!await context.IsStreaksEnabledAsync(cancellationToken))
+        {
+            context.ReplyLocalizedMessage("streak_disabled");
+            return;
+        }
+
         var targetUserId = string.IsNullOrWhiteSpace(context.Target)
             ? context.Sender.UserId
             : context.Target.Trim().ToLowerAlphaNum();

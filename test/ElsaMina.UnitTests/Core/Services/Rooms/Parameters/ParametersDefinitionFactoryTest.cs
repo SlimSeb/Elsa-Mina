@@ -116,6 +116,7 @@ public class ParametersDefinitionFactoryTest
     [TestCase(Parameter.KlipyGifEnabled, true)]
     [TestCase(Parameter.ShowUrlPreview, false)]
     [TestCase(Parameter.BucksEnabled, false)]
+    [TestCase(Parameter.StreaksEnabled, true)]
     public void Test_BooleanParameters_ShouldHaveExpectedDefault(Parameter parameter, bool expectedDefault)
     {
         // Act

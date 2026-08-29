@@ -66,6 +66,9 @@
     <data name="streak_error" xml:space="preserve">
         <value>Could not retrieve streak data.</value>
     </data>
+    <data name="streak_disabled" xml:space="preserve">
+        <value>Streaks are disabled in this room.</value>
+    </data>
     <data name="streak_help" xml:space="preserve">
         <value>Usage: streak [username] - shows the daily activity streak for a user.</value>
     </data>

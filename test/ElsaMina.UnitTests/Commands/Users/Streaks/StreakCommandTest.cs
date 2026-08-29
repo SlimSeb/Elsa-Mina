@@ -1,6 +1,7 @@
 using ElsaMina.Commands.Users.Streaks;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -12,6 +13,7 @@ public class StreakCommandTest
     private IStreakService _streakService;
     private IContext _context;
     private IUser _sender;
+    private IRoom _room;
 
     [SetUp]
     public void SetUp()
@@ -19,10 +21,14 @@ public class StreakCommandTest
         _streakService = Substitute.For<IStreakService>();
         _context = Substitute.For<IContext>();
         _sender = Substitute.For<IUser>();
+        _room = Substitute.For<IRoom>();
 
         _sender.UserId.Returns("alice");
         _context.Sender.Returns(_sender);
         _context.RoomId.Returns("testroom");
+        _context.Room.Returns(_room);
+        _room.GetParameterValueAsync(Parameter.StreaksEnabled, Arg.Any<CancellationToken>())
+            .Returns(true.ToString());
 
         _command = new StreakCommand(_streakService);
     }
@@ -96,5 +102,20 @@ public class StreakCommandTest
 
         // Assert
         _context.Received(1).ReplyLocalizedMessage("streak_error");
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyDisabled_WhenStreaksAreDisabled()
+    {
+        // Arrange
+        _room.GetParameterValueAsync(Parameter.StreaksEnabled, Arg.Any<CancellationToken>())
+            .Returns(false.ToString());
+
+        // Act
+        await _command.RunAsync(_context);
+
+        // Assert
+        _context.Received(1).ReplyLocalizedMessage("streak_disabled");
+        await _streakService.DidNotReceiveWithAnyArgs().GetStreakAsync(default, default, default);
     }
 }

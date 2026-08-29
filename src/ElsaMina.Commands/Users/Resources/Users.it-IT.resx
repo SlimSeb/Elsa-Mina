@@ -66,6 +66,9 @@
     <data name="streak_error" xml:space="preserve">
         <value>Impossibile recuperare i dati della serie.</value>
     </data>
+    <data name="streak_disabled" xml:space="preserve">
+        <value>Le serie sono disabilitate in questa stanza.</value>
+    </data>
     <data name="streak_help" xml:space="preserve">
         <value>Uso: streak [utente] - mostra la serie di attività giornaliera di un utente.</value>
     </data>

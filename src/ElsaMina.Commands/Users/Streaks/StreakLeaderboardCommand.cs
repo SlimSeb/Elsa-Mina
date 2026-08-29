@@ -1,6 +1,7 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
@@ -32,11 +33,19 @@ public class StreakLeaderboardCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
+        var roomId = string.IsNullOrWhiteSpace(context.Target)
+            ? context.RoomId
+            : context.Target.ToLowerAlphaNum();
+
+        var targetRoom = _roomsManager.GetRoom(roomId) ?? (string.IsNullOrWhiteSpace(context.Target) ? context.Room : null);
+        if (targetRoom != null && !await targetRoom.IsStreaksEnabledAsync(cancellationToken))
+        {
+            context.ReplyLocalizedMessage("streak_disabled");
+            return;
+        }
+
         try
         {
-            var roomId = string.IsNullOrWhiteSpace(context.Target)
-                ? context.RoomId
-                : context.Target.ToLowerAlphaNum();
 
             await using var dbContext = await _botDbContextFactory.CreateDbContextAsync(cancellationToken);
             var topUsers = await dbContext.RoomUsers

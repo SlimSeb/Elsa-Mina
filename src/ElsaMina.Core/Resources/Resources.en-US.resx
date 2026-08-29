@@ -152,4 +152,10 @@
     <data name="parameter_value_event_announces_none" xml:space="preserve">
         <value>None</value>
     </data>
+    <data name="parameter_name_streaks_enabled" xml:space="preserve">
+        <value>Streaks</value>
+    </data>
+    <data name="parameter_description_streaks_enabled" xml:space="preserve">
+        <value>Enable or disable streaks and streak leaderboards for this room.</value>
+    </data>
 </root>
