@@ -2373,4 +2373,22 @@
     <data name="president_square_closed" xml:space="preserve">
         <value>💥 Quadra de {1}! {0} fecha a pilha.</value>
     </data>
+    <data name="trivia_title" xml:space="preserve">
+        <value>Trivia</value>
+    </data>
+    <data name="trivia_start" xml:space="preserve">
+        <value>Um jogo de Trivia começou!</value>
+    </data>
+    <data name="trivia_fetch_error" xml:space="preserve">
+        <value>Não foi possível recuperar as perguntas do trivia. Tente novamente mais tarde.</value>
+    </data>
+    <data name="trivia_true" xml:space="preserve">
+        <value>Verdadeiro</value>
+    </data>
+    <data name="trivia_false" xml:space="preserve">
+        <value>Falso</value>
+    </data>
+    <data name="trivia_true_false" xml:space="preserve">
+        <value>Verdadeiro / Falso</value>
+    </data>
 </root>

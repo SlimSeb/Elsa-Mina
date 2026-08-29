@@ -1,10 +1,14 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.GuessingGame;
+using ElsaMina.Commands.Games.GuessingGame.Trivia;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Clock;
+using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Templates;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 
@@ -87,6 +91,32 @@ public class GuessingGameCommandTest
 
         // Assert
         _context.Received(1).ReplyLocalizedMessage("guessing_game_currently_ongoing");
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldResolveTriviaGame_WhenCommandIsTrivia()
+    {
+        // Arrange
+        _context.Target.Returns("5");
+        _context.Command.Returns("trivia");
+        _context.RoomId.Returns("testroom");
+        _room.Game.ReturnsNull();
+        _context.Room.Returns(_room);
+        var triviaGame = Substitute.For<TriviaGame>(
+            Substitute.For<ITriviaService>(),
+            Substitute.For<ITemplatesManager>(),
+            Substitute.For<IConfiguration>(),
+            Substitute.For<IClockService>());
+        _dependencyContainerService.Resolve<TriviaGame>().Returns(triviaGame);
+
+        // Act
+        await _command.RunAsync(_context);
+
+        // Assert
+        _dependencyContainerService.Received(1).Resolve<TriviaGame>();
+        _room.Received(1).Game = triviaGame;
+        Assert.That(triviaGame.TurnsCount, Is.EqualTo(5));
+        Assert.That(triviaGame.Context, Is.EqualTo(_context));
     }
 
     [Test]

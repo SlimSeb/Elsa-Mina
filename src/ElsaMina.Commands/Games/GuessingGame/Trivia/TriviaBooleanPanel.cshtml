@@ -1,0 +1,84 @@
+@using ElsaMina.Commands.Games.GuessingGame.Trivia
+@using ElsaMina.Core.Services.Templates
+@using ElsaMina.Core.Utils
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.GuessingGame.Trivia.TriviaGamePanelViewModel>
+@{
+    const string backgroundGreenColor = "#55BB8873";
+    const string border = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string headerStyle = $"{border} padding: 6px; text-align: center; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string questionStyle = $"{border} padding: 10px 14px; text-align: center; background-color: #22222233; font-size: 13px; font-weight: bold;";
+    const string cellStyle = $"{border} padding: 8px; text-align: center; vertical-align: middle;";
+    const string shadedCellStyle = $"{border} padding: 6px; text-align: center; vertical-align: middle; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string correctAnswerCellStyle = $"{border} padding: 8px; text-align: center; vertical-align: middle; background-color: {backgroundGreenColor};";
+
+    var isTrueCorrect = string.Equals(Model.CorrectAnswer, "True", StringComparison.OrdinalIgnoreCase);
+    var isFalseCorrect = string.Equals(Model.CorrectAnswer, "False", StringComparison.OrdinalIgnoreCase);
+    var trueCellStyle = Model.ShowCorrectAnswer && isTrueCorrect ? correctAnswerCellStyle : cellStyle;
+    var falseCellStyle = Model.ShowCorrectAnswer && isFalseCorrect ? correctAnswerCellStyle : cellStyle;
+}
+<table style="border-collapse: collapse; max-width: 560px; width: 100%;">
+    <tbody>
+    <tr>
+        <td colspan="2" style="@headerStyle">
+            <b>🎮 @GetString("trivia_title")</b> &bull; @Model.Category &bull; <i>@Model.Difficulty</i> &bull; <i>@GetString("trivia_true_false")</i>
+            <br/>
+            <b>@Model.CurrentTurn / @Model.TurnsCount</b>
+            @if (!Model.ShowCorrectAnswer)
+            {
+                <text>&bull; @Model.RemainingTime.Seconds s</text>
+            }
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="@questionStyle">
+            @Model.Question
+        </td>
+    </tr>
+    <tr>
+        <td style="@trueCellStyle; width: 50%;">
+            @if (!Model.ShowCorrectAnswer)
+            {
+                <button class="button" name="send"
+                        value="/botmsg @Model.BotName, @(Model.Trigger)guess @Model.RoomId,True"
+                        style="cursor: pointer; padding: 6px 16px; font-weight: bold; width: 80%;">
+                    ✔ @GetString("trivia_true")
+                </button>
+            }
+            else
+            {
+                <div style="font-size: 14px; @(isTrueCorrect ? "font-weight: bold; color: #2e7d32;" : "")">
+                    ✔ @GetString("trivia_true")
+                </div>
+            }
+        </td>
+        <td style="@falseCellStyle; width: 50%;">
+            @if (!Model.ShowCorrectAnswer)
+            {
+                <button class="button" name="send"
+                        value="/botmsg @Model.BotName, @(Model.Trigger)guess @Model.RoomId,False"
+                        style="cursor: pointer; padding: 6px 16px; font-weight: bold; width: 80%;">
+                    ✖ @GetString("trivia_false")
+                </button>
+            }
+            else
+            {
+                <div style="font-size: 14px; @(isFalseCorrect ? "font-weight: bold; color: #2e7d32;" : "")">
+                    ✖ @GetString("trivia_false")
+                </div>
+            }
+        </td>
+    </tr>
+    @if (Model.Scores != null && Model.Scores.Count > 0)
+    {
+        <tr>
+            <td colspan="2" style="@shadedCellStyle">
+                @foreach (var (player, score) in Model.Scores.OrderByDescending(s => s.Value))
+                {
+                    <span>@player.UserName: <b>@score</b></span>
+                    <text>&nbsp;&nbsp;</text>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

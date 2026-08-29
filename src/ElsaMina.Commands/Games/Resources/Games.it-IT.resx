@@ -2367,4 +2367,22 @@
     <data name="president_square_closed" xml:space="preserve">
         <value>💥 Poker di {1}! {0} chiude la pila.</value>
     </data>
+    <data name="trivia_title" xml:space="preserve">
+        <value>Trivia</value>
+    </data>
+    <data name="trivia_start" xml:space="preserve">
+        <value>È iniziata una partita di Trivia!</value>
+    </data>
+    <data name="trivia_fetch_error" xml:space="preserve">
+        <value>Impossibile recuperare le domande di trivia. Riprova più tardi.</value>
+    </data>
+    <data name="trivia_true" xml:space="preserve">
+        <value>Vero</value>
+    </data>
+    <data name="trivia_false" xml:space="preserve">
+        <value>Falso</value>
+    </data>
+    <data name="trivia_true_false" xml:space="preserve">
+        <value>Vero / Falso</value>
+    </data>
 </root>

@@ -2373,4 +2373,22 @@
     <data name="president_square_closed" xml:space="preserve">
         <value>💥 Carré de {1} ! {0} ferme le pli.</value>
     </data>
+    <data name="trivia_title" xml:space="preserve">
+        <value>Trivia</value>
+    </data>
+    <data name="trivia_start" xml:space="preserve">
+        <value>Une partie de Trivia a commencé !</value>
+    </data>
+    <data name="trivia_fetch_error" xml:space="preserve">
+        <value>Impossible de récupérer les questions de trivia. Veuillez réessayer plus tard.</value>
+    </data>
+    <data name="trivia_true" xml:space="preserve">
+        <value>Vrai</value>
+    </data>
+    <data name="trivia_false" xml:space="preserve">
+        <value>Faux</value>
+    </data>
+    <data name="trivia_true_false" xml:space="preserve">
+        <value>Vrai / Faux</value>
+    </data>
 </root>

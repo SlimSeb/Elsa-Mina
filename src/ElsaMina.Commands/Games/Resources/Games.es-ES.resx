@@ -2367,4 +2367,22 @@
     <data name="president_square_closed" xml:space="preserve">
         <value>💥 ¡Póker de {1}! {0} cierra la pila.</value>
     </data>
+    <data name="trivia_title" xml:space="preserve">
+        <value>Trivia</value>
+    </data>
+    <data name="trivia_start" xml:space="preserve">
+        <value>¡Ha comenzado una partida de Trivia!</value>
+    </data>
+    <data name="trivia_fetch_error" xml:space="preserve">
+        <value>No se pudieron obtener las preguntas de trivia. Inténtalo de nuevo más tarde.</value>
+    </data>
+    <data name="trivia_true" xml:space="preserve">
+        <value>Verdadero</value>
+    </data>
+    <data name="trivia_false" xml:space="preserve">
+        <value>Falso</value>
+    </data>
+    <data name="trivia_true_false" xml:space="preserve">
+        <value>Verdadero / Falso</value>
+    </data>
 </root>

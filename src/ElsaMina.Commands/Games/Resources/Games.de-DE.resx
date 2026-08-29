@@ -2373,4 +2373,22 @@
     <data name="president_square_closed" xml:space="preserve">
         <value>💥 Vierling ({1})! {0} macht den Stapel dicht.</value>
     </data>
+    <data name="trivia_title" xml:space="preserve">
+        <value>Trivia</value>
+    </data>
+    <data name="trivia_start" xml:space="preserve">
+        <value>Ein Trivia-Spiel hat begonnen!</value>
+    </data>
+    <data name="trivia_fetch_error" xml:space="preserve">
+        <value>Trivia-Fragen konnten nicht abgerufen werden. Bitte versuche es später noch einmal.</value>
+    </data>
+    <data name="trivia_true" xml:space="preserve">
+        <value>Wahr</value>
+    </data>
+    <data name="trivia_false" xml:space="preserve">
+        <value>Falsch</value>
+    </data>
+    <data name="trivia_true_false" xml:space="preserve">
+        <value>Wahr / Falsch</value>
+    </data>
 </root>

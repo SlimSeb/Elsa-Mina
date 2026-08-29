@@ -14,6 +14,7 @@ using ElsaMina.Commands.Games.GuessingGame.Gatekeepers;
 using ElsaMina.Commands.Games.GuessingGame.HigherLower;
 using ElsaMina.Commands.Games.GuessingGame.PokeCries;
 using ElsaMina.Commands.Games.GuessingGame.PokeDesc;
+using ElsaMina.Commands.Games.GuessingGame.Trivia;
 using ElsaMina.Commands.Games.GuessingGame.WhosThatPokemon;
 using ElsaMina.Commands.Games.LightsOut;
 using ElsaMina.Commands.Games.PokeRace;
@@ -224,5 +225,7 @@ public class GamesModule : Module
         builder.RegisterType<VoltorbFlipGameManager>().As<IVoltorbFlipGameManager>().SingleInstance();
         builder.RegisterType<BlackjackGame>().AsSelf();
         builder.RegisterType<BlackjackGameManager>().As<IBlackjackGameManager>().SingleInstance();
+        builder.RegisterType<OpenTdbTriviaService>().As<ITriviaService>().SingleInstance();
+        builder.RegisterType<TriviaGame>().AsSelf();
     }
 }

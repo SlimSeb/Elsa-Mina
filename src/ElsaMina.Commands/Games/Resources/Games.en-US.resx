@@ -2373,4 +2373,22 @@
     <data name="president_square_closed" xml:space="preserve">
         <value>💥 Four of a kind of {1}! {0} slams the pile shut.</value>
     </data>
+    <data name="trivia_title" xml:space="preserve">
+        <value>Trivia</value>
+    </data>
+    <data name="trivia_start" xml:space="preserve">
+        <value>A game of Trivia has started!</value>
+    </data>
+    <data name="trivia_fetch_error" xml:space="preserve">
+        <value>Could not retrieve trivia questions. Please try again later.</value>
+    </data>
+    <data name="trivia_true" xml:space="preserve">
+        <value>True</value>
+    </data>
+    <data name="trivia_false" xml:space="preserve">
+        <value>False</value>
+    </data>
+    <data name="trivia_true_false" xml:space="preserve">
+        <value>True / False</value>
+    </data>
 </root>

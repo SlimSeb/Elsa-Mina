@@ -1,9 +1,10 @@
-﻿using ElsaMina.Commands.Games.GuessingGame.Capitals;
+using ElsaMina.Commands.Games.GuessingGame.Capitals;
 using ElsaMina.Commands.Games.GuessingGame.Countries;
 using ElsaMina.Commands.Games.GuessingGame.Gatekeepers;
 using ElsaMina.Commands.Games.GuessingGame.HigherLower;
 using ElsaMina.Commands.Games.GuessingGame.PokeCries;
 using ElsaMina.Commands.Games.GuessingGame.PokeDesc;
+using ElsaMina.Commands.Games.GuessingGame.Trivia;
 using ElsaMina.Commands.Games.GuessingGame.WhosThatPokemon;
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
@@ -14,7 +15,7 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.GuessingGame;
 
-[NamedCommand("guessinggame", Aliases = ["countriesgame", "pokedesc", "pokecries", "gatekeepers", "capitalcities", "higherlower", "whosthatpokemon"])]
+[NamedCommand("guessinggame", Aliases = ["countriesgame", "pokedesc", "pokecries", "gatekeepers", "capitalcities", "higherlower", "whosthatpokemon", "trivia"])]
 public class GuessingGameCommand : Command
 {
     private const int MAX_TURNS_COUNT = 20;
@@ -70,6 +71,7 @@ public class GuessingGameCommand : Command
             "capitalcities" => _dependencyContainerService.Resolve<CapitalCitiesGame>(),
             "higherlower" => _dependencyContainerService.Resolve<HigherLowerGame>(),
             "whosthatpokemon" => _dependencyContainerService.Resolve<WhosThatPokemonGame>(),
+            "trivia" => _dependencyContainerService.Resolve<TriviaGame>(),
             _ => null
         };
         if (game == null)

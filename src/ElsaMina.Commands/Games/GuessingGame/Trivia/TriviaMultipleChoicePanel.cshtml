@@ -1,0 +1,105 @@
+@using ElsaMina.Commands.Games.GuessingGame.Trivia
+@using ElsaMina.Core.Services.Templates
+@using ElsaMina.Core.Utils
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Games.GuessingGame.Trivia.TriviaGamePanelViewModel>
+@{
+    var options = Model.Options.ToList();
+
+    const string backgroundGreenColor = "#55BB8873";
+    const string border = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string headerStyle = $"{border} padding: 6px; text-align: center; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string questionStyle = $"{border} padding: 10px 14px; text-align: center; background-color: #22222233; font-size: 13px; font-weight: bold;";
+    const string cellStyle = $"{border} padding: 4px; text-align: center; vertical-align: middle;";
+    const string shadedCellStyle = $"{border} padding: 6px; text-align: center; vertical-align: middle; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
+    const string correctAnswerCellStyle = $"{border} padding: 4px; text-align: center; vertical-align: middle; background-color: {backgroundGreenColor};";
+
+    string[] optionLetters = ["A", "B", "C", "D"];
+}
+<table style="border-collapse: collapse; max-width: 560px; width: 100%;">
+    <tbody>
+    <tr>
+        <td colspan="2" style="@headerStyle">
+            <b>🎮 @GetString("trivia_title")</b> &bull; @Model.Category &bull; <i>@Model.Difficulty</i>
+            <br/>
+            <b>@Model.CurrentTurn / @Model.TurnsCount</b>
+            @if (!Model.ShowCorrectAnswer)
+            {
+                <text>&nbsp;&bull; @Model.RemainingTime.Seconds s</text>
+            }
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2" style="@questionStyle">
+            @Model.Question
+        </td>
+    </tr>
+    @for (var row = 0; row < (options.Count + 1) / 2; row++)
+    {
+        <tr>
+            @for (var col = 0; col < 2; col++)
+            {
+                var i = row * 2 + col;
+                if (i < options.Count)
+                {
+                    var optionText = options[i];
+                    var optionLetter = i < optionLetters.Length ? optionLetters[i] : (i + 1).ToString();
+                    var isCorrect = Model.IsOptionCorrect(i);
+                    var cellBackground = Model.ShowCorrectAnswer && isCorrect ? correctAnswerCellStyle : cellStyle;
+                    <td style="@cellBackground; width: 50%;">
+                        @if (!Model.ShowCorrectAnswer)
+                        {
+                            <button name="send"
+                                    value="/botmsg @Model.BotName, @(Model.Trigger)guess @Model.RoomId,@optionLetter"
+                                    style="background: none; border: none; cursor: pointer; padding: 6px 8px; width: 100%; text-align: left;">
+                                <table style="border-collapse: collapse; width: 100%;">
+                                    <tbody>
+                                    <tr>
+                                        <td style="width: 24px; vertical-align: middle; text-align: center;">
+                                            <span style="display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 50%; background-color: #4a90d9; color: white; font-weight: bold; font-size: 11px;">@optionLetter</span>
+                                        </td>
+                                        <td style="padding-left: 6px; vertical-align: middle; text-align: left; font-size: 12px;">
+                                            @optionText
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </button>
+                        }
+                        else
+                        {
+                            <table style="border-collapse: collapse; width: 100%; padding: 6px 8px;">
+                                <tbody>
+                                <tr>
+                                    <td style="width: 24px; vertical-align: middle; text-align: center;">
+                                        <span style="display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 50%; background-color: @(isCorrect ? "#2e7d32" : "#757575"); color: white; font-weight: bold; font-size: 11px;">@optionLetter</span>
+                                    </td>
+                                    <td style="padding-left: 6px; vertical-align: middle; text-align: left; font-size: 12px; @(isCorrect ? "font-weight: bold;" : "")">
+                                        @optionText
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        }
+                    </td>
+                }
+                else
+                {
+                    <td style="@cellStyle; width: 50%;"></td>
+                }
+            }
+        </tr>
+    }
+    @if (Model.Scores != null && Model.Scores.Count > 0)
+    {
+        <tr>
+            <td colspan="2" style="@shadedCellStyle">
+                @foreach (var (player, score) in Model.Scores.OrderByDescending(s => s.Value))
+                {
+                    <span>@player.UserName: <b>@score</b></span>
+                    <text>&nbsp;&nbsp;</text>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
