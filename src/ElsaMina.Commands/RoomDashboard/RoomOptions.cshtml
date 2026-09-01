@@ -1,0 +1,104 @@
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.RoomDashboard.RoomDashboardViewModel>
+
+@{
+    const string wrapperStyle = "padding: 16px; font-family: Verdana, sans-serif; max-width: 700px; margin: 0 auto;";
+    const string headerStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; padding: 14px 18px;" +
+                               "border-radius: 8px; text-align: center; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);";
+    const string titleStyle = "margin: 0; font-size: 1.25em; font-weight: bold; letter-spacing: 0.5px;";
+    const string subtitleStyle = "margin: 6px 0 0 0; font-size: 0.85em; opacity: 0.9;";
+    const string cardStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-radius: 8px; margin-bottom: 16px;" +
+                             "overflow: hidden; background: rgba(103, 136, 170, 0.08);";
+    const string cardHeaderStyle = $"background: {StyleConstants.PRIMARY_BACKGROUND_COLOR}; padding: 10px 14px;" +
+                                   $"font-weight: bold; font-size: 0.95em; border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string tableStyle = "border-collapse: collapse; width: 100%;";
+    const string footerStyle = "padding: 16px; text-align: center; margin-top: 8px;";
+    const string submitBtnStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; border: none;" +
+                                  "padding: 10px 28px; border-radius: 6px; cursor: pointer;" +
+                                  "font-size: 0.95em; font-weight: bold; letter-spacing: 0.3px;";
+    const string backBtnStyle = "background: rgba(103, 136, 170, 0.2); border: 1px solid rgba(103, 136, 170, 0.5); border-radius: 4px; padding: 6px 14px; font-size: 0.82em; font-weight: bold; cursor: pointer; color: inherit; display: inline-block; margin-bottom: 12px;";
+}
+
+<div style="@wrapperStyle">
+    <div style="margin-bottom: 12px; display: flex; gap: 6px; flex-wrap: wrap;">
+        <button
+            class="button"
+            name="send"
+            value="/w @Model.BotName, @(Model.Trigger)roomdashboard @Model.RoomId"
+            style="@backBtnStyle">
+            ← @GetString("dashboard_back_to_dashboard")
+        </button>
+        <button
+            class="button"
+            name="send"
+            value="/w @Model.BotName, @(Model.Trigger)configtour @Model.RoomId"
+            style="@backBtnStyle">
+            🏆 @GetString("dashboard_btn_open_tours")
+        </button>
+        <button
+            class="button"
+            name="send"
+            value="/w @Model.BotName, @(Model.Trigger)badgepanel @Model.RoomId"
+            style="@backBtnStyle">
+            🏅 @GetString("dashboard_btn_open_badges")
+        </button>
+    </div>
+
+    <div style="@headerStyle">
+        <p style="@titleStyle">@GetString("room_dashboard", Model.RoomName) — @GetString("dashboard_section_options")</p>
+        <p style="@subtitleStyle"><b>@Model.RoomId</b></p>
+    </div>
+
+    <!-- Parameter Configurations Form -->
+    <form data-submitsend="@Model.Command">
+        @if (Model.Categories != null && Model.Categories.Any())
+        {
+            @foreach (var category in Model.Categories)
+            {
+                <div style="@cardStyle">
+                    <div style="@cardHeaderStyle">
+                        @GetString(category.TitleKey)
+                    </div>
+                    <table style="@tableStyle">
+                        <tbody>
+                        @foreach (var parameterModel in category.Parameters)
+                        {
+                            <text>
+                                @{
+                                    await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
+                                }
+                            </text>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+        else if (Model.RoomParameterLines != null)
+        {
+            <div style="@cardStyle">
+                <table style="@tableStyle">
+                    <tbody>
+                    @foreach (var parameterModel in Model.RoomParameterLines)
+                    {
+                        <text>
+                            @{
+                                await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
+                            }
+                        </text>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <div style="@footerStyle">
+            <button
+                class="button"
+                type="submit"
+                style="@submitBtnStyle">
+                @GetString("dashboard_save_all")
+            </button>
+        </div>
+    </form>
+</div>

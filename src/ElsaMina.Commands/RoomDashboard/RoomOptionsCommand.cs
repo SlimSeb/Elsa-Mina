@@ -5,13 +5,13 @@ using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.RoomDashboard;
 
-[NamedCommand("room-dashboard", Aliases = ["roomdashboard", "rdash"])]
-public class ShowRoomDashboard : Command
+[NamedCommand("room-options", Aliases = ["roomoptions", "roptions"])]
+public class RoomOptionsCommand : Command
 {
     private readonly IRoomsManager _roomsManager;
     private readonly IRoomDashboardService _roomDashboardService;
 
-    public ShowRoomDashboard(
+    public RoomOptionsCommand(
         IRoomsManager roomsManager,
         IRoomDashboardService roomDashboardService)
     {
@@ -24,31 +24,9 @@ public class ShowRoomDashboard : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var isOptions = false;
-        string roomId = null;
-
-        if (string.IsNullOrWhiteSpace(context.Target))
-        {
-            roomId = context.RoomId;
-        }
-        else
-        {
-            var parts = context.Target.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            foreach (var part in parts)
-            {
-                var cleanPart = part.ToLowerAlphaNum();
-                if (cleanPart is "options" or "option" or "config")
-                {
-                    isOptions = true;
-                }
-                else if (roomId == null)
-                {
-                    roomId = cleanPart;
-                }
-            }
-
-            roomId ??= context.RoomId;
-        }
+        var roomId = string.IsNullOrWhiteSpace(context.Target)
+            ? context.RoomId
+            : context.Target.Trim().ToLowerAlphaNum();
 
         if (string.IsNullOrEmpty(roomId))
         {
@@ -73,13 +51,6 @@ public class ShowRoomDashboard : Command
             context.Culture = room.Culture;
         }
 
-        if (isOptions)
-        {
-            await _roomDashboardService.SendOptionsPageAsync(context, roomId, cancellationToken);
-        }
-        else
-        {
-            await _roomDashboardService.SendDashboardPageAsync(context, roomId, cancellationToken);
-        }
+        await _roomDashboardService.SendOptionsPageAsync(context, roomId, cancellationToken);
     }
 }

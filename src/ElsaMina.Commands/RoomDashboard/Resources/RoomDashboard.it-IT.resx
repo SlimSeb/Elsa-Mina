@@ -153,4 +153,82 @@
     <data name="dashboard_btn_reset_defaults" xml:space="preserve">
         <value>Ripristina predefiniti</value>
     </data>
+    <data name="dashboard_section_options" xml:space="preserve">
+        <value>Opzioni della stanza</value>
+    </data>
+    <data name="dashboard_options_description" xml:space="preserve">
+        <value>Configura i parametri della stanza, le anteprime della chat, le funzioni economiche e le impostazioni del bot.</value>
+    </data>
+    <data name="dashboard_btn_open_options" xml:space="preserve">
+        <value>Apri opzioni</value>
+    </data>
+    <data name="dashboard_back_to_dashboard" xml:space="preserve">
+        <value>Torna alla dashboard</value>
+    </data>
+    <data name="dashboard_section_quick_start_games" xml:space="preserve">
+        <value>Avvio rapido gioco</value>
+    </data>
+    <data name="dashboard_quick_start_description" xml:space="preserve">
+        <value>Avvia istantaneamente un gioco in questa stanza.</value>
+    </data>
+    <data name="dashboard_btn_start_game" xml:space="preserve">
+        <value>Avvia</value>
+    </data>
+    <data name="dashboard_active_game_warning" xml:space="preserve">
+        <value>Un gioco ({0}) è attualmente attivo in questa stanza.</value>
+    </data>
+    <data name="dashboard_btn_end_game" xml:space="preserve">
+        <value>Annulla gioco</value>
+    </data>
+    <data name="dashboard_games_muted_warning" xml:space="preserve">
+        <value>I minigiochi sono attualmente silenziati in questa stanza.</value>
+    </data>
+    <data name="dashboard_section_diagnostics" xml:space="preserve">
+        <value>Diagnostica</value>
+    </data>
+    <data name="dashboard_diag_users_online" xml:space="preserve">
+        <value>Utenti nella stanza</value>
+    </data>
+    <data name="dashboard_diag_active_game" xml:space="preserve">
+        <value>Gioco attivo</value>
+    </data>
+    <data name="dashboard_diag_no_active_game" xml:space="preserve">
+        <value>Nessuno</value>
+    </data>
+    <data name="dashboard_diag_locale" xml:space="preserve">
+        <value>Lingua della stanza</value>
+    </data>
+    <data name="dashboard_diag_timezone" xml:space="preserve">
+        <value>Fuso orario</value>
+    </data>
+    <data name="dashboard_diag_uptime" xml:space="preserve">
+        <value>Tempo di attività</value>
+    </data>
+    <data name="dashboard_diag_memory" xml:space="preserve">
+        <value>Utilizzo memoria</value>
+    </data>
+    <data name="dashboard_diag_platform" xml:space="preserve">
+        <value>Ambiente</value>
+    </data>
+    <data name="dashboard_diag_btn_refresh" xml:space="preserve">
+        <value>Aggiorna</value>
+    </data>
+    <data name="dashboard_badge_panel_name" xml:space="preserve">
+        <value>Gestione badge</value>
+    </data>
+    <data name="dashboard_badge_panel_description" xml:space="preserve">
+        <value>Visualizza, modifica e configura badge e trofei personalizzati per questa stanza.</value>
+    </data>
+    <data name="dashboard_btn_open_badges" xml:space="preserve">
+        <value>Pannello badge</value>
+    </data>
+    <data name="dashboard_tour_panel_name" xml:space="preserve">
+        <value>Configuratore tornei</value>
+    </data>
+    <data name="dashboard_tour_panel_description" xml:space="preserve">
+        <value>Crea, programma e avvia tornei automatizzati in questa stanza.</value>
+    </data>
+    <data name="dashboard_btn_open_tours" xml:space="preserve">
+        <value>Pannello tornei</value>
+    </data>
 </root>

@@ -153,4 +153,82 @@
     <data name="dashboard_btn_reset_defaults" xml:space="preserve">
         <value>Zurücksetzen</value>
     </data>
+    <data name="dashboard_section_options" xml:space="preserve">
+        <value>Raum-Optionen</value>
+    </data>
+    <data name="dashboard_options_description" xml:space="preserve">
+        <value>Konfigurieren Sie Raumparameter, Chat-Vorschauen, Wirtschaftsfunktionen und Bot-Einstellungen.</value>
+    </data>
+    <data name="dashboard_btn_open_options" xml:space="preserve">
+        <value>Optionen öffnen</value>
+    </data>
+    <data name="dashboard_back_to_dashboard" xml:space="preserve">
+        <value>Zurück zum Dashboard</value>
+    </data>
+    <data name="dashboard_section_quick_start_games" xml:space="preserve">
+        <value>Spiel schnell starten</value>
+    </data>
+    <data name="dashboard_quick_start_description" xml:space="preserve">
+        <value>Starten Sie sofort ein Spiel in diesem Raum.</value>
+    </data>
+    <data name="dashboard_btn_start_game" xml:space="preserve">
+        <value>Starten</value>
+    </data>
+    <data name="dashboard_active_game_warning" xml:space="preserve">
+        <value>Ein Spiel ({0}) läuft derzeit in diesem Raum.</value>
+    </data>
+    <data name="dashboard_btn_end_game" xml:space="preserve">
+        <value>Spiel beenden</value>
+    </data>
+    <data name="dashboard_games_muted_warning" xml:space="preserve">
+        <value>Minispiele sind in diesem Raum derzeit stummgeschaltet.</value>
+    </data>
+    <data name="dashboard_section_diagnostics" xml:space="preserve">
+        <value>Diagnose</value>
+    </data>
+    <data name="dashboard_diag_users_online" xml:space="preserve">
+        <value>Benutzer im Raum</value>
+    </data>
+    <data name="dashboard_diag_active_game" xml:space="preserve">
+        <value>Aktives Spiel</value>
+    </data>
+    <data name="dashboard_diag_no_active_game" xml:space="preserve">
+        <value>Keins</value>
+    </data>
+    <data name="dashboard_diag_locale" xml:space="preserve">
+        <value>Raum-Sprache</value>
+    </data>
+    <data name="dashboard_diag_timezone" xml:space="preserve">
+        <value>Zeitzone</value>
+    </data>
+    <data name="dashboard_diag_uptime" xml:space="preserve">
+        <value>Bot-Betriebszeit</value>
+    </data>
+    <data name="dashboard_diag_memory" xml:space="preserve">
+        <value>Speichernutzung</value>
+    </data>
+    <data name="dashboard_diag_platform" xml:space="preserve">
+        <value>Umgebung</value>
+    </data>
+    <data name="dashboard_diag_btn_refresh" xml:space="preserve">
+        <value>Aktualisieren</value>
+    </data>
+    <data name="dashboard_badge_panel_name" xml:space="preserve">
+        <value>Abzeichen-Verwaltung</value>
+    </data>
+    <data name="dashboard_badge_panel_description" xml:space="preserve">
+        <value>Benutzerdefinierte Abzeichen und Trophäen für diesen Raum anzeigen und bearbeiten.</value>
+    </data>
+    <data name="dashboard_btn_open_badges" xml:space="preserve">
+        <value>Abzeichen-Panel</value>
+    </data>
+    <data name="dashboard_tour_panel_name" xml:space="preserve">
+        <value>Turnier-Konfigurator</value>
+    </data>
+    <data name="dashboard_tour_panel_description" xml:space="preserve">
+        <value>Erstellen, planen und starten Sie automatisierte Turniere in diesem Raum.</value>
+    </data>
+    <data name="dashboard_btn_open_tours" xml:space="preserve">
+        <value>Turnier-Panel</value>
+    </data>
 </root>

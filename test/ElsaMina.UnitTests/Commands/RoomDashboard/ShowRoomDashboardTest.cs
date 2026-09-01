@@ -155,4 +155,35 @@ public class ShowRoomDashboardTest
 
         _context.DidNotReceiveWithAnyArgs().Culture = Arg.Any<CultureInfo>();
     }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldSendOptionsPage_WhenTargetIsOptions()
+    {
+        var room = Substitute.For<IRoom>();
+        _context.Target.Returns("options");
+        _context.RoomId.Returns("myroom");
+        _roomsManager.GetRoom("myroom").Returns(room);
+
+        await _command.RunAsync(_context);
+
+        await _roomDashboardService.Received(1)
+            .SendOptionsPageAsync(_context, "myroom", Arg.Any<CancellationToken>());
+        await _roomDashboardService.DidNotReceive()
+            .SendDashboardPageAsync(Arg.Any<IContext>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldSendOptionsPage_WhenTargetIsRoomAndOptions()
+    {
+        var room = Substitute.For<IRoom>();
+        _context.Target.Returns("testroom, options");
+        _roomsManager.GetRoom("testroom").Returns(room);
+
+        await _command.RunAsync(_context);
+
+        await _roomDashboardService.Received(1)
+            .SendOptionsPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
+        await _roomDashboardService.DidNotReceive()
+            .SendDashboardPageAsync(Arg.Any<IContext>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
 }

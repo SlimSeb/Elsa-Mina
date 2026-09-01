@@ -24,6 +24,7 @@ public class AdminModule : Module
         builder.RegisterCommand<HelpCommand>();
         builder.RegisterCommand<CommandInfoCommand>();
         builder.RegisterCommand<ShowRoomDashboard>();
+        builder.RegisterCommand<RoomOptionsCommand>();
         builder.RegisterCommand<RoomConfigCommand>();
         builder.RegisterCommand<KillCommand>();
         builder.RegisterCommand<MaydayCommand>();

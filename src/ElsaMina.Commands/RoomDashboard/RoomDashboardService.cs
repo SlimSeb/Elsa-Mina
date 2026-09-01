@@ -1,9 +1,13 @@
 using System.Text;
 using ElsaMina.Commands.Arcade.Events;
+using ElsaMina.Commands.Games.Catalog;
+using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
+using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 
@@ -16,19 +20,25 @@ public class RoomDashboardService : IRoomDashboardService
     private readonly ITemplatesManager _templatesManager;
     private readonly IParametersDefinitionFactory _parametersDefinitionFactory;
     private readonly IArcadeEventsService _arcadeEventsService;
+    private readonly IBot _bot;
+    private readonly ISystemService _systemService;
 
     public RoomDashboardService(
         IConfiguration configuration,
         IRoomsManager roomsManager,
         ITemplatesManager templatesManager,
         IParametersDefinitionFactory parametersDefinitionFactory,
-        IArcadeEventsService arcadeEventsService)
+        IArcadeEventsService arcadeEventsService,
+        IBot bot = null,
+        ISystemService systemService = null)
     {
         _configuration = configuration;
         _roomsManager = roomsManager;
         _templatesManager = templatesManager;
         _parametersDefinitionFactory = parametersDefinitionFactory;
         _arcadeEventsService = arcadeEventsService;
+        _bot = bot;
+        _systemService = systemService;
     }
 
     internal async Task<RoomDashboardViewModel> BuildViewModelAsync(
@@ -73,6 +83,10 @@ public class RoomDashboardService : IRoomDashboardService
 
         var categories = GroupIntoCategories(lineModels, context);
         var areGamesMuted = _arcadeEventsService.AreGamesMuted(roomId);
+        var hasActiveGame = room.Game != null;
+        var activeGameName = room.Game != null ? GetFriendlyGameName(room.Game) : null;
+        var systemInfo = _systemService?.GetSystemInfo();
+        var uptimeString = _bot != null ? FormatUptime(_bot.UpTime) : "N/A";
 
         return new RoomDashboardViewModel
         {
@@ -84,7 +98,18 @@ public class RoomDashboardService : IRoomDashboardService
             Culture = context.Culture,
             RoomParameterLines = lineModels,
             Categories = categories,
-            AreGamesMuted = areGamesMuted
+            AreGamesMuted = areGamesMuted,
+            HasActiveGame = hasActiveGame,
+            ActiveGameName = activeGameName,
+            ParameterCount = lineModels.Count,
+            AvailableGames = GamesCatalog.Games,
+            UserCount = room.Users?.Count ?? 0,
+            RoomLocale = room.Culture?.DisplayName ?? "Default",
+            RoomTimeZone = room.TimeZone?.DisplayName ?? "UTC",
+            BotUptime = uptimeString,
+            WorkingSetMemory = systemInfo != null ? systemInfo.WorkingSet.ToReadableDataSize() : "N/A",
+            FrameworkDescription = systemInfo?.FrameworkDescription ?? "N/A",
+            RuntimeIdentifier = systemInfo?.RuntimeIdentifier ?? "N/A"
         };
     }
 
@@ -101,6 +126,47 @@ public class RoomDashboardService : IRoomDashboardService
 
         var template = await _templatesManager.GetTemplateAsync("RoomDashboard/RoomDashboard", viewModel);
         context.ReplyHtmlPage($"{roomId}dashboard", template.RemoveNewlines().CollapseAttributeWhitespace());
+    }
+
+    public async Task SendOptionsPageAsync(
+        IContext context,
+        string roomId,
+        CancellationToken cancellationToken = default)
+    {
+        var viewModel = await BuildViewModelAsync(roomId, context, cancellationToken);
+        if (viewModel == null)
+        {
+            return;
+        }
+
+        var template = await _templatesManager.GetTemplateAsync("RoomDashboard/RoomOptions", viewModel);
+        context.ReplyHtmlPage($"{roomId}dashboard", template.RemoveNewlines().CollapseAttributeWhitespace());
+    }
+
+    private static string GetFriendlyGameName(IGame game)
+    {
+        var typeName = game.GetType().Name;
+        if (typeName.EndsWith("Game", StringComparison.OrdinalIgnoreCase) && typeName.Length > 4)
+        {
+            typeName = typeName[..^4];
+        }
+
+        return typeName;
+    }
+
+    private static string FormatUptime(TimeSpan uptime)
+    {
+        if (uptime.TotalDays >= 1)
+        {
+            return $"{(int)uptime.TotalDays}d {uptime.Hours}h {uptime.Minutes}m";
+        }
+
+        if (uptime.TotalHours >= 1)
+        {
+            return $"{uptime.Hours}h {uptime.Minutes}m {uptime.Seconds}s";
+        }
+
+        return $"{uptime.Minutes}m {uptime.Seconds}s";
     }
 
     private static IReadOnlyList<RoomDashboardCategoryViewModel> GroupIntoCategories(

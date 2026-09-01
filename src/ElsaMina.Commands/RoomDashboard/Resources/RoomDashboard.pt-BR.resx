@@ -153,4 +153,82 @@
     <data name="dashboard_btn_reset_defaults" xml:space="preserve">
         <value>Redefinir padrões</value>
     </data>
+    <data name="dashboard_section_options" xml:space="preserve">
+        <value>Opções da sala</value>
+    </data>
+    <data name="dashboard_options_description" xml:space="preserve">
+        <value>Configure parâmetros da sala, pré-visualizações de chat, economia e configurações do bot.</value>
+    </data>
+    <data name="dashboard_btn_open_options" xml:space="preserve">
+        <value>Abrir opções</value>
+    </data>
+    <data name="dashboard_back_to_dashboard" xml:space="preserve">
+        <value>Voltar ao painel</value>
+    </data>
+    <data name="dashboard_section_quick_start_games" xml:space="preserve">
+        <value>Início rápido de jogo</value>
+    </data>
+    <data name="dashboard_quick_start_description" xml:space="preserve">
+        <value>Inicie instantaneamente um jogo nesta sala.</value>
+    </data>
+    <data name="dashboard_btn_start_game" xml:space="preserve">
+        <value>Iniciar</value>
+    </data>
+    <data name="dashboard_active_game_warning" xml:space="preserve">
+        <value>Um jogo ({0}) está atualmente ativo nesta sala.</value>
+    </data>
+    <data name="dashboard_btn_end_game" xml:space="preserve">
+        <value>Cancelar jogo</value>
+    </data>
+    <data name="dashboard_games_muted_warning" xml:space="preserve">
+        <value>Os minijogos estão atualmente silenciados nesta sala.</value>
+    </data>
+    <data name="dashboard_section_diagnostics" xml:space="preserve">
+        <value>Diagnósticos</value>
+    </data>
+    <data name="dashboard_diag_users_online" xml:space="preserve">
+        <value>Usuários na sala</value>
+    </data>
+    <data name="dashboard_diag_active_game" xml:space="preserve">
+        <value>Jogo ativo</value>
+    </data>
+    <data name="dashboard_diag_no_active_game" xml:space="preserve">
+        <value>Nenhum</value>
+    </data>
+    <data name="dashboard_diag_locale" xml:space="preserve">
+        <value>Idioma da sala</value>
+    </data>
+    <data name="dashboard_diag_timezone" xml:space="preserve">
+        <value>Fuso horário</value>
+    </data>
+    <data name="dashboard_diag_uptime" xml:space="preserve">
+        <value>Tempo de atividade</value>
+    </data>
+    <data name="dashboard_diag_memory" xml:space="preserve">
+        <value>Uso de memória</value>
+    </data>
+    <data name="dashboard_diag_platform" xml:space="preserve">
+        <value>Ambiente</value>
+    </data>
+    <data name="dashboard_diag_btn_refresh" xml:space="preserve">
+        <value>Atualizar</value>
+    </data>
+    <data name="dashboard_badge_panel_name" xml:space="preserve">
+        <value>Gestão de emblemas</value>
+    </data>
+    <data name="dashboard_badge_panel_description" xml:space="preserve">
+        <value>Veja, edite e configure emblemas e troféus personalizados para esta sala.</value>
+    </data>
+    <data name="dashboard_btn_open_badges" xml:space="preserve">
+        <value>Painel de emblemas</value>
+    </data>
+    <data name="dashboard_tour_panel_name" xml:space="preserve">
+        <value>Configurador de torneios</value>
+    </data>
+    <data name="dashboard_tour_panel_description" xml:space="preserve">
+        <value>Crie, agende e inicie torneios automatizados nesta sala.</value>
+    </data>
+    <data name="dashboard_btn_open_tours" xml:space="preserve">
+        <value>Painel de torneios</value>
+    </data>
 </root>

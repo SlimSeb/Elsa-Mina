@@ -3,6 +3,7 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.RoomDashboard;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Templates;
@@ -154,5 +155,84 @@ public class RoomDashboardServiceTest
         await _templatesManager.DidNotReceive()
             .GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>());
         _context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_SendOptionsPageAsync_ShouldRenderOptionsTemplateAndReplyHtmlPage_WhenRoomExists()
+    {
+        var room = Substitute.For<IRoom>();
+        room.Name.Returns("Test Room");
+        _roomsManager.GetRoom("testroom").Returns(room);
+        _parametersDefinitionFactory.GetParametersDefinitions()
+            .Returns(new Dictionary<Parameter, IParameterDefinition>());
+        _templatesManager.GetTemplateAsync("RoomDashboard/RoomOptions", Arg.Any<RoomDashboardViewModel>())
+            .Returns("<div>options</div>\n");
+
+        await _service.SendOptionsPageAsync(_context, "testroom");
+
+        _context.Received(1).ReplyHtmlPage("testroomdashboard", "<div>options</div>");
+    }
+
+    [Test]
+    public async Task Test_SendOptionsPageAsync_ShouldDoNothing_WhenRoomNotFound()
+    {
+        _roomsManager.GetRoom("unknown").Returns((IRoom)null);
+
+        await _service.SendOptionsPageAsync(_context, "unknown");
+
+        await _templatesManager.DidNotReceive()
+            .GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>());
+        _context.DidNotReceive().ReplyHtmlPage(Arg.Any<string>(), Arg.Any<string>());
+    }
+
+    [Test]
+    public async Task Test_BuildViewModelAsync_ShouldPopulateDiagnosticsAndGames_WhenRoomExists()
+    {
+        var room = Substitute.For<IRoom>();
+        room.Name.Returns("Test Room");
+        room.Users.Returns(new Dictionary<string, IUser>
+        {
+            { "user1", Substitute.For<IUser>() },
+            { "user2", Substitute.For<IUser>() }
+        });
+        room.Culture.Returns(CultureInfo.GetCultureInfo("en-US"));
+        room.TimeZone.Returns(TimeZoneInfo.Utc);
+        room.Game.Returns((IGame)null);
+        _roomsManager.GetRoom("testroom").Returns(room);
+        _parametersDefinitionFactory.GetParametersDefinitions()
+            .Returns(new Dictionary<Parameter, IParameterDefinition>());
+
+        var viewModel = await _service.BuildViewModelAsync("testroom", _context);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(viewModel.UserCount, Is.EqualTo(2));
+            Assert.That(viewModel.AvailableGames, Is.Not.Null);
+            Assert.That(viewModel.AvailableGames.Count, Is.GreaterThan(0));
+            Assert.That(viewModel.RoomLocale, Does.Contain("English"));
+            Assert.That(viewModel.RoomTimeZone, Is.Not.Null);
+            Assert.That(viewModel.HasActiveGame, Is.False);
+            Assert.That(viewModel.ActiveGameName, Is.Null);
+        }
+    }
+
+    [Test]
+    public async Task Test_BuildViewModelAsync_ShouldDetectActiveGame_WhenGameIsNotNull()
+    {
+        var room = Substitute.For<IRoom>();
+        var mockGame = Substitute.For<IGame>();
+        room.Name.Returns("Test Room");
+        room.Game.Returns(mockGame);
+        _roomsManager.GetRoom("testroom").Returns(room);
+        _parametersDefinitionFactory.GetParametersDefinitions()
+            .Returns(new Dictionary<Parameter, IParameterDefinition>());
+
+        var viewModel = await _service.BuildViewModelAsync("testroom", _context);
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(viewModel.HasActiveGame, Is.True);
+            Assert.That(viewModel.ActiveGameName, Is.Not.Null);
+        }
     }
 }

@@ -153,4 +153,82 @@
     <data name="dashboard_btn_reset_defaults" xml:space="preserve">
         <value>Reset to Defaults</value>
     </data>
+    <data name="dashboard_section_options" xml:space="preserve">
+        <value>Room Options</value>
+    </data>
+    <data name="dashboard_options_description" xml:space="preserve">
+        <value>Configure room parameters, chat previews, economy features, and bot settings.</value>
+    </data>
+    <data name="dashboard_btn_open_options" xml:space="preserve">
+        <value>Configure Room Options</value>
+    </data>
+    <data name="dashboard_back_to_dashboard" xml:space="preserve">
+        <value>Back to Dashboard</value>
+    </data>
+    <data name="dashboard_section_quick_start_games" xml:space="preserve">
+        <value>Quick Start Game</value>
+    </data>
+    <data name="dashboard_quick_start_description" xml:space="preserve">
+        <value>Quickly launch a game in this room.</value>
+    </data>
+    <data name="dashboard_btn_start_game" xml:space="preserve">
+        <value>Start</value>
+    </data>
+    <data name="dashboard_active_game_warning" xml:space="preserve">
+        <value>An active game ({0}) is already running in this room.</value>
+    </data>
+    <data name="dashboard_btn_end_game" xml:space="preserve">
+        <value>Cancel Game</value>
+    </data>
+    <data name="dashboard_games_muted_warning" xml:space="preserve">
+        <value>Mini-games are currently muted in this room.</value>
+    </data>
+    <data name="dashboard_section_diagnostics" xml:space="preserve">
+        <value>Diagnostics</value>
+    </data>
+    <data name="dashboard_diag_users_online" xml:space="preserve">
+        <value>Users in Room</value>
+    </data>
+    <data name="dashboard_diag_active_game" xml:space="preserve">
+        <value>Active Game</value>
+    </data>
+    <data name="dashboard_diag_no_active_game" xml:space="preserve">
+        <value>None</value>
+    </data>
+    <data name="dashboard_diag_locale" xml:space="preserve">
+        <value>Room Locale</value>
+    </data>
+    <data name="dashboard_diag_timezone" xml:space="preserve">
+        <value>Time Zone</value>
+    </data>
+    <data name="dashboard_diag_uptime" xml:space="preserve">
+        <value>Bot Uptime</value>
+    </data>
+    <data name="dashboard_diag_memory" xml:space="preserve">
+        <value>Memory Usage</value>
+    </data>
+    <data name="dashboard_diag_platform" xml:space="preserve">
+        <value>Environment</value>
+    </data>
+    <data name="dashboard_diag_btn_refresh" xml:space="preserve">
+        <value>Refresh</value>
+    </data>
+    <data name="dashboard_badge_panel_name" xml:space="preserve">
+        <value>Badges Management</value>
+    </data>
+    <data name="dashboard_badge_panel_description" xml:space="preserve">
+        <value>View, edit, and configure custom badges and trophies for this room.</value>
+    </data>
+    <data name="dashboard_btn_open_badges" xml:space="preserve">
+        <value>Badge Panel</value>
+    </data>
+    <data name="dashboard_tour_panel_name" xml:space="preserve">
+        <value>Tournament Configurator</value>
+    </data>
+    <data name="dashboard_tour_panel_description" xml:space="preserve">
+        <value>Create, schedule, and launch automated tournaments in this room.</value>
+    </data>
+    <data name="dashboard_btn_open_tours" xml:space="preserve">
+        <value>Tournament Panel</value>
+    </data>
 </root>

@@ -1,8 +1,9 @@
+@using ElsaMina.Commands.Games.Catalog
 @using ElsaMina.Core.Services.Templates
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.RoomDashboard.RoomDashboardViewModel>
 
 @{
-    const string wrapperStyle = "padding: 16px; font-family: Verdana, sans-serif; max-width: 700px; margin: 0 auto;";
+    const string wrapperStyle = "padding: 16px; font-family: Verdana, sans-serif; max-width: 720px; margin: 0 auto;";
     const string headerStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; padding: 14px 18px;" +
                                "border-radius: 8px; text-align: center; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);";
     const string titleStyle = "margin: 0; font-size: 1.25em; font-weight: bold; letter-spacing: 0.5px;";
@@ -13,23 +14,27 @@
                                    $"font-weight: bold; font-size: 0.95em; border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
     const string tableStyle = "border-collapse: collapse; width: 100%;";
     const string rowStyle = "border-bottom: 1px solid rgba(103, 136, 170, 0.2);";
-    const string footerStyle = "padding: 16px; text-align: center; margin-top: 8px;";
-    const string submitBtnStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; border: none;" +
-                                  "padding: 10px 28px; border-radius: 6px; cursor: pointer;" +
-                                  "font-size: 0.95em; font-weight: bold; letter-spacing: 0.3px;";
-    const string actionBtnStyle = "border: 1px solid rgba(103, 136, 170, 0.4); border-radius: 4px; padding: 6px 12px; font-size: 0.82em; font-weight: 600; cursor: pointer; background: inherit; color: inherit; display: inline-block; margin: 3px;";
+    const string primaryBtnStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; border: none;" +
+                                   "padding: 8px 20px; border-radius: 6px; cursor: pointer;" +
+                                   "font-size: 0.88em; font-weight: bold; letter-spacing: 0.3px;";
+    const string playBtnStyle = "background: #2563eb; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.78em; font-weight: bold; cursor: pointer; vertical-align: middle;";
+    const string cancelBtnStyle = "background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 4px; padding: 4px 10px; font-size: 0.8em; font-weight: bold; cursor: pointer; vertical-align: middle;";
+    const string refreshBtnStyle = "background: rgba(103, 136, 170, 0.2); border: 1px solid rgba(103, 136, 170, 0.5); border-radius: 4px; padding: 5px 12px; font-size: 0.8em; font-weight: bold; cursor: pointer; color: inherit;";
+    const string badgeStyle = "border-radius: 12px; padding: 2px 8px; font-size: 0.75em; font-weight: bold; display: inline-block; vertical-align: middle; margin-right: 8px;";
+    const string modeBadgeStyle = "background: rgba(103, 136, 170, 0.2); border-radius: 10px; padding: 2px 7px; font-size: 0.72em; font-weight: 600; display: inline-block; margin-left: 6px;";
 }
 
 <div style="@wrapperStyle">
+    <!-- Header -->
     <div style="@headerStyle">
         <p style="@titleStyle">@GetString("room_dashboard", Model.RoomName)</p>
         <p style="@subtitleStyle"><b>@Model.RoomId</b></p>
     </div>
 
-    <!-- Quick Actions Card -->
+    <!-- 1. Quick Actions Card (taken from current dashboard) -->
     <div style="@cardStyle">
         <div style="@cardHeaderStyle">
-            @GetString("dashboard_category_quick_actions")
+            ⚡ @GetString("dashboard_category_quick_actions")
         </div>
         <table style="@tableStyle">
             <tbody>
@@ -42,7 +47,7 @@
                     <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
                         @if (Model.AreGamesMuted)
                         {
-                            <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 12px; padding: 2px 8px; font-size: 0.75em; font-weight: bold; display: inline-block; vertical-align: middle; margin-right: 8px;">🔴 @GetString("dashboard_games_muted")</span>
+                            <span style="@badgeStyle background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5);">🔴 @GetString("dashboard_games_muted")</span>
                             <button
                                 class="button"
                                 name="send"
@@ -53,7 +58,7 @@
                         }
                         else
                         {
-                            <span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.5); border-radius: 12px; padding: 2px 8px; font-size: 0.75em; font-weight: bold; display: inline-block; vertical-align: middle; margin-right: 8px;">🟢 @GetString("dashboard_games_active")</span>
+                            <span style="@badgeStyle background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.5);">🟢 @GetString("dashboard_games_active")</span>
                             <button
                                 class="button"
                                 name="send"
@@ -64,6 +69,26 @@
                         }
                     </td>
                 </tr>
+
+                <!-- Active Game Cancel (if running) -->
+                @if (Model.HasActiveGame)
+                {
+                    <tr style="@rowStyle">
+                        <td style="padding: 10px 14px; vertical-align: middle;">
+                            <span style="font-weight: bold; font-size: 0.88em; display: block;">🎮 @GetString("dashboard_diag_active_game"): @Model.ActiveGameName</span>
+                            <span style="font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;">@GetString("dashboard_active_game_warning", Model.ActiveGameName)</span>
+                        </td>
+                        <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
+                            <button
+                                class="button"
+                                name="send"
+                                value="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, cancelgame"
+                                style="@cancelBtnStyle">
+                                @GetString("dashboard_btn_end_game")
+                            </button>
+                        </td>
+                    </tr>
+                }
 
                 <!-- Tournament Betting Refund/Cancel -->
                 <tr style="@rowStyle">
@@ -76,11 +101,46 @@
                             class="button"
                             name="send"
                             value="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, cancelbets"
-                            style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 4px; padding: 4px 10px; font-size: 0.8em; font-weight: bold; cursor: pointer; vertical-align: middle;">
+                            style="@cancelBtnStyle">
                             @GetString("dashboard_btn_cancel_bets")
                         </button>
                     </td>
                 </tr>
+
+                <!-- Tournament Configurator Panel -->
+                <tr style="@rowStyle">
+                    <td style="padding: 10px 14px; vertical-align: middle;">
+                        <span style="font-weight: bold; font-size: 0.88em; display: block;">🏆 @GetString("dashboard_tour_panel_name")</span>
+                        <span style="font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;">@GetString("dashboard_tour_panel_description")</span>
+                    </td>
+                    <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
+                        <button
+                            class="button"
+                            name="send"
+                            value="/w @Model.BotName, @(Model.Trigger)configtour @Model.RoomId"
+                            style="background: #0284c7; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.8em; font-weight: bold; cursor: pointer; vertical-align: middle;">
+                            @GetString("dashboard_btn_open_tours")
+                        </button>
+                    </td>
+                </tr>
+
+                <!-- Badge Management Panel -->
+                <tr style="@rowStyle">
+                    <td style="padding: 10px 14px; vertical-align: middle;">
+                        <span style="font-weight: bold; font-size: 0.88em; display: block;">🏅 @GetString("dashboard_badge_panel_name")</span>
+                        <span style="font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;">@GetString("dashboard_badge_panel_description")</span>
+                    </td>
+                    <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
+                        <button
+                            class="button"
+                            name="send"
+                            value="/w @Model.BotName, @(Model.Trigger)badgepanel @Model.RoomId"
+                            style="background: #7c3aed; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.8em; font-weight: bold; cursor: pointer; vertical-align: middle;">
+                            @GetString("dashboard_btn_open_badges")
+                        </button>
+                    </td>
+                </tr>
+
                 <!-- Reset to Defaults -->
                 <tr>
                     <td style="padding: 10px 14px; vertical-align: middle;">
@@ -101,56 +161,147 @@
         </table>
     </div>
 
-    <!-- Parameter Configurations Form -->
-    <form data-submitsend="@Model.Command">
-        @if (Model.Categories != null && Model.Categories.Any())
-        {
-            @foreach (var category in Model.Categories)
+    <!-- 2. Options Section (opens the current dashboard & panels) -->
+    <div style="@cardStyle">
+        <div style="@cardHeaderStyle">
+            ⚙️ @GetString("dashboard_section_options")
+        </div>
+        <div style="padding: 14px; text-align: center;">
+            <p style="margin: 0 0 10px 0; font-size: 0.88em; opacity: 0.85;">
+                @GetString("dashboard_options_description")
+            </p>
+            <div style="margin-bottom: 14px; font-size: 0.8em; opacity: 0.75;">
+                <span>@GetString("dashboard_category_general")</span> •
+                <span>@GetString("dashboard_category_previews")</span> •
+                <span>@GetString("dashboard_category_arcade")</span>
+            </div>
+            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                <button
+                    class="button"
+                    name="send"
+                    value="/w @Model.BotName, @(Model.Trigger)roomoptions @Model.RoomId"
+                    style="@primaryBtnStyle">
+                    ⚙️ @GetString("dashboard_btn_open_options")
+                </button>
+                <button
+                    class="button"
+                    name="send"
+                    value="/w @Model.BotName, @(Model.Trigger)configtour @Model.RoomId"
+                    style="background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(2, 132, 199, 0.5); color: #0284c7; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold;">
+                    🏆 @GetString("dashboard_btn_open_tours")
+                </button>
+                <button
+                    class="button"
+                    name="send"
+                    value="/w @Model.BotName, @(Model.Trigger)badgepanel @Model.RoomId"
+                    style="background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.5); color: #7c3aed; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold;">
+                    🏅 @GetString("dashboard_btn_open_badges")
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Quick Start Game Section -->
+    <div style="@cardStyle">
+        <div style="@cardHeaderStyle">
+            🎮 @GetString("dashboard_section_quick_start_games")
+        </div>
+        <div style="padding: 12px 14px 4px 14px;">
+            <p style="margin: 0 0 10px 0; font-size: 0.85em; opacity: 0.85;">
+                @GetString("dashboard_quick_start_description")
+            </p>
+
+            @if (Model.AreGamesMuted)
             {
-                <div style="@cardStyle">
-                    <div style="@cardHeaderStyle">
-                        @GetString(category.TitleKey)
-                    </div>
-                    <table style="@tableStyle">
-                        <tbody>
-                        @foreach (var parameterModel in category.Parameters)
-                        {
-                            <text>
-                                @{
-                                    await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
-                                }
-                            </text>
-                        }
-                        </tbody>
-                    </table>
+                <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; padding: 8px 12px; margin-bottom: 10px; font-size: 0.8em; color: #ef4444;">
+                    ⚠️ @GetString("dashboard_games_muted_warning")
                 </div>
             }
-        }
-        else if (Model.RoomParameterLines != null)
-        {
-            <div style="@cardStyle">
+
+            @if (Model.AvailableGames != null && Model.AvailableGames.Any())
+            {
                 <table style="@tableStyle">
                     <tbody>
-                    @foreach (var parameterModel in Model.RoomParameterLines)
-                    {
-                        <text>
-                            @{
-                                await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
-                            }
-                        </text>
-                    }
+                        @foreach (var game in Model.AvailableGames)
+                        {
+                            <tr style="@rowStyle">
+                                <td style="padding: 8px 10px; vertical-align: middle;">
+                                    <span style="font-weight: 600; font-size: 0.85em;">@GetString(game.NameKey)</span>
+                                    <span style="@modeBadgeStyle">@game.Mode</span>
+                                    <span style="font-family: monospace; font-size: 0.78em; opacity: 0.65; margin-left: 8px;">@(Model.Trigger)@game.Command</span>
+                                </td>
+                                <td style="padding: 8px 10px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
+                                    <button
+                                        class="button"
+                                        name="send"
+                                        value="/msgroom @Model.RoomId, @(Model.Trigger)@game.Command"
+                                        style="@playBtnStyle">
+                                        ▶ @GetString("dashboard_btn_start_game")
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
-            </div>
-        }
+            }
+        </div>
+    </div>
 
-        <div style="@footerStyle">
+    <!-- 4. Diagnostics Section -->
+    <div style="@cardStyle">
+        <div style="@cardHeaderStyle">
+            📊 @GetString("dashboard_section_diagnostics")
+        </div>
+        <table style="@tableStyle">
+            <tbody>
+                <tr style="@rowStyle">
+                    <td style="padding: 8px 14px; font-size: 0.82em; font-weight: bold; width: 40%;">@GetString("dashboard_diag_users_online")</td>
+                    <td style="padding: 8px 14px; font-size: 0.82em; text-align: right;"><b>@Model.UserCount</b></td>
+                </tr>
+                <tr style="@rowStyle">
+                    <td style="padding: 8px 14px; font-size: 0.82em; font-weight: bold;">@GetString("dashboard_diag_active_game")</td>
+                    <td style="padding: 8px 14px; font-size: 0.82em; text-align: right;">
+                        @(Model.HasActiveGame ? Model.ActiveGameName : GetString("dashboard_diag_no_active_game"))
+                    </td>
+                </tr>
+                <tr style="@rowStyle">
+                    <td style="padding: 8px 14px; font-size: 0.82em; font-weight: bold;">@GetString("dashboard_games_control_name")</td>
+                    <td style="padding: 8px 14px; font-size: 0.82em; text-align: right;">
+                        @(Model.AreGamesMuted ? "🔴 " + GetString("dashboard_games_muted") : "🟢 " + GetString("dashboard_games_active"))
+                    </td>
+                </tr>
+                <tr style="@rowStyle">
+                    <td style="padding: 8px 14px; font-size: 0.82em; font-weight: bold;">@GetString("dashboard_diag_locale")</td>
+                    <td style="padding: 8px 14px; font-size: 0.82em; text-align: right;">@Model.RoomLocale</td>
+                </tr>
+                <tr style="@rowStyle">
+                    <td style="padding: 8px 14px; font-size: 0.82em; font-weight: bold;">@GetString("dashboard_diag_timezone")</td>
+                    <td style="padding: 8px 14px; font-size: 0.82em; text-align: right;">@Model.RoomTimeZone</td>
+                </tr>
+                <tr style="@rowStyle">
+                    <td style="padding: 8px 14px; font-size: 0.82em; font-weight: bold;">@GetString("dashboard_diag_uptime")</td>
+                    <td style="padding: 8px 14px; font-size: 0.82em; text-align: right;">@Model.BotUptime</td>
+                </tr>
+                <tr style="@rowStyle">
+                    <td style="padding: 8px 14px; font-size: 0.82em; font-weight: bold;">@GetString("dashboard_diag_memory")</td>
+                    <td style="padding: 8px 14px; font-size: 0.82em; text-align: right;">@Model.WorkingSetMemory</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 14px; font-size: 0.82em; font-weight: bold;">@GetString("dashboard_diag_platform")</td>
+                    <td style="padding: 8px 14px; font-size: 0.82em; text-align: right; font-family: monospace; font-size: 0.78em;">
+                        @Model.FrameworkDescription
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="padding: 10px 14px; text-align: right; background: rgba(103, 136, 170, 0.05); border-top: 1px solid rgba(103, 136, 170, 0.15);">
             <button
                 class="button"
-                type="submit"
-                style="@submitBtnStyle">
-                @GetString("dashboard_save_all")
+                name="send"
+                value="/w @Model.BotName, @(Model.Trigger)roomdashboard @Model.RoomId"
+                style="@refreshBtnStyle">
+                🔄 @GetString("dashboard_diag_btn_refresh")
             </button>
         </div>
-    </form>
+    </div>
 </div>
