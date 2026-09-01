@@ -2,48 +2,155 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.RoomDashboard.RoomDashboardViewModel>
 
 @{
-    const string wrapperStyle = "padding-top: 40px; text-align: center;";
-    const string containerStyle = "font-family: Verdana, sans-serif; width: 560px; display: inline-block; text-align: left;";
-    const string headerStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; padding: 12px 16px;" +
-                               "border-radius: 6px 6px 0 0; text-align: center;";
-    const string titleStyle = "margin: 0; font-size: 1.2em; font-weight: bold; letter-spacing: 0.5px;";
-    const string subtitleStyle = "margin: 4px 0 0 0; font-size: 0.8em; opacity: 0.85;";
-    const string tableStyle = $"border-collapse: collapse; width: 100%; border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-top: none;";
-    const string footerStyle = $"padding: 12px; text-align: center; border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};" +
-                               "border-top: none; border-radius: 0 0 6px 6px;" +
-                               $"background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
-    const string btnStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; border: none;" +
-                            "padding: 8px 24px; border-radius: 4px; cursor: pointer;" +
-                            "font-size: 0.9em; font-weight: bold; letter-spacing: 0.3px;";
+    const string wrapperStyle = "padding: 16px; font-family: Verdana, sans-serif; max-width: 700px; margin: 0 auto;";
+    const string headerStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; padding: 14px 18px;" +
+                               "border-radius: 8px; text-align: center; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);";
+    const string titleStyle = "margin: 0; font-size: 1.25em; font-weight: bold; letter-spacing: 0.5px;";
+    const string subtitleStyle = "margin: 6px 0 0 0; font-size: 0.85em; opacity: 0.9;";
+    const string cardStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-radius: 8px; margin-bottom: 16px;" +
+                             "overflow: hidden; background: rgba(103, 136, 170, 0.08);";
+    const string cardHeaderStyle = $"background: {StyleConstants.PRIMARY_BACKGROUND_COLOR}; padding: 10px 14px;" +
+                                   $"font-weight: bold; font-size: 0.95em; border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string tableStyle = "border-collapse: collapse; width: 100%;";
+    const string rowStyle = "border-bottom: 1px solid rgba(103, 136, 170, 0.2);";
+    const string footerStyle = "padding: 16px; text-align: center; margin-top: 8px;";
+    const string submitBtnStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; border: none;" +
+                                  "padding: 10px 28px; border-radius: 6px; cursor: pointer;" +
+                                  "font-size: 0.95em; font-weight: bold; letter-spacing: 0.3px;";
+    const string actionBtnStyle = "border: 1px solid rgba(103, 136, 170, 0.4); border-radius: 4px; padding: 6px 12px; font-size: 0.82em; font-weight: 600; cursor: pointer; background: inherit; color: inherit; display: inline-block; margin: 3px;";
 }
 
 <div style="@wrapperStyle">
-<form
-    style="@containerStyle"
-    data-submitsend="@Model.Command">
     <div style="@headerStyle">
         <p style="@titleStyle">@GetString("room_dashboard", Model.RoomName)</p>
-        <p style="@subtitleStyle">@Model.RoomId</p>
+        <p style="@subtitleStyle"><b>@Model.RoomId</b></p>
     </div>
-    <table style="@tableStyle">
-        <tbody>
-        @foreach (var parameterModel in Model.RoomParameterLines)
+
+    <!-- Quick Actions Card -->
+    <div style="@cardStyle">
+        <div style="@cardHeaderStyle">
+            @GetString("dashboard_category_quick_actions")
+        </div>
+        <table style="@tableStyle">
+            <tbody>
+                <!-- Mini-Games Automation -->
+                <tr style="@rowStyle">
+                    <td style="padding: 10px 14px; vertical-align: middle;">
+                        <span style="font-weight: bold; font-size: 0.88em; display: block;">@GetString("dashboard_games_control_name")</span>
+                        <span style="font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;">@GetString("dashboard_games_control_description")</span>
+                    </td>
+                    <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
+                        @if (Model.AreGamesMuted)
+                        {
+                            <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 12px; padding: 2px 8px; font-size: 0.75em; font-weight: bold; display: inline-block; vertical-align: middle; margin-right: 8px;">🔴 @GetString("dashboard_games_muted")</span>
+                            <button
+                                class="button"
+                                name="send"
+                                value="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, unmutegames"
+                                style="background: #16a34a; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.8em; font-weight: bold; cursor: pointer; vertical-align: middle;">
+                                @GetString("dashboard_btn_unmute_games")
+                            </button>
+                        }
+                        else
+                        {
+                            <span style="background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.5); border-radius: 12px; padding: 2px 8px; font-size: 0.75em; font-weight: bold; display: inline-block; vertical-align: middle; margin-right: 8px;">🟢 @GetString("dashboard_games_active")</span>
+                            <button
+                                class="button"
+                                name="send"
+                                value="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, mutegames"
+                                style="background: #dc2626; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.8em; font-weight: bold; cursor: pointer; vertical-align: middle;">
+                                @GetString("dashboard_btn_mute_games")
+                            </button>
+                        }
+                    </td>
+                </tr>
+
+                <!-- Tournament Betting Refund/Cancel -->
+                <tr style="@rowStyle">
+                    <td style="padding: 10px 14px; vertical-align: middle;">
+                        <span style="font-weight: bold; font-size: 0.88em; display: block;">@GetString("dashboard_betting_control_name")</span>
+                        <span style="font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;">@GetString("dashboard_betting_control_description")</span>
+                    </td>
+                    <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
+                        <button
+                            class="button"
+                            name="send"
+                            value="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, cancelbets"
+                            style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 4px; padding: 4px 10px; font-size: 0.8em; font-weight: bold; cursor: pointer; vertical-align: middle;">
+                            @GetString("dashboard_btn_cancel_bets")
+                        </button>
+                    </td>
+                </tr>
+                <!-- Reset to Defaults -->
+                <tr>
+                    <td style="padding: 10px 14px; vertical-align: middle;">
+                        <span style="font-weight: bold; font-size: 0.88em; display: block;">@GetString("dashboard_reset_defaults_name")</span>
+                        <span style="font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;">@GetString("dashboard_reset_defaults_description")</span>
+                    </td>
+                    <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
+                        <button
+                            class="button"
+                            name="send"
+                            value="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, reset"
+                            style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.5); border-radius: 4px; padding: 4px 10px; font-size: 0.8em; font-weight: bold; cursor: pointer; vertical-align: middle;">
+                            @GetString("dashboard_btn_reset_defaults")
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Parameter Configurations Form -->
+    <form data-submitsend="@Model.Command">
+        @if (Model.Categories != null && Model.Categories.Any())
         {
-            <text>
-                @{
-                    await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
-                }
-            </text>
+            @foreach (var category in Model.Categories)
+            {
+                <div style="@cardStyle">
+                    <div style="@cardHeaderStyle">
+                        @GetString(category.TitleKey)
+                    </div>
+                    <table style="@tableStyle">
+                        <tbody>
+                        @foreach (var parameterModel in category.Parameters)
+                        {
+                            <text>
+                                @{
+                                    await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
+                                }
+                            </text>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
         }
-        </tbody>
-    </table>
-    <div style="@footerStyle">
-        <button
-            class="button"
-            type="submit"
-            style="@btnStyle">
-            @GetString("submit")
-        </button>
-    </div>
-</form>
+        else if (Model.RoomParameterLines != null)
+        {
+            <div style="@cardStyle">
+                <table style="@tableStyle">
+                    <tbody>
+                    @foreach (var parameterModel in Model.RoomParameterLines)
+                    {
+                        <text>
+                            @{
+                                await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
+                            }
+                        </text>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <div style="@footerStyle">
+            <button
+                class="button"
+                type="submit"
+                style="@submitBtnStyle">
+                @GetString("dashboard_save_all")
+            </button>
+        </div>
+    </form>
 </div>

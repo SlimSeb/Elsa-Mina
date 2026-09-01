@@ -5,16 +5,15 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.RoomDashboard.RoomParameterLineModel>
 
 @{
-    const string rowStyle = $"border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
+    const string rowStyle = $"border-bottom: 1px solid rgba(103, 136, 170, 0.2);";
     const string labelCellStyle = "padding: 10px 14px; vertical-align: middle;";
-    const string controlCellStyle = "padding: 10px 14px; vertical-align: middle; text-align: center; width: 1%; white-space: nowrap;";
-    const string nameStyle = "font-weight: bold; font-size: 0.9em; display: block;";
-    const string descStyle = $"font-size: 0.78em; color: {StyleConstants.PRIMARY_BORDER_COLOR}; margin-top: 2px; display: block;";
-    const string selectStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-radius: 3px;" +
-                               "padding: 3px 6px; font-size: 0.85em; max-width: 140px;";
-    const string inputStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-radius: 3px;" +
-                              "padding: 3px 6px; font-size: 0.85em; width: 100%; box-sizing: border-box;";
+    const string controlCellStyle = "padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;";
+    const string nameStyle = "font-weight: bold; font-size: 0.88em; display: block;";
+    const string descStyle = "font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;";
+    const string selectStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-radius: 4px; padding: 4px 8px; font-size: 0.82em; background: inherit; color: inherit; max-width: 170px;";
+    const string inputStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-radius: 4px; padding: 4px 8px; font-size: 0.82em; background: inherit; color: inherit; width: 100%; box-sizing: border-box;";
 }
+
 <tr style="@rowStyle">
     <td style="@labelCellStyle">
         <label for="@Model.RoomParameterDefinition.Identifier">
@@ -48,9 +47,11 @@
                     type="checkbox"
                     id="@Model.RoomParameterDefinition.Identifier"
                     name="@Model.RoomParameterDefinition.Identifier"
-                    @(Model.CurrentValue.ToBoolean() ? "checked" : string.Empty)/>
+                    @(Model.BooleanValue ? "checked" : string.Empty)
+                    style="vertical-align: middle; cursor: pointer;" />
                 break;
             case RoomBotConfigurationType.String:
+            {
                 <input
                     type="text"
                     id="@Model.RoomParameterDefinition.Identifier"
@@ -58,6 +59,7 @@
                     value="@Model.CurrentValue"
                     style="@inputStyle"/>
                 break;
+            }
         }
     </td>
 </tr>

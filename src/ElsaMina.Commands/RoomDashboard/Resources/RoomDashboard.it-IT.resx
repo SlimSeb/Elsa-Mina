@@ -90,4 +90,67 @@
     <data name="setlocale_failure" xml:space="preserve">
         <value>Impossibile aggiornare la lingua.</value>
     </data>
+    <data name="dashboard_category_general" xml:space="preserve">
+        <value>Generale e Localizzazione</value>
+    </data>
+    <data name="dashboard_category_previews" xml:space="preserve">
+        <value>Anteprime chat ed Embed</value>
+    </data>
+    <data name="dashboard_category_arcade" xml:space="preserve">
+        <value>Arcade ed Economia</value>
+    </data>
+    <data name="dashboard_category_quick_actions" xml:space="preserve">
+        <value>Azioni rapide</value>
+    </data>
+    <data name="dashboard_games_control_name" xml:space="preserve">
+        <value>Stato dei minigiochi</value>
+    </data>
+    <data name="dashboard_games_control_description" xml:space="preserve">
+        <value>Silenzia o riattiva temporaneamente i minigiochi automatici in questa stanza.</value>
+    </data>
+    <data name="dashboard_games_muted" xml:space="preserve">
+        <value>Disattivato</value>
+    </data>
+    <data name="dashboard_games_active" xml:space="preserve">
+        <value>Attivo</value>
+    </data>
+    <data name="dashboard_btn_mute_games" xml:space="preserve">
+        <value>Silenzia giochi (30m)</value>
+    </data>
+    <data name="dashboard_btn_unmute_games" xml:space="preserve">
+        <value>Riattiva giochi</value>
+    </data>
+    <data name="dashboard_status_enabled" xml:space="preserve">
+        <value>Abilitato</value>
+    </data>
+    <data name="dashboard_status_disabled" xml:space="preserve">
+        <value>Disabilitato</value>
+    </data>
+    <data name="dashboard_btn_toggle_enable" xml:space="preserve">
+        <value>Abilita</value>
+    </data>
+    <data name="dashboard_btn_toggle_disable" xml:space="preserve">
+        <value>Disabilita</value>
+    </data>
+    <data name="dashboard_save_all" xml:space="preserve">
+        <value>Salva tutte le impostazioni</value>
+    </data>
+    <data name="dashboard_betting_control_name" xml:space="preserve">
+        <value>Scommesse torneo</value>
+    </data>
+    <data name="dashboard_betting_control_description" xml:space="preserve">
+        <value>Annulla e rimborsa tutte le scommesse aperte per il torneo.</value>
+    </data>
+    <data name="dashboard_btn_cancel_bets" xml:space="preserve">
+        <value>Annulla scommesse</value>
+    </data>
+    <data name="dashboard_reset_defaults_name" xml:space="preserve">
+        <value>Ripristina configurazione</value>
+    </data>
+    <data name="dashboard_reset_defaults_description" xml:space="preserve">
+        <value>Ripristina tutti i parametri della stanza ai valori predefiniti.</value>
+    </data>
+    <data name="dashboard_btn_reset_defaults" xml:space="preserve">
+        <value>Ripristina predefiniti</value>
+    </data>
 </root>

@@ -1,10 +1,7 @@
 using System.Globalization;
 using ElsaMina.Commands.RoomDashboard;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.Rooms.Parameters;
-using ElsaMina.Core.Services.Templates;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.RoomDashboard;
@@ -13,39 +10,63 @@ namespace ElsaMina.UnitTests.Commands.RoomDashboard;
 public class ShowRoomDashboardTest
 {
     private IContext _context;
-    private IConfiguration _configuration;
     private IRoomsManager _roomsManager;
-    private ITemplatesManager _templatesManager;
-    private IParametersDefinitionFactory _parametersDefinitionFactory;
+    private IRoomDashboardService _roomDashboardService;
     private ShowRoomDashboard _command;
 
     [SetUp]
     public void SetUp()
     {
         _context = Substitute.For<IContext>();
-        _configuration = Substitute.For<IConfiguration>();
         _roomsManager = Substitute.For<IRoomsManager>();
-        _templatesManager = Substitute.For<ITemplatesManager>();
-        _parametersDefinitionFactory = Substitute.For<IParametersDefinitionFactory>();
-        _command = new ShowRoomDashboard(_configuration, _roomsManager, _templatesManager, _parametersDefinitionFactory);
+        _roomDashboardService = Substitute.For<IRoomDashboardService>();
+        _command = new ShowRoomDashboard(_roomsManager, _roomDashboardService);
 
-        _configuration.Name.Returns("ElsaBot");
-        _configuration.Trigger.Returns("-");
         _context.Culture.Returns(CultureInfo.GetCultureInfo("en-US"));
-        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>());
-        _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("rendered-html");
+        _context.HasSufficientRankInRoom(Arg.Any<string>(), Arg.Any<Rank>(), Arg.Any<CancellationToken>())
+            .Returns(true);
     }
 
     [Test]
-    public void Test_IsPrivateMessageOnly_ShouldBeTrue()
+    public void Test_RequiredRank_ShouldBeDriver()
     {
-        Assert.That(_command.IsPrivateMessageOnly, Is.True);
+        Assert.That(_command.RequiredRank, Is.EqualTo(Rank.Driver));
     }
 
     [Test]
-    public void Test_IsWhitelistOnly_ShouldBeTrue()
+    public void Test_IsAllowedInPrivateMessage_ShouldBeTrue()
     {
-        Assert.That(_command.IsWhitelistOnly, Is.True);
+        Assert.That(_command.IsAllowedInPrivateMessage, Is.True);
+    }
+
+    [Test]
+    public async Task Test_ShowRoomDashboard_ShouldDeny_WhenUserHasInsufficientRank()
+    {
+        var room = Substitute.For<IRoom>();
+        _context.Target.Returns("testroom");
+        _roomsManager.GetRoom("testroom").Returns(room);
+        _context.HasSufficientRankInRoom("testroom", Rank.Driver, Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        await _command.RunAsync(_context);
+
+        await _roomDashboardService.DidNotReceive()
+            .SendDashboardPageAsync(Arg.Any<IContext>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_ShowRoomDashboard_ShouldRenderPage_WhenUserIsRoomStaff()
+    {
+        var room = Substitute.For<IRoom>();
+        _context.Target.Returns("testroom");
+        _roomsManager.GetRoom("testroom").Returns(room);
+        _context.HasSufficientRankInRoom("testroom", Rank.Driver, Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        await _command.RunAsync(_context);
+
+        await _roomDashboardService.Received(1)
+            .SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -57,30 +78,50 @@ public class ShowRoomDashboardTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("dashboard_room_doesnt_exist", "unknownroom");
-        await _templatesManager.DidNotReceive().GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>());
+        await _roomDashboardService.DidNotReceive()
+            .SendDashboardPageAsync(Arg.Any<IContext>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
     public async Task Test_RunAsync_ShouldUseFallbackRoomId_WhenTargetIsEmpty()
     {
+        var room = Substitute.For<IRoom>();
         _context.Target.Returns("  ");
         _context.RoomId.Returns("defaultroom");
-        _roomsManager.GetRoom("defaultroom").Returns((IRoom)null);
+        _roomsManager.GetRoom("defaultroom").Returns(room);
 
         await _command.RunAsync(_context);
 
         _roomsManager.Received(1).GetRoom("defaultroom");
+        await _roomDashboardService.Received(1)
+            .SendDashboardPageAsync(_context, "defaultroom", Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldReplyRoomDoesntExist_WhenTargetAndRoomIdAreEmpty()
+    {
+        _context.Target.Returns("  ");
+        _context.RoomId.Returns((string)null);
+
+        await _command.RunAsync(_context);
+
+        _context.Received(1).ReplyLocalizedMessage("dashboard_room_doesnt_exist", string.Empty);
+        await _roomDashboardService.DidNotReceive()
+            .SendDashboardPageAsync(Arg.Any<IContext>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
     public async Task Test_RunAsync_ShouldUseTrimmedLowercaseTarget_WhenTargetIsProvided()
     {
+        var room = Substitute.For<IRoom>();
         _context.Target.Returns("  TestRoom  ");
-        _roomsManager.GetRoom("testroom").Returns((IRoom)null);
+        _roomsManager.GetRoom("testroom").Returns(room);
 
         await _command.RunAsync(_context);
 
         _roomsManager.Received(1).GetRoom("testroom");
+        await _roomDashboardService.Received(1)
+            .SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -113,99 +154,5 @@ public class ShowRoomDashboardTest
         await _command.RunAsync(_context);
 
         _context.DidNotReceiveWithAnyArgs().Culture = Arg.Any<CultureInfo>();
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldCallGetTemplateAsync_WhenRoomExists()
-    {
-        var room = Substitute.For<IRoom>();
-        room.Name.Returns("Test Room");
-        room.Culture.Returns(CultureInfo.GetCultureInfo("en-US"));
-        _context.Target.Returns("testroom");
-        _roomsManager.GetRoom("testroom").Returns(room);
-
-        await _command.RunAsync(_context);
-
-        await _templatesManager.Received(1).GetTemplateAsync("RoomDashboard/RoomDashboard", Arg.Any<RoomDashboardViewModel>());
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldCallReplyHtmlPage_WhenRoomExists()
-    {
-        var room = Substitute.For<IRoom>();
-        room.Name.Returns("Test Room");
-        room.Culture.Returns(CultureInfo.GetCultureInfo("en-US"));
-        _context.Target.Returns("testroom");
-        _roomsManager.GetRoom("testroom").Returns(room);
-
-        await _command.RunAsync(_context);
-
-        _context.Received(1).ReplyHtmlPage("testroomdashboard", Arg.Any<string>());
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldBuildCommandWithCorrectFormat_WhenRoomExists()
-    {
-        var room = Substitute.For<IRoom>();
-        room.Name.Returns("Test Room");
-        room.Culture.Returns(CultureInfo.GetCultureInfo("en-US"));
-        _context.Target.Returns("testroom");
-        _configuration.Name.Returns("MyBot");
-        _configuration.Trigger.Returns("!");
-        _roomsManager.GetRoom("testroom").Returns(room);
-
-        RoomDashboardViewModel capturedViewModel = null;
-        await _templatesManager.GetTemplateAsync(
-            Arg.Any<string>(),
-            Arg.Do<RoomDashboardViewModel>(vm => capturedViewModel = vm));
-
-        await _command.RunAsync(_context);
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(capturedViewModel, Is.Not.Null);
-            Assert.That(capturedViewModel.Command, Does.StartWith("/w MyBot,!rc testroom,"));
-            Assert.That(capturedViewModel.BotName, Is.EqualTo("MyBot"));
-            Assert.That(capturedViewModel.Trigger, Is.EqualTo("!"));
-            Assert.That(capturedViewModel.RoomId, Is.EqualTo("testroom"));
-            Assert.That(capturedViewModel.RoomName, Is.EqualTo("Test Room"));
-        }
-    }
-
-    [Test]
-    public async Task Test_RunAsync_ShouldIncludeParameterLinesInViewModel_WhenRoomHasParameters()
-    {
-        var room = Substitute.For<IRoom>();
-        room.Name.Returns("Test Room");
-        room.Culture.Returns(CultureInfo.GetCultureInfo("en-US"));
-        _context.Target.Returns("testroom");
-        _roomsManager.GetRoom("testroom").Returns(room);
-
-        var paramDef = Substitute.For<IParameterDefinition>();
-        paramDef.Identifier.Returns("Locale");
-        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
-        {
-            { Parameter.Locale, paramDef }
-        });
-        room.GetParameterValueAsync(Parameter.Locale, Arg.Any<CancellationToken>()).Returns("en-US");
-
-        RoomDashboardViewModel capturedViewModel = null;
-        await _templatesManager.GetTemplateAsync(
-            Arg.Any<string>(),
-            Arg.Do<RoomDashboardViewModel>(vm => capturedViewModel = vm));
-
-        await _command.RunAsync(_context);
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(capturedViewModel, Is.Not.Null);
-            Assert.That(capturedViewModel.RoomParameterLines, Has.Exactly(1).Items);
-        }
-        var line = capturedViewModel.RoomParameterLines.First();
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(line.RoomParameterDefinition, Is.EqualTo(paramDef));
-            Assert.That(line.CurrentValue, Is.EqualTo("en-US"));
-        }
     }
 }
