@@ -107,40 +107,6 @@
                     </td>
                 </tr>
 
-                <!-- Tournament Configurator Panel -->
-                <tr style="@rowStyle">
-                    <td style="padding: 10px 14px; vertical-align: middle;">
-                        <span style="font-weight: bold; font-size: 0.88em; display: block;">🏆 @GetString("dashboard_tour_panel_name")</span>
-                        <span style="font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;">@GetString("dashboard_tour_panel_description")</span>
-                    </td>
-                    <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
-                        <button
-                            class="button"
-                            name="send"
-                            value="/w @Model.BotName, @(Model.Trigger)configtour @Model.RoomId"
-                            style="background: #0284c7; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.8em; font-weight: bold; cursor: pointer; vertical-align: middle;">
-                            @GetString("dashboard_btn_open_tours")
-                        </button>
-                    </td>
-                </tr>
-
-                <!-- Badge Management Panel -->
-                <tr style="@rowStyle">
-                    <td style="padding: 10px 14px; vertical-align: middle;">
-                        <span style="font-weight: bold; font-size: 0.88em; display: block;">🏅 @GetString("dashboard_badge_panel_name")</span>
-                        <span style="font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;">@GetString("dashboard_badge_panel_description")</span>
-                    </td>
-                    <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
-                        <button
-                            class="button"
-                            name="send"
-                            value="/w @Model.BotName, @(Model.Trigger)badgepanel @Model.RoomId"
-                            style="background: #7c3aed; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.8em; font-weight: bold; cursor: pointer; vertical-align: middle;">
-                            @GetString("dashboard_btn_open_badges")
-                        </button>
-                    </td>
-                </tr>
-
                 <!-- Reset to Defaults -->
                 <tr>
                     <td style="padding: 10px 14px; vertical-align: middle;">
