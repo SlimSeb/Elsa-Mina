@@ -9,7 +9,7 @@ namespace ElsaMina.Commands.Games.Cards;
 /// lobby that fills up, a start, and a way to be called off. The lifecycle commands are written
 /// against this rather than against each game's own interface.
 /// </summary>
-public interface ICardGame : IGame
+public interface ICardGame : ICancellableGame
 {
     IContext Context { get; set; }
 
@@ -31,6 +31,4 @@ public interface ICardGame : IGame
     Task<(bool Success, string MessageKey, object[] Args)> JoinAsync(IUser user);
 
     Task StartAsync(IUser user);
-
-    Task CancelAsync();
 }

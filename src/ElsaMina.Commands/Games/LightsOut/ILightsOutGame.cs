@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.LightsOut;
 
-public interface ILightsOutGame : IGame
+public interface ILightsOutGame : ICancellableGame
 {
     int Level { get; }
     int GridSize { get; }
@@ -22,5 +22,4 @@ public interface ILightsOutGame : IGame
     Task DisplayAnnounce();
     Task StartNewRound();
     Task ToggleCell(IUser user, int row, int col);
-    Task CancelAsync();
 }

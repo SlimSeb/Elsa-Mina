@@ -140,6 +140,17 @@ public class GuessingGameTest
         _context.DidNotReceive().ReplyLocalizedMessage("guessing_game_round_won", Arg.Any<object[]>());
     }
 
+    [Test]
+    public async Task Test_CancelAsync_ShouldStopGame()
+    {
+        await _game.Start();
+        Assert.That(_game.IsEnded, Is.False);
+
+        await _game.CancelAsync();
+
+        Assert.That(_game.IsEnded, Is.True);
+    }
+
     private class TestGuessingGame : ElsaMina.Commands.Games.GuessingGame.GuessingGame
     {
         public TestGuessingGame(ITemplatesManager templatesManager, IConfiguration configuration,

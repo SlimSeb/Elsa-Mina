@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.TwentyFortyEight;
 
-public interface ITwentyFortyEightGame : IGame
+public interface ITwentyFortyEightGame : ICancellableGame
 {
     int Score { get; }
     int BestScore { get; }
@@ -20,5 +20,4 @@ public interface ITwentyFortyEightGame : IGame
     Task DisplayAnnounce();
     Task StartNewRound();
     Task MakeMove(IUser user, string direction);
-    Task CancelAsync();
 }

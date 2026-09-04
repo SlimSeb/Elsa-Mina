@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Semantix;
 
-public interface ISemantixGame : IGame
+public interface ISemantixGame : ICancellableGame
 {
     bool IsRoundActive { get; }
     bool IsWon { get; }
@@ -20,5 +20,4 @@ public interface ISemantixGame : IGame
     Task<bool> StartNewRound();
     Task ResumeAsync();
     Task<SemantixGuessOutcome> SubmitGuess(IUser user, string word);
-    Task CancelAsync();
 }

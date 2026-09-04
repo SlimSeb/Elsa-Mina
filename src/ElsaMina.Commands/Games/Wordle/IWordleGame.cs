@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Wordle;
 
-public interface IWordleGame : IGame
+public interface IWordleGame : ICancellableGame
 {
     IReadOnlyList<WordleGuess> Guesses { get; }
     int MaxGuesses { get; }
@@ -28,5 +28,4 @@ public interface IWordleGame : IGame
     Task AppendLetter(IUser user, char letter);
     Task RemoveLetter(IUser user);
     Task SubmitCurrentInput(IUser user);
-    Task CancelAsync();
 }

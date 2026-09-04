@@ -1,8 +1,10 @@
 using ElsaMina.Commands.Arcade.Events;
+using ElsaMina.Commands.Games.GuessingGame;
 using ElsaMina.Commands.Games.Wordle;
 using ElsaMina.Commands.RoomDashboard;
 using ElsaMina.Commands.Tournaments.Betting;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using NSubstitute;
@@ -297,6 +299,70 @@ public class RoomConfigCommandTest
         await _command.RunAsync(_context);
 
         await wordleGame.Received(1).CancelAsync();
+        _context.Received(1).ReplyLocalizedMessage("room_config_success", "testroom");
+        await _roomDashboardService.Received(1).SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_RoomConfigCommand_ShouldCancelActiveGame_WhenGameIsGuessingGame()
+    {
+        var room = Substitute.For<IRoom>();
+        var guessingGame = Substitute.For<IGuessingGame>();
+        room.Game.Returns(guessingGame);
+        _context.Target.Returns("testroom,cancelgame");
+        _roomsManager.GetRoom("testroom").Returns(room);
+
+        await _command.RunAsync(_context);
+
+        await guessingGame.Received(1).CancelAsync();
+        _context.Received(1).ReplyLocalizedMessage("room_config_success", "testroom");
+        await _roomDashboardService.Received(1).SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_RoomConfigCommand_ShouldClearGame_WhenGameIsNotCancellable()
+    {
+        var room = Substitute.For<IRoom>();
+        var nonCancellableGame = Substitute.For<IGame>();
+        room.Game.Returns(nonCancellableGame);
+        _context.Target.Returns("testroom,cancelgame");
+        _roomsManager.GetRoom("testroom").Returns(room);
+
+        await _command.RunAsync(_context);
+
+        room.Received(1).Game = null;
+        _context.Received(1).ReplyLocalizedMessage("room_config_success", "testroom");
+        await _roomDashboardService.Received(1).SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_RoomConfigCommand_ShouldClearGame_WhenCancelThrowsException()
+    {
+        var room = Substitute.For<IRoom>();
+        var cancellableGame = Substitute.For<ICancellableGame>();
+        cancellableGame.CancelAsync().Returns(Task.FromException(new InvalidOperationException("Failed to cancel")));
+        room.Game.Returns(cancellableGame);
+        _context.Target.Returns("testroom,cancelgame");
+        _roomsManager.GetRoom("testroom").Returns(room);
+
+        await _command.RunAsync(_context);
+
+        room.Received(1).Game = null;
+        _context.Received(1).ReplyLocalizedMessage("room_config_success", "testroom");
+        await _roomDashboardService.Received(1).SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_RoomConfigCommand_ShouldDoNothing_WhenGameIsNullOnCancel()
+    {
+        var room = Substitute.For<IRoom>();
+        room.Game.Returns((IGame)null);
+        _context.Target.Returns("testroom,cancelgame");
+        _roomsManager.GetRoom("testroom").Returns(room);
+
+        await _command.RunAsync(_context);
+
+        room.DidNotReceive().Game = Arg.Any<IGame>();
         _context.Received(1).ReplyLocalizedMessage("room_config_success", "testroom");
         await _roomDashboardService.Received(1).SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
     }

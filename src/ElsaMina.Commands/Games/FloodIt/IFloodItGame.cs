@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.FloodIt;
 
-public interface IFloodItGame : IGame
+public interface IFloodItGame : ICancellableGame
 {
     int Level { get; }
     int GridSize { get; }
@@ -25,5 +25,4 @@ public interface IFloodItGame : IGame
     Task DisplayAnnounce();
     Task StartNewRound();
     Task FloodFill(IUser user, int colorIndex);
-    Task CancelAsync();
 }

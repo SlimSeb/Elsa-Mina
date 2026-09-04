@@ -1,16 +1,8 @@
 using ElsaMina.Commands.Arcade.Events;
-using ElsaMina.Commands.Games.Blackjack;
-using ElsaMina.Commands.Games.Cards;
-using ElsaMina.Commands.Games.FloodIt;
-using ElsaMina.Commands.Games.GuessingGame;
-using ElsaMina.Commands.Games.LightsOut;
-using ElsaMina.Commands.Games.Semantix;
-using ElsaMina.Commands.Games.TwentyFortyEight;
-using ElsaMina.Commands.Games.VoltorbFlip;
-using ElsaMina.Commands.Games.Wordle;
 using ElsaMina.Commands.Tournaments.Betting;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
@@ -291,44 +283,13 @@ public class RoomConfigCommand : Command
 
         try
         {
-            if (room.Game is IGuessingGame guessingGame)
+            if (room.Game is ICancellableGame cancellableGame)
             {
-                guessingGame.StopGame();
-            }
-            else if (room.Game is ICardGame cardGame)
-            {
-                await cardGame.CancelAsync();
-            }
-            else if (room.Game is IBlackjackGame blackjack)
-            {
-                await blackjack.CancelAsync();
-            }
-            else if (room.Game is IVoltorbFlipGame voltorb)
-            {
-                await voltorb.CancelAsync();
-            }
-            else if (room.Game is IWordleGame wordle)
-            {
-                await wordle.CancelAsync();
-            }
-            else if (room.Game is ILightsOutGame lightsOut)
-            {
-                await lightsOut.CancelAsync();
-            }
-            else if (room.Game is ITwentyFortyEightGame tfe)
-            {
-                await tfe.CancelAsync();
-            }
-            else if (room.Game is IFloodItGame floodIt)
-            {
-                await floodIt.CancelAsync();
-            }
-            else if (room.Game is ISemantixGame semantix)
-            {
-                await semantix.CancelAsync();
+                await cancellableGame.CancelAsync();
             }
             else
             {
+                // TODO: ça pue la fuite mémoire
                 room.Game = null;
             }
         }

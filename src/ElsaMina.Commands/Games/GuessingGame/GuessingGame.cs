@@ -1,4 +1,4 @@
-﻿using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Games;
@@ -167,6 +167,12 @@ public abstract class GuessingGame : Game, IGuessingGame
     {
         OnEnd();
         CancelTimer();
+    }
+
+    public Task CancelAsync()
+    {
+        StopGame();
+        return Task.CompletedTask;
     }
 
     protected virtual void OnTimerCountdown(TimeSpan remainingTime)

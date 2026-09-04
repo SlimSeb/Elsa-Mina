@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Blackjack;
 
-public interface IBlackjackGame : IGame
+public interface IBlackjackGame : ICancellableGame
 {
     BlackjackHand PlayerHand { get; }
     BlackjackHand DealerHand { get; }
@@ -19,5 +19,4 @@ public interface IBlackjackGame : IGame
     Task StartGame();
     Task Hit(IUser user);
     Task Stand(IUser user);
-    Task CancelAsync();
 }

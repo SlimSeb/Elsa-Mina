@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.VoltorbFlip;
 
-public interface IVoltorbFlipGame : IGame
+public interface IVoltorbFlipGame : ICancellableGame
 {
     int Level { get; }
     bool IsRoundActive { get; }
@@ -30,5 +30,4 @@ public interface IVoltorbFlipGame : IGame
     Task FlipTile(IUser user, int row, int col);
     Task SetMarkerType(IUser user, VoltorbFlipMarkerType markerType);
     Task QuitRound(IUser user);
-    Task CancelAsync();
 }
