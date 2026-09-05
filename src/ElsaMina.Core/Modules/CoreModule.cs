@@ -89,9 +89,9 @@ public class CoreModule : Module
         builder.RegisterType<DexManager>().As<IDexManager>().SingleInstance();
         builder.RegisterType<StartManager>().As<IStartManager>().SingleInstance();
         builder.RegisterType<ImageService>().As<IImageService>().SingleInstance();
-        builder.RegisterType<Gemini25FlashProvider>().AsSelf().SingleInstance();
+        builder.RegisterType<GeminiFlashProvider>().AsSelf().SingleInstance();
         builder.RegisterType<MistralSmallProvider>().AsSelf().SingleInstance();
-        builder.RegisterType<Gpt4OMiniProvider>().AsSelf().SingleInstance();
+        builder.RegisterType<GptMiniProvider>().AsSelf().SingleInstance();
         builder.RegisterType<LanguageModelResolver>().As<ILanguageModelProvider>().SingleInstance();
         builder.RegisterType<EfRoomParameterStore>().As<IRoomParameterStore>();
         builder.RegisterType<UserSaveQueue>().As<IUserSaveQueue>().SingleInstance();

@@ -8,7 +8,7 @@ using NSubstitute;
 namespace ElsaMina.UnitTests.Core.Services.LanguageModel;
 
 [TestFixture]
-public class Gemini25FlashProviderTest
+public class GeminiFlashProviderTest
 {
     private static GeminiRequestDto ReadRequestBody(HttpRequest request) =>
         JsonConvert.DeserializeObject<GeminiRequestDto>(
@@ -16,14 +16,14 @@ public class Gemini25FlashProviderTest
 
     private IHttpService _httpService;
     private IConfiguration _configuration;
-    private Gemini25FlashProvider _languageModelProvider;
+    private GeminiFlashProvider _languageModelProvider;
 
     [SetUp]
     public void SetUp()
     {
         _httpService = Substitute.For<IHttpService>();
         _configuration = Substitute.For<IConfiguration>();
-        _languageModelProvider = new Gemini25FlashProvider(_configuration, _httpService);
+        _languageModelProvider = new GeminiFlashProvider(_configuration, _httpService);
     }
 
     [Test]
@@ -78,7 +78,7 @@ public class Gemini25FlashProviderTest
         Assert.That(result, Is.EqualTo(expectedResponse));
         await _httpService.Received(1).SendAsync<GeminiResponseDto>(
             Arg.Is<HttpRequest>(request =>
-                request.Uri == "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent" &&
+                request.Uri == "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent" &&
                 ReadRequestBody(request).Contents[0].Parts[0].Text == prompt &&
                 request.Headers["x-goog-api-key"] == apiKey),
             Arg.Any<CancellationToken>());

@@ -8,7 +8,7 @@ using NSubstitute;
 namespace ElsaMina.UnitTests.Core.Services.LanguageModel;
 
 [TestFixture]
-public class Gpt4OMiniProviderTest
+public class GptMiniProviderTest
 {
     private static GptRequestDto ReadRequestBody(HttpRequest request) =>
         JsonConvert.DeserializeObject<GptRequestDto>(
@@ -16,14 +16,14 @@ public class Gpt4OMiniProviderTest
 
     private IHttpService _httpService;
     private IConfiguration _configuration;
-    private Gpt4OMiniProvider _languageModelProvider;
+    private GptMiniProvider _languageModelProvider;
 
     [SetUp]
     public void SetUp()
     {
         _httpService = Substitute.For<IHttpService>();
         _configuration = Substitute.For<IConfiguration>();
-        _languageModelProvider = new Gpt4OMiniProvider(_httpService, _configuration);
+        _languageModelProvider = new GptMiniProvider(_httpService, _configuration);
     }
 
     [Test]
@@ -78,7 +78,7 @@ public class Gpt4OMiniProviderTest
             Arg.Is<HttpRequest>(request =>
                 request.Uri == "https://api.openai.com/v1/chat/completions" &&
                 ReadRequestBody(request).Messages[0].Content == prompt &&
-                ReadRequestBody(request).Model == "gpt-4o-mini" &&
+                ReadRequestBody(request).Model == "gpt-5.4-mini" &&
                 request.Headers["Authorization"] == $"Bearer {apiKey}"),
             Arg.Any<CancellationToken>());
     }
@@ -127,7 +127,7 @@ public class Gpt4OMiniProviderTest
         Assert.That(result, Is.EqualTo(expectedResponse));
         await _httpService.Received(1).SendAsync<GptResponseDto>(
             Arg.Is<HttpRequest>(req =>
-                ReadRequestBody(req).Model == "gpt-4o-mini" &&
+                ReadRequestBody(req).Model == "gpt-5.4-mini" &&
                 ReadRequestBody(req).Messages[0].Role == "system" &&
                 ReadRequestBody(req).Messages[0].Content == "System instruction" &&
                 ReadRequestBody(req).Messages[1].Role == "user" &&

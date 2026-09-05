@@ -14,8 +14,8 @@ public class LanguageModelResolverTest
 {
     private IConfiguration _configuration;
     private IDependencyContainerService _dependencyContainer;
-    private Gpt4OMiniProvider _gptProvider;
-    private Gemini25FlashProvider _geminiProvider;
+    private GptMiniProvider _gptProvider;
+    private GeminiFlashProvider _geminiProvider;
     private MistralSmallProvider _mistralProvider;
     private LanguageModelResolver _resolver;
 
@@ -25,12 +25,12 @@ public class LanguageModelResolverTest
         _configuration = Substitute.For<IConfiguration>();
         _dependencyContainer = Substitute.For<IDependencyContainerService>();
 
-        _gptProvider = Substitute.ForPartsOf<Gpt4OMiniProvider>(null, _configuration);
-        _geminiProvider = Substitute.ForPartsOf<Gemini25FlashProvider>(_configuration, null);
+        _gptProvider = Substitute.ForPartsOf<GptMiniProvider>(null, _configuration);
+        _geminiProvider = Substitute.ForPartsOf<GeminiFlashProvider>(_configuration, null);
         _mistralProvider = Substitute.ForPartsOf<MistralSmallProvider>(null, _configuration);
 
-        _dependencyContainer.Resolve<Gpt4OMiniProvider>().Returns(_gptProvider);
-        _dependencyContainer.Resolve<Gemini25FlashProvider>().Returns(_geminiProvider);
+        _dependencyContainer.Resolve<GptMiniProvider>().Returns(_gptProvider);
+        _dependencyContainer.Resolve<GeminiFlashProvider>().Returns(_geminiProvider);
         _dependencyContainer.Resolve<MistralSmallProvider>().Returns(_mistralProvider);
 
         _resolver = new LanguageModelResolver(_configuration, _dependencyContainer);
@@ -52,33 +52,12 @@ public class LanguageModelResolverTest
     }
 
     [Test]
-    public async Task Test_AskLanguageModelAsync_ShouldCallGptFirst_WhenGptKeyIsConfigured()
+    public async Task Test_AskLanguageModelAsync_ShouldCallGeminiFirst_WhenGeminiKeyIsConfigured()
     {
         // Arrange
         _configuration.ChatGptApiKey.Returns("gpt-key");
         _configuration.GeminiApiKey.Returns("gemini-key");
 
-        _gptProvider.AskLanguageModelAsync("hello", Arg.Any<CancellationToken>())
-            .Returns("gpt response");
-
-        // Act
-        var result = await _resolver.AskLanguageModelAsync("hello");
-
-        // Assert
-        Assert.That(result, Is.EqualTo("gpt response"));
-        await _gptProvider.Received(1).AskLanguageModelAsync("hello", Arg.Any<CancellationToken>());
-        await _geminiProvider.DidNotReceive().AskLanguageModelAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
-    }
-
-    [Test]
-    public async Task Test_AskLanguageModelAsync_ShouldFallbackToGemini_WhenGptFails()
-    {
-        // Arrange
-        _configuration.ChatGptApiKey.Returns("gpt-key");
-        _configuration.GeminiApiKey.Returns("gemini-key");
-
-        _gptProvider.AskLanguageModelAsync("hello", Arg.Any<CancellationToken>())
-            .ThrowsAsync(new HttpRequestException("GPT failed"));
         _geminiProvider.AskLanguageModelAsync("hello", Arg.Any<CancellationToken>())
             .Returns("gemini response");
 
@@ -87,22 +66,19 @@ public class LanguageModelResolverTest
 
         // Assert
         Assert.That(result, Is.EqualTo("gemini response"));
-        await _gptProvider.Received(1).AskLanguageModelAsync("hello", Arg.Any<CancellationToken>());
         await _geminiProvider.Received(1).AskLanguageModelAsync("hello", Arg.Any<CancellationToken>());
+        await _gptProvider.DidNotReceive().AskLanguageModelAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
-    public async Task Test_AskLanguageModelAsync_ShouldFallbackToMistral_WhenGptAndGeminiFail()
+    public async Task Test_AskLanguageModelAsync_ShouldFallbackToMistral_WhenGeminiFails()
     {
         // Arrange
-        _configuration.ChatGptApiKey.Returns("gpt-key");
         _configuration.GeminiApiKey.Returns("gemini-key");
         _configuration.MistralApiKey.Returns("mistral-key");
 
-        _gptProvider.AskLanguageModelAsync("hello", Arg.Any<CancellationToken>())
-            .Returns(string.Empty);
         _geminiProvider.AskLanguageModelAsync("hello", Arg.Any<CancellationToken>())
-            .ThrowsAsync(new Exception("Gemini error"));
+            .ThrowsAsync(new HttpRequestException("Gemini failed"));
         _mistralProvider.AskLanguageModelAsync("hello", Arg.Any<CancellationToken>())
             .Returns("mistral response");
 
@@ -111,7 +87,33 @@ public class LanguageModelResolverTest
 
         // Assert
         Assert.That(result, Is.EqualTo("mistral response"));
+        await _geminiProvider.Received(1).AskLanguageModelAsync("hello", Arg.Any<CancellationToken>());
         await _mistralProvider.Received(1).AskLanguageModelAsync("hello", Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_AskLanguageModelAsync_ShouldFallbackToGpt_WhenGeminiAndMistralFail()
+    {
+        // Arrange
+        _configuration.ChatGptApiKey.Returns("gpt-key");
+        _configuration.GeminiApiKey.Returns("gemini-key");
+        _configuration.MistralApiKey.Returns("mistral-key");
+
+        _geminiProvider.AskLanguageModelAsync("hello", Arg.Any<CancellationToken>())
+            .Returns(string.Empty);
+        _mistralProvider.AskLanguageModelAsync("hello", Arg.Any<CancellationToken>())
+            .ThrowsAsync(new Exception("Mistral error"));
+        _gptProvider.AskLanguageModelAsync("hello", Arg.Any<CancellationToken>())
+            .Returns("gpt response");
+
+        // Act
+        var result = await _resolver.AskLanguageModelAsync("hello");
+
+        // Assert
+        Assert.That(result, Is.EqualTo("gpt response"));
+        await _geminiProvider.Received(1).AskLanguageModelAsync("hello", Arg.Any<CancellationToken>());
+        await _mistralProvider.Received(1).AskLanguageModelAsync("hello", Arg.Any<CancellationToken>());
+        await _gptProvider.Received(1).AskLanguageModelAsync("hello", Arg.Any<CancellationToken>());
     }
 
     [Test]

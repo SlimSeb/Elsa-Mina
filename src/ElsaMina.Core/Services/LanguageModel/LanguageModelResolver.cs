@@ -84,21 +84,21 @@ public class LanguageModelResolver : ILanguageModelProvider
     private List<ILanguageModelProvider> GetProviders()
     {
         var providers = new List<ILanguageModelProvider>();
-        
-        // In order of priority
-        if (!string.IsNullOrWhiteSpace(_configuration.ChatGptApiKey))
-        {
-            providers.Add(_dependencyContainer.Resolve<Gpt4OMiniProvider>());
-        }
 
+        // In order of priority
         if (!string.IsNullOrWhiteSpace(_configuration.GeminiApiKey))
         {
-            providers.Add(_dependencyContainer.Resolve<Gemini25FlashProvider>());
+            providers.Add(_dependencyContainer.Resolve<GeminiFlashProvider>());
         }
 
         if (!string.IsNullOrWhiteSpace(_configuration.MistralApiKey))
         {
             providers.Add(_dependencyContainer.Resolve<MistralSmallProvider>());
+        }
+
+        if (!string.IsNullOrWhiteSpace(_configuration.ChatGptApiKey))
+        {
+            providers.Add(_dependencyContainer.Resolve<GptMiniProvider>());
         }
 
         return providers;
