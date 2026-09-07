@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.System;
 
 namespace ElsaMina.Commands.Development;
 
-[NamedCommand("memusage", "memoryusage")]
+[NamedCommand("memusage", "memoryusage", "systeminfo", "sysinfo")]
 public class MemoryUsageCommand : Command
 {
     private readonly ISystemService _systemService;
@@ -21,7 +21,10 @@ public class MemoryUsageCommand : Command
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var systemInfo = _systemService.GetSystemInfo();
-        context.Reply($"!code {systemInfo}");
+        if (systemInfo != null)
+        {
+            context.Reply($"!code {systemInfo}");
+        }
 
         return Task.CompletedTask;
     }
