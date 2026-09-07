@@ -34,7 +34,7 @@
     <!-- 1. Quick Actions Card (taken from current dashboard) -->
     <div style="@cardStyle">
         <div style="@cardHeaderStyle">
-            ⚡ @GetString("dashboard_category_quick_actions")
+            @GetString("dashboard_category_quick_actions")
         </div>
         <table style="@tableStyle">
             <tbody>
@@ -47,7 +47,7 @@
                     <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
                         @if (Model.AreGamesMuted)
                         {
-                            <span style="@badgeStyle background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5);">🔴 @GetString("dashboard_games_muted")</span>
+                            <span style="@badgeStyle background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.5);">@GetString("dashboard_games_muted")</span>
                             <button
                                 class="button"
                                 name="send"
@@ -58,7 +58,7 @@
                         }
                         else
                         {
-                            <span style="@badgeStyle background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.5);">🟢 @GetString("dashboard_games_active")</span>
+                            <span style="@badgeStyle background: rgba(34, 197, 94, 0.15); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.5);">@GetString("dashboard_games_active")</span>
                             <button
                                 class="button"
                                 name="send"
@@ -75,7 +75,7 @@
                 {
                     <tr style="@rowStyle">
                         <td style="padding: 10px 14px; vertical-align: middle;">
-                            <span style="font-weight: bold; font-size: 0.88em; display: block;">🎮 @GetString("dashboard_diag_active_game"): @Model.ActiveGameName</span>
+                            <span style="font-weight: bold; font-size: 0.88em; display: block;">@GetString("dashboard_diag_active_game"): @Model.ActiveGameName</span>
                             <span style="font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;">@GetString("dashboard_active_game_warning", Model.ActiveGameName)</span>
                         </td>
                         <td style="padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;">
@@ -130,7 +130,7 @@
     <!-- 2. Options Section (opens the current dashboard & panels) -->
     <div style="@cardStyle">
         <div style="@cardHeaderStyle">
-            ⚙️ @GetString("dashboard_section_options")
+            @GetString("dashboard_section_options")
         </div>
         <div style="padding: 14px; text-align: center;">
             <p style="margin: 0 0 10px 0; font-size: 0.88em; opacity: 0.85;">
@@ -147,21 +147,21 @@
                     name="send"
                     value="/w @Model.BotName, @(Model.Trigger)roomoptions @Model.RoomId"
                     style="@primaryBtnStyle">
-                    ⚙️ @GetString("dashboard_btn_open_options")
+                    @GetString("dashboard_btn_open_options")
                 </button>
                 <button
                     class="button"
                     name="send"
                     value="/w @Model.BotName, @(Model.Trigger)configtour @Model.RoomId"
                     style="background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(2, 132, 199, 0.5); color: #0284c7; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold;">
-                    🏆 @GetString("dashboard_btn_open_tours")
+                    @GetString("dashboard_btn_open_tours")
                 </button>
                 <button
                     class="button"
                     name="send"
                     value="/w @Model.BotName, @(Model.Trigger)badgepanel @Model.RoomId"
                     style="background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.5); color: #7c3aed; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold;">
-                    🏅 @GetString("dashboard_btn_open_badges")
+                    @GetString("dashboard_btn_open_badges")
                 </button>
             </div>
         </div>
@@ -170,7 +170,7 @@
     <!-- 3. Quick Start Game Section -->
     <div style="@cardStyle">
         <div style="@cardHeaderStyle">
-            🎮 @GetString("dashboard_section_quick_start_games")
+            @GetString("dashboard_section_quick_start_games")
         </div>
         <div style="padding: 12px 14px 4px 14px;">
             <p style="margin: 0 0 10px 0; font-size: 0.85em; opacity: 0.85;">
@@ -180,7 +180,7 @@
             @if (Model.AreGamesMuted)
             {
                 <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; padding: 8px 12px; margin-bottom: 10px; font-size: 0.8em; color: #ef4444;">
-                    ⚠️ @GetString("dashboard_games_muted_warning")
+                    @GetString("dashboard_games_muted_warning")
                 </div>
             }
 
@@ -202,7 +202,7 @@
                                         name="send"
                                         value="/msgroom @Model.RoomId, @(Model.Trigger)@game.Command"
                                         style="@playBtnStyle">
-                                        ▶ @GetString("dashboard_btn_start_game")
+                                        @GetString("dashboard_btn_start_game")
                                     </button>
                                 </td>
                             </tr>
@@ -216,7 +216,7 @@
     <!-- 4. Diagnostics Section -->
     <div style="@cardStyle">
         <div style="@cardHeaderStyle">
-            📊 @GetString("dashboard_section_diagnostics")
+            @GetString("dashboard_section_diagnostics")
         </div>
         <table style="@tableStyle">
             <tbody>
@@ -233,7 +233,7 @@
                 <tr style="@rowStyle">
                     <td style="padding: 8px 14px; font-size: 0.82em; font-weight: bold;">@GetString("dashboard_games_control_name")</td>
                     <td style="padding: 8px 14px; font-size: 0.82em; text-align: right;">
-                        @(Model.AreGamesMuted ? "🔴 " + GetString("dashboard_games_muted") : "🟢 " + GetString("dashboard_games_active"))
+                        @(Model.AreGamesMuted ? GetString("dashboard_games_muted") : GetString("dashboard_games_active"))
                     </td>
                 </tr>
                 <tr style="@rowStyle">
@@ -266,7 +266,7 @@
                 name="send"
                 value="/w @Model.BotName, @(Model.Trigger)roomdashboard @Model.RoomId"
                 style="@refreshBtnStyle">
-                🔄 @GetString("dashboard_diag_btn_refresh")
+                @GetString("dashboard_diag_btn_refresh")
             </button>
         </div>
     </div>
