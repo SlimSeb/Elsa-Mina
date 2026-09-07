@@ -12,8 +12,8 @@ public class SemantixScoreConfiguration : IEntityTypeConfiguration<SemantixScore
 
         builder
             .HasOne(score => score.User)
-            .WithMany()
-            .HasForeignKey(score => score.UserId)
+            .WithOne(user => user.SemantixScore)
+            .HasForeignKey<SemantixScore>(score => score.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

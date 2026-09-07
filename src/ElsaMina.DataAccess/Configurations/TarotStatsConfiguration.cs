@@ -12,8 +12,8 @@ public class TarotStatsConfiguration : IEntityTypeConfiguration<TarotStats>
 
         builder
             .HasOne(stats => stats.User)
-            .WithMany()
-            .HasForeignKey(stats => stats.UserId)
+            .WithOne(user => user.TarotStats)
+            .HasForeignKey<TarotStats>(stats => stats.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

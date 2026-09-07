@@ -454,6 +454,138 @@ public class ProfileServiceTest
                 vm.GameRecords.ConnectFour.Draws == 1));
     }
 
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetBattleship_WhenRatingExists()
+    {
+        // Arrange
+        _dbContext.Users.Add(new SavedUser { UserId = "alice", UserName = "Alice" });
+        _dbContext.BattleshipRatings.Add(new BattleshipRating { UserId = "alice", Rating = 1200, Wins = 5, Losses = 2 });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm =>
+                vm.GameRecords.Battleship != null &&
+                vm.GameRecords.Battleship.Rating == 1200 &&
+                vm.GameRecords.Battleship.Wins == 5 &&
+                vm.GameRecords.Battleship.Losses == 2));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetChess_WhenRatingExists()
+    {
+        // Arrange
+        _dbContext.Users.Add(new SavedUser { UserId = "alice", UserName = "Alice" });
+        _dbContext.ChessRatings.Add(new ChessRating { UserId = "alice", Rating = 1350, Wins = 10, Losses = 4, Draws = 2 });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm =>
+                vm.GameRecords.Chess != null &&
+                vm.GameRecords.Chess.Rating == 1350 &&
+                vm.GameRecords.Chess.Wins == 10 &&
+                vm.GameRecords.Chess.Losses == 4 &&
+                vm.GameRecords.Chess.Draws == 2));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetWordle_WhenScoreExists()
+    {
+        // Arrange
+        _dbContext.Users.Add(new SavedUser { UserId = "alice", UserName = "Alice" });
+        _dbContext.WordleScores.Add(new WordleScore { UserId = "alice", GamesPlayed = 15, Wins = 12, CurrentStreak = 3, MaxStreak = 7, TotalGuesses = 60 });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm =>
+                vm.GameRecords.Wordle != null &&
+                vm.GameRecords.Wordle.GamesPlayed == 15 &&
+                vm.GameRecords.Wordle.Wins == 12 &&
+                vm.GameRecords.Wordle.MaxStreak == 7));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetSemantix_WhenScoreExists()
+    {
+        // Arrange
+        _dbContext.Users.Add(new SavedUser { UserId = "alice", UserName = "Alice" });
+        _dbContext.SemantixScores.Add(new SemantixScore { UserId = "alice", GamesPlayed = 20, Wins = 18, BestGuessCount = 4, CurrentStreak = 5, MaxStreak = 10 });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm =>
+                vm.GameRecords.Semantix != null &&
+                vm.GameRecords.Semantix.GamesPlayed == 20 &&
+                vm.GameRecords.Semantix.Wins == 18 &&
+                vm.GameRecords.Semantix.BestGuessCount == 4 &&
+                vm.GameRecords.Semantix.MaxStreak == 10));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetBelote_WhenStatsExist()
+    {
+        // Arrange
+        _dbContext.Users.Add(new SavedUser { UserId = "alice", UserName = "Alice" });
+        _dbContext.BeloteStats.Add(new BeloteStats { UserId = "alice", TotalScore = 1500, GamesPlayed = 10, Wins = 7, TimesTaker = 4, TakerWins = 3 });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm =>
+                vm.GameRecords.Belote != null &&
+                vm.GameRecords.Belote.TotalScore == 1500 &&
+                vm.GameRecords.Belote.GamesPlayed == 10 &&
+                vm.GameRecords.Belote.Wins == 7 &&
+                vm.GameRecords.Belote.TimesTaker == 4 &&
+                vm.GameRecords.Belote.TakerWins == 3));
+    }
+
+    [Test]
+    public async Task Test_GetProfileHtmlAsync_ShouldSetTarot_WhenStatsExist()
+    {
+        // Arrange
+        _dbContext.Users.Add(new SavedUser { UserId = "alice", UserName = "Alice" });
+        _dbContext.TarotStats.Add(new TarotStats { UserId = "alice", TotalScoreHalfPoints = 125, GamesPlayed = 8, Wins = 5, TimesTaker = 3, TakerWins = 2 });
+        await _dbContext.SaveChangesAsync();
+
+        // Act
+        await _sut.GetProfileHtmlAsync("alice", "room1");
+
+        // Assert
+        await _templatesManager.Received(1).GetTemplateAsync(
+            "Profile/Profile",
+            Arg.Is<ProfileViewModel>(vm =>
+                vm.GameRecords.Tarot != null &&
+                vm.GameRecords.Tarot.TotalScoreHalfPoints == 125 &&
+                vm.GameRecords.Tarot.GamesPlayed == 8 &&
+                vm.GameRecords.Tarot.Wins == 5 &&
+                vm.GameRecords.Tarot.TimesTaker == 3 &&
+                vm.GameRecords.Tarot.TakerWins == 2));
+    }
+
     #endregion
 
     #region GameRecords - isolation

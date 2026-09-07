@@ -71,6 +71,12 @@ public class ProfileService : IProfileService
             .Include(user => user.VoltorbFlipLevel)
             .Include(user => user.TwentyFortyEightScore)
             .Include(user => user.ConnectFourRating)
+            .Include(user => user.BattleshipRating)
+            .Include(user => user.ChessRating)
+            .Include(user => user.WordleScore)
+            .Include(user => user.SemantixScore)
+            .Include(user => user.BeloteStats)
+            .Include(user => user.TarotStats)
             .AsNoTracking()
             .FirstOrDefaultAsync(user => user.UserId == userId, cancellationToken);
 
@@ -98,7 +104,13 @@ public class ProfileService : IProfileService
             LightsOut = savedUser?.LightsOutScore,
             VoltorbFlip = savedUser?.VoltorbFlipLevel,
             TwentyFortyEight = savedUser?.TwentyFortyEightScore,
-            ConnectFour = savedUser?.ConnectFourRating
+            ConnectFour = savedUser?.ConnectFourRating,
+            Battleship = savedUser?.BattleshipRating,
+            Chess = savedUser?.ChessRating,
+            Wordle = savedUser?.WordleScore,
+            Semantix = savedUser?.SemantixScore,
+            Belote = savedUser?.BeloteStats,
+            Tarot = savedUser?.TarotStats
         };
 
         var dolls = await _dollService.ResolveDollsAsync(storedUserData?.Dolls ?? [], cancellationToken);

@@ -235,6 +235,88 @@
                                     </span>
                                 </div>
                             }
+                            @if (gr.Battleship != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="@labelStyle">@GetString("battleship_game_name"):</span>
+                                    <span>
+                                        <span title="@GetString("battleship_leaderboard_rating")">@gr.Battleship.Rating</span>
+                                        · <span title="@GetString("battleship_leaderboard_wins")">🏆 @gr.Battleship.Wins</span>
+                                        · <span title="@GetString("battleship_leaderboard_losses")">💀 @gr.Battleship.Losses</span>
+                                    </span>
+                                </div>
+                            }
+                            @if (gr.Chess != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="@labelStyle">@GetString("chess_game_name"):</span>
+                                    <span>
+                                        <span title="@GetString("chess_leaderboard_rating")">@gr.Chess.Rating</span>
+                                        · <span title="@GetString("chess_leaderboard_wins")">🏆 @gr.Chess.Wins</span>
+                                        · <span title="@GetString("chess_leaderboard_losses")">💀 @gr.Chess.Losses</span>
+                                        @if (gr.Chess.Draws > 0)
+                                        {
+                                            <span>· <span title="@GetString("chess_leaderboard_draws")">🤝 @gr.Chess.Draws</span></span>
+                                        }
+                                    </span>
+                                </div>
+                            }
+                            @if (gr.Wordle != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="@labelStyle">@GetString("games_wordle"):</span>
+                                    <span>
+                                        <span title="@GetString("wordle_leaderboard_wins")">🏆 @gr.Wordle.Wins</span>
+                                        · <span title="@GetString("wordle_leaderboard_max_streak")">🔥 @gr.Wordle.MaxStreak</span>
+                                        · <span title="@GetString("wordle_leaderboard_played")">(@gr.Wordle.GamesPlayed)</span>
+                                    </span>
+                                </div>
+                            }
+                            @if (gr.Semantix != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="@labelStyle">@GetString("games_semantix"):</span>
+                                    <span>
+                                        <span title="@GetString("sx_leaderboard_wins")">🏆 @gr.Semantix.Wins</span>
+                                        · <span title="@GetString("sx_leaderboard_max_streak")">🔥 @gr.Semantix.MaxStreak</span>
+                                        @if (gr.Semantix.BestGuessCount > 0)
+                                        {
+                                            <span>· <span title="@GetString("sx_leaderboard_best")">🎯 @gr.Semantix.BestGuessCount</span></span>
+                                        }
+                                        · <span title="@GetString("wordle_leaderboard_played")">(@gr.Semantix.GamesPlayed)</span>
+                                    </span>
+                                </div>
+                            }
+                            @if (gr.Belote != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="@labelStyle">@GetString("games_belote"):</span>
+                                    <span>
+                                        <span title="@GetString("belote_leaderboard_score")">@gr.Belote.TotalScore pts</span>
+                                        · <span title="@GetString("belote_leaderboard_wins")">🏆 @gr.Belote.Wins</span>
+                                        · <span title="@GetString("belote_leaderboard_games")">(@gr.Belote.GamesPlayed)</span>
+                                        @if (gr.Belote.TimesTaker > 0)
+                                        {
+                                            <span>· <span title="@GetString("belote_leaderboard_taker")">🃏 @gr.Belote.TakerWins/@gr.Belote.TimesTaker</span></span>
+                                        }
+                                    </span>
+                                </div>
+                            }
+                            @if (gr.Tarot != null)
+                            {
+                                <div style="margin-bottom:2px;">
+                                    <span style="@labelStyle">@GetString("games_tarot"):</span>
+                                    <span>
+                                        <span title="@GetString("tarot_leaderboard_score")">@((gr.Tarot.TotalScoreHalfPoints / 2.0).ToString("0.#", Model.Culture)) pts</span>
+                                        · <span title="@GetString("tarot_leaderboard_wins")">🏆 @gr.Tarot.Wins</span>
+                                        · <span title="@GetString("tarot_leaderboard_games")">(@gr.Tarot.GamesPlayed)</span>
+                                        @if (gr.Tarot.TimesTaker > 0)
+                                        {
+                                            <span>· <span title="@GetString("tarot_leaderboard_taker")">🃏 @gr.Tarot.TakerWins/@gr.Tarot.TimesTaker</span></span>
+                                        }
+                                    </span>
+                                </div>
+                            }
                         </div>
                     </details>
                 </div>

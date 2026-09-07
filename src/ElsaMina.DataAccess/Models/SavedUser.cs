@@ -20,4 +20,8 @@ public class SavedUser
     public ConnectFourRating ConnectFourRating { get; set; }
     public BattleshipRating BattleshipRating { get; set; }
     public ChessRating ChessRating { get; set; }
+    public WordleScore WordleScore { get; set; }
+    public SemantixScore SemantixScore { get; set; }
+    public BeloteStats BeloteStats { get; set; }
+    public TarotStats TarotStats { get; set; }
 }
