@@ -4,7 +4,7 @@ using ElsaMina.Commands;
 using ElsaMina.Core.Modules;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.DependencyInjection;
-using ElsaMina.FileSharing.S3;
+using ElsaMina.Cloud.S3;
 
 namespace ElsaMina.Console.Startup;
 

@@ -1,4 +1,4 @@
-namespace ElsaMina.FileSharing.S3;
+namespace ElsaMina.Cloud.S3;
 
 public interface IS3CredentialsProvider
 {

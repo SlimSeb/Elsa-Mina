@@ -2,7 +2,7 @@ using System.Text;
 using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 
-namespace ElsaMina.Sheets.GoogleSheets;
+namespace ElsaMina.Cloud.Sheets;
 
 public class GoogleSheet : ISheet
 {

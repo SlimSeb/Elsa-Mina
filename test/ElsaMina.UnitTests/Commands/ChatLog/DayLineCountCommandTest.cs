@@ -7,7 +7,7 @@ using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
-using ElsaMina.FileSharing;
+using ElsaMina.Cloud;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.ChatLog;

@@ -2,7 +2,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 
-namespace ElsaMina.Sheets.GoogleDrive;
+namespace ElsaMina.Cloud.GoogleDrive;
 
 public sealed class GoogleDriveProvider : IDriveProvider
 {

@@ -1,4 +1,4 @@
-﻿using ElsaMina.FileSharing.S3;
+using ElsaMina.Cloud.S3;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Services.Config;

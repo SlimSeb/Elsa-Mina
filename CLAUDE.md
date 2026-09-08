@@ -40,8 +40,7 @@ dotnet ef migrations remove --project src/ElsaMina.DataAccess
 | `ElsaMina.Commands` | All command and handler implementations |
 | `ElsaMina.DataAccess` | EF Core DbContext, models, migrations (PostgreSQL) |
 | `ElsaMina.Battles` | Autonomous battle bot: protocol parsing, simulation, and decision strategies |
-| `ElsaMina.FileSharing` | S3 file upload abstraction |
-| `ElsaMina.Sheets` | Google Sheets integration |
+| `ElsaMina.Cloud` | S3 file upload, Google Drive, and Google Sheets integration |
 | `ElsaMina.Logging` | Thin logging abstraction over Serilog |
 
 ### Message Flow

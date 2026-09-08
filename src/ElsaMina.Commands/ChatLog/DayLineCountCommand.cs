@@ -3,7 +3,7 @@ using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
-using ElsaMina.FileSharing;
+using ElsaMina.Cloud;
 
 namespace ElsaMina.Commands.ChatLog;
 

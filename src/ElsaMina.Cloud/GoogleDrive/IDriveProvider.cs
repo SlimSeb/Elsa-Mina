@@ -1,4 +1,4 @@
-namespace ElsaMina.Sheets.GoogleDrive;
+namespace ElsaMina.Cloud.GoogleDrive;
 
 public interface IDriveProvider : IDisposable
 {

@@ -1,8 +1,9 @@
 using Autofac;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Sheets;
-using ElsaMina.Sheets.GoogleDrive;
-using ElsaMina.Sheets.GoogleSheets;
+using ElsaMina.Cloud;
+using ElsaMina.Cloud.GoogleDrive;
+using ElsaMina.Cloud.S3;
+using ElsaMina.Cloud.Sheets;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Sheets.v4;
@@ -10,11 +11,14 @@ using Newtonsoft.Json;
 
 namespace ElsaMina.Core.Modules;
 
-public class SheetsModule : Module
+public class CloudModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
+
+        builder.RegisterType<S3FileSharingService>().As<IFileSharingService>().SingleInstance()
+            .OnActivating(ctx => ctx.Instance.InitializeAsync().Wait());
 
         builder.Register(ctx => CreateCredential(ctx.Resolve<IConfiguration>()))
             .As<GoogleCredential>()

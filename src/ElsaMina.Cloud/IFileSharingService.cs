@@ -1,4 +1,4 @@
-namespace ElsaMina.FileSharing;
+namespace ElsaMina.Cloud;
 
 public interface IFileSharingService : IDisposable
 {

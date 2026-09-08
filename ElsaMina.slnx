@@ -1,4 +1,4 @@
-﻿<Solution>
+<Solution>
   <Folder Name="/Build/">
     <File Path=".dockerignore" />
     <File Path="Directory.Packages.props" />
@@ -43,9 +43,8 @@
     <Project Path="src\ElsaMina.Console\ElsaMina.Console.csproj" />
     <Project Path="src\ElsaMina.Core\ElsaMina.Core.csproj" />
     <Project Path="src\ElsaMina.DataAccess\ElsaMina.DataAccess.csproj" />
-    <Project Path="src\ElsaMina.FileSharing\ElsaMina.FileSharing.csproj" />
+    <Project Path="src\ElsaMina.Cloud\ElsaMina.Cloud.csproj" />
     <Project Path="src\ElsaMina.Logging\ElsaMina.Logging.csproj" />
-    <Project Path="src\ElsaMina.Sheets\ElsaMina.Sheets.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="test\ElsaMina.IntegrationTests\ElsaMina.IntegrationTests.csproj" />

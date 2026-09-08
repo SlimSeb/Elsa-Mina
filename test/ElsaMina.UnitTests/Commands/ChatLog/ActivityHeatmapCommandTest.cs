@@ -3,7 +3,7 @@ using System.Text;
 using ElsaMina.Commands.ChatLog;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.FileSharing;
+using ElsaMina.Cloud;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 

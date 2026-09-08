@@ -5,7 +5,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
-using ElsaMina.FileSharing;
+using ElsaMina.Cloud;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.ChatLog;

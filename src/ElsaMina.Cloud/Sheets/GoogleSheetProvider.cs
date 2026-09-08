@@ -4,7 +4,7 @@ using Google.Apis.Drive.v3;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 
-namespace ElsaMina.Sheets.GoogleSheets;
+namespace ElsaMina.Cloud.Sheets;
 
 public sealed class GoogleSheetProvider : ISheetProvider
 {

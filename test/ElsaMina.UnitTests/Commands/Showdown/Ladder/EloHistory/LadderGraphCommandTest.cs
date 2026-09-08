@@ -4,7 +4,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
-using ElsaMina.FileSharing;
+using ElsaMina.Cloud;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;

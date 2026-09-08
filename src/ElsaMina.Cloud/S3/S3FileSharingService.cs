@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using Amazon.S3;
 using Amazon.S3.Model;
 
-namespace ElsaMina.FileSharing.S3;
+namespace ElsaMina.Cloud.S3;
 
 public class S3FileSharingService : IFileSharingService
 {

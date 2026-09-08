@@ -39,8 +39,7 @@ using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Services.UserData;
 using ElsaMina.Core.Services.UserDetails;
 using ElsaMina.Core.Utils;
-using ElsaMina.FileSharing;
-using ElsaMina.FileSharing.S3;
+using ElsaMina.Cloud;
 
 namespace ElsaMina.Core.Modules;
 
@@ -51,7 +50,7 @@ public class CoreModule : Module
         base.Load(builder);
 
         builder.RegisterModule<DataAccessModule>();
-        builder.RegisterModule<SheetsModule>();
+        builder.RegisterModule<CloudModule>();
 
         builder.RegisterInstance(
                 new ResourceManager("ElsaMina.Core.Resources.Resources", Assembly.GetExecutingAssembly()))
@@ -110,8 +109,5 @@ public class CoreModule : Module
         builder.RegisterHandler<LoginHandler>();
         builder.RegisterHandler<AcceptChallengeHandler>();
         builder.RegisterHandler<ErrorHandler>();
-
-        builder.RegisterType<S3FileSharingService>().As<IFileSharingService>().SingleInstance()
-            .OnActivating(ctx => ctx.Instance.InitializeAsync().Wait());
     }
 }

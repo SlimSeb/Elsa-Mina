@@ -18,9 +18,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ElsaMina.DataAccess\ElsaMina.DataAccess.csproj"/>
-        <ProjectReference Include="..\ElsaMina.FileSharing\ElsaMina.FileSharing.csproj"/>
+        <ProjectReference Include="..\ElsaMina.Cloud\ElsaMina.Cloud.csproj"/>
         <ProjectReference Include="..\ElsaMina.Logging\ElsaMina.Logging.csproj" />
-        <ProjectReference Include="..\ElsaMina.Sheets\ElsaMina.Sheets.csproj" />
     </ItemGroup>
 
     <ItemGroup>
