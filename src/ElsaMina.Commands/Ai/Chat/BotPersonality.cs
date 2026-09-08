@@ -2,8 +2,8 @@ namespace ElsaMina.Commands.Ai.Chat;
 
 public enum BotPersonality
 {
-    Silly,
     Helpful,
+    Silly,
     Detective,
     Philosopher,
     Redditor,
