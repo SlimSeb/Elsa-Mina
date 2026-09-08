@@ -78,7 +78,7 @@ public class GeminiFlashProviderTest
         Assert.That(result, Is.EqualTo(expectedResponse));
         await _httpService.Received(1).SendAsync<GeminiResponseDto>(
             Arg.Is<HttpRequest>(request =>
-                request.Uri == "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent" &&
+                request.Uri == "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent" &&
                 ReadRequestBody(request).Contents[0].Parts[0].Text == prompt &&
                 request.Headers["x-goog-api-key"] == apiKey),
             Arg.Any<CancellationToken>());
