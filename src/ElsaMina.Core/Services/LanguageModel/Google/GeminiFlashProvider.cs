@@ -9,5 +9,5 @@ public class GeminiFlashProvider : GeminiLanguageModelProvider
     {
     }
 
-    protected override string Model => "gemini-flash-latest";
+    protected override string Model => "gemini-3.6-flash";
 }
