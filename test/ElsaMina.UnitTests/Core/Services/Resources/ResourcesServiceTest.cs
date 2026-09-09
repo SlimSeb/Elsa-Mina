@@ -226,13 +226,183 @@ public class ResourcesServiceTest
         Assert.That(result, Is.EqualTo("some_key"));
     }
 
+    [Test]
+    public void Test_Constructor_ShouldNotLoadAnyStrings_WhenInitialized()
+    {
+        // Arrange
+        var manager = FakeResourceManager.WithMultipleCultures(new Dictionary<CultureInfo, Dictionary<string, string>>
+        {
+            [new CultureInfo("en-US")] = new() { ["key1"] = "val1" },
+            [new CultureInfo("fr-FR")] = new() { ["key2"] = "val2" }
+        });
+
+        // Act
+        _ = CreateService(manager);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(manager.GetReaderEnumerationCount("en-US"), Is.Zero);
+            Assert.That(manager.GetReaderEnumerationCount("fr-FR"), Is.Zero);
+        }
+    }
+
+    [Test]
+    public void Test_SupportedCultures_ShouldNotLoadStrings_WhenAccessed()
+    {
+        // Arrange
+        var manager = FakeResourceManager.WithMultipleCultures(new Dictionary<CultureInfo, Dictionary<string, string>>
+        {
+            [new CultureInfo("en-US")] = new() { ["key1"] = "val1" },
+            [new CultureInfo("fr-FR")] = new() { ["key2"] = "val2" }
+        });
+        var sut = CreateService(manager);
+
+        // Act
+        _ = sut.SupportedCultures.ToList();
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(manager.GetReaderEnumerationCount("en-US"), Is.Zero);
+            Assert.That(manager.GetReaderEnumerationCount("fr-FR"), Is.Zero);
+        }
+    }
+
+    [Test]
+    public void Test_GetString_ShouldOnlyLoadRequestedCulture_AndNotUnusedCultures()
+    {
+        // Arrange
+        var manager = FakeResourceManager.WithMultipleCultures(new Dictionary<CultureInfo, Dictionary<string, string>>
+        {
+            [new CultureInfo("en-US")] = new() { ["hello"] = "Hello" },
+            [new CultureInfo("fr-FR")] = new() { ["hello"] = "Bonjour" },
+            [new CultureInfo("de-DE")] = new() { ["hello"] = "Hallo" }
+        });
+        var sut = CreateService(manager);
+
+        // Act
+        var result = sut.GetString("hello", new CultureInfo("en-US"));
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.EqualTo("Hello"));
+            Assert.That(manager.GetReaderEnumerationCount("en-US"), Is.EqualTo(1));
+            Assert.That(manager.GetReaderEnumerationCount("fr-FR"), Is.Zero);
+            Assert.That(manager.GetReaderEnumerationCount("de-DE"), Is.Zero);
+        }
+    }
+
+    [Test]
+    public void Test_GetString_ShouldCacheLoadedStrings_WhenCalledMultipleTimesForSameCulture()
+    {
+        // Arrange
+        var manager = FakeResourceManager.WithMultipleCultures(new Dictionary<CultureInfo, Dictionary<string, string>>
+        {
+            [new CultureInfo("en-US")] = new() { ["hello"] = "Hello", ["world"] = "World" }
+        });
+        var sut = CreateService(manager);
+
+        // Act
+        var firstResult = sut.GetString("hello", new CultureInfo("en-US"));
+        var secondResult = sut.GetString("world", new CultureInfo("en-US"));
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(firstResult, Is.EqualTo("Hello"));
+            Assert.That(secondResult, Is.EqualTo("World"));
+            Assert.That(manager.GetReaderEnumerationCount("en-US"), Is.EqualTo(1));
+        }
+    }
+
+    [Test]
+    public void Test_GetString_ShouldLoadParentCultureLazily_WhenKeyNotInChildCulture()
+    {
+        // Arrange
+        var manager = FakeResourceManager.WithMultipleCultures(new Dictionary<CultureInfo, Dictionary<string, string>>
+        {
+            [new CultureInfo("fr-FR")] = new() { ["other"] = "Autre" },
+            [new CultureInfo("fr")] = new() { ["hello"] = "Bonjour" }
+        });
+        var sut = CreateService(manager);
+
+        // Act
+        var result = sut.GetString("hello", new CultureInfo("fr-FR"));
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.EqualTo("Bonjour"));
+            Assert.That(manager.GetReaderEnumerationCount("fr-FR"), Is.EqualTo(1));
+            Assert.That(manager.GetReaderEnumerationCount("fr"), Is.EqualTo(1));
+        }
+    }
+
+    [Test]
+    public void Test_GetString_ShouldLoadMultipleCulturesOnDemand_WhenDifferentCulturesRequested()
+    {
+        // Arrange
+        var manager = FakeResourceManager.WithMultipleCultures(new Dictionary<CultureInfo, Dictionary<string, string>>
+        {
+            [new CultureInfo("en-US")] = new() { ["hello"] = "Hello" },
+            [new CultureInfo("fr-FR")] = new() { ["hello"] = "Bonjour" },
+            [new CultureInfo("de-DE")] = new() { ["hello"] = "Hallo" }
+        });
+        var sut = CreateService(manager);
+
+        // Act & Assert step 1: Request en-US
+        var enResult = sut.GetString("hello", new CultureInfo("en-US"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(enResult, Is.EqualTo("Hello"));
+            Assert.That(manager.GetReaderEnumerationCount("en-US"), Is.EqualTo(1));
+            Assert.That(manager.GetReaderEnumerationCount("fr-FR"), Is.Zero);
+            Assert.That(manager.GetReaderEnumerationCount("de-DE"), Is.Zero);
+        }
+
+        // Act & Assert step 2: Request fr-FR
+        var frResult = sut.GetString("hello", new CultureInfo("fr-FR"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(frResult, Is.EqualTo("Bonjour"));
+            Assert.That(manager.GetReaderEnumerationCount("en-US"), Is.EqualTo(1));
+            Assert.That(manager.GetReaderEnumerationCount("fr-FR"), Is.EqualTo(1));
+            Assert.That(manager.GetReaderEnumerationCount("de-DE"), Is.Zero);
+        }
+    }
+
+    [Test]
+    public async Task Test_GetString_ShouldLoadCultureOnlyOnce_WhenCalledConcurrently()
+    {
+        // Arrange
+        var manager = FakeResourceManager.WithMultipleCultures(new Dictionary<CultureInfo, Dictionary<string, string>>
+        {
+            [new CultureInfo("en-US")] = new() { ["hello"] = "Hello" }
+        });
+        var sut = CreateService(manager);
+
+        // Act
+        var tasks = Enumerable.Range(0, 50)
+            .Select(_ => Task.Run(() => sut.GetString("hello", new CultureInfo("en-US"))));
+        var results = await Task.WhenAll(tasks);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(results, Has.All.EqualTo("Hello"));
+            Assert.That(manager.GetReaderEnumerationCount("en-US"), Is.EqualTo(1));
+        }
+    }
+
     // --- Test doubles ---
 
     private sealed class FakeResourceManager : ResourceManager
     {
-        private readonly Dictionary<string, ResourceSet> _sets;
+        private readonly Dictionary<string, TrackingResourceSet> _sets;
 
-        private FakeResourceManager(Dictionary<string, ResourceSet> sets)
+        private FakeResourceManager(Dictionary<string, TrackingResourceSet> sets)
         {
             _sets = sets;
         }
@@ -244,25 +414,33 @@ public class ResourcesServiceTest
             Dictionary<CultureInfo, Dictionary<string, string>> data)
         {
             var sets = data.ToDictionary(
-                kvp => kvp.Key.Name,
-                kvp => new ResourceSet(new DictionaryResourceReader(kvp.Value)));
+                pair => pair.Key.Name,
+                pair => new TrackingResourceSet(pair.Value));
             return new FakeResourceManager(sets);
         }
 
+        public int GetReaderEnumerationCount(string cultureName) =>
+            _sets.TryGetValue(cultureName, out var entry) ? entry.EnumerationCount : 0;
+
         public override ResourceSet GetResourceSet(CultureInfo culture, bool createIfNotExists, bool tryParents) =>
-            _sets.GetValueOrDefault(culture.Name);
+            _sets.TryGetValue(culture.Name, out var entry) ? entry : null;
     }
 
-    private sealed class DictionaryResourceReader : IResourceReader
+    private sealed class TrackingResourceSet : ResourceSet
     {
-        private readonly Dictionary<string, object> _data;
+        private readonly Dictionary<string, string> _entries;
 
-        public DictionaryResourceReader(Dictionary<string, string> data) =>
-            _data = data.ToDictionary(kvp => kvp.Key, kvp => (object) kvp.Value);
+        public int EnumerationCount { get; private set; }
 
-        public IDictionaryEnumerator GetEnumerator() => _data.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => _data.GetEnumerator();
-        public void Close() { }
-        public void Dispose() { }
+        public TrackingResourceSet(Dictionary<string, string> entries)
+        {
+            _entries = entries;
+        }
+
+        public override IDictionaryEnumerator GetEnumerator()
+        {
+            EnumerationCount++;
+            return ((IDictionary) _entries).GetEnumerator();
+        }
     }
 }
