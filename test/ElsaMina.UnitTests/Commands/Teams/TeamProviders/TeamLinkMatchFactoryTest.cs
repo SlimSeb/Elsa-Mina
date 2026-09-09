@@ -1,5 +1,4 @@
 using ElsaMina.Commands.Teams.TeamProviders;
-using ElsaMina.Core.Services.DependencyInjection;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
 
@@ -7,7 +6,6 @@ namespace ElsaMina.UnitTests.Commands.Teams.TeamProviders;
 
 public class TeamLinkMatchFactoryTests
 {
-    private IDependencyContainerService _dependencyContainerService;
     private ITeamProvider _teamProvider1;
     private ITeamProvider _teamProvider2;
     private TeamLinkMatchFactory _factory;
@@ -15,11 +13,10 @@ public class TeamLinkMatchFactoryTests
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
         _teamProvider1 = Substitute.For<ITeamProvider>();
         _teamProvider2 = Substitute.For<ITeamProvider>();
 
-        _factory = new TeamLinkMatchFactory(_dependencyContainerService);
+        _factory = new TeamLinkMatchFactory([_teamProvider1, _teamProvider2]);
     }
 
     [Test]
@@ -30,9 +27,6 @@ public class TeamLinkMatchFactoryTests
         const string expectedLink = "https://validteamlink.com";
         _teamProvider1.GetMatchFromLink(message).ReturnsNull();
         _teamProvider2.GetMatchFromLink(message).Returns(expectedLink);
-
-        var teamProviders = new List<ITeamProvider> { _teamProvider1, _teamProvider2 };
-        _dependencyContainerService.Resolve<IEnumerable<ITeamProvider>>().Returns(teamProviders);
 
         // Act
         var result = _factory.FindTeamLinkMatch(message);
@@ -52,29 +46,10 @@ public class TeamLinkMatchFactoryTests
         _teamProvider1.GetMatchFromLink(message).Returns((string)null);
         _teamProvider2.GetMatchFromLink(message).Returns((string)null);
 
-        var teamProviders = new List<ITeamProvider> { _teamProvider1, _teamProvider2 };
-        _dependencyContainerService.Resolve<IEnumerable<ITeamProvider>>().Returns(teamProviders);
-
         // Act
         var result = _factory.FindTeamLinkMatch(message);
 
         // Assert
         Assert.That(result, Is.Null);
-    }
-
-    [Test]
-    public void Test_FindTeamLinkMatch_ShouldLazyLoadProviders_WhenCalled()
-    {
-        // Arrange
-        var message = "Message with no link";
-        var teamProviders = new List<ITeamProvider> { _teamProvider1, _teamProvider2 };
-        _dependencyContainerService.Resolve<IEnumerable<ITeamProvider>>().Returns(teamProviders);
-        _factory.FindTeamLinkMatch(message);
-
-        // Act
-        _factory.FindTeamLinkMatch(message); // Call again to test lazy loading
-
-        // Assert
-        _dependencyContainerService.Received(1).Resolve<IEnumerable<ITeamProvider>>();
     }
 }

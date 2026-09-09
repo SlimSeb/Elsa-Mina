@@ -1,20 +1,16 @@
-﻿using ElsaMina.Core.Services.DependencyInjection;
-
-namespace ElsaMina.Commands.Teams.TeamProviders;
+﻿namespace ElsaMina.Commands.Teams.TeamProviders;
 
 public class TeamLinkMatchFactory : ITeamLinkMatchFactory
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
-    private IEnumerable<ITeamProvider> _teamProviders;
+    private readonly IEnumerable<ITeamProvider> _teamProviders;
 
-    public TeamLinkMatchFactory(IDependencyContainerService dependencyContainerService)
+    public TeamLinkMatchFactory(IEnumerable<ITeamProvider> teamProviders)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _teamProviders = teamProviders;
     }
     
     public ITeamLinkMatch FindTeamLinkMatch(string message)
     {
-        _teamProviders ??= _dependencyContainerService.Resolve<IEnumerable<ITeamProvider>>();
         return _teamProviders
             .Select(provider => GetTeamLinkMatch(message, provider))
             .FirstOrDefault(match => match != null);
