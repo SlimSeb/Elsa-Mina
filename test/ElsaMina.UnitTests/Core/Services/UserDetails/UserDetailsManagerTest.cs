@@ -43,6 +43,22 @@ public class  UserDetailsManagerTest
     }
 
     [Test]
+    public async Task Test_GetUserDetails_ShouldParseNumericAvatarAsString_WhenAvatarIsInteger()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource();
+        _systemService.SleepAsync(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>()).Returns(tcs.Task);
+        var task = _userDetailsManager.GetUserDetailsAsync("panur");
+        _userDetailsManager.HandleReceivedUserDetails("""{"id":"panur","userid":"panur","name":"Panur","avatar":120,"group":"+","autoconfirmed":true}""");
+        
+        // Act
+        var result = await task;
+
+        // Assert
+        Assert.That(result.Avatar, Is.EqualTo("120"));
+    }
+
+    [Test]
     public async Task Test_GetUserDetails_ShouldReturnNull_WhenUserDetailsAreNotReceived()
     {
         // Arrange

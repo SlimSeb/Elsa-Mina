@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using ElsaMina.Core.Services.Config;
 
 namespace ElsaMina.Core.Services.UserDetails;
 
@@ -11,6 +12,7 @@ public class UserDetailsDto
     [JsonPropertyName("name")]
     public string Name { get; set; }
     [JsonPropertyName("avatar")]
+    [JsonConverter(typeof(NumberOrStringToStringConverter))]
     public string Avatar { get; set; }
     [JsonPropertyName("group")]
     public string Group { get; set; }
@@ -21,5 +23,6 @@ public class UserDetailsDto
     [JsonPropertyName("status")]
     public string Status { get; set; }
     [JsonPropertyName("rooms")]
+    [JsonConverter(typeof(UserDetailsRoomsConverter))]
     public IDictionary<string, UserDetailsRoomDto> Rooms { get; set; }
 }

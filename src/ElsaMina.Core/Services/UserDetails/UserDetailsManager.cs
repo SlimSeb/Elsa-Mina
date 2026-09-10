@@ -40,9 +40,6 @@ public class UserDetailsManager : IUserDetailsManager
 
         try
         {
-            message = message.Replace("\"rooms\":false", "\"rooms\":null")
-                             .Replace("\"rooms\": false", "\"rooms\":null");
-
             dto = JsonSerializer.Deserialize<UserDetailsDto>(message, JSON_OPTIONS);
         }
         catch (JsonException ex)
