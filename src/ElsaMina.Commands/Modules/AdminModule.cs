@@ -49,9 +49,6 @@ public class AdminModule : Module
 
         builder.RegisterType<LagTestManager>().As<ILagTestManager>().SingleInstance();
         builder.RegisterType<RoomDashboardService>().As<IRoomDashboardService>().SingleInstance();
-        builder.RegisterType<DataManager>().As<IDataManager>().SingleInstance().OnActivating(e =>
-        {
-            e.Instance.Initialize().Wait(); // Risque d'ANR mais obligé pour garantir la bonne initialisation...
-        });
+        builder.RegisterType<DataManager>().As<IDataManager>().SingleInstance();
     }
 }
