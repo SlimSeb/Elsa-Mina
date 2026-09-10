@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Battles.Dtos;
 
 public sealed class ActivePokemon
 {
-    [JsonProperty("moves")]
+    [JsonPropertyName("moves")]
     public List<Move> Moves { get; set; } = new();
 
-    [JsonProperty("canTerastallize")]
+    [JsonPropertyName("canTerastallize")]
     public string CanTerastallize { get; set; } = "";
 
-    [JsonProperty("trapped")]
+    [JsonPropertyName("trapped")]
     public bool Trapped { get; set; }
 }

@@ -1,94 +1,94 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.Dex;
 
 public sealed class PokedexEntry
 {
-    [JsonProperty("num")]
+    [JsonPropertyName("num")]
     public int Num { get; set; }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; } = null!;
 
-    [JsonProperty("types")]
+    [JsonPropertyName("types")]
     public string[] Types { get; set; }
 
-    [JsonProperty("baseStats")]
+    [JsonPropertyName("baseStats")]
     public BaseStats BaseStats { get; set; }
 
-    [JsonProperty("abilities")]
+    [JsonPropertyName("abilities")]
     public Dictionary<string, string> Abilities { get; set; }
 
-    [JsonProperty("heightm")]
+    [JsonPropertyName("heightm")]
     public double? Heightm { get; set; }
 
-    [JsonProperty("weightkg")]
+    [JsonPropertyName("weightkg")]
     public double? Weightkg { get; set; }
 
-    [JsonProperty("color")]
+    [JsonPropertyName("color")]
     public string Color { get; set; }
 
-    [JsonProperty("evos")]
+    [JsonPropertyName("evos")]
     public string[] Evos { get; set; }
 
-    [JsonProperty("prevo")]
+    [JsonPropertyName("prevo")]
     public string Prevo { get; set; }
 
-    [JsonProperty("evoLevel")]
+    [JsonPropertyName("evoLevel")]
     public int EvoLevel { get; set; }
 
-    [JsonProperty("evoType")]
+    [JsonPropertyName("evoType")]
     public string EvoType { get; set; }
 
-    [JsonProperty("evoItem")]
+    [JsonPropertyName("evoItem")]
     public string EvoItem { get; set; }
 
-    [JsonProperty("evoCondition")]
+    [JsonPropertyName("evoCondition")]
     public string EvoCondition { get; set; }
 
-    [JsonProperty("eggGroups")]
+    [JsonPropertyName("eggGroups")]
     public string[] EggGroups { get; set; }
 
     // Formes / variants
-    [JsonProperty("baseSpecies")]
+    [JsonPropertyName("baseSpecies")]
     public string BaseSpecies { get; set; }
 
-    [JsonProperty("forme")]
+    [JsonPropertyName("forme")]
     public string Forme { get; set; }
 
-    [JsonProperty("otherFormes")]
+    [JsonPropertyName("otherFormes")]
     public string[] OtherFormes { get; set; }
 
-    [JsonProperty("formeOrder")]
+    [JsonPropertyName("formeOrder")]
     public string[] FormeOrder { get; set; }
 
-    [JsonProperty("gender")]
+    [JsonPropertyName("gender")]
     public string Gender { get; set; }
 
-    [JsonProperty("gen")]
+    [JsonPropertyName("gen")]
     public int Gen { get; set; }
 
-    [JsonProperty("requiredItem")]
+    [JsonPropertyName("requiredItem")]
     public string RequiredItem { get; set; }
 }
 
 public sealed class BaseStats
 {
-    [JsonProperty("hp")]
+    [JsonPropertyName("hp")]
     public int Hp { get; set; }
 
-    [JsonProperty("atk")]
+    [JsonPropertyName("atk")]
     public int Atk { get; set; }
 
-    [JsonProperty("def")]
+    [JsonPropertyName("def")]
     public int Def { get; set; }
 
-    [JsonProperty("spa")]
+    [JsonPropertyName("spa")]
     public int Spa { get; set; }
 
-    [JsonProperty("spd")]
+    [JsonPropertyName("spd")]
     public int Spd { get; set; }
 
-    [JsonProperty("spe")]
+    [JsonPropertyName("spe")]
     public int Spe { get; set; }
 }

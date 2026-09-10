@@ -7,7 +7,7 @@ using ElsaMina.Cloud.Sheets;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Drive.v3;
 using Google.Apis.Sheets.v4;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Core.Modules;
 
@@ -36,7 +36,7 @@ public class CloudModule : Module
     private static GoogleCredential CreateCredential(IConfiguration configuration)
     {
         // This is stupid but I couldn't find a better way
-        var json = JsonConvert.SerializeObject(configuration.GoogleServiceAccountData);
+        var json = JsonSerializer.Serialize(configuration.GoogleServiceAccountData);
         var serviceAccountCredential = CredentialFactory.FromJson<ServiceAccountCredential>(json);
         return GoogleCredential
             .FromServiceAccountCredential(serviceAccountCredential)

@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Youtube;
 
 public class YouTubeVideoItem
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("snippet")]
+    [JsonPropertyName("snippet")]
     public Snippet Snippet { get; set; }
 }

@@ -1,21 +1,21 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.Smogon;
 
 public class SmogonUsageInfoDto
 {
-    [JsonProperty("metagame")]
+    [JsonPropertyName("metagame")]
     public string Metagame { get; set; }
 
-    [JsonProperty("cutoff")]
+    [JsonPropertyName("cutoff")]
     public double Cutoff { get; set; }
 
-    [JsonProperty("cutoff deviation")]
+    [JsonPropertyName("cutoff deviation")]
     public double CutoffDeviation { get; set; }
 
-    [JsonProperty("team type")]
+    [JsonPropertyName("team type")]
     public string TeamType { get; set; }
 
-    [JsonProperty("number of battles")]
+    [JsonPropertyName("number of battles")]
     public int NumberOfBattles { get; set; }
 }

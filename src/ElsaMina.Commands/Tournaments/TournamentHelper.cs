@@ -1,5 +1,5 @@
 using ElsaMina.Core.Utils;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Commands.Tournaments;
 
@@ -36,7 +36,7 @@ public static class TournamentHelper
 
     public static TournamentResults ParseTourResults(string jsonData)
     {
-        var data = JsonConvert.DeserializeObject<TournamentData>(jsonData);
+        var data = JsonSerializer.Deserialize<TournamentData>(jsonData, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         if (IsSingleElimination(data))
         {
             return ParseSingleEliminationResults(data);

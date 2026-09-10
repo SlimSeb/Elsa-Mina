@@ -1,7 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
 using ElsaMina.Core.Services.Telemetry;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.Http;
 
@@ -45,6 +46,13 @@ public class HttpService : IHttpService
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Encoding", "gzip, deflate, br");
     }
 
+    private static readonly JsonSerializerOptions DefaultJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     public async Task<IHttpResponse<TResponse>> SendAsync<TResponse>(HttpRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -53,7 +61,9 @@ public class HttpService : IHttpService
         return new HttpResponse<TResponse>
         {
             StatusCode = response.StatusCode,
-            Data = JsonConvert.DeserializeObject<TResponse>(content)
+            Data = string.IsNullOrWhiteSpace(content)
+                ? default
+                : JsonSerializer.Deserialize<TResponse>(content, DefaultJsonOptions)
         };
     }
 

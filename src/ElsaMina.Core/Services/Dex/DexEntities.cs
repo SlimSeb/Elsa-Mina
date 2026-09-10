@@ -1,159 +1,159 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.Dex;
 
 public class Name
 {
-    [JsonProperty("fr")]
+    [JsonPropertyName("fr")]
     public string French { get; set; }
 
-    [JsonProperty("en")]
+    [JsonPropertyName("en")]
     public string English { get; set; }
 
-    [JsonProperty("jp")]
+    [JsonPropertyName("jp")]
     public string Japanese { get; set; }
 }
 
 public class Sprite
 {
-    [JsonProperty("regular")]
+    [JsonPropertyName("regular")]
     public string Regular { get; set; }
 
-    [JsonProperty("shiny")]
+    [JsonPropertyName("shiny")]
     public string Shiny { get; set; }
 }
 
 public class PokemonType
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("image")]
+    [JsonPropertyName("image")]
     public string Image { get; set; }
 }
 
 public class Talent
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("tc")]
+    [JsonPropertyName("tc")]
     public bool IsHidden { get; set; }
 }
 
 public class Stats
 {
-    [JsonProperty("hp")]
+    [JsonPropertyName("hp")]
     public int HP { get; set; }
 
-    [JsonProperty("atk")]
+    [JsonPropertyName("atk")]
     public int Attack { get; set; }
 
-    [JsonProperty("def")]
+    [JsonPropertyName("def")]
     public int Defense { get; set; }
 
-    [JsonProperty("spe_atk")]
+    [JsonPropertyName("spe_atk")]
     public int SpecialAttack { get; set; }
 
-    [JsonProperty("spe_def")]
+    [JsonPropertyName("spe_def")]
     public int SpecialDefense { get; set; }
 
-    [JsonProperty("vit")]
+    [JsonPropertyName("vit")]
     public int Speed { get; set; }
 }
 
 public class Resistance
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("multiplier")]
+    [JsonPropertyName("multiplier")]
     public double Multiplier { get; set; }
 }
 
 public class EvolutionNext
 {
-    [JsonProperty("pokedex_id")]
+    [JsonPropertyName("pokedex_id")]
     public int PokedexId { get; set; }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("condition")]
+    [JsonPropertyName("condition")]
     public string Condition { get; set; }
 }
 
 public class Evolution
 {
-    [JsonProperty("pre")]
+    [JsonPropertyName("pre")]
     public object PreEvolution { get; set; }
 
-    [JsonProperty("next")]
+    [JsonPropertyName("next")]
     public List<EvolutionNext> NextEvolutions { get; set; }
 
-    [JsonProperty("mega")]
+    [JsonPropertyName("mega")]
     public object MegaEvolution { get; set; }
 }
 
 public class Gender
 {
-    [JsonProperty("male")]
+    [JsonPropertyName("male")]
     public double Male { get; set; }
 
-    [JsonProperty("female")]
+    [JsonPropertyName("female")]
     public double Female { get; set; }
 }
 
 public class Pokemon
 {
-    [JsonProperty("pokedex_id")]
+    [JsonPropertyName("pokedex_id")]
     public int PokedexId { get; set; }
 
-    [JsonProperty("generation")]
+    [JsonPropertyName("generation")]
     public int Generation { get; set; }
 
-    [JsonProperty("category")]
+    [JsonPropertyName("category")]
     public string Category { get; set; }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public Name Name { get; set; }
 
-    [JsonProperty("sprites")]
+    [JsonPropertyName("sprites")]
     public Sprite Sprites { get; set; }
 
-    [JsonProperty("types")]
+    [JsonPropertyName("types")]
     public List<PokemonType> Types { get; set; }
 
-    [JsonProperty("talents")]
+    [JsonPropertyName("talents")]
     public List<Talent> Talents { get; set; }
 
-    [JsonProperty("stats")]
+    [JsonPropertyName("stats")]
     public Stats Stats { get; set; }
 
-    [JsonProperty("resistances")]
+    [JsonPropertyName("resistances")]
     public List<Resistance> Resistances { get; set; }
 
-    [JsonProperty("evolution")]
+    [JsonPropertyName("evolution")]
     public Evolution Evolution { get; set; }
 
-    [JsonProperty("height")]
+    [JsonPropertyName("height")]
     public string Height { get; set; }
 
-    [JsonProperty("weight")]
+    [JsonPropertyName("weight")]
     public string Weight { get; set; }
 
-    [JsonProperty("egg_groups")]
+    [JsonPropertyName("egg_groups")]
     public List<string> EggGroups { get; set; }
 
-    [JsonProperty("sexe")]
+    [JsonPropertyName("sexe")]
     public Gender Gender { get; set; }
 
-    [JsonProperty("catch_rate", NullValueHandling = NullValueHandling.Ignore)]
-    public int CatchRate { get; set; }
+    [JsonPropertyName("catch_rate")]
+    public int? CatchRate { get; set; }
 
-    [JsonProperty("level_100", NullValueHandling = NullValueHandling.Ignore)]
-    public int Level100Experience { get; set; }
+    [JsonPropertyName("level_100")]
+    public int? Level100Experience { get; set; }
 
-    [JsonProperty("formes")]
+    [JsonPropertyName("formes")]
     public object Formes { get; set; }
 }

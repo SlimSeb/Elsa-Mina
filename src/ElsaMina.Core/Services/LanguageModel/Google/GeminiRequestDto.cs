@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.LanguageModel.Google;
 
 public class GeminiRequestDto
 {
-    [JsonProperty("system_instruction")]
+    [JsonPropertyName("system_instruction")]
     public SystemInstruction SystemInstruction { get; set; }
 
-    [JsonProperty("contents")]
+    [JsonPropertyName("contents")]
     public List<Content> Contents { get; set; }
 }

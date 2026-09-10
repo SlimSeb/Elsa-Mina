@@ -1,18 +1,18 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.LanguageModel.Google;
 
 public class GeminiResponseDto
 {
-    [JsonProperty("candidates")]
+    [JsonPropertyName("candidates")]
     public List<Candidate> Candidates { get; set; }
 
-    [JsonProperty("usageMetadata")]
+    [JsonPropertyName("usageMetadata")]
     public UsageMetadata UsageMetadata { get; set; }
 
-    [JsonProperty("modelVersion")]
+    [JsonPropertyName("modelVersion")]
     public string ModelVersion { get; set; }
 
-    [JsonProperty("responseId")]
+    [JsonPropertyName("responseId")]
     public string ResponseId { get; set; }
 }

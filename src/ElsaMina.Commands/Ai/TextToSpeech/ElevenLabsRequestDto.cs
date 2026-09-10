@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Ai.TextToSpeech;
 
 public class ElevenLabsRequestDto
 {
-    [JsonProperty("text")]
+    [JsonPropertyName("text")]
     public string Text { get; set; }
     
-    [JsonProperty("model_id")]
+    [JsonPropertyName("model_id")]
     public string ModelId { get; set; }
 }

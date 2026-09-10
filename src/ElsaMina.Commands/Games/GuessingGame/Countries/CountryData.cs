@@ -1,15 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Games.GuessingGame.Countries;
 
 public class CountryData
 {
-    [JsonProperty("english_name")]
+    [JsonPropertyName("english_name")]
     public string EnglishName { get; set; }
-    [JsonProperty("french_name")]
+    [JsonPropertyName("french_name")]
     public string FrenchName { get; set; }
-    [JsonProperty("flag")]
+    [JsonPropertyName("flag")]
     public string Flag { get; set; }
-    [JsonProperty("location")]
+    [JsonPropertyName("location")]
     public string Location { get; set; }
 }

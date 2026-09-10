@@ -2,7 +2,7 @@ using ElsaMina.Commands.Games.GuessingGame.Capitals;
 using ElsaMina.Commands.Games.GuessingGame.Countries;
 using ElsaMina.Commands.Games.GuessingGame.PokeDesc;
 using ElsaMina.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Commands;
 
@@ -60,16 +60,18 @@ public class DataManager : IDataManager
         return new CapitalCitiesGameData { Capitals = capitalsList ?? [] };
     }
 
+    private static readonly JsonSerializerOptions DefaultJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     private T LoadDataFromFile<T>(string fileName)
     {
         var filePath = Path.Join(_dataDirectory, fileName);
         try
         {
             using var stream = File.OpenRead(filePath);
-            using var reader = new StreamReader(stream);
-            using var jsonReader = new JsonTextReader(reader);
-            var serializer = JsonSerializer.CreateDefault();
-            var data = serializer.Deserialize<T>(jsonReader);
+            var data = JsonSerializer.Deserialize<T>(stream, DefaultJsonOptions);
             Log.Information("Loaded data from {0}", fileName);
             return data;
         }

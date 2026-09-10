@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Teams.TeamProviders.Showdown;
 
 public class ShowdownTeamDto
 {
-    [JsonProperty("team")]
+    [JsonPropertyName("team")]
     public string PackedTeam { get; set; }
     
-    [JsonProperty("ownerid")]
+    [JsonPropertyName("ownerid")]
     public string OwnerId { get; set; }
 
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; set; }
 }

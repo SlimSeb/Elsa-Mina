@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 
 public class RiotAccountDto
 {
-    [JsonProperty("puuid")]
+    [JsonPropertyName("puuid")]
     public string Puuid { get; set; }
 
-    [JsonProperty("gameName")]
+    [JsonPropertyName("gameName")]
     public string GameName { get; set; }
 
-    [JsonProperty("tagLine")]
+    [JsonPropertyName("tagLine")]
     public string TagLine { get; set; }
 }

@@ -1,24 +1,24 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Games.GuessingGame.Trivia;
 
 public class OpenTdbQuestionDto
 {
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; }
 
-    [JsonProperty("difficulty")]
+    [JsonPropertyName("difficulty")]
     public string Difficulty { get; set; }
 
-    [JsonProperty("category")]
+    [JsonPropertyName("category")]
     public string Category { get; set; }
 
-    [JsonProperty("question")]
+    [JsonPropertyName("question")]
     public string Question { get; set; }
 
-    [JsonProperty("correct_answer")]
+    [JsonPropertyName("correct_answer")]
     public string CorrectAnswer { get; set; }
 
-    [JsonProperty("incorrect_answers")]
+    [JsonPropertyName("incorrect_answers")]
     public List<string> IncorrectAnswers { get; set; }
 }

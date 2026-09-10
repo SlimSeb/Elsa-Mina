@@ -1,32 +1,36 @@
 #nullable enable
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Battles.Dtos;
 
 public sealed class ForceSwitchConverter : JsonConverter<List<bool>>
 {
-    public override List<bool> ReadJson(
-        JsonReader reader,
-        Type objectType,
-        List<bool>? existingValue,
-        bool hasExistingValue,
-        JsonSerializer serializer)
+    public override List<bool> Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options)
     {
-        if (reader.TokenType == JsonToken.Boolean)
+        if (reader.TokenType == JsonTokenType.True)
         {
-            return (bool)reader.Value! ? [true] : [];
+            return [true];
         }
 
-        if (reader.TokenType == JsonToken.StartArray)
+        if (reader.TokenType == JsonTokenType.False)
         {
-            return serializer.Deserialize<List<bool>>(reader) ?? [];
+            return [];
+        }
+
+        if (reader.TokenType == JsonTokenType.StartArray)
+        {
+            return JsonSerializer.Deserialize<List<bool>>(ref reader, options) ?? [];
         }
 
         return [];
     }
 
-    public override void WriteJson(JsonWriter writer, List<bool>? value, JsonSerializer serializer)
+    public override void Write(Utf8JsonWriter writer, List<bool>? value, JsonSerializerOptions options)
     {
-        serializer.Serialize(writer, value ?? []);
+        JsonSerializer.Serialize(writer, value ?? [], options);
     }
 }

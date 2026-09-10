@@ -1,41 +1,41 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Teams;
 
 public class PokemonSet
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
-    [JsonProperty("species")]
+    [JsonPropertyName("species")]
     public string Species { get; set; }
-    [JsonProperty("gender")]
+    [JsonPropertyName("gender")]
     public string Gender { get; set; }
-    [JsonProperty("item")]
+    [JsonPropertyName("item")]
     public string Item { get; set; }
-    [JsonProperty("ability")]
+    [JsonPropertyName("ability")]
     public string Ability { get; set; }
-    [JsonProperty("shiny")]
+    [JsonPropertyName("shiny")]
     public bool IsShiny { get; set; }
-    [JsonProperty("level")]
+    [JsonPropertyName("level")]
     public int Level { get; set; }
-    [JsonProperty("happiness")]
+    [JsonPropertyName("happiness")]
     public int Happiness { get; set; } = -1;
-    [JsonProperty("pokeball")]
+    [JsonPropertyName("pokeball")]
     public string Pokeball { get; set; }
-    [JsonProperty("hpType")]
+    [JsonPropertyName("hpType")]
     public string HiddenPowerType { get; set; }
-    [JsonProperty("teraType")]
+    [JsonPropertyName("teraType")]
     public string TeraType { get; set; }
-    [JsonProperty("dynamaxLevel")]
+    [JsonPropertyName("dynamaxLevel")]
     public int DynamaxLevel { get; set; } = -1;
-    [JsonProperty("gigantamax")]
+    [JsonPropertyName("gigantamax")]
     public bool IsGigantamax { get; set; }
-    [JsonProperty("nature")]
+    [JsonPropertyName("nature")]
     public string Nature { get; set; }
-    [JsonProperty("evs")]
+    [JsonPropertyName("evs")]
     public IDictionary<string, int> EffortValues { get; set; }
-    [JsonProperty("ivs")]
+    [JsonPropertyName("ivs")]
     public IDictionary<string, int> IndividualValues { get; set; }
-    [JsonProperty("moves")]
+    [JsonPropertyName("moves")]
     public ICollection<string> Moves { get; set; }
 }

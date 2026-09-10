@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Commands.Ai.Calc;
 
@@ -59,7 +59,7 @@ public class CalcWithAiCommand : Command
         CalcRequestDto calcRequest;
         try
         {
-            calcRequest = JsonConvert.DeserializeObject<CalcRequestDto>(ExtractJson(response));
+            calcRequest = JsonSerializer.Deserialize<CalcRequestDto>(ExtractJson(response), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
         catch (Exception exception)
         {

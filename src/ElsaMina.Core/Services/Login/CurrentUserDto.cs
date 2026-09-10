@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.Login;
 
 public class CurrentUserDto
 {
-    [JsonProperty("loggedin")]
+    [JsonPropertyName("loggedin")]
     public bool IsLoggedIn { get; set; }
-    [JsonProperty("userid")]
+    [JsonPropertyName("userid")]
     public string UserId { get; set; }
-    [JsonProperty("username")]
+    [JsonPropertyName("username")]
     public string Username { get; set; }
 }

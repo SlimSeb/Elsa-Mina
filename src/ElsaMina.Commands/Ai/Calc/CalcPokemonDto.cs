@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Ai.Calc;
 
@@ -7,33 +7,33 @@ namespace ElsaMina.Commands.Ai.Calc;
 /// </summary>
 public class CalcPokemonDto
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("level")]
+    [JsonPropertyName("level")]
     public int? Level { get; set; }
 
-    [JsonProperty("nature")]
+    [JsonPropertyName("nature")]
     public string Nature { get; set; }
 
-    [JsonProperty("ability")]
+    [JsonPropertyName("ability")]
     public string Ability { get; set; }
 
-    [JsonProperty("item")]
+    [JsonPropertyName("item")]
     public string Item { get; set; }
 
-    [JsonProperty("status")]
+    [JsonPropertyName("status")]
     public string Status { get; set; }
 
-    [JsonProperty("teraType")]
+    [JsonPropertyName("teraType")]
     public string TeraType { get; set; }
 
-    [JsonProperty("evs")]
+    [JsonPropertyName("evs")]
     public CalcStatsDto Evs { get; set; }
 
-    [JsonProperty("ivs")]
+    [JsonPropertyName("ivs")]
     public CalcStatsDto Ivs { get; set; }
 
-    [JsonProperty("boosts")]
+    [JsonPropertyName("boosts")]
     public CalcStatsDto Boosts { get; set; }
 }

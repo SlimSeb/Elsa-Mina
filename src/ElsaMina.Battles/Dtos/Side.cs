@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Battles.Dtos;
 
 public sealed class Side
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; } = "";
 
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; } = "";
 
-    [JsonProperty("pokemon")]
+    [JsonPropertyName("pokemon")]
     public List<SidePokemon> Pokemon { get; set; } = new();
 }

@@ -1,46 +1,46 @@
-namespace ElsaMina.Commands.Misc.Dailymotion;
-
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using System.Collections.Generic;
+
+namespace ElsaMina.Commands.Misc.Dailymotion;
 
 public class VideoListResponse
 {
-    [JsonProperty("page")]
+    [JsonPropertyName("page")]
     public int Page { get; set; }
 
-    [JsonProperty("limit")]
+    [JsonPropertyName("limit")]
     public int Limit { get; set; }
 
-    [JsonProperty("explicit")]
+    [JsonPropertyName("explicit")]
     public bool Explicit { get; set; }
 
-    [JsonProperty("total")]
+    [JsonPropertyName("total")]
     public int Total { get; set; }
 
-    [JsonProperty("has_more")]
+    [JsonPropertyName("has_more")]
     public bool HasMore { get; set; }
 
-    [JsonProperty("list")]
+    [JsonPropertyName("list")]
     public List<VideoItem> List { get; set; } = [];
 }
 
 public class VideoItem
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("thumbnail_url")]
+    [JsonPropertyName("thumbnail_url")]
     public string ThumbnailUrl { get; set; }
 
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; set; }
 
-    [JsonProperty("views_total")]
+    [JsonPropertyName("views_total")]
     public int ViewsTotal { get; set; }
 
-    [JsonProperty("likes_total")]
+    [JsonPropertyName("likes_total")]
     public int LikesTotal { get; set; }
 
-    [JsonProperty("explicit")]
+    [JsonPropertyName("explicit")]
     public bool Explicit { get; set; }
 }

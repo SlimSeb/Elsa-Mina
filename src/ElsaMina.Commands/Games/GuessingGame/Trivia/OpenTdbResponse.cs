@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Games.GuessingGame.Trivia;
 
 public class OpenTdbResponse
 {
-    [JsonProperty("response_code")]
+    [JsonPropertyName("response_code")]
     public int ResponseCode { get; set; }
 
-    [JsonProperty("results")]
+    [JsonPropertyName("results")]
     public List<OpenTdbQuestionDto> Results { get; set; }
 }

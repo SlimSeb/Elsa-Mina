@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Dictionary;
 
 public class DictionaryApiUndefinedRunOn
 {
-    [JsonProperty("ure")]
+    [JsonPropertyName("ure")]
     public string UndefinedRunOn { get; set; }
 
-    [JsonProperty("prs")]
+    [JsonPropertyName("prs")]
     public List<DictionaryApiPronunciation> Pronunciations { get; set; }
 
-    [JsonProperty("fl")]
+    [JsonPropertyName("fl")]
     public string PartOfSpeech { get; set; }
 }

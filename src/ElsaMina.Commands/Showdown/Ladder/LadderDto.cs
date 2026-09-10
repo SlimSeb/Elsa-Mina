@@ -1,32 +1,32 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Showdown.Ladder;
 
 public class LadderDto
 {
-    [JsonProperty("formatid")]
+    [JsonPropertyName("formatid")]
     public string FormatId { get; set; }
-    [JsonProperty("format")]
+    [JsonPropertyName("format")]
     public string Format { get; set; }
-    [JsonProperty("toplist")]
+    [JsonPropertyName("toplist")]
     public IEnumerable<LadderPlayerDto> TopList { get; set; }
 }
 
 public class LadderPlayerDto
 {
-    [JsonProperty("userid")]
+    [JsonPropertyName("userid")]
     public string UserId { get; set; }
-    [JsonProperty("username")]
+    [JsonPropertyName("username")]
     public string Username { get; set; }
-    [JsonProperty("w")]
+    [JsonPropertyName("w")]
     public int Wins { get; set; }
-    [JsonProperty("l")]
+    [JsonPropertyName("l")]
     public int Losses { get; set; }
-    [JsonProperty("t")]
+    [JsonPropertyName("t")]
     public int Ties { get; set; }
-    [JsonProperty("elo")]
+    [JsonPropertyName("elo")]
     public double Elo { get; set; }
-    [JsonProperty("gxe")]
+    [JsonPropertyName("gxe")]
     public double Gxe { get; set; }
 
     public double WinRate => Wins + Losses == 0 ? 0 : 100 * Wins / (double)(Wins + Losses);

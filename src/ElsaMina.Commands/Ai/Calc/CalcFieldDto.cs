@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Ai.Calc;
 
@@ -7,18 +7,18 @@ namespace ElsaMina.Commands.Ai.Calc;
 /// </summary>
 public class CalcFieldDto
 {
-    [JsonProperty("gameType")]
+    [JsonPropertyName("gameType")]
     public string GameType { get; set; }
 
-    [JsonProperty("weather")]
+    [JsonPropertyName("weather")]
     public string Weather { get; set; }
 
-    [JsonProperty("terrain")]
+    [JsonPropertyName("terrain")]
     public string Terrain { get; set; }
 
-    [JsonProperty("attackerSide")]
+    [JsonPropertyName("attackerSide")]
     public CalcSideDto AttackerSide { get; set; }
 
-    [JsonProperty("defenderSide")]
+    [JsonPropertyName("defenderSide")]
     public CalcSideDto DefenderSide { get; set; }
 }

@@ -1,15 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.UserData;
 
 public class UserDataRankingDto
 {
-    [JsonProperty("elo")]
+    [JsonPropertyName("elo")]
     public double Elo { get; set; }
-    [JsonProperty("gxe")]
+    [JsonPropertyName("gxe")]
     public double Gxe { get; set; }
-    [JsonProperty("rpr")]
+    [JsonPropertyName("rpr")]
     public double Rpr { get; set; }
-    [JsonProperty("rprd")]
+    [JsonPropertyName("rprd")]
     public double Rprd { get; set; }
 }

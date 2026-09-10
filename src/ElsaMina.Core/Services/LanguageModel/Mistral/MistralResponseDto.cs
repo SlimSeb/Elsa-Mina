@@ -1,21 +1,21 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.LanguageModel.Mistral;
 
 public class MistralResponseDto
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("object")]
+    [JsonPropertyName("object")]
     public string Object { get; set; }
 
-    [JsonProperty("created")]
+    [JsonPropertyName("created")]
     public long Created { get; set; }
 
-    [JsonProperty("model")]
+    [JsonPropertyName("model")]
     public string Model { get; set; }
 
-    [JsonProperty("choices")]
+    [JsonPropertyName("choices")]
     public List<MistralChoiceDto> Choices { get; set; }
 }

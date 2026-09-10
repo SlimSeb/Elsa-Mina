@@ -3,7 +3,7 @@ using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Cloud;
-using Newtonsoft.Json;
+using System.Text.Json;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Ai.TextToSpeech;
@@ -11,7 +11,7 @@ namespace ElsaMina.UnitTests.Commands.Ai.TextToSpeech;
 public class ElevenLabsAiTextToSpeechProviderTest
 {
     private static ElevenLabsRequestDto ReadRequestBody(HttpRequest request) =>
-        JsonConvert.DeserializeObject<ElevenLabsRequestDto>(
+        JsonSerializer.Deserialize<ElevenLabsRequestDto>(
             request.Body.CreateContent().ReadAsStringAsync().GetAwaiter().GetResult());
 
     private IConfiguration _mockConfiguration;

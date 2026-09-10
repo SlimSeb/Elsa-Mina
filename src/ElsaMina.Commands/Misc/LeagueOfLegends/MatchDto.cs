@@ -1,9 +1,9 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 
 public class MatchDto
 {
-    [JsonProperty("info")]
+    [JsonPropertyName("info")]
     public MatchInfoDto Info { get; set; }
 }

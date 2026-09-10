@@ -1,6 +1,6 @@
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Core.Services.Dex;
 
@@ -38,6 +38,6 @@ public class DexManager : IDexManager
         await using var stream = File.OpenRead(Path.Join("Services", "Dex", filename));
         using var reader = new StreamReader(stream);
         var json = await reader.ReadToEndAsync(cancellationToken);
-        return JsonConvert.DeserializeObject<T>(json);
+        return JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
     }
 }

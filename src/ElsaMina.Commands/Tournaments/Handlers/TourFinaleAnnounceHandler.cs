@@ -2,7 +2,7 @@ using ElsaMina.Core;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Commands.Tournaments.Handlers;
 
@@ -31,7 +31,7 @@ public class TourFinaleAnnounceHandler : Handler
             return Task.CompletedTask;
         }
 
-        var tournamentData = JsonConvert.DeserializeObject<TournamentData>(parts[3]);
+        var tournamentData = JsonSerializer.Deserialize<TournamentData>(parts[3], new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         if (tournamentData?.BracketData?.RootNode?.State != "inprogress")
         {
             return Task.CompletedTask;

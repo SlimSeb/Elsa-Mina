@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using ElsaMina.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Battles.Strategies.Llm;
 
@@ -31,7 +31,7 @@ public class LlmBattleDecisionParser : ILlmBattleDecisionParser
         {
             try
             {
-                var dto = JsonConvert.DeserializeObject<LlmDecisionDto>(jsonCandidate);
+                var dto = JsonSerializer.Deserialize<LlmDecisionDto>(jsonCandidate, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                 if (dto != null && dto.Index > 0)
                 {
                     var decisionStr = dto.Decision?.Trim().ToLowerInvariant();

@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.RandomImages;
 
 public class KlipySearchResponse
 {
-    [JsonProperty("result")]
+    [JsonPropertyName("result")]
     public bool Result { get; set; }
 
-    [JsonProperty("data")]
+    [JsonPropertyName("data")]
     public KlipySearchData Data { get; set; }
 }

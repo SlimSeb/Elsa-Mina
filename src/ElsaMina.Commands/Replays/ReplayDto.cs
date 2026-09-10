@@ -1,27 +1,27 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Replays;
 
 public class ReplayDto
 {
-    [JsonProperty]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
-    [JsonProperty]
+    [JsonPropertyName("format")]
     public string Format { get; set; }
-    [JsonProperty]
+    [JsonPropertyName("players")]
     public List<string> Players { get; set; } = [];
-    [JsonProperty]
+    [JsonPropertyName("log")]
     public string Log { get; set; }
-    [JsonProperty]
+    [JsonPropertyName("uploadtime")]
     public long UploadTime { get; set; }
-    [JsonProperty]
+    [JsonPropertyName("views")]
     public int Views { get; set; }
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public int Rating { get; set; }
-    [JsonProperty]
+    [JsonPropertyName("rating")]
+    public int? Rating { get; set; }
+    [JsonPropertyName("formatid")]
     public string FormatId { get; set; }
-    [JsonProperty]
+    [JsonPropertyName("private")]
     public int Private { get; set; }
-    [JsonProperty]
+    [JsonPropertyName("password")]
     public string Password { get; set; }
 }

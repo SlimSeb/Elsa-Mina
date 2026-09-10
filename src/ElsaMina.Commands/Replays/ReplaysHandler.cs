@@ -64,7 +64,7 @@ public class ReplaysHandler : ChatMessageHandler
             {
                 Culture = context.Culture,
                 Format = replayInfo.Format,
-                Rating = replayInfo.Rating,
+                Rating = replayInfo.Rating ?? 0,
                 Players = teams.Select((team, index) => new ReplayPlayer
                 {
                     Name = replayInfo.Players[index],

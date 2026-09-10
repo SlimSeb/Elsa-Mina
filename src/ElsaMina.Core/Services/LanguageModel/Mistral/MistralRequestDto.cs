@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.LanguageModel.Mistral;
 
 public class MistralRequestDto
 {
-    [JsonProperty("model")]
+    [JsonPropertyName("model")]
     public string Model { get; set; }
 
-    [JsonProperty("messages")]
+    [JsonPropertyName("messages")]
     public List<MistralRequestMessageDto> Messages { get; set; }
 }

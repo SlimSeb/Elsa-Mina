@@ -1,9 +1,9 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Food;
 
 public class SpoonacularRandomResponse
 {
-    [JsonProperty("recipes")]
+    [JsonPropertyName("recipes")]
     public List<SpoonacularRecipe> Recipes { get; set; }
 }

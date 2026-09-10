@@ -1,21 +1,21 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 
 public class MatchInfoDto
 {
-    [JsonProperty("gameDuration")]
+    [JsonPropertyName("gameDuration")]
     public int GameDuration { get; set; }
 
-    [JsonProperty("gameCreation")]
+    [JsonPropertyName("gameCreation")]
     public long GameCreation { get; set; }
 
-    [JsonProperty("gameEndTimestamp")]
+    [JsonPropertyName("gameEndTimestamp")]
     public long GameEndTimestamp { get; set; }
 
-    [JsonProperty("queueId")]
+    [JsonPropertyName("queueId")]
     public int QueueId { get; set; }
 
-    [JsonProperty("participants")]
+    [JsonPropertyName("participants")]
     public List<MatchParticipantDto> Participants { get; set; }
 }

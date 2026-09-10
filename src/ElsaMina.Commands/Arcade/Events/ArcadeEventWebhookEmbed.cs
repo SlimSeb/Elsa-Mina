@@ -1,13 +1,13 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Arcade.Events;
 
 public class ArcadeEventWebhookEmbed
 {
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; set; }
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string Description { get; set; }
-    [JsonProperty("color")]
+    [JsonPropertyName("color")]
     public int Color { get; set; }
 }

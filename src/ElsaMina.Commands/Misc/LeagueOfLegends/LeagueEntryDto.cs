@@ -1,24 +1,24 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 
 public class LeagueEntryDto
 {
-    [JsonProperty("queueType")]
+    [JsonPropertyName("queueType")]
     public string QueueType { get; set; }
 
-    [JsonProperty("tier")]
+    [JsonPropertyName("tier")]
     public string Tier { get; set; }
 
-    [JsonProperty("rank")]
+    [JsonPropertyName("rank")]
     public string Rank { get; set; }
 
-    [JsonProperty("leaguePoints")]
+    [JsonPropertyName("leaguePoints")]
     public int LeaguePoints { get; set; }
 
-    [JsonProperty("wins")]
+    [JsonPropertyName("wins")]
     public int Wins { get; set; }
 
-    [JsonProperty("losses")]
+    [JsonPropertyName("losses")]
     public int Losses { get; set; }
 }

@@ -1,21 +1,21 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 
 public class SummonerDto
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("puuid")]
+    [JsonPropertyName("puuid")]
     public string Puuid { get; set; }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("profileIconId")]
+    [JsonPropertyName("profileIconId")]
     public int ProfileIconId { get; set; }
 
-    [JsonProperty("summonerLevel")]
+    [JsonPropertyName("summonerLevel")]
     public long SummonerLevel { get; set; }
 }

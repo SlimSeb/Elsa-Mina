@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.BattleTracker;
 
@@ -6,12 +6,12 @@ public class ActiveBattleDto
 {
     public string RoomId { get; set; }
 
-    [JsonProperty("p1")]
+    [JsonPropertyName("p1")]
     public string Player1 { get; set; }
 
-    [JsonProperty("p2")]
+    [JsonPropertyName("p2")]
     public string Player2 { get; set; }
 
-    [JsonProperty("minElo")]
+    [JsonPropertyName("minElo")]
     public int? MinElo { get; set; }
 }

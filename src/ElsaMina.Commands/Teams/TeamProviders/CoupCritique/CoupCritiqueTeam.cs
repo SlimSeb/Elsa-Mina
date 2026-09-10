@@ -1,15 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Teams.TeamProviders.CoupCritique;
 
 public class CoupCritiqueTeam
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
-    [JsonProperty("export")]
+    [JsonPropertyName("export")]
     public string Export { get; set; }
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string Description { get; set; }
-    [JsonProperty("user")]
+    [JsonPropertyName("user")]
     public CoupCritiqueUser User { get; set; }
 }

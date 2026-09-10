@@ -1,171 +1,171 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Genius;
 
 public class GeniusSearchResult
 {
-    [JsonProperty("meta")]
+    [JsonPropertyName("meta")]
     public Meta Meta { get; set; }
 
-    [JsonProperty("response")]
+    [JsonPropertyName("response")]
     public Response Response { get; set; }
 }
 
 public class Meta
 {
-    [JsonProperty("status")]
+    [JsonPropertyName("status")]
     public int Status { get; set; }
 }
 
 public class Response
 {
-    [JsonProperty("hits")]
+    [JsonPropertyName("hits")]
     public List<Hit> Hits { get; set; }
 }
 
 public class Hit
 {
-    [JsonProperty("highlights")]
+    [JsonPropertyName("highlights")]
     public List<object> Highlights { get; set; }
 
-    [JsonProperty("index")]
+    [JsonPropertyName("index")]
     public string Index { get; set; }
 
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; }
 
-    [JsonProperty("result")]
+    [JsonPropertyName("result")]
     public Result Result { get; set; }
 }
 
 public class Result
 {
-    [JsonProperty("annotation_count")]
+    [JsonPropertyName("annotation_count")]
     public int AnnotationCount { get; set; }
 
-    [JsonProperty("api_path")]
+    [JsonPropertyName("api_path")]
     public string ApiPath { get; set; }
 
-    [JsonProperty("artist_names")]
+    [JsonPropertyName("artist_names")]
     public string ArtistNames { get; set; }
 
-    [JsonProperty("full_title")]
+    [JsonPropertyName("full_title")]
     public string FullTitle { get; set; }
 
-    [JsonProperty("header_image_thumbnail_url")]
+    [JsonPropertyName("header_image_thumbnail_url")]
     public string HeaderImageThumbnailUrl { get; set; }
 
-    [JsonProperty("header_image_url")]
+    [JsonPropertyName("header_image_url")]
     public string HeaderImageUrl { get; set; }
 
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public long Id { get; set; }
 
-    [JsonProperty("lyrics_owner_id")]
+    [JsonPropertyName("lyrics_owner_id")]
     public long LyricsOwnerId { get; set; }
 
-    [JsonProperty("lyrics_state")]
+    [JsonPropertyName("lyrics_state")]
     public string LyricsState { get; set; }
 
-    [JsonProperty("path")]
+    [JsonPropertyName("path")]
     public string Path { get; set; }
 
-    [JsonProperty("primary_artist_names")]
+    [JsonPropertyName("primary_artist_names")]
     public string PrimaryArtistNames { get; set; }
 
-    [JsonProperty("pyongs_count")]
+    [JsonPropertyName("pyongs_count")]
     public int? PyongsCount { get; set; }
 
-    [JsonProperty("relationships_index_url")]
+    [JsonPropertyName("relationships_index_url")]
     public string RelationshipsIndexUrl { get; set; }
 
-    [JsonProperty("release_date_components")]
+    [JsonPropertyName("release_date_components")]
     public ReleaseDateComponents ReleaseDateComponents { get; set; }
 
-    [JsonProperty("release_date_for_display")]
+    [JsonPropertyName("release_date_for_display")]
     public string ReleaseDateForDisplay { get; set; }
 
-    [JsonProperty("release_date_with_abbreviated_month_for_display")]
+    [JsonPropertyName("release_date_with_abbreviated_month_for_display")]
     public string ReleaseDateWithAbbreviatedMonthForDisplay { get; set; }
 
-    [JsonProperty("song_art_image_thumbnail_url")]
+    [JsonPropertyName("song_art_image_thumbnail_url")]
     public string SongArtImageThumbnailUrl { get; set; }
 
-    [JsonProperty("song_art_image_url")]
+    [JsonPropertyName("song_art_image_url")]
     public string SongArtImageUrl { get; set; }
 
-    [JsonProperty("stats")]
+    [JsonPropertyName("stats")]
     public Stats Stats { get; set; }
 
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; set; }
 
-    [JsonProperty("title_with_featured")]
+    [JsonPropertyName("title_with_featured")]
     public string TitleWithFeatured { get; set; }
 
-    [JsonProperty("url")]
+    [JsonPropertyName("url")]
     public string Url { get; set; }
 
-    [JsonProperty("featured_artists")]
+    [JsonPropertyName("featured_artists")]
     public List<Artist> FeaturedArtists { get; set; }
 
-    [JsonProperty("primary_artist")]
+    [JsonPropertyName("primary_artist")]
     public Artist PrimaryArtist { get; set; }
 
-    [JsonProperty("primary_artists")]
+    [JsonPropertyName("primary_artists")]
     public List<Artist> PrimaryArtists { get; set; }
 }
 
 public class ReleaseDateComponents
 {
-    [JsonProperty("year")]
+    [JsonPropertyName("year")]
     public int? Year { get; set; }
 
-    [JsonProperty("month")]
+    [JsonPropertyName("month")]
     public int? Month { get; set; }
 
-    [JsonProperty("day")]
+    [JsonPropertyName("day")]
     public int? Day { get; set; }
 }
 
 public class Stats
 {
-    [JsonProperty("unreviewed_annotations")]
+    [JsonPropertyName("unreviewed_annotations")]
     public int UnreviewedAnnotations { get; set; }
 
-    [JsonProperty("hot")]
+    [JsonPropertyName("hot")]
     public bool Hot { get; set; }
 
-    [JsonProperty("pageviews")]
+    [JsonPropertyName("pageviews")]
     public int? Pageviews { get; set; }
 }
 
 public class Artist
 {
-    [JsonProperty("api_path")]
+    [JsonPropertyName("api_path")]
     public string ApiPath { get; set; }
 
-    [JsonProperty("header_image_url")]
+    [JsonPropertyName("header_image_url")]
     public string HeaderImageUrl { get; set; }
 
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public long Id { get; set; }
 
-    [JsonProperty("image_url")]
+    [JsonPropertyName("image_url")]
     public string ImageUrl { get; set; }
 
-    [JsonProperty("is_meme_verified")]
+    [JsonPropertyName("is_meme_verified")]
     public bool IsMemeVerified { get; set; }
 
-    [JsonProperty("is_verified")]
+    [JsonPropertyName("is_verified")]
     public bool IsVerified { get; set; }
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
 
-    [JsonProperty("url")]
+    [JsonPropertyName("url")]
     public string Url { get; set; }
 
-    [JsonProperty("iq")]
+    [JsonPropertyName("iq")]
     public int? Iq { get; set; }
 }

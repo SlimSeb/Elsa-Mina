@@ -1,33 +1,33 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.LeagueOfLegends;
 
 public class MatchParticipantDto
 {
-    [JsonProperty("puuid")]
+    [JsonPropertyName("puuid")]
     public string Puuid { get; set; }
 
-    [JsonProperty("championId")]
+    [JsonPropertyName("championId")]
     public int ChampionId { get; set; }
 
-    [JsonProperty("championName")]
+    [JsonPropertyName("championName")]
     public string ChampionName { get; set; }
 
-    [JsonProperty("kills")]
+    [JsonPropertyName("kills")]
     public int Kills { get; set; }
 
-    [JsonProperty("deaths")]
+    [JsonPropertyName("deaths")]
     public int Deaths { get; set; }
 
-    [JsonProperty("assists")]
+    [JsonPropertyName("assists")]
     public int Assists { get; set; }
 
-    [JsonProperty("win")]
+    [JsonPropertyName("win")]
     public bool Win { get; set; }
 
-    [JsonProperty("totalMinionsKilled")]
+    [JsonPropertyName("totalMinionsKilled")]
     public int TotalMinionsKilled { get; set; }
 
-    [JsonProperty("neutralMinionsKilled")]
+    [JsonPropertyName("neutralMinionsKilled")]
     public int NeutralMinionsKilled { get; set; }
 }

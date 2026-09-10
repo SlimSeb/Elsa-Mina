@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.LanguageModel.OpenAi;
 
 public class GptRequestDto
 {
-    [JsonProperty("model")]
+    [JsonPropertyName("model")]
     public string Model { get; set; }
 
-    [JsonProperty("items")]
+    [JsonPropertyName("items")]
     public List<GptConversationItemDto> Messages { get; set; }
 }

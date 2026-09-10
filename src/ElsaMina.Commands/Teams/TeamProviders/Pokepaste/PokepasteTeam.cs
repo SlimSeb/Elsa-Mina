@@ -1,15 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Teams.TeamProviders.Pokepaste;
 
 public class PokepasteTeam
 {
-    [JsonProperty("author")]
+    [JsonPropertyName("author")]
     public string Author { get; set; }
-    [JsonProperty("notes")]
+    [JsonPropertyName("notes")]
     public string Notes { get; set; }
-    [JsonProperty("paste")]
+    [JsonPropertyName("paste")]
     public string Paste { get; set; }
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; set; }
 }

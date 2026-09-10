@@ -1,6 +1,6 @@
 using ElsaMina.Commands.Teams;
 using ElsaMina.Core.Utils;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.UnitTests.Core.Utils;
 
@@ -94,7 +94,7 @@ public class ShowdownTeamsUtilsTest
                               - Iron Tail
                               """;
 
-        var expectedJson = JsonConvert.SerializeObject(ShowdownTeamsUtils.DeserializeTeamExport(export));
+        var expectedJson = JsonSerializer.Serialize(ShowdownTeamsUtils.DeserializeTeamExport(export));
 
         // Act
         var result = ShowdownTeamsUtils.TeamExportToJson(export);

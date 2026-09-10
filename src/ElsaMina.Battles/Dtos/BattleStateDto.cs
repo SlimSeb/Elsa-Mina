@@ -1,28 +1,28 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Battles.Dtos;
 
 public sealed class BattleStateDto
 {
-    [JsonProperty("active")]
+    [JsonPropertyName("active")]
     public List<ActivePokemon> Active { get; set; } = new();
 
-    [JsonProperty("forceSwitch")]
+    [JsonPropertyName("forceSwitch")]
     [JsonConverter(typeof(ForceSwitchConverter))]
     public List<bool> ForceSwitch { get; set; } = new();
 
-    [JsonProperty("teamPreview", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    [JsonPropertyName("teamPreview")]
     public bool TeamPreview { get; set; }
 
-    [JsonProperty("wait", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    [JsonPropertyName("wait")]
     public bool Wait { get; set; }
 
-    [JsonProperty("side")]
+    [JsonPropertyName("side")]
     public Side Side { get; set; } = new();
 
-    [JsonProperty("noCancel", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    [JsonPropertyName("noCancel")]
     public bool NoCancel { get; set; }
 
-    [JsonProperty("rqid")]
+    [JsonPropertyName("rqid")]
     public int Rqid { get; set; }
 }

@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Ai.Calc;
 
@@ -7,27 +7,27 @@ namespace ElsaMina.Commands.Ai.Calc;
 /// </summary>
 public class CalcSideDto
 {
-    [JsonProperty("isReflect")]
+    [JsonPropertyName("isReflect")]
     public bool? IsReflect { get; set; }
 
-    [JsonProperty("isLightScreen")]
+    [JsonPropertyName("isLightScreen")]
     public bool? IsLightScreen { get; set; }
 
-    [JsonProperty("isAuroraVeil")]
+    [JsonPropertyName("isAuroraVeil")]
     public bool? IsAuroraVeil { get; set; }
 
-    [JsonProperty("isStealthRock")]
+    [JsonPropertyName("isStealthRock")]
     public bool? IsStealthRock { get; set; }
 
-    [JsonProperty("spikes")]
+    [JsonPropertyName("spikes")]
     public int? Spikes { get; set; }
 
-    [JsonProperty("isHelpingHand")]
+    [JsonPropertyName("isHelpingHand")]
     public bool? IsHelpingHand { get; set; }
 
-    [JsonProperty("isTailwind")]
+    [JsonPropertyName("isTailwind")]
     public bool? IsTailwind { get; set; }
 
-    [JsonProperty("isFriendGuard")]
+    [JsonPropertyName("isFriendGuard")]
     public bool? IsFriendGuard { get; set; }
 }

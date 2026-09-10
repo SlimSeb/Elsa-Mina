@@ -1,24 +1,24 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Dictionary;
 
 public class DictionaryApiMeta
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
 
-    [JsonProperty("uuid")]
+    [JsonPropertyName("uuid")]
     public string Uuid { get; set; }
 
-    [JsonProperty("src")]
+    [JsonPropertyName("src")]
     public string Source { get; set; }
 
-    [JsonProperty("section")]
+    [JsonPropertyName("section")]
     public string Section { get; set; }
 
-    [JsonProperty("stems")]
+    [JsonPropertyName("stems")]
     public List<string> Stems { get; set; }
 
-    [JsonProperty("offensive")]
+    [JsonPropertyName("offensive")]
     public bool IsOffensive { get; set; }
 }

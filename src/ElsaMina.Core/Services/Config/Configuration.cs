@@ -1,4 +1,5 @@
-﻿using ElsaMina.Logging;
+using System.Text.Json.Serialization;
+using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Services.Config;
 
@@ -6,6 +7,7 @@ public class Configuration : IConfiguration
 {
     public LogLevel LogLevel { get; set; } = LogLevel.Info;
     public string Host { get; set; }
+    [JsonConverter(typeof(NumberOrStringToStringConverter))]
     public string Port { get; set; }
     public string Name { get; set; }
     public string Password { get; set; }

@@ -1,72 +1,72 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Tournaments;
 
 public class TournamentUpdateData
 {
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; }
     
-    [JsonProperty("users")]
+    [JsonPropertyName("users")]
     public string[] Users { get; set; }
 }
 
 public class TournamentUpdate
 {
-    [JsonProperty("isStarted", DefaultValueHandling = DefaultValueHandling.Ignore)]
+    [JsonPropertyName("isStarted")]
     public bool IsStarted { get; set; }
     
-    [JsonProperty("bracketData")]
+    [JsonPropertyName("bracketData")]
     public TournamentUpdateData BracketData { get; set; }
 }
 
 public class TournamentNode
 {
-    [JsonProperty("team")]
+    [JsonPropertyName("team")]
     public string Team { get; set; }
 
-    [JsonProperty("state")]
+    [JsonPropertyName("state")]
     public string State { get; set; }
     
-    [JsonProperty("room")]
+    [JsonPropertyName("room")]
     public string Room { get; set; }
 
-    [JsonProperty("children")]
+    [JsonPropertyName("children")]
     public List<TournamentNode> Children { get; set; } = [];
 }
 
 public class RoundRobinTableHeaders
 {
-    [JsonProperty("cols")]
+    [JsonPropertyName("cols")]
     public List<string> Cols { get; set; } = [];
 
-    [JsonProperty("rows")]
+    [JsonPropertyName("rows")]
     public List<string> Rows { get; set; } = [];
 }
 
 public class BracketData
 {
-    [JsonProperty("rootNode")]
+    [JsonPropertyName("rootNode")]
     public TournamentNode RootNode { get; set; }
 
-    [JsonProperty("tableHeaders")]
+    [JsonPropertyName("tableHeaders")]
     public RoundRobinTableHeaders TableHeaders { get; set; }
 
-    [JsonProperty("scores")]
+    [JsonPropertyName("scores")]
     public List<int> Scores { get; set; } = [];
 }
 
 public class TournamentData
 {
-    [JsonProperty("generator")]
+    [JsonPropertyName("generator")]
     public string Generator { get; set; }
     
-    [JsonProperty("format")]
+    [JsonPropertyName("format")]
     public string Format { get; set; }
 
-    [JsonProperty("bracketData")]
+    [JsonPropertyName("bracketData")]
     public BracketData BracketData { get; set; }
 
-    [JsonProperty("results")]
+    [JsonPropertyName("results")]
     public List<List<string>> Results { get; set; }
 }

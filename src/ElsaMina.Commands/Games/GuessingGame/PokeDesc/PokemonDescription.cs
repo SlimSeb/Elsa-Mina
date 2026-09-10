@@ -1,13 +1,10 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Games.GuessingGame.PokeDesc;
 
 public class PokemonDescription
 {
-    [JsonProperty]
     public string EnglishName { get; set; }
-    [JsonProperty]
     public string FrenchName { get; set; }
-    [JsonProperty]
     public string Description { get; set; }
 }

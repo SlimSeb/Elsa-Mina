@@ -1,5 +1,5 @@
 using ElsaMina.Commands;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.UnitTests.Commands;
 
@@ -30,7 +30,7 @@ public class DataManagerTest
     public void Test_CountriesGameData_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonConvert.SerializeObject(new
+        var json = JsonSerializer.Serialize(new
         {
             values = new[]
             {
@@ -54,7 +54,7 @@ public class DataManagerTest
     public void Test_PokemonDescriptions_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonConvert.SerializeObject(new[]
+        var json = JsonSerializer.Serialize(new[]
         {
             new { EnglishName = "Pikachu", FrenchName = "Pikachu", Description = "Mouse Pokémon" }
         });
@@ -73,7 +73,7 @@ public class DataManagerTest
     public void Test_CapitalCitiesGameData_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonConvert.SerializeObject(new[]
+        var json = JsonSerializer.Serialize(new[]
         {
             new
             {
@@ -99,7 +99,7 @@ public class DataManagerTest
     public void Test_WordleWords_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonConvert.SerializeObject(new[] { "apple", "crane", "level" });
+        var json = JsonSerializer.Serialize(new[] { "apple", "crane", "level" });
         File.WriteAllText(Path.Combine(_tempDirectory, "wordle_words.json"), json);
 
         // Act
@@ -115,7 +115,7 @@ public class DataManagerTest
     public void Test_WordleWordsFr_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonConvert.SerializeObject(new[] { "avion", "blanc" });
+        var json = JsonSerializer.Serialize(new[] { "avion", "blanc" });
         File.WriteAllText(Path.Combine(_tempDirectory, "wordle_words_fr.json"), json);
 
         // Act
@@ -131,7 +131,7 @@ public class DataManagerTest
     public void Test_SemantixWordsFr_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonConvert.SerializeObject(new[] { "mot", "arbre" });
+        var json = JsonSerializer.Serialize(new[] { "mot", "arbre" });
         File.WriteAllText(Path.Combine(_tempDirectory, "semantix_words_fr.json"), json);
 
         // Act
@@ -147,7 +147,7 @@ public class DataManagerTest
     public void Test_SemantixAnswersFr_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonConvert.SerializeObject(new[] { "soleil", "lune" });
+        var json = JsonSerializer.Serialize(new[] { "soleil", "lune" });
         File.WriteAllText(Path.Combine(_tempDirectory, "semantix_answers_fr.json"), json);
 
         // Act
@@ -163,7 +163,7 @@ public class DataManagerTest
     public void Test_Properties_ShouldReturnCachedInstance_OnSubsequentAccesses()
     {
         // Arrange
-        var json = JsonConvert.SerializeObject(new[] { "apple", "crane" });
+        var json = JsonSerializer.Serialize(new[] { "apple", "crane" });
         var filePath = Path.Combine(_tempDirectory, "wordle_words.json");
         File.WriteAllText(filePath, json);
 

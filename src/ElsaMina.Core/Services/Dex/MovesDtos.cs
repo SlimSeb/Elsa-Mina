@@ -1,102 +1,102 @@
-namespace ElsaMina.Core.Services.Dex;
+using System.Text.Json.Serialization;
 
-using Newtonsoft.Json;
+namespace ElsaMina.Core.Services.Dex;
 
 public sealed class MoveData
 {
-    [JsonProperty("num")]
+    [JsonPropertyName("num")]
     public int Num { get; set; }
 
-    [JsonProperty("accuracy")]
+    [JsonPropertyName("accuracy")]
     public object Accuracy { get; set; } = true;
 
-    [JsonProperty("basePower")]
+    [JsonPropertyName("basePower")]
     public int BasePower { get; set; }
 
-    [JsonProperty("category")]
+    [JsonPropertyName("category")]
     public string Category { get; set; } = string.Empty;
 
-    [JsonProperty("isNonstandard")]
+    [JsonPropertyName("isNonstandard")]
     public string IsNonstandard { get; set; } = string.Empty;
 
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 
-    [JsonProperty("pp")]
+    [JsonPropertyName("pp")]
     public int Pp { get; set; }
 
-    [JsonProperty("priority")]
+    [JsonPropertyName("priority")]
     public int Priority { get; set; }
 
-    [JsonProperty("flags")]
+    [JsonPropertyName("flags")]
     public Dictionary<string, int> Flags { get; set; } = new();
 
-    [JsonProperty("isZ")]
+    [JsonPropertyName("isZ")]
     public string IsZ { get; set; } = string.Empty;
 
-    [JsonProperty("critRatio")]
+    [JsonPropertyName("critRatio")]
     public int CritRatio { get; set; }
 
-    [JsonProperty("secondary")]
+    [JsonPropertyName("secondary")]
     public SecondaryEffect Secondary { get; set; } = new();
 
-    [JsonProperty("target")]
+    [JsonPropertyName("target")]
     public string Target { get; set; } = string.Empty;
 
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; } = string.Empty;
 
-    [JsonProperty("contestType")]
+    [JsonPropertyName("contestType")]
     public string ContestType { get; set; } = string.Empty;
 
-    [JsonProperty("boosts")]
+    [JsonPropertyName("boosts")]
     public StatBoosts Boosts { get; set; } = new();
 
-    [JsonProperty("drain")]
+    [JsonPropertyName("drain")]
     public int[] Drain { get; set; } = Array.Empty<int>();
 
-    [JsonProperty("zMove")]
+    [JsonPropertyName("zMove")]
     public ZMoveInfo ZMove { get; set; } = new();
 }
 
 public sealed class SecondaryEffect
 {
-    [JsonProperty("chance")]
+    [JsonPropertyName("chance")]
     public int Chance { get; set; }
 
-    [JsonProperty("boosts")]
+    [JsonPropertyName("boosts")]
     public StatBoosts Boosts { get; set; } = new();
 }
 
 public sealed class StatBoosts
 {
-    [JsonProperty("hp")]
+    [JsonPropertyName("hp")]
     public int Hp { get; set; }
 
-    [JsonProperty("atk")]
+    [JsonPropertyName("atk")]
     public int Atk { get; set; }
 
-    [JsonProperty("def")]
+    [JsonPropertyName("def")]
     public int Def { get; set; }
 
-    [JsonProperty("spa")]
+    [JsonPropertyName("spa")]
     public int Spa { get; set; }
 
-    [JsonProperty("spd")]
+    [JsonPropertyName("spd")]
     public int Spd { get; set; }
 
-    [JsonProperty("spe")]
+    [JsonPropertyName("spe")]
     public int Spe { get; set; }
 
-    [JsonProperty("accuracy")]
+    [JsonPropertyName("accuracy")]
     public int Accuracy { get; set; }
 
-    [JsonProperty("evasion")]
+    [JsonPropertyName("evasion")]
     public int Evasion { get; set; }
 }
 
 public sealed class ZMoveInfo
 {
-    [JsonProperty("effect")]
+    [JsonPropertyName("effect")]
     public string Effect { get; set; } = string.Empty;
 }

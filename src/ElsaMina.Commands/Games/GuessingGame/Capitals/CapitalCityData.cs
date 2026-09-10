@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Games.GuessingGame.Capitals;
 
 public class CapitalCityData
 {
-    [JsonProperty("country_en")]
+    [JsonPropertyName("country_en")]
     public string CountryEnglish { get; set; }
-    [JsonProperty("capital_en")]
+    [JsonPropertyName("capital_en")]
     public string CapitalEnglish { get; set; }
-    [JsonProperty("country_fr")]
+    [JsonPropertyName("country_fr")]
     public string CountryFrench { get; set; }
-    [JsonProperty("capital_fr")]
+    [JsonPropertyName("capital_fr")]
     public string CapitalFrench { get; set; }
 }

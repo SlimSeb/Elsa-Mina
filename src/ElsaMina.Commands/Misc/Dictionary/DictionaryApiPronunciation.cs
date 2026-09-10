@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Dictionary;
 
 public class DictionaryApiPronunciation
 {
-    [JsonProperty("mw")]
+    [JsonPropertyName("mw")]
     public string MerriamWebster { get; set; }
 
-    [JsonProperty("sound")]
+    [JsonPropertyName("sound")]
     public DictionaryApiSound Sound { get; set; }
 }

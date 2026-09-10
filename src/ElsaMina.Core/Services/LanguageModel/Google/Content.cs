@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.LanguageModel.Google;
 
 public class Content
 {
-    [JsonProperty("role")]
+    [JsonPropertyName("role")]
     public string Role { get; set; }
 
-    [JsonProperty("parts")]
+    [JsonPropertyName("parts")]
     public List<ContentPart> Parts { get; set; }
 }

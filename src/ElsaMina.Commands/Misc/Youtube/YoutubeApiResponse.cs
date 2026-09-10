@@ -1,108 +1,108 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Youtube;
 
 public class PageInfo
 {
-    [JsonProperty("totalResults")]
+    [JsonPropertyName("totalResults")]
     public int TotalResults { get; set; }
 
-    [JsonProperty("resultsPerPage")]
+    [JsonPropertyName("resultsPerPage")]
     public int ResultsPerPage { get; set; }
 }
 
 public class VideoId
 {
-    [JsonProperty("kind")]
+    [JsonPropertyName("kind")]
     public string Kind { get; set; }
 
-    [JsonProperty("videoId")]
+    [JsonPropertyName("videoId")]
     public string VideoIdValue { get; set; }
 }
 
 public class Thumbnail
 {
-    [JsonProperty("url")]
+    [JsonPropertyName("url")]
     public string Url { get; set; }
 
-    [JsonProperty("width")]
+    [JsonPropertyName("width")]
     public int Width { get; set; }
 
-    [JsonProperty("height")]
+    [JsonPropertyName("height")]
     public int Height { get; set; }
 }
 
 public class Thumbnails
 {
-    [JsonProperty("default")]
+    [JsonPropertyName("default")]
     public Thumbnail Default { get; set; }
 
-    [JsonProperty("medium")]
+    [JsonPropertyName("medium")]
     public Thumbnail Medium { get; set; }
 
-    [JsonProperty("high")]
+    [JsonPropertyName("high")]
     public Thumbnail High { get; set; }
 }
 
 public class Snippet
 {
-    [JsonProperty("publishedAt")]
+    [JsonPropertyName("publishedAt")]
     public string PublishedAt { get; set; }
 
-    [JsonProperty("channelId")]
+    [JsonPropertyName("channelId")]
     public string ChannelId { get; set; }
 
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; set; }
 
-    [JsonProperty("description")]
+    [JsonPropertyName("description")]
     public string Description { get; set; }
 
-    [JsonProperty("thumbnails")]
+    [JsonPropertyName("thumbnails")]
     public Thumbnails Thumbnails { get; set; }
 
-    [JsonProperty("channelTitle")]
+    [JsonPropertyName("channelTitle")]
     public string ChannelTitle { get; set; }
 
-    [JsonProperty("liveBroadcastContent")]
+    [JsonPropertyName("liveBroadcastContent")]
     public string LiveBroadcastContent { get; set; }
 
-    [JsonProperty("publishTime")]
+    [JsonPropertyName("publishTime")]
     public string PublishTime { get; set; }
 }
 
 public class SearchResultItem
 {
-    [JsonProperty("kind")]
+    [JsonPropertyName("kind")]
     public string Kind { get; set; }
 
-    [JsonProperty("etag")]
+    [JsonPropertyName("etag")]
     public string ETag { get; set; }
 
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public VideoId Id { get; set; }
 
-    [JsonProperty("snippet")]
+    [JsonPropertyName("snippet")]
     public Snippet Snippet { get; set; }
 }
 
 public class YouTubeSearchResponse
 {
-    [JsonProperty("kind")]
+    [JsonPropertyName("kind")]
     public string Kind { get; set; }
 
-    [JsonProperty("etag")]
+    [JsonPropertyName("etag")]
     public string ETag { get; set; }
 
-    [JsonProperty("nextPageToken")]
+    [JsonPropertyName("nextPageToken")]
     public string NextPageToken { get; set; }
 
-    [JsonProperty("regionCode")]
+    [JsonPropertyName("regionCode")]
     public string RegionCode { get; set; }
 
-    [JsonProperty("pageInfo")]
+    [JsonPropertyName("pageInfo")]
     public PageInfo PageInfo { get; set; }
 
-    [JsonProperty("items")]
+    [JsonPropertyName("items")]
     public List<SearchResultItem> Items { get; set; }
 }

@@ -1,27 +1,27 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.RoomInfo;
 
 public class RoomInfoDto
 {
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; }
-    [JsonProperty("roomid")]
+    [JsonPropertyName("roomid")]
     public string RoomId { get; set; }
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; set; }
-    [JsonProperty("type")]
+    [JsonPropertyName("type")]
     public string Type { get; set; }
-    [JsonProperty("visibility")]
+    [JsonPropertyName("visibility")]
     public string Visibility { get; set; }
-    [JsonProperty("modchat")]
+    [JsonPropertyName("modchat")]
     public string Modchat { get; set; }
-    [JsonProperty("modjoin")]
+    [JsonPropertyName("modjoin")]
     public string Modjoin { get; set; }
-    [JsonProperty("auth")]
+    [JsonPropertyName("auth")]
     public IDictionary<string, IReadOnlyList<string>> Auth { get; set; }
-    [JsonProperty("users")]
+    [JsonPropertyName("users")]
     public IReadOnlyList<string> Users { get; set; }
-    [JsonProperty("error")]
+    [JsonPropertyName("error")]
     public string Error { get; set; }
 }

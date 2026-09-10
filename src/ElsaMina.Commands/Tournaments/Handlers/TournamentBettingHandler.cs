@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Commands.Tournaments.Handlers;
 
@@ -33,7 +33,7 @@ public class TournamentBettingHandler : Handler
 
         if (parts[2] == "update" && parts.Length >= 4)
         {
-            var update = JsonConvert.DeserializeObject<TournamentUpdate>(parts[3]);
+            var update = JsonSerializer.Deserialize<TournamentUpdate>(parts[3], new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             var incomingUsers = update?.BracketData?.Users;
             if (incomingUsers != null && incomingUsers.Length > 0)
             {

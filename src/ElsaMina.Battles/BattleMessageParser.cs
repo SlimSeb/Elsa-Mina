@@ -1,6 +1,7 @@
 using ElsaMina.Battles.Dtos;
 using ElsaMina.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Battles;
 
@@ -51,7 +52,7 @@ public class BattleMessageParser : IBattleMessageParser
 
         try
         {
-            var battleState = JsonConvert.DeserializeObject<BattleStateDto>(requestJson);
+            var battleState = JsonSerializer.Deserialize<BattleStateDto>(requestJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true, NumberHandling = JsonNumberHandling.AllowReadingFromString });
             if (battleState == null)
             {
                 return false;

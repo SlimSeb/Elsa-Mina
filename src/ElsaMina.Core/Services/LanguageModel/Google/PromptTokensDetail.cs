@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.LanguageModel.Google;
 
 public class PromptTokensDetail
 {
-    [JsonProperty("modality")]
+    [JsonPropertyName("modality")]
     public string Modality { get; set; }
 
-    [JsonProperty("tokenCount")]
+    [JsonPropertyName("tokenCount")]
     public int TokenCount { get; set; }
 }

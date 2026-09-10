@@ -1,9 +1,9 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Food;
 
 public class SpoonacularAnalyzedInstruction
 {
-    [JsonProperty("steps")]
+    [JsonPropertyName("steps")]
     public List<SpoonacularStep> Steps { get; set; }
 }

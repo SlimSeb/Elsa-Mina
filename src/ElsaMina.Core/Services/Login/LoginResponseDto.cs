@@ -1,13 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.Login;
 
 public class LoginResponseDto
 {
-    [JsonProperty("actionsuccess")]
+    [JsonPropertyName("actionsuccess")]
     public bool IsSuccess { get; set; }
-    [JsonProperty("assertion")]
+    [JsonPropertyName("assertion")]
     public string Assertion { get; set; }
-    [JsonProperty("curuser")]
+    [JsonPropertyName("curuser")]
     public CurrentUserDto CurrentUser { get; set; }
 }

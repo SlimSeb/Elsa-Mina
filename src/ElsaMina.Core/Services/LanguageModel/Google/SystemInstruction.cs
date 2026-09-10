@@ -1,9 +1,9 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.LanguageModel.Google;
 
 public class SystemInstruction
 {
-    [JsonProperty("parts")]
+    [JsonPropertyName("parts")]
     public List<InstructionPart> Parts { get; set; }
 }

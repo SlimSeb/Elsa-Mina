@@ -1,18 +1,18 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.RandomImages;
 
 public class KlipySearchData
 {
-    [JsonProperty("data")]
+    [JsonPropertyName("data")]
     public List<KlipyItem> Items { get; set; }
 
-    [JsonProperty("current_page")]
+    [JsonPropertyName("current_page")]
     public int CurrentPage { get; set; }
 
-    [JsonProperty("per_page")]
+    [JsonPropertyName("per_page")]
     public int PerPage { get; set; }
 
-    [JsonProperty("has_next")]
+    [JsonPropertyName("has_next")]
     public bool HasNext { get; set; }
 }

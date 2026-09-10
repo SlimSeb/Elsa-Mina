@@ -3,7 +3,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Battles.Commands;
 
@@ -47,7 +47,7 @@ public class UseTeamCommand : Command
             return;
         }
 
-        var sets = JsonConvert.DeserializeObject<List<PokemonSet>>(team.TeamJson);
+        var sets = JsonSerializer.Deserialize<List<PokemonSet>>(team.TeamJson);
         var packedTeam = ShowdownTeamsUtils.PackTeam(sets);
         if (string.IsNullOrEmpty(packedTeam))
         {

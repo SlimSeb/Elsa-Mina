@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.Smogon;
 
 public class SmogonUsageDataDto
 {
-    [JsonProperty("info")]
+    [JsonPropertyName("info")]
     public SmogonUsageInfoDto Info { get; set; }
 
-    [JsonProperty("data")]
+    [JsonPropertyName("data")]
     public Dictionary<string, SmogonPokemonUsageDataDto> Data { get; set; }
 }

@@ -1,6 +1,6 @@
 using ElsaMina.Core.Services.System;
 using ElsaMina.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Core.Services.RoomInfo;
 
@@ -40,7 +40,7 @@ public class RoomInfoManager : IRoomInfoManager
             message = message.Replace("\"modjoin\":true", "\"modjoin\":\"true\"")
                              .Replace("\"modjoin\": true", "\"modjoin\":\"true\"");
 
-            dto = JsonConvert.DeserializeObject<RoomInfoDto>(message);
+            dto = JsonSerializer.Deserialize<RoomInfoDto>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
         catch (JsonException ex)
         {

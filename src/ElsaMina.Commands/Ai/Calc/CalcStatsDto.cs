@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Ai.Calc;
 
@@ -7,21 +7,21 @@ namespace ElsaMina.Commands.Ai.Calc;
 /// </summary>
 public class CalcStatsDto
 {
-    [JsonProperty("hp")]
+    [JsonPropertyName("hp")]
     public int? Hp { get; set; }
 
-    [JsonProperty("atk")]
+    [JsonPropertyName("atk")]
     public int? Atk { get; set; }
 
-    [JsonProperty("def")]
+    [JsonPropertyName("def")]
     public int? Def { get; set; }
 
-    [JsonProperty("spa")]
+    [JsonPropertyName("spa")]
     public int? Spa { get; set; }
 
-    [JsonProperty("spd")]
+    [JsonPropertyName("spd")]
     public int? Spd { get; set; }
 
-    [JsonProperty("spe")]
+    [JsonPropertyName("spe")]
     public int? Spe { get; set; }
 }

@@ -3,7 +3,7 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
-using Newtonsoft.Json;
+using System.Text.Json;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -12,7 +12,7 @@ namespace ElsaMina.UnitTests.Commands.Arcade.Events;
 public class ArcadeEventsHandlerTests
 {
     private static ArcadeEventWebhookBody ReadWebhookBody(HttpRequest request) =>
-        JsonConvert.DeserializeObject<ArcadeEventWebhookBody>(
+        JsonSerializer.Deserialize<ArcadeEventWebhookBody>(
             request.Body.CreateContent().ReadAsStringAsync().GetAwaiter().GetResult());
 
 

@@ -1,9 +1,9 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Dictionary;
 
 public class DictionaryApiSound
 {
-    [JsonProperty("audio")]
+    [JsonPropertyName("audio")]
     public string Audio { get; set; }
 }

@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.LanguageModel.Google;
 
 public class Candidate
 {
-    [JsonProperty("content")]
+    [JsonPropertyName("content")]
     public CandidateContent Content { get; set; }
 
-    [JsonProperty("finishReason")]
+    [JsonPropertyName("finishReason")]
     public string FinishReason { get; set; }
 
-    [JsonProperty("index")]
+    [JsonPropertyName("index")]
     public int Index { get; set; }
 }

@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.RandomImages;
 
 public class UnsplashPhotoDto
 {
-    [JsonProperty("urls")]
+    [JsonPropertyName("urls")]
     public UnsplashPhotoUrlsDto Urls { get; set; }
 }
 
 public class UnsplashPhotoUrlsDto
 {
-    [JsonProperty("regular")]
+    [JsonPropertyName("regular")]
     public string Regular { get; set; }
 }

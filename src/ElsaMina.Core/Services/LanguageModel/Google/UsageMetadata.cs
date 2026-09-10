@@ -1,21 +1,21 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.LanguageModel.Google;
 
 public class UsageMetadata
 {
-    [JsonProperty("promptTokenCount")]
+    [JsonPropertyName("promptTokenCount")]
     public int PromptTokenCount { get; set; }
 
-    [JsonProperty("candidatesTokenCount")]
+    [JsonPropertyName("candidatesTokenCount")]
     public int CandidatesTokenCount { get; set; }
 
-    [JsonProperty("totalTokenCount")]
+    [JsonPropertyName("totalTokenCount")]
     public int TotalTokenCount { get; set; }
 
-    [JsonProperty("promptTokensDetails")]
+    [JsonPropertyName("promptTokensDetails")]
     public List<PromptTokensDetail> PromptTokensDetails { get; set; }
 
-    [JsonProperty("thoughtsTokenCount")]
+    [JsonPropertyName("thoughtsTokenCount")]
     public int ThoughtsTokenCount { get; set; }
 }

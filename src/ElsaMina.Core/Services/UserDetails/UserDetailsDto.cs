@@ -1,25 +1,25 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.UserDetails;
 
 public class UserDetailsDto
 {
-    [JsonProperty("isPrivate")]
+    [JsonPropertyName("isPrivate")]
     public string Id { get; set; }
-    [JsonProperty("userid")]
+    [JsonPropertyName("userid")]
     public string UserId { get; set; }
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string Name { get; set; }
-    [JsonProperty("avatar")]
+    [JsonPropertyName("avatar")]
     public string Avatar { get; set; }
-    [JsonProperty("group")]
+    [JsonPropertyName("group")]
     public string Group { get; set; }
-    [JsonProperty("friended")]
+    [JsonPropertyName("friended")]
     public bool Friended { get; set; }
-    [JsonProperty("autoconfirmed")]
+    [JsonPropertyName("autoconfirmed")]
     public bool AutoConfirmed { get; set; }
-    [JsonProperty("status")]
+    [JsonPropertyName("status")]
     public string Status { get; set; }
-    [JsonProperty("rooms")]
+    [JsonPropertyName("rooms")]
     public IDictionary<string, UserDetailsRoomDto> Rooms { get; set; }
 }

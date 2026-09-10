@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Arcade.Events;
 
 public class ArcadeEventWebhookBody
 {
-    [JsonProperty("username")]
+    [JsonPropertyName("username")]
     public string Username { get; set; }
-    [JsonProperty("avatar_url")]
+    [JsonPropertyName("avatar_url")]
     public string AvatarUrl { get; set; }
-    [JsonProperty("content")]
+    [JsonPropertyName("content")]
     public string Content { get; set; }
-    [JsonProperty("embeds")]
+    [JsonPropertyName("embeds")]
     public List<ArcadeEventWebhookEmbed> Embeds { get; set; }
 }

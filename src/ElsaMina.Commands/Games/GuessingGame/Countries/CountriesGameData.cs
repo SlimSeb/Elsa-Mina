@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Games.GuessingGame.Countries;
 
 public class CountriesGameData : ICountriesGameData
 {
-    [JsonProperty("values")]
+    [JsonPropertyName("values")]
     public IEnumerable<CountryData> Countries { get; set; }
 }

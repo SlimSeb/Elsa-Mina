@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Dictionary;
 
 public class DictionaryApiHeadwordInfo
 {
-    [JsonProperty("hw")]
+    [JsonPropertyName("hw")]
     public string Headword { get; set; }
 
-    [JsonProperty("prs")]
+    [JsonPropertyName("prs")]
     public List<DictionaryApiPronunciation> Pronunciations { get; set; }
 }

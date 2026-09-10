@@ -1,7 +1,7 @@
 using ElsaMina.Core.Services;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Core.Services.UserDetails;
 
@@ -37,7 +37,7 @@ public class UserDetailsManager : IUserDetailsManager
             message = message.Replace("\"rooms\":false", "")
                              .Replace("\"rooms\": false", "");
 
-            dto = JsonConvert.DeserializeObject<UserDetailsDto>(message);
+            dto = JsonSerializer.Deserialize<UserDetailsDto>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
         catch (JsonException ex)
         {

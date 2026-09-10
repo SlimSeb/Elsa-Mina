@@ -2,7 +2,7 @@ using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.LanguageModel.OpenAi;
-using Newtonsoft.Json;
+using System.Text.Json;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Core.Services.LanguageModel;
@@ -11,7 +11,7 @@ namespace ElsaMina.UnitTests.Core.Services.LanguageModel;
 public class GptMiniProviderTest
 {
     private static GptRequestDto ReadRequestBody(HttpRequest request) =>
-        JsonConvert.DeserializeObject<GptRequestDto>(
+        JsonSerializer.Deserialize<GptRequestDto>(
             request.Body.CreateContent().ReadAsStringAsync().GetAwaiter().GetResult());
 
     private IHttpService _httpService;

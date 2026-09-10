@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Ai.Calc;
 
@@ -8,30 +8,30 @@ namespace ElsaMina.Commands.Ai.Calc;
 /// </summary>
 public class CalcRequestDto
 {
-    [JsonProperty("gen")]
+    [JsonPropertyName("gen")]
     public int Gen { get; set; } = 9;
 
-    [JsonProperty("attacker")]
+    [JsonPropertyName("attacker")]
     public CalcPokemonDto Attacker { get; set; }
 
-    [JsonProperty("defender")]
+    [JsonPropertyName("defender")]
     public CalcPokemonDto Defender { get; set; }
 
-    [JsonProperty("move")]
+    [JsonPropertyName("move")]
     public string Move { get; set; }
 
-    [JsonProperty("isCrit")]
+    [JsonPropertyName("isCrit")]
     public bool? IsCrit { get; set; }
 
-    [JsonProperty("hits")]
+    [JsonPropertyName("hits")]
     public int? Hits { get; set; }
 
-    [JsonProperty("field")]
+    [JsonPropertyName("field")]
     public CalcFieldDto Field { get; set; }
 
     /// <summary>
     /// Set by the language model when the query cannot be interpreted as a damage calculation.
     /// </summary>
-    [JsonProperty("error")]
+    [JsonPropertyName("error")]
     public string Error { get; set; }
 }

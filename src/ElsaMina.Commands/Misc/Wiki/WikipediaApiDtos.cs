@@ -1,105 +1,105 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Wiki;
 
 public class WikipediaApiSearchResponse
 {
-    [JsonProperty("batchcomplete")]
+    [JsonPropertyName("batchcomplete")]
     public string BatchComplete { get; set; }
 
-    [JsonProperty("continue")]
+    [JsonPropertyName("continue")]
     public Continue Continue { get; set; }
 
-    [JsonProperty("query")]
+    [JsonPropertyName("query")]
     public QueryPages Query { get; set; }
 }
 
 public class Continue
 {
-    [JsonProperty("gsroffset")]
+    [JsonPropertyName("gsroffset")]
     public int GsrOffset { get; set; }
 
-    [JsonProperty("continue")]
+    [JsonPropertyName("continue")]
     public string ContinueToken { get; set; }
 }
 
 public class QueryPages
 {
-    [JsonProperty("pages")]
+    [JsonPropertyName("pages")]
     public Dictionary<string, WikiPage> Pages { get; set; }
 }
 
 public class WikiPage
 {
-    [JsonProperty("pageid")]
+    [JsonPropertyName("pageid")]
     public int PageId { get; set; }
 
-    [JsonProperty("ns")]
+    [JsonPropertyName("ns")]
     public int Namespace { get; set; }
 
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; set; }
 
-    [JsonProperty("index")]
+    [JsonPropertyName("index")]
     public int Index { get; set; }
 
-    [JsonProperty("pageprops")]
+    [JsonPropertyName("pageprops")]
     public IDictionary<string, string> PageProps { get; set; }
 }
 
 public class WikipediaExtractResponse
 {
-    [JsonProperty("batchcomplete")]
+    [JsonPropertyName("batchcomplete")]
     public string BatchComplete { get; set; }
 
-    [JsonProperty("query")]
+    [JsonPropertyName("query")]
     public QueryWithExtract Query { get; set; }
 }
 
 public class QueryWithExtract
 {
-    [JsonProperty("normalized")]
+    [JsonPropertyName("normalized")]
     public List<NormalizedTitle> Normalized { get; set; }
 
-    [JsonProperty("pages")]
+    [JsonPropertyName("pages")]
     public Dictionary<string, WikiExtractPage> Pages { get; set; }
 }
 
 public class NormalizedTitle
 {
-    [JsonProperty("from")]
+    [JsonPropertyName("from")]
     public string From { get; set; }
 
-    [JsonProperty("to")]
+    [JsonPropertyName("to")]
     public string To { get; set; }
 }
 
 public class WikiExtractPage
 {
-    [JsonProperty("pageid")]
+    [JsonPropertyName("pageid")]
     public int PageId { get; set; }
 
-    [JsonProperty("ns")]
+    [JsonPropertyName("ns")]
     public int Namespace { get; set; }
 
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; set; }
 
-    [JsonProperty("extract")]
+    [JsonPropertyName("extract")]
     public string Extract { get; set; }
 
-    [JsonProperty("thumbnail")]
+    [JsonPropertyName("thumbnail")]
     public Thumbnail Thumbnail { get; set; }
 }
 
 public class Thumbnail
 {
-    [JsonProperty("source")]
+    [JsonPropertyName("source")]
     public string Source { get; set; }
 
-    [JsonProperty("width")]
+    [JsonPropertyName("width")]
     public int Width { get; set; }
 
-    [JsonProperty("height")]
+    [JsonPropertyName("height")]
     public int Height { get; set; }
 }

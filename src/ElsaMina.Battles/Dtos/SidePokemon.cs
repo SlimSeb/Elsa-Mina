@@ -1,48 +1,48 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Battles.Dtos;
 
 public sealed class SidePokemon
 {
-    [JsonProperty("ident")]
+    [JsonPropertyName("ident")]
     public string Ident { get; set; } = "";
 
-    [JsonProperty("details")]
+    [JsonPropertyName("details")]
     public string Details { get; set; } = "";
 
-    [JsonProperty("condition")]
+    [JsonPropertyName("condition")]
     public string Condition { get; set; } = "";
 
-    [JsonProperty("active")]
+    [JsonPropertyName("active")]
     public bool Active { get; set; }
 
-    [JsonProperty("stats")]
+    [JsonPropertyName("stats")]
     public Stats Stats { get; set; } = new();
 
-    [JsonProperty("moves")]
+    [JsonPropertyName("moves")]
     public List<string> Moves { get; set; } = new();
 
-    [JsonProperty("baseAbility")]
+    [JsonPropertyName("baseAbility")]
     public string BaseAbility { get; set; } = "";
 
-    [JsonProperty("item")]
+    [JsonPropertyName("item")]
     public string Item { get; set; } = "";
 
-    [JsonProperty("pokeball")]
+    [JsonPropertyName("pokeball")]
     public string Pokeball { get; set; } = "";
 
-    [JsonProperty("ability")]
+    [JsonPropertyName("ability")]
     public string Ability { get; set; } = "";
 
-    [JsonProperty("commanding")]
+    [JsonPropertyName("commanding")]
     public bool Commanding { get; set; }
 
-    [JsonProperty("reviving")]
+    [JsonPropertyName("reviving")]
     public bool Reviving { get; set; }
 
-    [JsonProperty("teraType")]
+    [JsonPropertyName("teraType")]
     public string TeraType { get; set; } = "";
 
-    [JsonProperty("terastallized")]
+    [JsonPropertyName("terastallized")]
     public string Terastallized { get; set; } = "";
 }

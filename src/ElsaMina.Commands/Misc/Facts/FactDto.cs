@@ -1,9 +1,9 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Facts;
 
 public class FactDto
 {
-    [JsonProperty("text")]
+    [JsonPropertyName("text")]
     public string Text { get; set; }
 }

@@ -1,18 +1,18 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Battles.Strategies.Llm;
 
 public class LlmDecisionDto
 {
-    [JsonProperty("reasoning")]
+    [JsonPropertyName("reasoning")]
     public string Reasoning { get; set; }
 
-    [JsonProperty("decision")]
+    [JsonPropertyName("decision")]
     public string Decision { get; set; }
 
-    [JsonProperty("index")]
+    [JsonPropertyName("index")]
     public int Index { get; set; }
 
-    [JsonProperty("terastallize")]
+    [JsonPropertyName("terastallize")]
     public bool Terastallize { get; set; }
 }

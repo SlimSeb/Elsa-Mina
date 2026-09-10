@@ -1,9 +1,9 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.UserDetails;
 
 public class UserDetailsRoomDto
 {
-    [JsonProperty("isPrivate")]
+    [JsonPropertyName("isPrivate")]
     public bool IsPrivate { get; set; }
 }

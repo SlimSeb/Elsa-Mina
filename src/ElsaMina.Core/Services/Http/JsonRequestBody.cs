@@ -1,5 +1,5 @@
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Core.Services.Http;
 
@@ -14,7 +14,9 @@ public sealed class JsonRequestBody : IHttpRequestBody
 
     public HttpContent CreateContent()
     {
-        var serializedJson = JsonConvert.SerializeObject(_payload);
+        var serializedJson = _payload != null
+            ? JsonSerializer.Serialize(_payload, _payload.GetType())
+            : "null";
         return new StringContent(serializedJson, Encoding.UTF8, "application/json");
     }
 }

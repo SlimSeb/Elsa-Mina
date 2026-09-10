@@ -1,10 +1,10 @@
 @using ElsaMina.Commands.Teams
-@using Newtonsoft.Json
+@using System.Text.Json
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Teams.SampleTeamViewModel>
 
 @{
     const int teamSize = 6;
-    var sets = JsonConvert.DeserializeObject<IEnumerable<PokemonSet>>(Model.Team.TeamJson);
+    var sets = JsonSerializer.Deserialize<IEnumerable<PokemonSet>>(Model.Team.TeamJson);
 }
 
 <a style="text-decoration:none;color:inherit;display:inline-block;" href="@Model.Team.Link">

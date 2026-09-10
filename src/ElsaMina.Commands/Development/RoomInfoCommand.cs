@@ -1,7 +1,7 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.RoomInfo;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Commands.Development;
 
@@ -40,6 +40,6 @@ public class RoomInfoCommand : Command
             return;
         }
 
-        context.Reply($"!code {JsonConvert.SerializeObject(roomInfo, Formatting.Indented)}");
+        context.Reply($"!code {JsonSerializer.Serialize(roomInfo, new JsonSerializerOptions { WriteIndented = true })}");
     }
 }

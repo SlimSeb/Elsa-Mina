@@ -1,17 +1,17 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.UserData;
 
 public class UserDataDto
 {
-    [JsonProperty("username")]
+    [JsonPropertyName("username")]
     public string UserName { get; set; }
-    [JsonProperty("userid")]
+    [JsonPropertyName("userid")]
     public string UserId { get; set; }
-    [JsonProperty("registertime")]
+    [JsonPropertyName("registertime")]
     public long RegisterTime { get; set; }
-    [JsonProperty("group")]
+    [JsonPropertyName("group")]
     public long Group { get; set; }
-    [JsonProperty("ratings")]
+    [JsonPropertyName("ratings")]
     public IDictionary<string, UserDataRankingDto> Ratings { get; set; }
 }

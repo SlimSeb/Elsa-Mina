@@ -1,5 +1,5 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Dictionary;
 
@@ -15,19 +15,24 @@ public class DictionaryApiResponse
 
 public class DictionaryApiResponseConverter : JsonConverter<DictionaryApiResponse>
 {
-    public override DictionaryApiResponse ReadJson(JsonReader reader, Type objectType,
-        DictionaryApiResponse existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override DictionaryApiResponse Read(ref Utf8JsonReader reader, Type typeToConvert,
+        JsonSerializerOptions options)
     {
-        var token = JToken.Load(reader);
-        if (token.Type != JTokenType.Array || !token.HasValues)
+        using var token = JsonDocument.ParseValue(ref reader);
+        var root = token.RootElement;
+        if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() == 0)
+        {
             return new DictionaryApiResponse();
+        }
 
-        if (token.First!.Type == JTokenType.String)
-            return new DictionaryApiResponse { Suggestions = token.ToObject<List<string>>(serializer) };
+        if (root[0].ValueKind == JsonValueKind.String)
+        {
+            return new DictionaryApiResponse { Suggestions = root.Deserialize<List<string>>(options) };
+        }
 
-        return new DictionaryApiResponse { Entries = token.ToObject<List<DictionaryApiEntry>>(serializer) };
+        return new DictionaryApiResponse { Entries = root.Deserialize<List<DictionaryApiEntry>>(options) };
     }
 
-    public override void WriteJson(JsonWriter writer, DictionaryApiResponse value, JsonSerializer serializer)
+    public override void Write(Utf8JsonWriter writer, DictionaryApiResponse value, JsonSerializerOptions options)
         => throw new NotSupportedException();
 }

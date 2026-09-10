@@ -1,15 +1,15 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.BugReport;
 
 public class GithubIssueRequestDto
 {
-    [JsonProperty("title")]
+    [JsonPropertyName("title")]
     public string Title { get; set; }
 
-    [JsonProperty("body")]
+    [JsonPropertyName("body")]
     public string Body { get; set; }
 
-    [JsonProperty("labels")]
+    [JsonPropertyName("labels")]
     public IEnumerable<string> Labels { get; set; }
 }

@@ -1,24 +1,24 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Battles.Dtos;
 
 public sealed class Move
 {
-    [JsonProperty("move")]
+    [JsonPropertyName("move")]
     public string Name { get; set; } = "";
 
-    [JsonProperty("id")]
+    [JsonPropertyName("id")]
     public string Id { get; set; } = "";
 
-    [JsonProperty("pp")]
+    [JsonPropertyName("pp")]
     public int Pp { get; set; }
 
-    [JsonProperty("maxpp")]
+    [JsonPropertyName("maxpp")]
     public int MaxPp { get; set; }
 
-    [JsonProperty("target")]
+    [JsonPropertyName("target")]
     public string Target { get; set; } = "";
 
-    [JsonProperty("disabled")]
+    [JsonPropertyName("disabled")]
     public bool Disabled { get; set; }
 }

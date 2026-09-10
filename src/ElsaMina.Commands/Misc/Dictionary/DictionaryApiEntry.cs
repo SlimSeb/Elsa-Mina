@@ -1,24 +1,24 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.Dictionary;
 
 public class DictionaryApiEntry
 {
-    [JsonProperty("meta")]
+    [JsonPropertyName("meta")]
     public DictionaryApiMeta Meta { get; set; }
 
-    [JsonProperty("hwi")]
+    [JsonPropertyName("hwi")]
     public DictionaryApiHeadwordInfo HeadwordInfo { get; set; }
 
-    [JsonProperty("fl")]
+    [JsonPropertyName("fl")]
     public string PartOfSpeech { get; set; }
 
-    [JsonProperty("def")]
+    [JsonPropertyName("def")]
     public List<DictionaryApiDefinition> Definitions { get; set; }
 
-    [JsonProperty("uros")]
+    [JsonPropertyName("uros")]
     public List<DictionaryApiUndefinedRunOn> UndefinedRunOns { get; set; }
 
-    [JsonProperty("shortdef")]
+    [JsonPropertyName("shortdef")]
     public List<string> ShortDefinitions { get; set; }
 }

@@ -1,12 +1,12 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Misc.BugReport;
 
 public class GithubIssueResponseDto
 {
-    [JsonProperty("number")]
+    [JsonPropertyName("number")]
     public int Number { get; set; }
 
-    [JsonProperty("html_url")]
+    [JsonPropertyName("html_url")]
     public string HtmlUrl { get; set; }
 }

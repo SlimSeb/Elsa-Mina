@@ -12,7 +12,6 @@
         <PackageReference Include="Lusamine.ImageIdentifier" />
         <PackageReference Include="Lusamine.WebSocketClient"/>
         <PackageReference Include="NCalcSync"/>
-        <PackageReference Include="Newtonsoft.Json"/>
         <PackageReference Include="RazorLight"/>
     </ItemGroup>
 

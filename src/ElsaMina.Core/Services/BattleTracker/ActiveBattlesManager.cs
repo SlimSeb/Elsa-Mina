@@ -1,7 +1,7 @@
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace ElsaMina.Core.Services.BattleTracker;
 
@@ -38,9 +38,9 @@ public class ActiveBattlesManager : IActiveBattlesManager
 
         try
         {
-            dto = JsonConvert.DeserializeObject<RoomListQueryResponseDto>(message);
+            dto = JsonSerializer.Deserialize<RoomListQueryResponseDto>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
-        catch (JsonSerializationException ex)
+        catch (JsonException ex)
         {
             Log.Error(ex, "Error while deserializing roomlist json");
         }

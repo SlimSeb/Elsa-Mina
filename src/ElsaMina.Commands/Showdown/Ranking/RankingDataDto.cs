@@ -1,27 +1,27 @@
 using System.Drawing;
 using ElsaMina.Core.Utils;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Commands.Showdown.Ranking;
 
 public class RankingDataDto
 {
-    [JsonProperty("formatid")]
+    [JsonPropertyName("formatid")]
     public string FormatId { get; set; }
-    [JsonProperty("w")]
+    [JsonPropertyName("w")]
     public int Wins { get; set; }
-    [JsonProperty("l")]
+    [JsonPropertyName("l")]
     public int Losses { get; set; }
-    [JsonProperty("t")]
+    [JsonPropertyName("t")]
     public int Ties { get; set; }
-    [JsonProperty("gxe")]
+    [JsonPropertyName("gxe")]
     public double Gxe { get; set; }
-    [JsonProperty("elo")]
+    [JsonPropertyName("elo")]
     public double Elo { get; set; }
-    [JsonProperty("first_played", NullValueHandling = NullValueHandling.Ignore)]
-    public int FirstPlayed { get; set; }
-    [JsonProperty("last_played", NullValueHandling = NullValueHandling.Ignore)]
-    public int LastPlayed { get; set; }
+    [JsonPropertyName("first_played")]
+    public int? FirstPlayed { get; set; }
+    [JsonPropertyName("last_played")]
+    public int? LastPlayed { get; set; }
     
     public double WinRate => Wins + Losses == 0 ? 0 : 100 * Wins / (double)(Wins + Losses);
     public Color GxeBasedColor => ShowdownColors.FromHsl(Gxe * 1.05, 85, 45);

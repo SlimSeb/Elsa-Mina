@@ -2,7 +2,7 @@ using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.LanguageModel.Mistral;
-using Newtonsoft.Json;
+using System.Text.Json;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Core.Services.LanguageModel;
@@ -11,7 +11,7 @@ namespace ElsaMina.UnitTests.Core.Services.LanguageModel;
 public class MistralSmallProviderTest
 {
     private static MistralRequestDto ReadRequestBody(HttpRequest request) =>
-        JsonConvert.DeserializeObject<MistralRequestDto>(
+        JsonSerializer.Deserialize<MistralRequestDto>(
             request.Body.CreateContent().ReadAsStringAsync().GetAwaiter().GetResult());
 
     private IHttpService _httpService;

@@ -1,9 +1,9 @@
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace ElsaMina.Core.Services.BattleTracker;
 
 internal class RoomListQueryResponseDto
 {
-    [JsonProperty("rooms")]
+    [JsonPropertyName("rooms")]
     public IDictionary<string, ActiveBattleDto> Rooms { get; set; }
 }
