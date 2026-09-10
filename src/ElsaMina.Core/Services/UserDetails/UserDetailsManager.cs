@@ -28,16 +28,22 @@ public class UserDetailsManager : IUserDetailsManager
         return _pendingRequestsManager.AddOrReplace(userId, cancellationToken);
     }
 
+    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        AllowTrailingCommas = true
+    };
+
     public void HandleReceivedUserDetails(string message)
     {
         UserDetailsDto dto = null;
 
         try
         {
-            message = message.Replace("\"rooms\":false", "")
-                             .Replace("\"rooms\": false", "");
+            message = message.Replace("\"rooms\":false", "\"rooms\":null")
+                             .Replace("\"rooms\": false", "\"rooms\":null");
 
-            dto = JsonSerializer.Deserialize<UserDetailsDto>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            dto = JsonSerializer.Deserialize<UserDetailsDto>(message, JSON_OPTIONS);
         }
         catch (JsonException ex)
         {

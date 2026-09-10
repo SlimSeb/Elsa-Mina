@@ -32,13 +32,19 @@ public class ActiveBattlesManager : IActiveBattlesManager
         return _pendingRequestsManager.AddOrReplace(formatId, cancellationToken);
     }
 
+    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        AllowTrailingCommas = true
+    };
+
     public void HandleReceivedRoomList(string message)
     {
         RoomListQueryResponseDto dto = null;
 
         try
         {
-            dto = JsonSerializer.Deserialize<RoomListQueryResponseDto>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            dto = JsonSerializer.Deserialize<RoomListQueryResponseDto>(message, JSON_OPTIONS);
         }
         catch (JsonException ex)
         {

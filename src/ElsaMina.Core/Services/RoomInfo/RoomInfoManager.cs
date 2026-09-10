@@ -30,6 +30,12 @@ public class RoomInfoManager : IRoomInfoManager
         return _pendingRequestsManager.AddOrReplace(normalizedRoomId, cancellationToken);
     }
 
+    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        AllowTrailingCommas = true
+    };
+
     public void HandleReceivedRoomInfo(string message)
     {
         RoomInfoDto dto = null;
@@ -40,7 +46,7 @@ public class RoomInfoManager : IRoomInfoManager
             message = message.Replace("\"modjoin\":true", "\"modjoin\":\"true\"")
                              .Replace("\"modjoin\": true", "\"modjoin\":\"true\"");
 
-            dto = JsonSerializer.Deserialize<RoomInfoDto>(message, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            dto = JsonSerializer.Deserialize<RoomInfoDto>(message, JSON_OPTIONS);
         }
         catch (JsonException ex)
         {

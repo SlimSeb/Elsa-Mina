@@ -33,11 +33,17 @@ public class DexManager : IDexManager
         }
     }
     
+    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        AllowTrailingCommas = true
+    };
+
     private static async Task<T> ReadJsonFileAsync<T>(string filename, CancellationToken cancellationToken)
     {
         await using var stream = File.OpenRead(Path.Join("Services", "Dex", filename));
         using var reader = new StreamReader(stream);
         var json = await reader.ReadToEndAsync(cancellationToken);
-        return JsonSerializer.Deserialize<T>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        return JsonSerializer.Deserialize<T>(json, JSON_OPTIONS);
     }
 }

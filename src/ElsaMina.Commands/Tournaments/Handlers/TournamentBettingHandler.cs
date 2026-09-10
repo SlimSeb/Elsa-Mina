@@ -23,6 +23,12 @@ public class TournamentBettingHandler : Handler
 
     public override IReadOnlySet<string> HandledMessageTypes => (HashSet<string>)["tournament"];
 
+    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        AllowTrailingCommas = true
+    };
+
     public override async Task HandleReceivedMessageAsync(string[] parts, string roomId = null,
         CancellationToken cancellationToken = default)
     {
@@ -33,7 +39,8 @@ public class TournamentBettingHandler : Handler
 
         if (parts[2] == "update" && parts.Length >= 4)
         {
-            var update = JsonSerializer.Deserialize<TournamentUpdate>(parts[3], new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var sanitizedJson = parts[3].Replace(@"\'", "'");
+            var update = JsonSerializer.Deserialize<TournamentUpdate>(sanitizedJson, JSON_OPTIONS);
             var incomingUsers = update?.BracketData?.Users;
             if (incomingUsers != null && incomingUsers.Length > 0)
             {

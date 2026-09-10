@@ -34,9 +34,25 @@ public static class TournamentHelper
         return teamScores;
     }
 
+    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        AllowTrailingCommas = true
+    };
+
     public static TournamentResults ParseTourResults(string jsonData)
     {
-        var data = JsonSerializer.Deserialize<TournamentData>(jsonData, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        if (string.IsNullOrEmpty(jsonData))
+        {
+            return null;
+        }
+
+        var sanitizedJson = jsonData.Replace(@"\'", "'");
+        var data = JsonSerializer.Deserialize<TournamentData>(sanitizedJson, JSON_OPTIONS);
+        if (data == null)
+        {
+            return null;
+        }
         if (IsSingleElimination(data))
         {
             return ParseSingleEliminationResults(data);
