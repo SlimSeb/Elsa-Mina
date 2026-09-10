@@ -132,6 +132,9 @@
     <data name="dashboard_btn_toggle_disable" xml:space="preserve">
         <value>Disable</value>
     </data>
+    <data name="dashboard_btn_set" xml:space="preserve">
+        <value>Set</value>
+    </data>
     <data name="dashboard_save_all" xml:space="preserve">
         <value>Save All Settings</value>
     </data>

@@ -13,6 +13,7 @@
     const string cardHeaderStyle = $"background: {StyleConstants.PRIMARY_BACKGROUND_COLOR}; padding: 10px 14px;" +
                                    $"font-weight: bold; font-size: 0.95em; border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
     const string tableStyle = "border-collapse: collapse; width: 100%;";
+    const string optionsTableStyle = "border-collapse: collapse; width: 100%; table-layout: fixed;";
     const string rowStyle = "border-bottom: 1px solid rgba(103, 136, 170, 0.2);";
     const string primaryBtnStyle = $"background: {StyleConstants.PRIMARY_BORDER_COLOR}; color: white; border: none;" +
                                    "padding: 8px 20px; border-radius: 6px; cursor: pointer;" +
@@ -127,44 +128,81 @@
         </table>
     </div>
 
-    <!-- 2. Options Section (opens the current dashboard & panels) -->
-    <div style="@cardStyle">
-        <div style="@cardHeaderStyle">
-            @GetString("dashboard_section_options")
-        </div>
-        <div style="padding: 14px; text-align: center;">
-            <p style="margin: 0 0 10px 0; font-size: 0.88em; opacity: 0.85;">
-                @GetString("dashboard_options_description")
-            </p>
-            <div style="margin-bottom: 14px; font-size: 0.8em; opacity: 0.75;">
-                <span>@GetString("dashboard_category_general")</span> •
-                <span>@GetString("dashboard_category_previews")</span> •
-                <span>@GetString("dashboard_category_arcade")</span>
+    <!-- 2. Room Options Section -->
+    <div style="margin-bottom: 16px;">
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;" width="100%">
+            <tr>
+                <td style="vertical-align: middle; text-align: left;">
+                    <h3 style="margin: 0; font-size: 1.05em; font-weight: bold;">@GetString("dashboard_section_options")</h3>
+                    <span style="font-size: 0.76em; opacity: 0.75;">@GetString("dashboard_options_description")</span>
+                </td>
+                <td style="vertical-align: middle; text-align: right; white-space: nowrap;">
+                    <button
+                        class="button"
+                        name="send"
+                        value="/w @Model.BotName, @(Model.Trigger)configtour @Model.RoomId"
+                        style="background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(2, 132, 199, 0.5); color: #0284c7; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.78em; font-weight: bold; margin-right: 4px;">
+                        @GetString("dashboard_btn_open_tours")
+                    </button>
+                    <button
+                        class="button"
+                        name="send"
+                        value="/w @Model.BotName, @(Model.Trigger)badgepanel @Model.RoomId"
+                        style="background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.5); color: #7c3aed; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.78em; font-weight: bold;">
+                        @GetString("dashboard_btn_open_badges")
+                    </button>
+                </td>
+            </tr>
+        </table>
+
+        @if (Model.Categories != null && Model.Categories.Any())
+        {
+            @foreach (var category in Model.Categories)
+            {
+                <div style="@cardStyle">
+                    <div style="@cardHeaderStyle">
+                        @GetString(category.TitleKey)
+                    </div>
+                    <table style="@optionsTableStyle" width="100%">
+                        <colgroup>
+                            <col style="width: 50%;" width="50%" />
+                            <col style="width: 50%;" width="50%" />
+                        </colgroup>
+                        <tbody>
+                        @foreach (var parameterModel in category.Parameters)
+                        {
+                            <text>
+                                @{
+                                    await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
+                                }
+                            </text>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+        else if (Model.RoomParameterLines != null)
+        {
+            <div style="@cardStyle">
+                <table style="@optionsTableStyle" width="100%">
+                    <colgroup>
+                        <col style="width: 50%;" width="50%" />
+                        <col style="width: 50%;" width="50%" />
+                    </colgroup>
+                    <tbody>
+                    @foreach (var parameterModel in Model.RoomParameterLines)
+                    {
+                        <text>
+                            @{
+                                await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
+                            }
+                        </text>
+                    }
+                    </tbody>
+                </table>
             </div>
-            <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-                <button
-                    class="button"
-                    name="send"
-                    value="/w @Model.BotName, @(Model.Trigger)roomoptions @Model.RoomId"
-                    style="@primaryBtnStyle">
-                    @GetString("dashboard_btn_open_options")
-                </button>
-                <button
-                    class="button"
-                    name="send"
-                    value="/w @Model.BotName, @(Model.Trigger)configtour @Model.RoomId"
-                    style="background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(2, 132, 199, 0.5); color: #0284c7; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold;">
-                    @GetString("dashboard_btn_open_tours")
-                </button>
-                <button
-                    class="button"
-                    name="send"
-                    value="/w @Model.BotName, @(Model.Trigger)badgepanel @Model.RoomId"
-                    style="background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.5); color: #7c3aed; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold;">
-                    @GetString("dashboard_btn_open_badges")
-                </button>
-            </div>
-        </div>
+        }
     </div>
 
     <!-- 3. Quick Start Game Section -->

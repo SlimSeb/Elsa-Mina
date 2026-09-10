@@ -125,7 +125,8 @@ public class RoomDashboardService : IRoomDashboardService
         }
 
         var template = await _templatesManager.GetTemplateAsync("RoomDashboard/RoomDashboard", viewModel);
-        context.ReplyHtmlPage($"{roomId}dashboard", template.RemoveNewlines().CollapseAttributeWhitespace());
+        context.ReplyHtmlPage($"{roomId}dashboard",
+            template.RemoveNewlines().CollapseAttributeWhitespace().CollapseWhitespacesBetweenTags());
     }
 
     public async Task SendOptionsPageAsync(
@@ -140,7 +141,8 @@ public class RoomDashboardService : IRoomDashboardService
         }
 
         var template = await _templatesManager.GetTemplateAsync("RoomDashboard/RoomOptions", viewModel);
-        context.ReplyHtmlPage($"{roomId}dashboard", template.RemoveNewlines().CollapseAttributeWhitespace());
+        context.ReplyHtmlPage($"{roomId}dashboard",
+            template.RemoveNewlines().CollapseAttributeWhitespace().CollapseWhitespacesBetweenTags());
     }
 
     private static string GetFriendlyGameName(IGame game)
@@ -202,8 +204,8 @@ public class RoomDashboardService : IRoomDashboardService
         var previewsList = lineModels.Where(line => previewParameters.Contains(line.ParameterKey)).ToList();
         var arcadeList = lineModels.Where(line => arcadeParameters.Contains(line.ParameterKey)).ToList();
         var otherList = lineModels.Where(line => !generalParameters.Contains(line.ParameterKey) &&
-                                                  !previewParameters.Contains(line.ParameterKey) &&
-                                                  !arcadeParameters.Contains(line.ParameterKey)).ToList();
+                                                 !previewParameters.Contains(line.ParameterKey) &&
+                                                 !arcadeParameters.Contains(line.ParameterKey)).ToList();
 
         if (otherList.Count > 0)
         {

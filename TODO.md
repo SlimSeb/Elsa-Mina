@@ -1,9 +1,8 @@
 # TODO
 
 * Dockeriser pour faciliter le deploy
-* Rework des options
 * Hotreload des commandes (possible ?)
-* Chemin glacé / Wordle
+* Chemin glacé
 
 ## Ideas cooked by Claude
 A few ideas, roughly ordered by usefulness:

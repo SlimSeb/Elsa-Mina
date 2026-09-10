@@ -5,59 +5,137 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.RoomDashboard.RoomParameterLineModel>
 
 @{
-    const string rowStyle = $"border-bottom: 1px solid rgba(103, 136, 170, 0.2);";
-    const string labelCellStyle = "padding: 10px 14px; vertical-align: middle;";
-    const string controlCellStyle = "padding: 10px 14px; vertical-align: middle; text-align: right; width: 1%; white-space: nowrap;";
+    const string rowStyle = "border-bottom: 1px solid rgba(103, 136, 170, 0.2);";
+    const string labelCellStyle = "padding: 10px 14px; vertical-align: middle; width: 50%; box-sizing: border-box;";
+    const string controlCellStyle = "padding: 10px 14px; vertical-align: middle; text-align: right; width: 50%; box-sizing: border-box;";
     const string nameStyle = "font-weight: bold; font-size: 0.88em; display: block;";
     const string descStyle = "font-size: 0.76em; opacity: 0.75; margin-top: 2px; display: block;";
+    const string enabledToggleBtnStyle = "background: #16a34a; color: white; border: 1px solid #15803d; border-radius: 4px; padding: 4px 14px; font-size: 0.82em; font-weight: bold; cursor: pointer; vertical-align: middle; min-width: 85px; text-align: center;";
+    const string disabledToggleBtnStyle = "background: rgba(103, 136, 170, 0.15); color: inherit; border: 1px solid rgba(103, 136, 170, 0.4); border-radius: 4px; padding: 4px 14px; font-size: 0.82em; font-weight: 500; cursor: pointer; vertical-align: middle; min-width: 85px; text-align: center;";
     const string selectStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-radius: 4px; padding: 4px 8px; font-size: 0.82em; background: inherit; color: inherit; max-width: 170px;";
     const string inputStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; border-radius: 4px; padding: 4px 8px; font-size: 0.82em; background: inherit; color: inherit; width: 100%; box-sizing: border-box;";
+    const string setBtnStyle = "background: #2563eb; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.78em; font-weight: bold; cursor: pointer; vertical-align: middle;";
+    const string activeOptionBtnStyle = "background: #2563eb; color: white; border: 1px solid #1d4ed8; border-radius: 4px; padding: 4px 10px; font-size: 0.78em; font-weight: bold; display: block; text-align: center; box-sizing: border-box; width: 100%; line-height: 1.4; font-family: inherit; cursor: default;";
+    const string inactiveOptionBtnStyle = "background: rgba(103, 136, 170, 0.15); border: 1px solid rgba(103, 136, 170, 0.4); border-radius: 4px; padding: 4px 10px; font-size: 0.78em; font-weight: 500; cursor: pointer; color: inherit; display: block; text-align: center; box-sizing: border-box; width: 100%; line-height: 1.4; font-family: inherit;";
 }
 
 <tr style="@rowStyle">
-    <td style="@labelCellStyle">
+    <td width="50%" style="@labelCellStyle">
         <label for="@Model.RoomParameterDefinition.Identifier">
             <span style="@nameStyle">@GetString(Model.RoomParameterDefinition.NameKey)</span>
             <span style="@descStyle">@GetString(Model.RoomParameterDefinition.DescriptionKey)</span>
         </label>
     </td>
-    <td style="@controlCellStyle">
+    <td width="50%" style="@controlCellStyle">
         @switch (Model.RoomParameterDefinition.Type)
         {
-            case RoomBotConfigurationType.Enumeration:
+            case RoomBotConfigurationType.Boolean:
             {
-                <select
-                    name="@Model.RoomParameterDefinition.Identifier"
-                    id="@Model.RoomParameterDefinition.Identifier"
-                    style="@selectStyle">
-                    @foreach (var option in Model.RoomParameterDefinition.PossibleValues)
-                    {
-                        var label = option.DisplayedValue ?? GetString(option.DisplayedValueKey);
-                        <option
-                            value="@option.InternalValue"
-                            @(string.Equals(option.InternalValue, Model.CurrentValue, StringComparison.InvariantCultureIgnoreCase) ? "selected" : string.Empty)>
-                            @label
-                        </option>
-                    }
-                </select>
+                @if (Model.BooleanValue)
+                {
+                    <button
+                        class="button"
+                        name="send"
+                        value="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, @(Model.RoomParameterDefinition.Identifier)=false"
+                        style="@enabledToggleBtnStyle">
+                        @GetString("dashboard_status_enabled")
+                    </button>
+                }
+                else
+                {
+                    <button
+                        class="button"
+                        name="send"
+                        value="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, @(Model.RoomParameterDefinition.Identifier)=true"
+                        style="@disabledToggleBtnStyle">
+                        @GetString("dashboard_status_disabled")
+                    </button>
+                }
                 break;
             }
-            case RoomBotConfigurationType.Boolean:
-                <input
-                    type="checkbox"
-                    id="@Model.RoomParameterDefinition.Identifier"
-                    name="@Model.RoomParameterDefinition.Identifier"
-                    @(Model.BooleanValue ? "checked" : string.Empty)
-                    style="vertical-align: middle; cursor: pointer;" />
+            case RoomBotConfigurationType.Enumeration:
+            {
+                var possibleValues = Model.RoomParameterDefinition.PossibleValues?.ToList();
+                if (possibleValues != null && possibleValues.Count <= 4)
+                {
+                    <table style="border-collapse: collapse; margin-left: auto; width: 100%; max-width: 170px;" align="right">
+                        <tbody>
+                        @foreach (var option in possibleValues)
+                        {
+                            var isSelected = string.Equals(option.InternalValue, Model.CurrentValue, StringComparison.InvariantCultureIgnoreCase);
+                            var label = option.DisplayedValue ?? GetString(option.DisplayedValueKey);
+                            <tr>
+                                <td style="padding: 2px 0; text-align: right;">
+                                    @if (isSelected)
+                                    {
+                                        <div style="@activeOptionBtnStyle">
+                                            @label
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <button
+                                            class="button"
+                                            name="send"
+                                            value="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, @(Model.RoomParameterDefinition.Identifier)=@option.InternalValue"
+                                            style="@inactiveOptionBtnStyle">
+                                            @label
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <form data-submitsend="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, @(Model.RoomParameterDefinition.Identifier)={@(Model.RoomParameterDefinition.Identifier)}" style="margin: 0; white-space: nowrap;">
+                        <select
+                            name="@Model.RoomParameterDefinition.Identifier"
+                            id="@Model.RoomParameterDefinition.Identifier"
+                            style="@selectStyle">
+                            @if (possibleValues != null)
+                            {
+                                @foreach (var option in possibleValues)
+                                {
+                                    var label = option.DisplayedValue ?? GetString(option.DisplayedValueKey);
+                                    <option
+                                        value="@option.InternalValue"
+                                        @(string.Equals(option.InternalValue, Model.CurrentValue, StringComparison.InvariantCultureIgnoreCase) ? "selected" : string.Empty)>
+                                        @label
+                                    </option>
+                                }
+                            }
+                        </select>
+                        <button class="button" type="submit" style="@setBtnStyle margin-left: 4px;">
+                            @GetString("dashboard_btn_set")
+                        </button>
+                    </form>
+                }
                 break;
+            }
             case RoomBotConfigurationType.String:
             {
-                <input
-                    type="text"
-                    id="@Model.RoomParameterDefinition.Identifier"
-                    name="@Model.RoomParameterDefinition.Identifier"
-                    value="@Model.CurrentValue"
-                    style="@inputStyle"/>
+                <form data-submitsend="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, @(Model.RoomParameterDefinition.Identifier)={@(Model.RoomParameterDefinition.Identifier)}" style="margin: 0;">
+                    <table style="width: 100%; border-collapse: collapse;" width="100%">
+                        <tr>
+                            <td style="padding: 0 4px 0 0; vertical-align: middle;">
+                                <input
+                                    type="text"
+                                    id="@Model.RoomParameterDefinition.Identifier"
+                                    name="@Model.RoomParameterDefinition.Identifier"
+                                    value="@Model.CurrentValue"
+                                    style="@inputStyle"/>
+                            </td>
+                            <td style="width: 1%; white-space: nowrap; padding: 0; vertical-align: middle;">
+                                <button class="button" type="submit" style="@setBtnStyle">
+                                    @GetString("dashboard_btn_set")
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
                 break;
             }
         }

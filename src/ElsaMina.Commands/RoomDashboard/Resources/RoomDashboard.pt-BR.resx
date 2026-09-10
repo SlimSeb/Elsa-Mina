@@ -132,6 +132,9 @@
     <data name="dashboard_btn_toggle_disable" xml:space="preserve">
         <value>Desativar</value>
     </data>
+    <data name="dashboard_btn_set" xml:space="preserve">
+        <value>Definir</value>
+    </data>
     <data name="dashboard_save_all" xml:space="preserve">
         <value>Salvar todas as configurações</value>
     </data>

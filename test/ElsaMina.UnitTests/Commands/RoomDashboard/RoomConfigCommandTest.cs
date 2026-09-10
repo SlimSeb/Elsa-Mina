@@ -427,4 +427,56 @@ public class RoomConfigCommandTest
 
         _context.Received(1).ReplyLocalizedMessage("room_config_failure", "db error");
     }
+
+    [Test]
+    public async Task Test_RoomConfigCommand_ShouldToggleBooleanParameter_WhenValueIsToggle()
+    {
+        var room = Substitute.For<IRoom>();
+        _context.Target.Returns("testroom,atc=toggle");
+        _roomsManager.GetRoom("testroom").Returns(room);
+
+        var paramDef = Substitute.For<IParameterDefinition>();
+        paramDef.Identifier.Returns("atc");
+        paramDef.Type.Returns(RoomBotConfigurationType.Boolean);
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
+        {
+            { Parameter.HasCommandAutoCorrect, paramDef }
+        });
+        room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
+            .Returns("true");
+        room.SetParameterValueAsync(Parameter.HasCommandAutoCorrect, "false", Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        await _command.RunAsync(_context);
+
+        await room.Received(1).SetParameterValueAsync(Parameter.HasCommandAutoCorrect, "false", Arg.Any<CancellationToken>());
+        _context.Received(1).ReplyLocalizedMessage("room_config_success", "testroom");
+        await _roomDashboardService.Received(1).SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
+    }
+
+    [Test]
+    public async Task Test_RoomConfigCommand_ShouldToggleBooleanParameter_WhenQuickActionIsToggle()
+    {
+        var room = Substitute.For<IRoom>();
+        _context.Target.Returns("testroom,toggle=rpl");
+        _roomsManager.GetRoom("testroom").Returns(room);
+
+        var paramDef = Substitute.For<IParameterDefinition>();
+        paramDef.Identifier.Returns("rpl");
+        paramDef.Type.Returns(RoomBotConfigurationType.Boolean);
+        _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
+        {
+            { Parameter.ShowReplaysPreview, paramDef }
+        });
+        room.GetParameterValueAsync(Parameter.ShowReplaysPreview, Arg.Any<CancellationToken>())
+            .Returns("false");
+        room.SetParameterValueAsync(Parameter.ShowReplaysPreview, "true", Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        await _command.RunAsync(_context);
+
+        await room.Received(1).SetParameterValueAsync(Parameter.ShowReplaysPreview, "true", Arg.Any<CancellationToken>());
+        _context.Received(1).ReplyLocalizedMessage("room_config_success", "testroom");
+        await _roomDashboardService.Received(1).SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
+    }
 }

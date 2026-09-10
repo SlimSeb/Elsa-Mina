@@ -99,6 +99,12 @@ public class RoomConfigCommand : Command
                     return;
                 }
 
+                if (match.Value.Type == RoomBotConfigurationType.Boolean && value.Equals("toggle", StringComparison.OrdinalIgnoreCase))
+                {
+                    var currentValue = await room.GetParameterValueAsync(match.Key, cancellationToken);
+                    value = (!currentValue.ToBoolean()).ToString().ToLowerInvariant();
+                }
+
                 var success = await room.SetParameterValueAsync(match.Key, value, cancellationToken);
                 if (!success)
                 {
@@ -180,6 +186,20 @@ public class RoomConfigCommand : Command
             var split = pair.Split('=', 2);
             var actionKey = split[0].Trim();
             var actionValue = split[1].Trim();
+
+            if (actionKey.Equals("toggle", StringComparison.OrdinalIgnoreCase))
+            {
+                var match = roomParameters
+                    .FirstOrDefault(kvp => string.Equals(kvp.Value.Identifier, actionValue, StringComparison.OrdinalIgnoreCase) ||
+                                           string.Equals(kvp.Key.ToString(), actionValue, StringComparison.OrdinalIgnoreCase));
+                if (match.Value != null && match.Value.Type == RoomBotConfigurationType.Boolean)
+                {
+                    var currentValue = await room.GetParameterValueAsync(match.Key, cancellationToken);
+                    var toggledValue = (!currentValue.ToBoolean()).ToString().ToLowerInvariant();
+                    await room.SetParameterValueAsync(match.Key, toggledValue, cancellationToken);
+                    return true;
+                }
+            }
 
             if (actionKey.Equals("action", StringComparison.OrdinalIgnoreCase))
             {
