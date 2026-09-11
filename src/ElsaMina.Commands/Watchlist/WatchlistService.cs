@@ -8,6 +8,7 @@ using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
+using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Logging;
 using Microsoft.EntityFrameworkCore;
 
@@ -119,20 +120,25 @@ public class WatchlistService : IWatchlistService
             return;
         }
 
-        var payload = new
+        var payload = new ArcadeEventWebhookBody
         {
-            username = "Elsa Mina",
-            avatar_url = "https://play.pokemonshowdown.com/sprites/trainers/lusamine.png",
-            embeds = new[]
-            {
-                new { title = "Room Update", description = message, color = 3066993 }
-            }
+            Username = "Elsa Mina",
+            AvatarUrl = "https://play.pokemonshowdown.com/sprites/trainers/lusamine.png",
+            Embeds =
+            [
+                new ArcadeEventWebhookEmbed
+                {
+                    Title = "Room Update",
+                    Description = message,
+                    Color = 3066993
+                }
+            ]
         };
 
         try
         {
             await _httpService.SendAsync<object>(
-                HttpRequest.Post(webhookUrl).WithJsonBody(payload), cancellationToken);
+                HttpRequest.Post(webhookUrl).WithJsonBody(payload, ElsaMinaCommandsJsonContext.Default.ArcadeEventWebhookBody), cancellationToken);
         }
         catch (Exception ex)
         {

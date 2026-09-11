@@ -29,16 +29,16 @@ public class DataManager : IDataManager
 
         _countriesGameData = new Lazy<ICountriesGameData>(LoadCountriesGameData);
         _pokemonDescriptions = new Lazy<IReadOnlyList<PokemonDescription>>(() =>
-            LoadDataFromFile<List<PokemonDescription>>("pokedesc.json"));
+            LoadDataFromFile("pokedesc.json", ElsaMinaCommandsJsonContext.Default.ListPokemonDescription));
         _capitalCitiesGameData = new Lazy<ICapitalCitiesGameData>(LoadCapitalCitiesGameData);
         _wordleWords = new Lazy<IReadOnlyList<string>>(() =>
-            LoadDataFromFile<List<string>>("wordle_words.json"));
+            LoadDataFromFile("wordle_words.json", ElsaMinaCommandsJsonContext.Default.ListString));
         _wordleWordsFr = new Lazy<IReadOnlyList<string>>(() =>
-            LoadDataFromFile<List<string>>("wordle_words_fr.json"));
+            LoadDataFromFile("wordle_words_fr.json", ElsaMinaCommandsJsonContext.Default.ListString));
         _semantixWordsFr = new Lazy<IReadOnlyList<string>>(() =>
-            LoadDataFromFile<List<string>>("semantix_words_fr.json"));
+            LoadDataFromFile("semantix_words_fr.json", ElsaMinaCommandsJsonContext.Default.ListString));
         _semantixAnswersFr = new Lazy<IReadOnlyList<string>>(() =>
-            LoadDataFromFile<List<string>>("semantix_answers_fr.json"));
+            LoadDataFromFile("semantix_answers_fr.json", ElsaMinaCommandsJsonContext.Default.ListString));
     }
 
     public ICountriesGameData CountriesGameData => _countriesGameData.Value;
@@ -51,27 +51,23 @@ public class DataManager : IDataManager
 
     private ICountriesGameData LoadCountriesGameData()
     {
-        return LoadDataFromFile<CountriesGameData>("countries_game.json") ?? new CountriesGameData { Countries = [] };
+        return LoadDataFromFile("countries_game.json", ElsaMinaCommandsJsonContext.Default.CountriesGameData)
+            ?? new CountriesGameData { Countries = [] };
     }
 
     private ICapitalCitiesGameData LoadCapitalCitiesGameData()
     {
-        var capitalsList = LoadDataFromFile<List<CapitalCityData>>("capital_cities.json");
+        var capitalsList = LoadDataFromFile("capital_cities.json", ElsaMinaCommandsJsonContext.Default.ListCapitalCityData);
         return new CapitalCitiesGameData { Capitals = capitalsList ?? [] };
     }
 
-    private static readonly JsonSerializerOptions DefaultJsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
-    private T LoadDataFromFile<T>(string fileName)
+    private T LoadDataFromFile<T>(string fileName, System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo)
     {
         var filePath = Path.Join(_dataDirectory, fileName);
         try
         {
             using var stream = File.OpenRead(filePath);
-            var data = JsonSerializer.Deserialize<T>(stream, DefaultJsonOptions);
+            var data = JsonSerializer.Deserialize(stream, jsonTypeInfo);
             Log.Information("Loaded data from {0}", fileName);
             return data;
         }

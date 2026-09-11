@@ -27,10 +27,14 @@ public class DictionaryApiResponseConverter : JsonConverter<DictionaryApiRespons
 
         if (root[0].ValueKind == JsonValueKind.String)
         {
-            return new DictionaryApiResponse { Suggestions = root.Deserialize<List<string>>(options) };
+            var stringListTypeInfo = (options?.GetTypeInfo(typeof(List<string>)) as System.Text.Json.Serialization.Metadata.JsonTypeInfo<List<string>>)
+                ?? ElsaMinaCommandsJsonContext.Default.ListString;
+            return new DictionaryApiResponse { Suggestions = root.Deserialize(stringListTypeInfo) };
         }
 
-        return new DictionaryApiResponse { Entries = root.Deserialize<List<DictionaryApiEntry>>(options) };
+        var entryListTypeInfo = (options?.GetTypeInfo(typeof(List<DictionaryApiEntry>)) as System.Text.Json.Serialization.Metadata.JsonTypeInfo<List<DictionaryApiEntry>>)
+            ?? ElsaMinaCommandsJsonContext.Default.ListDictionaryApiEntry;
+        return new DictionaryApiResponse { Entries = root.Deserialize(entryListTypeInfo) };
     }
 
     public override void Write(Utf8JsonWriter writer, DictionaryApiResponse value, JsonSerializerOptions options)

@@ -8,6 +8,10 @@ public interface IHttpService
     Task<IHttpResponse<TResponse>> SendAsync<TResponse>(HttpRequest request,
         CancellationToken cancellationToken = default);
 
+    Task<IHttpResponse<TResponse>> SendAsync<TResponse>(HttpRequest request,
+        global::System.Text.Json.Serialization.Metadata.JsonTypeInfo<TResponse> jsonTypeInfo,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Envoie la requête et renvoie le corps de la réponse en texte brut, sans désérialisation.
     /// </summary>

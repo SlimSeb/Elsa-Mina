@@ -36,7 +36,7 @@ public class CloudModule : Module
     private static GoogleCredential CreateCredential(IConfiguration configuration)
     {
         // This is stupid but I couldn't find a better way
-        var json = JsonSerializer.Serialize(configuration.GoogleServiceAccountData);
+        var json = JsonSerializer.Serialize(configuration.GoogleServiceAccountData, ElsaMinaJsonContext.Default.IReadOnlyDictionaryStringString);
         var serviceAccountCredential = CredentialFactory.FromJson<ServiceAccountCredential>(json);
         return GoogleCredential
             .FromServiceAccountCredential(serviceAccountCredential)

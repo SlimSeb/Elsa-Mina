@@ -5,6 +5,7 @@ namespace ElsaMina.Core.Services.Config;
 
 public class Configuration : IConfiguration
 {
+    [JsonConverter(typeof(JsonStringEnumConverter<LogLevel>))]
     public LogLevel LogLevel { get; set; } = LogLevel.Info;
     public string Host { get; set; }
     [JsonConverter(typeof(NumberOrStringToStringConverter))]

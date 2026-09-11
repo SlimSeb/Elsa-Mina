@@ -24,7 +24,7 @@ public class DexManager : IDexManager
         try
         {
             Pokedex = (await _httpService.SendAsync<Pokemon[]>(HttpRequest.Get(DEX_URL), cancellationToken)).Data;
-            Moves = await ReadJsonFileAsync<Dictionary<string, MoveData>>("moves.json", cancellationToken);
+            Moves = await ReadJsonFileAsync("moves.json", ElsaMinaJsonContext.Default.DictionaryStringMoveData, cancellationToken);
             Log.Information("Dex: loaded {0} Pokémon entries and {1} moves", Pokedex.Length, Moves.Count);
         }
         catch (Exception ex)
@@ -32,18 +32,12 @@ public class DexManager : IDexManager
             Log.Error(ex, "Error loading Dex");
         }
     }
-    
-    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        AllowTrailingCommas = true
-    };
 
-    private static async Task<T> ReadJsonFileAsync<T>(string filename, CancellationToken cancellationToken)
+    private static async Task<T> ReadJsonFileAsync<T>(string filename, global::System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> typeInfo, CancellationToken cancellationToken)
     {
         await using var stream = File.OpenRead(Path.Join("Services", "Dex", filename));
         using var reader = new StreamReader(stream);
         var json = await reader.ReadToEndAsync(cancellationToken);
-        return JsonSerializer.Deserialize<T>(json, JSON_OPTIONS);
+        return JsonSerializer.Deserialize(json, typeInfo);
     }
 }

@@ -23,12 +23,6 @@ public class TourFinaleAnnounceHandler : Handler
 
     public override IReadOnlySet<string> HandledMessageTypes { get; } = new HashSet<string> { "tournament" };
 
-    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        AllowTrailingCommas = true
-    };
-
     public override Task HandleReceivedMessageAsync(string[] parts, string roomId = null,
         CancellationToken cancellationToken = default)
     {
@@ -38,7 +32,7 @@ public class TourFinaleAnnounceHandler : Handler
         }
 
         var sanitizedJson = parts[3].Replace(@"\'", "'");
-        var tournamentData = JsonSerializer.Deserialize<TournamentData>(sanitizedJson, JSON_OPTIONS);
+        var tournamentData = JsonSerializer.Deserialize(sanitizedJson, ElsaMinaCommandsJsonContext.Default.TournamentData);
         if (tournamentData?.BracketData?.RootNode?.State != "inprogress")
         {
             return Task.CompletedTask;

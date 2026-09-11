@@ -129,7 +129,7 @@ public class ArcadeEventsHandler : Handler
             };
 
             var response = await _httpService.SendAsync<object>(
-                HttpRequest.Post(webhookUrl).WithJsonBody(body), cancellationToken);
+                HttpRequest.Post(webhookUrl).WithJsonBody(body, ElsaMinaCommandsJsonContext.Default.ArcadeEventWebhookBody), cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.NoContent)
             {

@@ -50,7 +50,9 @@ public class GithubIssueService : IGithubIssueService
         };
 
         var response = await _httpService.SendAsync<GithubIssueResponseDto>(
-            HttpRequest.Post(url).WithJsonBody(dto).WithHeaders(headers),
+            HttpRequest.Post(url)
+                .WithJsonBody(dto, ElsaMinaCommandsJsonContext.Default.GithubIssueRequestDto)
+                .WithHeaders(headers),
             cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.Created)

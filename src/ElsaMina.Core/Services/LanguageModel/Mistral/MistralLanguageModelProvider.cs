@@ -51,7 +51,9 @@ public abstract class MistralLanguageModelProvider : ILanguageModelProvider
 
         Log.Information("Making request to Mistral with prompt: {0}", prompt);
         var response = await _httpService.SendAsync<MistralResponseDto>(
-            HttpRequest.Post(MISTRAL_AUTOCOMPLETE_API_URL).WithJsonBody(dto).WithHeaders(headers),
+            HttpRequest.Post(MISTRAL_AUTOCOMPLETE_API_URL)
+                .WithJsonBody(dto, ElsaMinaJsonContext.Default.MistralRequestDto)
+                .WithHeaders(headers),
             cancellationToken);
 
         var choice = response?.Data?.Choices?.FirstOrDefault();
@@ -115,7 +117,9 @@ public abstract class MistralLanguageModelProvider : ILanguageModelProvider
 
         Log.Information("Making request to Mistral with full conversation context. Messages: {0}", messages.Count);
         var response = await _httpService.SendAsync<MistralResponseDto>(
-            HttpRequest.Post(MISTRAL_AUTOCOMPLETE_API_URL).WithJsonBody(dto).WithHeaders(headers),
+            HttpRequest.Post(MISTRAL_AUTOCOMPLETE_API_URL)
+                .WithJsonBody(dto, ElsaMinaJsonContext.Default.MistralRequestDto)
+                .WithHeaders(headers),
             cancellationToken);
 
         var choice = response?.Data?.Choices?.FirstOrDefault();

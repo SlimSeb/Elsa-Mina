@@ -8,12 +8,6 @@ namespace ElsaMina.Battles;
 public class BattleMessageParser : IBattleMessageParser
 {
     private const string MOVE_PREFIX = "move: ";
-    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        NumberHandling = JsonNumberHandling.AllowReadingFromString,
-        AllowTrailingCommas = true
-    };
 
     public bool TryApplyMessage(string[] parts, string roomId, BattleContext context, out BattleMessageResult result)
     {
@@ -58,7 +52,7 @@ public class BattleMessageParser : IBattleMessageParser
 
         try
         {
-            var battleState = JsonSerializer.Deserialize<BattleStateDto>(requestJson, JSON_OPTIONS);
+            var battleState = JsonSerializer.Deserialize(requestJson, ElsaMinaBattlesJsonContext.Default.BattleStateDto);
             if (battleState == null)
             {
                 return false;

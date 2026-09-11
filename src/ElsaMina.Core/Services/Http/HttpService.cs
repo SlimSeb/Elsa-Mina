@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using ElsaMina.Core.Services.Telemetry;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace ElsaMina.Core.Services.Http;
 
@@ -46,14 +47,46 @@ public class HttpService : IHttpService
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Encoding", "gzip, deflate, br");
     }
 
-    private static readonly JsonSerializerOptions DefaultJsonOptions = new()
+    public static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
-        Converters = { new JsonStringEnumConverter() }
+        TypeInfoResolver = ElsaMinaJsonContext.Default
     };
 
+    public static void AddTypeInfoResolver(IJsonTypeInfoResolver resolver)
+    {
+        DefaultJsonOptions.TypeInfoResolver = JsonTypeInfoResolver.Combine(
+            DefaultJsonOptions.TypeInfoResolver,
+            resolver
+        );
+    }
+
     public async Task<IHttpResponse<TResponse>> SendAsync<TResponse>(HttpRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await SendAndEnsureSuccessAsync(request, cancellationToken);
+        var content = await ReadTransformedContentAsync(request, response, cancellationToken);
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return new HttpResponse<TResponse>
+            {
+                StatusCode = response.StatusCode,
+                Data = default
+            };
+        }
+
+        var typeInfo = (JsonTypeInfo<TResponse>)DefaultJsonOptions.GetTypeInfo(typeof(TResponse))
+            ?? throw new InvalidOperationException($"Type {typeof(TResponse).FullName} is not registered in source-generated serializer contexts.");
+        return new HttpResponse<TResponse>
+        {
+            StatusCode = response.StatusCode,
+            Data = JsonSerializer.Deserialize(content, typeInfo)
+        };
+    }
+
+    public async Task<IHttpResponse<TResponse>> SendAsync<TResponse>(HttpRequest request,
+        JsonTypeInfo<TResponse> jsonTypeInfo,
         CancellationToken cancellationToken = default)
     {
         var response = await SendAndEnsureSuccessAsync(request, cancellationToken);
@@ -63,7 +96,7 @@ public class HttpService : IHttpService
             StatusCode = response.StatusCode,
             Data = string.IsNullOrWhiteSpace(content)
                 ? default
-                : JsonSerializer.Deserialize<TResponse>(content, DefaultJsonOptions)
+                : JsonSerializer.Deserialize(content, jsonTypeInfo)
         };
     }
 

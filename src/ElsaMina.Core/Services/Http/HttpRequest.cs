@@ -77,6 +77,12 @@ public sealed class HttpRequest
         return this;
     }
 
+    public HttpRequest WithJsonBody<T>(T payload, global::System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> jsonTypeInfo)
+    {
+        Body = new JsonRequestBody(payload, jsonTypeInfo);
+        return this;
+    }
+
     public HttpRequest WithFormBody(IEnumerable<KeyValuePair<string, string>> fields)
     {
         Body = new FormUrlEncodedRequestBody(fields);

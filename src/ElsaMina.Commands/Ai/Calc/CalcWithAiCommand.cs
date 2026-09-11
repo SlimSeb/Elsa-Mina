@@ -59,7 +59,7 @@ public class CalcWithAiCommand : Command
         CalcRequestDto calcRequest;
         try
         {
-            calcRequest = JsonSerializer.Deserialize<CalcRequestDto>(ExtractJson(response), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            calcRequest = JsonSerializer.Deserialize(ExtractJson(response), ElsaMinaCommandsJsonContext.Default.CalcRequestDto);
         }
         catch (Exception exception)
         {

@@ -34,12 +34,6 @@ public static class TournamentHelper
         return teamScores;
     }
 
-    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        AllowTrailingCommas = true
-    };
-
     public static TournamentResults ParseTourResults(string jsonData)
     {
         if (string.IsNullOrEmpty(jsonData))
@@ -48,7 +42,7 @@ public static class TournamentHelper
         }
 
         var sanitizedJson = jsonData.Replace(@"\'", "'");
-        var data = JsonSerializer.Deserialize<TournamentData>(sanitizedJson, JSON_OPTIONS);
+        var data = JsonSerializer.Deserialize(sanitizedJson, ElsaMinaCommandsJsonContext.Default.TournamentData);
         if (data == null)
         {
             return null;

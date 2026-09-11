@@ -28,19 +28,13 @@ public class UserDetailsManager : IUserDetailsManager
         return _pendingRequestsManager.AddOrReplace(userId, cancellationToken);
     }
 
-    private static readonly JsonSerializerOptions JSON_OPTIONS = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        AllowTrailingCommas = true
-    };
-
     public void HandleReceivedUserDetails(string message)
     {
         UserDetailsDto dto = null;
 
         try
         {
-            dto = JsonSerializer.Deserialize<UserDetailsDto>(message, JSON_OPTIONS);
+            dto = JsonSerializer.Deserialize(message, ElsaMinaJsonContext.Default.UserDetailsDto);
         }
         catch (JsonException ex)
         {

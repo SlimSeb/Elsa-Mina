@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.RegularExpressions;
 using ElsaMina.Core;
 using ElsaMina.Core.Utils;
@@ -699,6 +699,6 @@ public static class ShowdownTeamsUtils
 
     public static string TeamExportToJson(string export)
     {
-        return JsonSerializer.Serialize(DeserializeTeamExport(export));
+        return JsonSerializer.Serialize(DeserializeTeamExport(export), ElsaMinaCommandsJsonContext.Default.IReadOnlyListPokemonSet);
     }
 }

@@ -17,6 +17,9 @@ public class RoomInfoCommand : Command
         _roomInfoManager = roomInfoManager;
     }
 
+    private static readonly System.Text.Json.Serialization.Metadata.JsonTypeInfo<RoomInfoDto> RoomInfoJsonTypeInfo =
+        new ElsaMina.Core.ElsaMinaJsonContext(new JsonSerializerOptions { WriteIndented = true }).RoomInfoDto;
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var roomId = string.IsNullOrWhiteSpace(context.Target) ? context.RoomId : context.Target;
@@ -40,6 +43,6 @@ public class RoomInfoCommand : Command
             return;
         }
 
-        context.Reply($"!code {JsonSerializer.Serialize(roomInfo, new JsonSerializerOptions { WriteIndented = true })}");
+        context.Reply($"!code {JsonSerializer.Serialize(roomInfo, RoomInfoJsonTypeInfo)}");
     }
 }

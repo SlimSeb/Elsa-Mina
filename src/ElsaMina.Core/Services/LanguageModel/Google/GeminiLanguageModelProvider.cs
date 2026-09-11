@@ -45,7 +45,10 @@ public abstract class GeminiLanguageModelProvider : ILanguageModelProvider
 
         Log.Information("Making request to Gemini with prompt: {0}", prompt);
         var response = await _httpService.SendAsync<GeminiResponseDto>(
-            HttpRequest.Post(Url).WithJsonBody(requestDto).WithHeaders(headers), cancellationToken);
+            HttpRequest.Post(Url)
+                .WithJsonBody(requestDto, ElsaMinaJsonContext.Default.GeminiRequestDto)
+                .WithHeaders(headers),
+            cancellationToken);
 
         return response.Data?.Candidates?.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text ?? string.Empty;
     }
@@ -92,7 +95,10 @@ public abstract class GeminiLanguageModelProvider : ILanguageModelProvider
 
         var response =
             await _httpService.SendAsync<GeminiResponseDto>(
-                HttpRequest.Post(Url).WithJsonBody(requestDto).WithHeaders(headers), cancellationToken);
+                HttpRequest.Post(Url)
+                    .WithJsonBody(requestDto, ElsaMinaJsonContext.Default.GeminiRequestDto)
+                    .WithHeaders(headers),
+                cancellationToken);
 
         return response.Data?.Candidates?.FirstOrDefault()?.Content?.Parts.FirstOrDefault()?.Text ?? string.Empty;
     }

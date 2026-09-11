@@ -4,15 +4,23 @@ using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.Llm;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
+using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Battles;
 
 public class BattlesModule : Module
 {
+    static BattlesModule()
+    {
+        HttpService.AddTypeInfoResolver(ElsaMinaBattlesJsonContext.Default);
+    }
+
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
+
+        HttpService.AddTypeInfoResolver(ElsaMinaBattlesJsonContext.Default);
 
         builder.RegisterType<BattleMessageParser>().As<IBattleMessageParser>().SingleInstance();
         builder.RegisterType<SmogonOpponentMovesPredictor>().As<IOpponentMovesPredictor>().SingleInstance();

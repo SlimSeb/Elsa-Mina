@@ -3,6 +3,7 @@ using System.Resources;
 using System.Text.RegularExpressions;
 using Autofac;
 using ElsaMina.Commands.Modules;
+using ElsaMina.Core.Services.Http;
 using Assembly = System.Reflection.Assembly;
 
 namespace ElsaMina.Commands;
@@ -49,6 +50,8 @@ public partial class CommandModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
+
+        HttpService.AddTypeInfoResolver(ElsaMinaCommandsJsonContext.Default);
 
         foreach (var resourceManager in DiscoverFeatureResources())
         {

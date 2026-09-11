@@ -1,6 +1,7 @@
 #nullable enable
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace ElsaMina.Core.Services.UserDetails;
 
@@ -23,7 +24,9 @@ public sealed class UserDetailsRoomsConverter : JsonConverter<IDictionary<string
 
         if (reader.TokenType == JsonTokenType.StartObject)
         {
-            return JsonSerializer.Deserialize<Dictionary<string, UserDetailsRoomDto>>(ref reader, options);
+            var typeInfo = (JsonTypeInfo<Dictionary<string, UserDetailsRoomDto>>?)options?.GetTypeInfo(typeof(Dictionary<string, UserDetailsRoomDto>))
+                ?? ElsaMinaJsonContext.Default.DictionaryStringUserDetailsRoomDto;
+            return JsonSerializer.Deserialize(ref reader, typeInfo);
         }
 
         reader.Skip();
@@ -41,6 +44,8 @@ public sealed class UserDetailsRoomsConverter : JsonConverter<IDictionary<string
             return;
         }
 
-        JsonSerializer.Serialize(writer, value, options);
+        var typeInfo = (JsonTypeInfo<IDictionary<string, UserDetailsRoomDto>>?)options?.GetTypeInfo(typeof(IDictionary<string, UserDetailsRoomDto>))
+            ?? ElsaMinaJsonContext.Default.IDictionaryStringUserDetailsRoomDto;
+        JsonSerializer.Serialize(writer, value, typeInfo);
     }
 }

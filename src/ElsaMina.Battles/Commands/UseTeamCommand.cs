@@ -47,7 +47,7 @@ public class UseTeamCommand : Command
             return;
         }
 
-        var sets = JsonSerializer.Deserialize<List<PokemonSet>>(team.TeamJson);
+        var sets = JsonSerializer.Deserialize(team.TeamJson, ElsaMinaBattlesJsonContext.Default.ListPokemonSet);
         var packedTeam = ShowdownTeamsUtils.PackTeam(sets);
         if (string.IsNullOrEmpty(packedTeam))
         {

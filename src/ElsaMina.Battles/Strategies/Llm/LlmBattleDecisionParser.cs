@@ -31,7 +31,7 @@ public class LlmBattleDecisionParser : ILlmBattleDecisionParser
         {
             try
             {
-                var dto = JsonSerializer.Deserialize<LlmDecisionDto>(jsonCandidate, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var dto = JsonSerializer.Deserialize(jsonCandidate, ElsaMinaBattlesJsonContext.Default.LlmDecisionDto);
                 if (dto != null && dto.Index > 0)
                 {
                     var decisionStr = dto.Decision?.Trim().ToLowerInvariant();

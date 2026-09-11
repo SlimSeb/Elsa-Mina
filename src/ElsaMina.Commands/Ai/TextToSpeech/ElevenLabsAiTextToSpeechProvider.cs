@@ -58,7 +58,9 @@ public class ElevenLabsAiTextToSpeechProvider : IAiTextToSpeechProvider
         };
 
         var stream = await _httpService.SendForStreamAsync(
-            HttpRequest.Post(string.Format(ELEVEN_LABS_TTS_API_URL, voiceId)).WithJsonBody(dto).WithHeaders(headers),
+            HttpRequest.Post(string.Format(ELEVEN_LABS_TTS_API_URL, voiceId))
+                .WithJsonBody(dto, ElsaMinaCommandsJsonContext.Default.ElevenLabsRequestDto)
+                .WithHeaders(headers),
             cancellationToken);
 
         if (stream == null)
