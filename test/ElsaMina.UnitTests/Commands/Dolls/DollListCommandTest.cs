@@ -10,6 +10,9 @@ namespace ElsaMina.UnitTests.Commands.Dolls;
 
 public class DollListCommandTest
 {
+    private static readonly int[] ExpectedDollSizeKeys = [16, 32];
+    private static readonly string[] ExpectedSizeSixteenDollIds = ["clefairy", "pikachu"];
+
     private IContext _context;
     private IDollService _dollService;
     private ITemplatesManager _templatesManager;
@@ -66,13 +69,13 @@ public class DollListCommandTest
 
         // Assert
         Assert.That(capturedViewModel, Is.Not.Null);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
-            Assert.That(capturedViewModel.DollsBySize.Keys, Is.EqualTo(new[] { 16, 32 }));
+            Assert.That(capturedViewModel.DollsBySize.Keys, Is.EqualTo(ExpectedDollSizeKeys));
             Assert.That(capturedViewModel.DollsBySize[16].Select(doll => doll.Id),
-                Is.EqualTo(new[] { "clefairy", "pikachu" }));
+                Is.EqualTo(ExpectedSizeSixteenDollIds));
             Assert.That(capturedViewModel.DollsBySize[32], Has.Count.EqualTo(1));
-        });
+        }
         _context.Received(1).ReplyHtml(Arg.Any<string>(), rankAware: true);
     }
 

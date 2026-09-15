@@ -10,7 +10,7 @@
     const string shadedCellStyle = $"{border} padding: 4px; text-align: center; vertical-align: middle; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
     const string correctAnswerCellStyle = $"{border} padding: 4px; text-align: center; vertical-align: middle; background-color: {backgroundGreenColor};";
 }
-<table style="border-collapse: collapse;">
+<table role="presentation" style="border-collapse: collapse;">
     <tbody>
     @for (var row = 0; row < 2; row++)
     {
@@ -34,7 +34,7 @@
                     <button name="send"
                             value="/botmsg @Model.BotName, @(Model.Trigger)guess @Model.RoomId,@(Model.Culture.TwoLetterISOLanguageName == "fr" ? entry.Name.French : entry.Name.English)"
                             style="background: none; border: none; cursor: pointer; padding: 0;">
-                        <table style="border-collapse: collapse; background-color: @withCorrectAnswerBackground;">
+                        <table role="presentation" style="border-collapse: collapse; background-color: @withCorrectAnswerBackground;">
                             <tbody>
                             <tr>
                                 <td style="padding-right: 4px; vertical-align: middle;">

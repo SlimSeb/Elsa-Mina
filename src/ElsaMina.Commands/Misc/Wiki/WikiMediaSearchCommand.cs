@@ -143,81 +143,83 @@ public abstract class WikiMediaSearchCommand : Command
     private static string RemoveLeadingTemplateBlocks(string wikitext)
     {
         var text = wikitext.TrimStart();
-        var changed = true;
-        while (changed)
+        while (TryRemoveLeadingBlock(text, out var remainingText))
         {
-            changed = false;
-            if (text.StartsWith("{{"))
-            {
-                var depth = 0;
-                var endIndex = 0;
-                for (var i = 0; i < text.Length - 1; i++)
-                {
-                    if (text[i] == '{' && text[i + 1] == '{')
-                    {
-                        depth++;
-                        i++;
-                    }
-                    else if (text[i] == '}' && text[i + 1] == '}')
-                    {
-                        depth--;
-                        i++;
-                        if (depth == 0)
-                        {
-                            endIndex = i + 1;
-                            break;
-                        }
-                    }
-                }
-
-                if (endIndex == 0)
-                {
-                    break;
-                }
-
-                text = text[(endIndex + 1)..].TrimStart();
-                changed = true;
-            }
-            else if (text.StartsWith("{|"))
-            {
-                var depth = 0;
-                var endIndex = 0;
-                for (var i = 0; i < text.Length - 1; i++)
-                {
-                    if (text[i] == '{' && text[i + 1] == '|')
-                    {
-                        depth++;
-                        i++;
-                    }
-                    else if (text[i] == '|' && text[i + 1] == '}')
-                    {
-                        depth--;
-                        i++;
-                        if (depth == 0)
-                        {
-                            endIndex = i + 1;
-                            break;
-                        }
-                    }
-                }
-
-                if (endIndex == 0)
-                {
-                    break;
-                }
-
-                text = text[(endIndex + 1)..].TrimStart();
-                changed = true;
-            }
-            else if (text.StartsWith("|}"))
-            {
-                var newline = text.IndexOf('\n');
-                text = (newline >= 0 ? text[(newline + 1)..] : string.Empty).TrimStart();
-                changed = true;
-            }
+            text = remainingText;
         }
 
         return text;
+    }
+
+    private static bool TryRemoveLeadingBlock(string text, out string remainingText)
+    {
+        if (text.StartsWith("{{"))
+        {
+            return TryRemoveDelimitedBlock(text, "{{", "}}", out remainingText);
+        }
+
+        if (text.StartsWith("{|"))
+        {
+            return TryRemoveDelimitedBlock(text, "{|", "|}", out remainingText);
+        }
+
+        if (text.StartsWith("|}"))
+        {
+            var newline = text.IndexOf('\n');
+            remainingText = (newline >= 0 ? text[(newline + 1)..] : string.Empty).TrimStart();
+            return true;
+        }
+
+        remainingText = text;
+        return false;
+    }
+
+    private static bool TryRemoveDelimitedBlock(string text, string opening, string closing,
+        out string remainingText)
+    {
+        var endIndex = FindBlockEndIndex(text, opening, closing);
+        if (endIndex == 0)
+        {
+            remainingText = text;
+            return false;
+        }
+
+        remainingText = text[(endIndex + 1)..].TrimStart();
+        return true;
+    }
+
+    /// <summary>
+    /// Returns the index right after the delimiter closing the first block, accounting for nested blocks,
+    /// or 0 when that block is never closed.
+    /// </summary>
+    private static int FindBlockEndIndex(string text, string opening, string closing)
+    {
+        var depth = 0;
+        var i = 0;
+        while (i < text.Length - 1)
+        {
+            if (text[i] == opening[0] && text[i + 1] == opening[1])
+            {
+                depth++;
+                i += 2;
+            }
+            else if (text[i] == closing[0] && text[i + 1] == closing[1])
+            {
+                depth--;
+                if (depth == 0)
+                {
+                    return i + 2;
+                }
+
+                i += 2;
+            }
+            else
+            {
+                i++;
+            }
+        }
+
+        return 0;
     }
 
     private static string CleanWikiMarkup(string text)

@@ -7,6 +7,9 @@ namespace ElsaMina.UnitTests.Core.Services.RoomInfo;
 
 public class RoomInfoManagerTest
 {
+    private static readonly string[] ExpectedRoomAuth = ["lionyx"];
+    private static readonly string[] ExpectedRoomUsers = ["@Teclis", "+Panur"];
+
     private IClient _client;
     private ISystemService _systemService;
 
@@ -41,8 +44,8 @@ public class RoomInfoManagerTest
             Assert.That(result.Type, Is.EqualTo("chat"));
             Assert.That(result.Visibility, Is.EqualTo("public"));
             Assert.That(result.Modchat, Is.Null);
-            Assert.That(result.Auth["#"], Is.EqualTo(new[] { "lionyx" }));
-            Assert.That(result.Users, Is.EqualTo(new[] { "@Teclis", "+Panur" }));
+            Assert.That(result.Auth["#"], Is.EqualTo(ExpectedRoomAuth));
+            Assert.That(result.Users, Is.EqualTo(ExpectedRoomUsers));
         }
     }
 

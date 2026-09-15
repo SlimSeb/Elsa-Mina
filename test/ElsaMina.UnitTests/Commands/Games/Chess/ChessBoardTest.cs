@@ -188,8 +188,9 @@ public class ChessBoardTest
 
     private void ApplyCoordinateMove(string coordinates)
     {
-        ChessBoard.TryParseSquare(coordinates[..2], out var fromRow, out var fromColumn);
-        ChessBoard.TryParseSquare(coordinates.Substring(2, 2), out var toRow, out var toColumn);
+        var fromParsed = ChessBoard.TryParseSquare(coordinates[..2], out var fromRow, out var fromColumn);
+        var toParsed = ChessBoard.TryParseSquare(coordinates.Substring(2, 2), out var toRow, out var toColumn);
+        Assert.That(fromParsed && toParsed, Is.True, $"Failed to parse coordinates: {coordinates}");
         var move = _board.GenerateLegalMoves(_board.WhiteToMove)
             .First(candidate => candidate.FromRow == fromRow
                                 && candidate.FromColumn == fromColumn

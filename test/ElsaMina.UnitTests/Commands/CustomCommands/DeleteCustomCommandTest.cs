@@ -9,12 +9,12 @@ namespace ElsaMina.UnitTests.Commands.CustomCommands;
 
 public class DeleteCustomCommandTests
 {
-    private DbContextOptions<BotDbContext> CreateOptions() =>
+    private static DbContextOptions<BotDbContext> CreateOptions() =>
         new DbContextOptionsBuilder<BotDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-    private IBotDbContextFactory CreateFactoryReturning(BotDbContext ctx)
+    private static IBotDbContextFactory CreateFactoryReturning(BotDbContext ctx)
     {
         var factory = Substitute.For<IBotDbContextFactory>();
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())

@@ -53,7 +53,7 @@ public class DebilifyCommandTest
         // Assert
         // '!' is not in SUBSTITUTIONS, so RandomElement is only called for 'a' and 'b'
         _randomService.Received(2).RandomElement(Arg.Any<IEnumerable<string>>());
-        _context.Received(1).Reply(Arg.Is<string>(s => s.Contains("!")), rankAware: true);
+        _context.Received(1).Reply(Arg.Is<string>(s => s.Contains('!')), rankAware: true);
     }
 
     [Test]
@@ -97,6 +97,6 @@ public class DebilifyCommandTest
         // Assert
         // Space is not in SUBSTITUTIONS, only 'a' and 'b' trigger RandomElement
         _randomService.Received(2).RandomElement(Arg.Any<IEnumerable<string>>());
-        _context.Received(1).Reply(Arg.Is<string>(s => s.Contains(" ")), rankAware: true);
+        _context.Received(1).Reply(Arg.Is<string>(s => s.Contains(' ')), rankAware: true);
     }
 }

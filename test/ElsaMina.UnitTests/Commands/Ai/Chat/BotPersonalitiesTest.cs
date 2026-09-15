@@ -47,9 +47,12 @@ public class BotPersonalitiesTest
         var success = BotPersonalities.TryParse("not-a-personality", out var personality);
 
         // Assert
-        Assert.That(success, Is.False);
-        // personality is the enum default when lookup fails
-        Assert.That(personality, Is.EqualTo(default(BotPersonality)));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(success, Is.False);
+            // personality is the enum default when lookup fails
+            Assert.That(personality, Is.Default);
+        }
     }
 
     [TestCase(null)]

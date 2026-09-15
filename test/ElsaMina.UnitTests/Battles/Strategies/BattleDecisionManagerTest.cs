@@ -39,8 +39,11 @@ public class BattleDecisionManagerTest
     [Test]
     public void Test_ActiveStrategy_ShouldDefaultToDamageCalc()
     {
-        Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.DamageCalc));
-        Assert.That(_manager.GetCurrentService(), Is.SameAs(_calcService));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.DamageCalc));
+            Assert.That(_manager.GetCurrentService(), Is.SameAs(_calcService));
+        }
     }
 
     [Test]
@@ -50,10 +53,13 @@ public class BattleDecisionManagerTest
         var result = _manager.TrySetStrategy("llm", out var strategy);
 
         // Assert
-        Assert.That(result, Is.True);
-        Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.Llm));
-        Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.Llm));
-        Assert.That(_manager.GetCurrentService(), Is.SameAs(_llmService));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.Llm));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.Llm));
+            Assert.That(_manager.GetCurrentService(), Is.SameAs(_llmService));
+        }
     }
 
     [Test]
@@ -66,10 +72,13 @@ public class BattleDecisionManagerTest
         var result = _manager.TrySetStrategy("calc", out var strategy);
 
         // Assert
-        Assert.That(result, Is.True);
-        Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.DamageCalc));
-        Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.DamageCalc));
-        Assert.That(_manager.GetCurrentService(), Is.SameAs(_calcService));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.DamageCalc));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.DamageCalc));
+            Assert.That(_manager.GetCurrentService(), Is.SameAs(_calcService));
+        }
     }
 
     [Test]
@@ -79,10 +88,13 @@ public class BattleDecisionManagerTest
         var result = _manager.TrySetStrategy("type", out var strategy);
 
         // Assert
-        Assert.That(result, Is.True);
-        Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.TypeMatchup));
-        Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.TypeMatchup));
-        Assert.That(_manager.GetCurrentService(), Is.SameAs(_typeMatchupService));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.TypeMatchup));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.TypeMatchup));
+            Assert.That(_manager.GetCurrentService(), Is.SameAs(_typeMatchupService));
+        }
     }
 
     [Test]
@@ -92,10 +104,13 @@ public class BattleDecisionManagerTest
         var result = _manager.TrySetStrategy("random", out var strategy);
 
         // Assert
-        Assert.That(result, Is.True);
-        Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.Random));
-        Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.Random));
-        Assert.That(_manager.GetCurrentService(), Is.SameAs(_randomService));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.Random));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.Random));
+            Assert.That(_manager.GetCurrentService(), Is.SameAs(_randomService));
+        }
     }
 
     [Test]
@@ -105,9 +120,12 @@ public class BattleDecisionManagerTest
         var result = _manager.TrySetStrategy("nonexistent_strategy", out var strategy);
 
         // Assert
-        Assert.That(result, Is.False);
-        Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.DamageCalc));
-        Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.DamageCalc));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.False);
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.DamageCalc));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.DamageCalc));
+        }
     }
 
     [Test]

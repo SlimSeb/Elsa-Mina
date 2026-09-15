@@ -69,9 +69,9 @@ public class BeloteStatsServiceTest
             Assert.That(taker.TakerWins, Is.EqualTo(1));
             Assert.That(takerPartner.TotalScore, Is.EqualTo(100));
             Assert.That(takerPartner.Wins, Is.EqualTo(1));
-            Assert.That(takerPartner.TimesTaker, Is.EqualTo(0));
+            Assert.That(takerPartner.TimesTaker, Is.Zero);
             Assert.That(defender.TotalScore, Is.EqualTo(62));
-            Assert.That(defender.Wins, Is.EqualTo(0));
+            Assert.That(defender.Wins, Is.Zero);
         }
     }
 
@@ -96,8 +96,8 @@ public class BeloteStatsServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(taker.TimesTaker, Is.EqualTo(1));
-            Assert.That(taker.TakerWins, Is.EqualTo(0));
-            Assert.That(taker.Wins, Is.EqualTo(0));
+            Assert.That(taker.TakerWins, Is.Zero);
+            Assert.That(taker.Wins, Is.Zero);
             Assert.That(defender.Wins, Is.EqualTo(1));
         }
     }
@@ -151,6 +151,6 @@ public class BeloteStatsServiceTest
         await _sut.RecordDealAsync(FourPlayers(), result);
 
         await using var dbContext = new BotDbContext(_dbOptions);
-        Assert.That(await dbContext.BeloteStats.CountAsync(), Is.EqualTo(0));
+        Assert.That(await dbContext.BeloteStats.CountAsync(), Is.Zero);
     }
 }

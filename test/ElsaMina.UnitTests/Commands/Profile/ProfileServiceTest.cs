@@ -15,6 +15,8 @@ namespace ElsaMina.UnitTests.Commands.Profile;
 
 public class ProfileServiceTest
 {
+    private static readonly string[] ExpectedResolvedDollIds = ["pikachu", "snorlax"];
+
     private IUserDetailsManager _userDetailsManager;
     private ITemplatesManager _templatesManager;
     private IUserDataService _userDataService;
@@ -60,8 +62,7 @@ public class ProfileServiceTest
             _userDetailsManager,
             _templatesManager,
             _userDataService,
-            _showdownRanksProvider,
-            _formatsManager,
+            new BestRankingProvider(_showdownRanksProvider, _formatsManager),
             _dbContextFactory,
             _roomsManager,
             _dollService);
@@ -631,7 +632,7 @@ public class ProfileServiceTest
         await _dollService.Received(1).ResolveDollsAsync(
             Arg.Is<IEnumerable<DollHolding>>(holdings => holdings.Select(holding => holding.DollId)
                 .OrderBy(dollId => dollId)
-                .SequenceEqual(new[] { "pikachu", "snorlax" })),
+                .SequenceEqual(ExpectedResolvedDollIds)),
             Arg.Any<CancellationToken>());
         await _templatesManager.Received(1).GetTemplateAsync(
             "Profile/Profile",
@@ -810,7 +811,7 @@ public class ProfileServiceTest
 
         var avatar = ProfileService.GetAvatar(null, details);
 
-        Assert.That(avatar.Contains("trainers-custom/123.png"), Is.True);
+        Assert.That(avatar, Does.Contain("trainers-custom/123.png"));
     }
 
     #endregion
@@ -836,10 +837,13 @@ public class ProfileServiceTest
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.UserId, Is.EqualTo("alice"));
-        Assert.That(result.UserName, Is.EqualTo("Alice"));
-        Assert.That(result.ProfileEmoji, Is.EqualTo("⭐"));
-        Assert.That(result.ProfileBackgroundColor, Is.EqualTo("#8867aa73"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.UserId, Is.EqualTo("alice"));
+            Assert.That(result.UserName, Is.EqualTo("Alice"));
+            Assert.That(result.ProfileEmoji, Is.EqualTo("⭐"));
+            Assert.That(result.ProfileBackgroundColor, Is.EqualTo("#8867aa73"));
+        }
     }
 
     #endregion

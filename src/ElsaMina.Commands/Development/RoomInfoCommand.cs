@@ -8,6 +8,8 @@ namespace ElsaMina.Commands.Development;
 [NamedCommand("roominfo", Aliases = ["roominfotest"])]
 public class RoomInfoCommand : Command
 {
+    private static readonly JsonSerializerOptions JSON_OPTIONS = new() { WriteIndented = true };
+
     public override bool IsAllowedInPrivateMessage => true;
 
     private readonly IRoomInfoManager _roomInfoManager;
@@ -40,6 +42,6 @@ public class RoomInfoCommand : Command
             return;
         }
 
-        context.Reply($"!code {JsonSerializer.Serialize(roomInfo, new JsonSerializerOptions { WriteIndented = true })}");
+        context.Reply($"!code {JsonSerializer.Serialize(roomInfo, JSON_OPTIONS)}");
     }
 }

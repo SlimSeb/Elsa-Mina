@@ -13,6 +13,8 @@ namespace ElsaMina.UnitTests.Commands.Games.President;
 [TestFixture]
 public class PresidentGameTest
 {
+    private static readonly int[] RemainingFinishPositions = [1, 2];
+
     private IRandomService _randomService;
     private ITemplatesManager _templatesManager;
     private IConfiguration _configuration;
@@ -338,7 +340,7 @@ public class PresidentGameTest
         {
             Assert.That(_game.CurrentPlayer, Is.EqualTo(_game.Players[0]));
             Assert.That(plays, Does.Contain((PresidentCard.KING, 1)));
-            Assert.That(plays.Count, Is.GreaterThan(1));
+            Assert.That(plays, Has.Count.GreaterThan(1));
         }
     }
 
@@ -484,7 +486,7 @@ public class PresidentGameTest
             Assert.That(byPosition[0].Role, Is.EqualTo(PresidentRole.President));
             Assert.That(byPosition[0].Score, Is.EqualTo(players - 1));
             Assert.That(byPosition[^1].Role, Is.EqualTo(PresidentRole.Scum));
-            Assert.That(byPosition[^1].Score, Is.EqualTo(0));
+            Assert.That(byPosition[^1].Score, Is.Zero);
         }
     }
 
@@ -577,7 +579,7 @@ public class PresidentGameTest
             Assert.That(victim.Role, Is.EqualTo(PresidentRole.Scum));
             Assert.That(victim.Score, Is.Zero);
             Assert.That(_game.Players.Where(player => player != victim).Select(player => player.FinishPosition),
-                Is.EquivalentTo(new[] { 1, 2 }));
+                Is.EquivalentTo(RemainingFinishPositions));
             Assert.That(_game.Log, Does.Contain("president_finished_on_two"));
         }
     }

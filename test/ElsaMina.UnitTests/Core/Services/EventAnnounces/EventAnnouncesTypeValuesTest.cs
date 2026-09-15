@@ -22,7 +22,10 @@ public class EventAnnouncesTypeValuesTest
     [TestCase(EventAnnounceType.Game)]
     public void Test_Allows_ShouldFallBackToAllowingEverything_ForUnknownValue(EventAnnounceType announceType)
     {
-        Assert.That(EventAnnouncesTypeValues.Allows("some-legacy-value", announceType), Is.True);
-        Assert.That(EventAnnouncesTypeValues.Allows(null, announceType), Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(EventAnnouncesTypeValues.Allows("some-legacy-value", announceType), Is.True);
+            Assert.That(EventAnnouncesTypeValues.Allows(null, announceType), Is.True);
+        }
     }
 }

@@ -59,10 +59,10 @@
                     <div style="@cardHeaderStyle">
                         @GetString(category.TitleKey)
                     </div>
-                    <table style="@tableStyle" width="100%">
+                    <table role="presentation" style="@tableStyle">
                         <colgroup>
-                            <col style="width: 50%;" width="50%" />
-                            <col style="width: 50%;" width="50%" />
+                            <col style="width: 50%;" />
+                            <col style="width: 50%;" />
                         </colgroup>
                         <tbody>
                         @foreach (var parameterModel in category.Parameters)
@@ -81,10 +81,10 @@
         else if (Model.RoomParameterLines != null)
         {
             <div style="@cardStyle">
-                <table style="@tableStyle" width="100%">
+                <table role="presentation" style="@tableStyle">
                     <colgroup>
-                        <col style="width: 50%;" width="50%" />
-                        <col style="width: 50%;" width="50%" />
+                        <col style="width: 50%;" />
+                        <col style="width: 50%;" />
                     </colgroup>
                     <tbody>
                     @foreach (var parameterModel in Model.RoomParameterLines)

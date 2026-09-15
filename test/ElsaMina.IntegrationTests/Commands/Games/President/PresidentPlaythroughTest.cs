@@ -14,6 +14,8 @@ namespace ElsaMina.IntegrationTests.Commands.Games.President;
 [TestFixture]
 public class PresidentPlaythroughTest
 {
+    private static readonly int[] ExpectedFinishPositions = [1, 2, 3, 4];
+
     private const int PLAYER_COUNT = 4;
     private const int ROUNDS = 2;
 
@@ -60,7 +62,7 @@ public class PresidentPlaythroughTest
             Assert.That(_game.RoundNumber, Is.EqualTo(ROUNDS));
             Assert.That(_game.FinishOrder, Has.Count.EqualTo(PLAYER_COUNT));
             Assert.That(_game.FinishOrder.Select(player => player.FinishPosition),
-                Is.EqualTo(new[] { 1, 2, 3, 4 }));
+                Is.EqualTo(ExpectedFinishPositions));
             Assert.That(_game.Players.Select(player => player.Role),
                 Has.Exactly(1).EqualTo(PresidentRole.President));
             Assert.That(_game.Players.Select(player => player.Role),

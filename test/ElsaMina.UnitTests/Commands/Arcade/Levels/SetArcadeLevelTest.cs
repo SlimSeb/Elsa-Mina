@@ -307,8 +307,12 @@ public class SetArcadeLevelCommandTests
 
         // Setup the entity to be found
         var levelToFind = new ArcadeLevel { Id = "existinguser", Level = 5 };
+        // NSubstitute's fluent Returns() setup for a ValueTask-returning member necessarily chains off
+        // the recorded call without awaiting it; the mock never actually runs the async machinery.
+#pragma warning disable CA2012
         mockContext.FindAsync<ArcadeLevel>(Arg.Any<object[]>(), Arg.Any<CancellationToken>())
-            .Returns(ValueTask.FromResult(levelToFind));
+            .Returns(new ValueTask<ArcadeLevel>(levelToFind));
+#pragma warning restore CA2012
 
         _dbContextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>())
             .Returns(mockContext);

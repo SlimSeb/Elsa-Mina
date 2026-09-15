@@ -54,23 +54,12 @@ public class LinecountCommand : Command
             var day = ParseDayFromKey(key);
             if (day == 0) continue;
 
-            var dayCount = 0;
-            await using var stream = await _fileSharingService.GetFileAsync(key, cancellationToken);
-            if (stream == null) continue;
+            var dayCount = await CountUserLinesAsync(key, userId, cancellationToken);
+            if (dayCount == null) continue;
 
-            using var reader = new StreamReader(stream);
-            while (await reader.ReadLineAsync(cancellationToken) is { } line)
-            {
-                if (ChatLogHelpers.TryParseLine(line, out var username, out _)
-                    && username.ToLowerAlphaNum() == userId)
-                {
-                    dayCount++;
-                }
-            }
-
-            counts[day] = dayCount;
-            totalCount += dayCount;
-            if (dayCount > maxCount) maxCount = dayCount;
+            counts[day] = dayCount.Value;
+            totalCount += dayCount.Value;
+            if (dayCount > maxCount) maxCount = dayCount.Value;
         }
 
         var days = counts.Select(kv => new LinecountDay { Day = kv.Key, Count = kv.Value }).ToList();
@@ -87,6 +76,31 @@ public class LinecountCommand : Command
                 AvgPerDay = avgPerDay
             });
         context.ReplyHtml(html.RemoveNewlines().CollapseAttributeWhitespace());
+    }
+
+    /// <summary>
+    /// Counts the lines sent by the user in the given log file, or returns <c>null</c> when the file is unavailable.
+    /// </summary>
+    private async Task<int?> CountUserLinesAsync(string key, string userId, CancellationToken cancellationToken)
+    {
+        await using var stream = await _fileSharingService.GetFileAsync(key, cancellationToken);
+        if (stream == null)
+        {
+            return null;
+        }
+
+        var lineCount = 0;
+        using var reader = new StreamReader(stream);
+        while (await reader.ReadLineAsync(cancellationToken) is { } line)
+        {
+            if (ChatLogHelpers.TryParseLine(line, out var username, out _)
+                && username.ToLowerAlphaNum() == userId)
+            {
+                lineCount++;
+            }
+        }
+
+        return lineCount;
     }
 
     private static int ParseDayFromKey(string key)

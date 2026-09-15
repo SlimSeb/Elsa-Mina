@@ -31,11 +31,14 @@ public class LlmBattleDecisionParserTest
         var result = _parser.Parse(json);
 
         // Assert
-        Assert.That(result.IsValid, Is.True);
-        Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Move));
-        Assert.That(result.ChoiceIndex, Is.EqualTo(1));
-        Assert.That(result.UseTerastallize, Is.False);
-        Assert.That(result.Reasoning, Is.EqualTo("Earthquake secures the OHKO on heatran."));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsValid, Is.True);
+            Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Move));
+            Assert.That(result.ChoiceIndex, Is.EqualTo(1));
+            Assert.That(result.UseTerastallize, Is.False);
+            Assert.That(result.Reasoning, Is.EqualTo("Earthquake secures the OHKO on heatran."));
+        }
     }
 
     [Test]
@@ -55,10 +58,13 @@ public class LlmBattleDecisionParserTest
         var result = _parser.Parse(json);
 
         // Assert
-        Assert.That(result.IsValid, Is.True);
-        Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Move));
-        Assert.That(result.ChoiceIndex, Is.EqualTo(2));
-        Assert.That(result.UseTerastallize, Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsValid, Is.True);
+            Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Move));
+            Assert.That(result.ChoiceIndex, Is.EqualTo(2));
+            Assert.That(result.UseTerastallize, Is.True);
+        }
     }
 
     [Test]
@@ -78,10 +84,13 @@ public class LlmBattleDecisionParserTest
         var result = _parser.Parse(json);
 
         // Assert
-        Assert.That(result.IsValid, Is.True);
-        Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Switch));
-        Assert.That(result.ChoiceIndex, Is.EqualTo(3));
-        Assert.That(result.UseTerastallize, Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsValid, Is.True);
+            Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Switch));
+            Assert.That(result.ChoiceIndex, Is.EqualTo(3));
+            Assert.That(result.UseTerastallize, Is.False);
+        }
     }
 
     [Test]
@@ -101,9 +110,12 @@ public class LlmBattleDecisionParserTest
         var result = _parser.Parse(json);
 
         // Assert
-        Assert.That(result.IsValid, Is.True);
-        Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.TeamPreview));
-        Assert.That(result.ChoiceIndex, Is.EqualTo(4));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsValid, Is.True);
+            Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.TeamPreview));
+            Assert.That(result.ChoiceIndex, Is.EqualTo(4));
+        }
     }
 
     [Test]
@@ -129,9 +141,12 @@ public class LlmBattleDecisionParserTest
         var result = _parser.Parse(response);
 
         // Assert
-        Assert.That(result.IsValid, Is.True);
-        Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Move));
-        Assert.That(result.ChoiceIndex, Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsValid, Is.True);
+            Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Move));
+            Assert.That(result.ChoiceIndex, Is.EqualTo(1));
+        }
     }
 
     [Test]
@@ -144,10 +159,13 @@ public class LlmBattleDecisionParserTest
         var result = _parser.Parse(text);
 
         // Assert
-        Assert.That(result.IsValid, Is.True);
-        Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Move));
-        Assert.That(result.ChoiceIndex, Is.EqualTo(2));
-        Assert.That(result.UseTerastallize, Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsValid, Is.True);
+            Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Move));
+            Assert.That(result.ChoiceIndex, Is.EqualTo(2));
+            Assert.That(result.UseTerastallize, Is.False);
+        }
     }
 
     [Test]
@@ -160,10 +178,13 @@ public class LlmBattleDecisionParserTest
         var result = _parser.Parse(text);
 
         // Assert
-        Assert.That(result.IsValid, Is.True);
-        Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Move));
-        Assert.That(result.ChoiceIndex, Is.EqualTo(3));
-        Assert.That(result.UseTerastallize, Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsValid, Is.True);
+            Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Move));
+            Assert.That(result.ChoiceIndex, Is.EqualTo(3));
+            Assert.That(result.UseTerastallize, Is.True);
+        }
     }
 
     [Test]
@@ -176,9 +197,12 @@ public class LlmBattleDecisionParserTest
         var result = _parser.Parse(text);
 
         // Assert
-        Assert.That(result.IsValid, Is.True);
-        Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Switch));
-        Assert.That(result.ChoiceIndex, Is.EqualTo(5));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsValid, Is.True);
+            Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.Switch));
+            Assert.That(result.ChoiceIndex, Is.EqualTo(5));
+        }
     }
 
     [Test]
@@ -191,18 +215,24 @@ public class LlmBattleDecisionParserTest
         var result = _parser.Parse(text);
 
         // Assert
-        Assert.That(result.IsValid, Is.True);
-        Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.TeamPreview));
-        Assert.That(result.ChoiceIndex, Is.EqualTo(2));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsValid, Is.True);
+            Assert.That(result.DecisionType, Is.EqualTo(BattleDecisionType.TeamPreview));
+            Assert.That(result.ChoiceIndex, Is.EqualTo(2));
+        }
     }
 
     [Test]
     public void Test_Parse_ShouldReturnInvalid_WhenResponseIsGarbageOrEmpty()
     {
         // Act & Assert
-        Assert.That(_parser.Parse(null).IsValid, Is.False);
-        Assert.That(_parser.Parse("").IsValid, Is.False);
-        Assert.That(_parser.Parse("   ").IsValid, Is.False);
-        Assert.That(_parser.Parse("I don't know what to do here.").IsValid, Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_parser.Parse(null).IsValid, Is.False);
+            Assert.That(_parser.Parse("").IsValid, Is.False);
+            Assert.That(_parser.Parse("   ").IsValid, Is.False);
+            Assert.That(_parser.Parse("I don't know what to do here.").IsValid, Is.False);
+        }
     }
 }

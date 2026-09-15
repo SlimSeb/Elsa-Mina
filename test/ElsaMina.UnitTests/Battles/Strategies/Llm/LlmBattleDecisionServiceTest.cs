@@ -55,8 +55,11 @@ public class LlmBattleDecisionServiceTest
         var waitResult = await _service.GetDecisionAsync(waitContext);
 
         // Assert
-        Assert.That(overResult, Is.Null);
-        Assert.That(waitResult, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(overResult, Is.Null);
+            Assert.That(waitResult, Is.Null);
+        }
         await _languageModelProvider.DidNotReceiveWithAnyArgs().AskLanguageModelAsync(Arg.Any<LanguageModelRequest>());
     }
 
@@ -84,9 +87,12 @@ public class LlmBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert
-        Assert.That(decision, Is.Not.Null);
-        Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.TeamPreview));
-        Assert.That(decision.Choices, Is.EqualTo(new List<int> { 2 }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(decision, Is.Not.Null);
+            Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.TeamPreview));
+            Assert.That(decision.Choices, Is.EqualTo(new List<int> { 2 }));
+        }
     }
 
     [Test]
@@ -138,9 +144,12 @@ public class LlmBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert
-        Assert.That(decision, Is.Not.Null);
-        Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
-        Assert.That(decision.Choices, Is.EqualTo(new List<int> { 2 }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(decision, Is.Not.Null);
+            Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
+            Assert.That(decision.Choices, Is.EqualTo(new List<int> { 2 }));
+        }
         await _languageModelProvider.DidNotReceiveWithAnyArgs().AskLanguageModelAsync(Arg.Any<LanguageModelRequest>());
     }
 
@@ -169,9 +178,12 @@ public class LlmBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert
-        Assert.That(decision, Is.Not.Null);
-        Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
-        Assert.That(decision.Choices, Is.EqualTo(new List<int> { 3 }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(decision, Is.Not.Null);
+            Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
+            Assert.That(decision.Choices, Is.EqualTo(new List<int> { 3 }));
+        }
     }
 
     [Test]
@@ -207,10 +219,13 @@ public class LlmBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert
-        Assert.That(decision, Is.Not.Null);
-        Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-        Assert.That(decision.Choices, Is.EqualTo(new List<int> { 1 }));
-        Assert.That(decision.UseTerastallize, Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(decision, Is.Not.Null);
+            Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
+            Assert.That(decision.Choices, Is.EqualTo(new List<int> { 1 }));
+            Assert.That(decision.UseTerastallize, Is.False);
+        }
     }
 
     [Test]
@@ -246,10 +261,13 @@ public class LlmBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert
-        Assert.That(decision, Is.Not.Null);
-        Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-        Assert.That(decision.Choices, Is.EqualTo(new List<int> { 1 }));
-        Assert.That(decision.UseTerastallize, Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(decision, Is.Not.Null);
+            Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
+            Assert.That(decision.Choices, Is.EqualTo(new List<int> { 1 }));
+            Assert.That(decision.UseTerastallize, Is.True);
+        }
     }
 
     [Test]
@@ -285,10 +303,13 @@ public class LlmBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert
-        Assert.That(decision, Is.Not.Null);
-        Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-        Assert.That(decision.Choices, Is.EqualTo(new List<int> { 1 }));
-        Assert.That(decision.UseTerastallize, Is.False); // Sanitized to false
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(decision, Is.Not.Null);
+            Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
+            Assert.That(decision.Choices, Is.EqualTo(new List<int> { 1 }));
+            Assert.That(decision.UseTerastallize, Is.False); // Sanitized to false
+        }
     }
 
     [Test]
@@ -325,9 +346,12 @@ public class LlmBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert
-        Assert.That(decision, Is.Not.Null);
-        Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
-        Assert.That(decision.Choices, Is.EqualTo(new List<int> { 2 }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(decision, Is.Not.Null);
+            Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
+            Assert.That(decision.Choices, Is.EqualTo(new List<int> { 2 }));
+        }
     }
 
     [Test]

@@ -6,8 +6,12 @@ namespace ElsaMina.UnitTests.Core.Utils;
 
 public class ShowdownTeamsUtilsTest
 {
+    private static readonly string[] ExpectedBlisseyMoves = ["Soft-Boiled", "Seismic Toss"];
+    private static readonly string[] ExpectedPikachuMoves = ["volttackle", "irontail"];
+    private static readonly string[] ExpectedGreatTuskMoves = ["headlongrush", "closecombat"];
+
     // TODO : make the bot cross-platform as this doesn't work on Windows
-    
+
     [Test]
     public void Test_DeserializeTeamExport_ShouldReturnEmptyTeam_WhenExportIsEmpty()
     {
@@ -180,11 +184,11 @@ public class ShowdownTeamsUtilsTest
             Assert.That(pokemonSet.EffortValues["hp"], Is.EqualTo(252));
             Assert.That(pokemonSet.EffortValues["def"], Is.EqualTo(4));
             Assert.That(pokemonSet.EffortValues["spd"], Is.EqualTo(252));
-            Assert.That(pokemonSet.EffortValues["atk"], Is.EqualTo(0));
-            Assert.That(pokemonSet.IndividualValues["atk"], Is.EqualTo(0));
+            Assert.That(pokemonSet.EffortValues["atk"], Is.Zero);
+            Assert.That(pokemonSet.IndividualValues["atk"], Is.Zero);
             Assert.That(pokemonSet.IndividualValues["spe"], Is.EqualTo(30));
             Assert.That(pokemonSet.IndividualValues["hp"], Is.EqualTo(31));
-            Assert.That(pokemonSet.Moves, Is.EquivalentTo(new[] { "Soft-Boiled", "Seismic Toss" }));
+            Assert.That(pokemonSet.Moves, Is.EquivalentTo(ExpectedBlisseyMoves));
         }
     }
 
@@ -306,7 +310,7 @@ public class ShowdownTeamsUtilsTest
             Assert.That(pokemonSet.Item, Is.EqualTo("lightball"));
             Assert.That(pokemonSet.Ability, Is.EqualTo("static"));
             Assert.That(pokemonSet.Nature, Is.EqualTo("Jolly"));
-            Assert.That(pokemonSet.Moves, Is.EquivalentTo(new[] { "volttackle", "irontail" }));
+            Assert.That(pokemonSet.Moves, Is.EquivalentTo(ExpectedPikachuMoves));
             Assert.That(pokemonSet.EffortValues["atk"], Is.EqualTo(252));
             Assert.That(pokemonSet.EffortValues["spd"], Is.EqualTo(4));
             Assert.That(pokemonSet.EffortValues["spe"], Is.EqualTo(252));
@@ -381,7 +385,7 @@ public class ShowdownTeamsUtilsTest
             Assert.That(unpacked.Item, Is.EqualTo("boosterenergy"));
             Assert.That(unpacked.Ability, Is.EqualTo("protosynthesis"));
             Assert.That(unpacked.Nature, Is.EqualTo("Jolly"));
-            Assert.That(unpacked.Moves, Is.EquivalentTo(new[] { "headlongrush", "closecombat" }));
+            Assert.That(unpacked.Moves, Is.EquivalentTo(ExpectedGreatTuskMoves));
         }
     }
 

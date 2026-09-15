@@ -49,8 +49,8 @@ public class EvroMakerCommand : Command
         }
 
         var words = context.Target.Split(' ')
-            .Select(w => w.Trim())
-            .Where(w => !string.IsNullOrEmpty(w))
+            .Select(word => word.Trim())
+            .Where(word => !string.IsNullOrEmpty(word))
             .ToArray();
 
         if (words.Length < 2)
@@ -58,83 +58,77 @@ public class EvroMakerCommand : Command
             return Task.CompletedTask;
         }
 
-        var count = 0;
         var altCount = 0;
-        var sb = new StringBuilder();
+        var builder = new StringBuilder();
 
-        foreach (var word in words)
+        for (var i = 0; i < words.Length; i++)
         {
-            if (string.IsNullOrEmpty(word)) continue;
-
-            if (count == 0)
-            {
-                sb.Append(START_STRINGS[_randomService.NextInt(START_STRINGS.Length)])
-                    .Append(' ')
-                    .Append(word)
-                    .Append(' ');
-                count++;
-                altCount++;
-                continue;
-            }
-
-            if (_randomService.NextDouble() > 0.75)
-            {
-                if (_randomService.NextDouble() > 0.5)
-                {
-                    sb.Append('"').Append(word).Append("\" ");
-                    if (_randomService.NextDouble() > 0.8) sb.Append("kek ");
-                }
-                else
-                {
-                    sb.Append(':').Append(word).Append(": ");
-                    if (_randomService.NextDouble() > 0.8) sb.Append("kek ");
-                }
-
-                count++;
-                altCount++;
-                continue;
-            }
-
-            if (altCount > 3 && count != words.Length - 1 && _randomService.NextDouble() > 0.65)
-            {
-                sb.Append(word).Append(' ')
-                    .Append(ALT_STRINGS[_randomService.NextInt(ALT_STRINGS.Length)])
-                    .Append(" , ");
-                altCount = 0;
-                count++;
-                continue;
-            }
-
-            if (count == words.Length - 1)
-            {
-                sb.Append(' ')
-                    .Append(word)
-                    .Append(' ')
-                    .Append(COMPLEMENT_STRINGS[_randomService.NextInt(COMPLEMENT_STRINGS.Length)])
-                    .Append(' ');
-                count++;
-                altCount++;
-                continue;
-            }
-
-            if (_randomService.NextDouble() > 0.7)
-            {
-                sb.Append(word).Append(' ')
-                    .Append(ENDING_STRINGS[_randomService.NextInt(ENDING_STRINGS.Length)])
-                    .Append(' ');
-                count++;
-                altCount++;
-                continue;
-            }
-
-            sb.Append(word).Append(' ');
-            count++;
-            altCount++;
+            var hasAppendedAltString = AppendWord(builder, words[i], i, words.Length, altCount);
+            altCount = hasAppendedAltString ? 0 : altCount + 1;
         }
 
-        var newPhrase = sb.ToString().Trim();
+        var newPhrase = builder.ToString().Trim();
         context.Reply(newPhrase, rankAware: true);
 
         return Task.CompletedTask;
+    }
+
+    private bool AppendWord(StringBuilder builder, string word, int wordIndex, int wordCount, int altCount)
+    {
+        if (wordIndex == 0)
+        {
+            builder.Append(PickRandom(START_STRINGS)).Append(' ').Append(word).Append(' ');
+            return false;
+        }
+
+        if (_randomService.NextDouble() > 0.75)
+        {
+            AppendDecoratedWord(builder, word);
+            return false;
+        }
+
+        var isLastWord = wordIndex == wordCount - 1;
+        if (altCount > 3 && !isLastWord && _randomService.NextDouble() > 0.65)
+        {
+            builder.Append(word).Append(' ').Append(PickRandom(ALT_STRINGS)).Append(" , ");
+            return true;
+        }
+
+        if (isLastWord)
+        {
+            builder.Append(' ').Append(word).Append(' ').Append(PickRandom(COMPLEMENT_STRINGS)).Append(' ');
+            return false;
+        }
+
+        if (_randomService.NextDouble() > 0.7)
+        {
+            builder.Append(word).Append(' ').Append(PickRandom(ENDING_STRINGS)).Append(' ');
+            return false;
+        }
+
+        builder.Append(word).Append(' ');
+        return false;
+    }
+
+    private void AppendDecoratedWord(StringBuilder builder, string word)
+    {
+        if (_randomService.NextDouble() > 0.5)
+        {
+            builder.Append('"').Append(word).Append("\" ");
+        }
+        else
+        {
+            builder.Append(':').Append(word).Append(": ");
+        }
+
+        if (_randomService.NextDouble() > 0.8)
+        {
+            builder.Append("kek ");
+        }
+    }
+
+    private string PickRandom(string[] options)
+    {
+        return options[_randomService.NextInt(options.Length)];
     }
 }

@@ -32,8 +32,7 @@ public class HallOfFameCommand : Command
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var trophies = await dbContext.Badges
             .Include(badge => badge.BadgeHolders)
-            .ThenInclude(badgeHolding => badgeHolding.RoomUser)
-            .ThenInclude(roomUser => roomUser.User)
+            .ThenInclude(badgeHolding => badgeHolding.RoomUser.User)
             .Where(badge => badge.RoomId == targetRoomId && badge.IsTrophy)
             .ToArrayAsync(cancellationToken);
 

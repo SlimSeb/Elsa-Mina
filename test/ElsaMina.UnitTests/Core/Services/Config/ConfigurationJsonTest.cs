@@ -8,6 +8,8 @@ namespace ElsaMina.UnitTests.Core.Services.Config;
 [TestFixture]
 public class ConfigurationJsonTest
 {
+    private static readonly string[] ExpectedRooms = ["botdevelopment"];
+
     private readonly JsonSerializerOptions _options = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -34,11 +36,14 @@ public class ConfigurationJsonTest
         var config = JsonSerializer.Deserialize<Configuration>(json, _options);
 
         Assert.That(config, Is.Not.Null);
-        Assert.That(config.Host, Is.EqualTo("sim3.psim.us"));
-        Assert.That(config.Port, Is.EqualTo("443"));
-        Assert.That(config.LogLevel, Is.EqualTo(LogLevel.Verbose));
-        Assert.That(config.DatabaseRetryDelay, Is.EqualTo(TimeSpan.FromSeconds(30)));
-        Assert.That(config.Rooms, Is.EquivalentTo(new[] { "botdevelopment" }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(config.Host, Is.EqualTo("sim3.psim.us"));
+            Assert.That(config.Port, Is.EqualTo("443"));
+            Assert.That(config.LogLevel, Is.EqualTo(LogLevel.Verbose));
+            Assert.That(config.DatabaseRetryDelay, Is.EqualTo(TimeSpan.FromSeconds(30)));
+            Assert.That(config.Rooms, Is.EquivalentTo(ExpectedRooms));
+        }
     }
 
     [Test]

@@ -49,12 +49,12 @@ public class DataManager : IDataManager
     public IReadOnlyList<string> SemantixWordsFr => _semantixWordsFr.Value;
     public IReadOnlyList<string> SemantixAnswersFr => _semantixAnswersFr.Value;
 
-    private ICountriesGameData LoadCountriesGameData()
+    private CountriesGameData LoadCountriesGameData()
     {
         return LoadDataFromFile<CountriesGameData>("countries_game.json") ?? new CountriesGameData { Countries = [] };
     }
 
-    private ICapitalCitiesGameData LoadCapitalCitiesGameData()
+    private CapitalCitiesGameData LoadCapitalCitiesGameData()
     {
         var capitalsList = LoadDataFromFile<List<CapitalCityData>>("capital_cities.json");
         return new CapitalCitiesGameData { Capitals = capitalsList ?? [] };

@@ -28,7 +28,7 @@ public class StartPokeRaceCommandTest
         _command = new StartPokeRaceCommand(_dependencyContainerService);
     }
 
-    private PokeRaceGame BuildGame()
+    private static PokeRaceGame BuildGame()
     {
         var randomService = Substitute.For<IRandomService>();
         var templatesManager = Substitute.For<ITemplatesManager>();

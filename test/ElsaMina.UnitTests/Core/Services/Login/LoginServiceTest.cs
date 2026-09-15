@@ -34,8 +34,8 @@ public class LoginServiceTest
     private static string ReadBody(HttpRequest request) =>
         request.Body.CreateContent().ReadAsStringAsync().GetAwaiter().GetResult();
 
-    private static IHttpResponse<LoginResponseDto> MakeSuccessResponse() =>
-        new HttpResponse<LoginResponseDto>
+    private static HttpResponse<LoginResponseDto> MakeSuccessResponse() =>
+        new()
         {
             Data = new LoginResponseDto
             {

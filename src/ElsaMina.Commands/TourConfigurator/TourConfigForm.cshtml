@@ -8,43 +8,43 @@
 }
 
 <form data-submitsend="/w @Model.BotName,@(Model.Trigger)savetour @Model.RoomId;;{id};;{tier};;{format};;{autostart};;{autodq};;{tourname};;{rules}">
-    <table style="width:100%">
+    <table role="presentation" style="width:100%">
         <tr>
-            <td><b>@GetString("tourconfig_field_id")</b></td>
+            <td><label for="tourconfig-id-@Model.RoomId"><b>@GetString("tourconfig_field_id")</b></label></td>
             <td>
                 @if (isEdit)
                 {
-                    <input type="text" name="id" value="@config.Id" readonly style="@inputStyle;background:#eee"/>
+                    <input type="text" id="tourconfig-id-@Model.RoomId" name="id" value="@config.Id" readonly style="@inputStyle;background:#eee"/>
                 }
                 else
                 {
-                    <input type="text" name="id" placeholder="ex: gen9rpplf" style="@inputStyle" required/>
+                    <input type="text" id="tourconfig-id-@Model.RoomId" name="id" placeholder="ex: gen9rpplf" style="@inputStyle" required/>
                 }
             </td>
         </tr>
         <tr>
-            <td><b>@GetString("tourconfig_field_tier")</b></td>
-            <td><input type="text" name="tier" value="@(isEdit ? config.Tier : "")" placeholder="ex: gen9ubers" style="@inputStyle"/></td>
+            <td><label for="tourconfig-tier-@Model.RoomId"><b>@GetString("tourconfig_field_tier")</b></label></td>
+            <td><input type="text" id="tourconfig-tier-@Model.RoomId" name="tier" value="@(isEdit ? config.Tier : "")" placeholder="ex: gen9ubers" style="@inputStyle"/></td>
         </tr>
         <tr>
-            <td><b>@GetString("tourconfig_field_format")</b></td>
-            <td><input type="text" name="format" value="@(isEdit ? config.Format : "elim")" placeholder="elim ou rr" style="@inputStyle"/></td>
+            <td><label for="tourconfig-format-@Model.RoomId"><b>@GetString("tourconfig_field_format")</b></label></td>
+            <td><input type="text" id="tourconfig-format-@Model.RoomId" name="format" value="@(isEdit ? config.Format : "elim")" placeholder="elim ou rr" style="@inputStyle"/></td>
         </tr>
         <tr>
-            <td><b>@GetString("tourconfig_field_autostart")</b></td>
-            <td><input type="text" name="autostart" value="@(isEdit ? config.Autostart : 10)" placeholder="10" style="@inputStyle"/></td>
+            <td><label for="tourconfig-autostart-@Model.RoomId"><b>@GetString("tourconfig_field_autostart")</b></label></td>
+            <td><input type="text" id="tourconfig-autostart-@Model.RoomId" name="autostart" value="@(isEdit ? config.Autostart : 10)" placeholder="10" style="@inputStyle"/></td>
         </tr>
         <tr>
-            <td><b>@GetString("tourconfig_field_autodq")</b></td>
-            <td><input type="text" name="autodq" value="@(isEdit && config.AutoDq.HasValue ? config.AutoDq.Value : "")" placeholder="" style="@inputStyle"/></td>
+            <td><label for="tourconfig-autodq-@Model.RoomId"><b>@GetString("tourconfig_field_autodq")</b></label></td>
+            <td><input type="text" id="tourconfig-autodq-@Model.RoomId" name="autodq" value="@(isEdit && config.AutoDq.HasValue ? config.AutoDq.Value : "")" placeholder="" style="@inputStyle"/></td>
         </tr>
         <tr>
-            <td><b>@GetString("tourconfig_field_tourname")</b></td>
-            <td><input type="text" name="tourname" value="@(isEdit ? config.TourName : "")" placeholder="ex: [Gen 9] RPPLF" style="@inputStyle"/></td>
+            <td><label for="tourconfig-tourname-@Model.RoomId"><b>@GetString("tourconfig_field_tourname")</b></label></td>
+            <td><input type="text" id="tourconfig-tourname-@Model.RoomId" name="tourname" value="@(isEdit ? config.TourName : "")" placeholder="ex: [Gen 9] RPPLF" style="@inputStyle"/></td>
         </tr>
         <tr>
-            <td><b>@GetString("tourconfig_field_rules")</b></td>
-            <td><textarea name="rules" rows="3" style="@inputStyle" placeholder="ex: +Razor Fang, -Light Clay, ...">@(isEdit ? config.Rules : "")</textarea></td>
+            <td><label for="tourconfig-rules-@Model.RoomId"><b>@GetString("tourconfig_field_rules")</b></label></td>
+            <td><textarea id="tourconfig-rules-@Model.RoomId" name="rules" rows="3" style="@inputStyle" placeholder="ex: +Razor Fang, -Light Clay, ...">@(isEdit ? config.Rules : "")</textarea></td>
         </tr>
     </table>
     <br/>

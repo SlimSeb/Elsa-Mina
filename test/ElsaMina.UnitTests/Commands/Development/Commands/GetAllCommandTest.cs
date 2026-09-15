@@ -58,7 +58,7 @@ public class GetAllCommandTest
         await _templatesManager.Received(1).GetTemplateAsync(
             "Development/Commands/CommandList",
             Arg.Is<CommandListViewModel>(vm =>
-                vm.Commands.Count() == 1 &&
+                vm.Commands.Count == 1 &&
                 vm.Commands.Single() == visibleCommand));
     }
 

@@ -264,6 +264,6 @@ public class ActivityHeatmapCommandTest
         await _context.Received(1).HandleErrorAsync(exception, Arg.Any<CancellationToken>());
     }
 
-    private static Stream ToStream(string content) =>
+    private static MemoryStream ToStream(string content) =>
         new MemoryStream(Encoding.UTF8.GetBytes(content));
 }

@@ -57,10 +57,7 @@ public class UrlPreviewHandler : ChatMessageHandler
             return;
         }
 
-        if (context.Sender.UserId == _configuration.Name.ToLowerAlphaNum()
-            || context.Message.StartsWith(_configuration.Trigger)
-            || context.Message.StartsWith("/raw")
-            || context.Message.StartsWith("!show"))
+        if (IsIgnoredMessage(context))
         {
             return;
         }
@@ -95,36 +92,17 @@ public class UrlPreviewHandler : ChatMessageHandler
             htmlDoc.LoadHtml(response.Data);
 
             var ogData = ParseOpenGraph(htmlDoc);
-            if (!ogData.TryGetValue("title", out var title) || string.IsNullOrWhiteSpace(title))
+            var title = GetTitle(htmlDoc, ogData);
+            if (title == null)
             {
-                var titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
-                if (titleNode == null)
-                {
-                    return;
-                }
-
-                title = HtmlEntity.DeEntitize(titleNode.InnerText)?.Trim() ?? string.Empty;
+                return;
             }
 
             ogData.TryGetValue("description", out var description);
             ogData.TryGetValue("image", out var image);
             ogData.TryGetValue("site_name", out var siteName);
 
-            int width = -1;
-            int height = -1;
-            if (!string.IsNullOrEmpty(image))
-            {
-                (width, height) = await _imageService.GetRemoteImageDimensions(image, cancellationToken);
-                if (width <= 0 || height <= 0)
-                {
-                    width = MAX_WIDTH;
-                    height = MAX_HEIGHT;
-                }
-                else
-                {
-                    (width, height) = ImageUtils.ResizeWithSameAspectRatio(width, height, MAX_WIDTH, MAX_HEIGHT);
-                }
-            }
+            var (width, height) = await GetImageDimensionsAsync(image, cancellationToken);
 
             var template = await _templatesManager.GetTemplateAsync("Misc/UrlPreview/UrlPreview",
                 new UrlPreviewViewModel
@@ -145,6 +123,50 @@ public class UrlPreviewHandler : ChatMessageHandler
         {
             Log.Error(ex, "Failed to fetch URL preview for {0}", url);
         }
+    }
+
+    private bool IsIgnoredMessage(IContext context)
+    {
+        return context.Sender.UserId == _configuration.Name.ToLowerAlphaNum()
+               || context.Message.StartsWith(_configuration.Trigger)
+               || context.Message.StartsWith("/raw")
+               || context.Message.StartsWith("!show");
+    }
+
+    /// <summary>
+    /// Returns the Open Graph title, falling back to the title tag, or <c>null</c> when the page has neither.
+    /// </summary>
+    private static string GetTitle(HtmlDocument htmlDoc, Dictionary<string, string> ogData)
+    {
+        if (ogData.TryGetValue("title", out var title) && !string.IsNullOrWhiteSpace(title))
+        {
+            return title;
+        }
+
+        var titleNode = htmlDoc.DocumentNode.SelectSingleNode("//title");
+        if (titleNode == null)
+        {
+            return null;
+        }
+
+        return HtmlEntity.DeEntitize(titleNode.InnerText)?.Trim() ?? string.Empty;
+    }
+
+    private async Task<(int Width, int Height)> GetImageDimensionsAsync(string image,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(image))
+        {
+            return (-1, -1);
+        }
+
+        var (width, height) = await _imageService.GetRemoteImageDimensions(image, cancellationToken);
+        if (width <= 0 || height <= 0)
+        {
+            return (MAX_WIDTH, MAX_HEIGHT);
+        }
+
+        return ImageUtils.ResizeWithSameAspectRatio(width, height, MAX_WIDTH, MAX_HEIGHT);
     }
 
     private static Dictionary<string, string> ParseOpenGraph(HtmlDocument htmlDoc)

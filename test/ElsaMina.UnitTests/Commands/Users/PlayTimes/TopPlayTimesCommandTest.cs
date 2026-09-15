@@ -20,7 +20,7 @@ public class TopPlayTimesCommandTest
     private IRoomsManager _roomsManager;
     private TopPlayTimesCommand _command;
 
-    private DbContextOptions<BotDbContext> CreateNewInMemoryOptions() =>
+    private static DbContextOptions<BotDbContext> CreateNewInMemoryOptions() =>
         new DbContextOptionsBuilder<BotDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;

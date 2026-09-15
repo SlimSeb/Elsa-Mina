@@ -363,8 +363,11 @@ public class TourEndHandlerTest
         await using var dbContext = new BotDbContext(_dbOptions);
         var lobbyAccount = await dbContext.RoomUsers.FindAsync("pujolly", "lobby");
         var arcadeAccount = await dbContext.RoomUsers.FindAsync("pujolly", "arcade");
-        Assert.That(lobbyAccount.Money, Is.EqualTo(50));
-        Assert.That(arcadeAccount.Money, Is.EqualTo(118));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(lobbyAccount.Money, Is.EqualTo(50));
+            Assert.That(arcadeAccount.Money, Is.EqualTo(118));
+        }
     }
 
     [Test]

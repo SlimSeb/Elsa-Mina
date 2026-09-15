@@ -14,6 +14,8 @@ namespace ElsaMina.IntegrationTests.Commands.Games.Belote;
 [TestFixture]
 public class BeloteTurnTimerAndConcurrencyTest
 {
+    private static readonly string[] ExpectedTimeoutWarnings = ["say /pm player1, belote_turn_timeout_warning"];
+
     /// <summary>
     /// The turn a test lets run out. Long enough that the setup leading up to it always finishes first,
     /// even on a loaded CI runner, since any action taken while the clock ticks restarts it.
@@ -99,7 +101,7 @@ public class BeloteTurnTimerAndConcurrencyTest
         var warnings = _recorder.EntriesOfKind("say");
         await _game.CancelAsync();
 
-        Assert.That(warnings, Is.EqualTo(new[] { "say /pm player1, belote_turn_timeout_warning" }));
+        Assert.That(warnings, Is.EqualTo(ExpectedTimeoutWarnings));
     }
 
     [Test]

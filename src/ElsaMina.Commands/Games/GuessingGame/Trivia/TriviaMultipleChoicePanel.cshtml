@@ -15,7 +15,7 @@
 
     string[] optionLetters = ["A", "B", "C", "D"];
 }
-<table style="border-collapse: collapse; max-width: 560px; width: 100%;">
+<table role="presentation" style="border-collapse: collapse; max-width: 560px; width: 100%;">
     <tbody>
     <tr>
         <td colspan="2" style="@headerStyle">
@@ -48,7 +48,7 @@
                             <button name="send"
                                     value="/botmsg @Model.BotName, @(Model.Trigger)guess @Model.RoomId,@optionLetter"
                                     style="background: none; border: none; cursor: pointer; padding: 6px 8px; width: 100%; text-align: left;">
-                                <table style="border-collapse: collapse; width: 100%;">
+                                <table role="presentation" style="border-collapse: collapse; width: 100%;">
                                     <tbody>
                                     <tr>
                                         <td style="width: 24px; vertical-align: middle; text-align: center;">
@@ -64,7 +64,7 @@
                         }
                         else
                         {
-                            <table style="border-collapse: collapse; width: 100%; padding: 6px 8px;">
+                            <table role="presentation" style="border-collapse: collapse; width: 100%; padding: 6px 8px;">
                                 <tbody>
                                 <tr>
                                     <td style="width: 24px; vertical-align: middle; text-align: center;">

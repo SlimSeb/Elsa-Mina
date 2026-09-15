@@ -7,7 +7,9 @@ namespace ElsaMina.UnitTests.Commands.Games.Belote;
 [TestFixture]
 public class BeloteScorerTest
 {
-    private static IReadOnlyList<BelotePlayer> Players()
+    private static readonly int[] ExpectedContractMadeDeltas = [100, 62, 100, 62];
+
+    private static List<BelotePlayer> Players()
     {
         var players = new List<BelotePlayer>();
         for (var seat = 0; seat < 4; seat++)
@@ -34,7 +36,7 @@ public class BeloteScorerTest
             Assert.That(result.IsCapot, Is.False);
             Assert.That(result.Team0Score, Is.EqualTo(100)); // 90 + 10 der
             Assert.That(result.Team1Score, Is.EqualTo(62));
-            Assert.That(result.Deltas, Is.EqualTo(new[] { 100, 62, 100, 62 }));
+            Assert.That(result.Deltas, Is.EqualTo(ExpectedContractMadeDeltas));
         }
     }
 
@@ -47,7 +49,7 @@ public class BeloteScorerTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Made, Is.False);
-            Assert.That(result.Team0Score, Is.EqualTo(0));
+            Assert.That(result.Team0Score, Is.Zero);
             Assert.That(result.Team1Score, Is.EqualTo(162)); // defenders take everything
         }
     }
@@ -62,7 +64,7 @@ public class BeloteScorerTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Made, Is.False);
-            Assert.That(result.Team0Score, Is.EqualTo(0));
+            Assert.That(result.Team0Score, Is.Zero);
             Assert.That(result.Team1Score, Is.EqualTo(162));
         }
     }
@@ -78,7 +80,7 @@ public class BeloteScorerTest
             Assert.That(result.Made, Is.True);
             Assert.That(result.IsCapot, Is.True);
             Assert.That(result.Team0Score, Is.EqualTo(BeloteConstants.CAPOT_SCORE));
-            Assert.That(result.Team1Score, Is.EqualTo(0));
+            Assert.That(result.Team1Score, Is.Zero);
         }
     }
 
@@ -92,7 +94,7 @@ public class BeloteScorerTest
         {
             Assert.That(result.Made, Is.False);
             Assert.That(result.IsCapot, Is.True);
-            Assert.That(result.Team0Score, Is.EqualTo(0));
+            Assert.That(result.Team0Score, Is.Zero);
             Assert.That(result.Team1Score, Is.EqualTo(BeloteConstants.CAPOT_SCORE));
         }
     }

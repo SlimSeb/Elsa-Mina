@@ -19,7 +19,7 @@
         var dollsPerRow = size <= 16 ? 8 : size <= 24 ? 7 : 6;
         <div style="margin-bottom:9px;">
             <div style="@captionStyle">@GetString("doll_list_size_header", size, size, dolls.Count)</div>
-            <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+            <table role="presentation" style="width:100%;border-collapse:collapse;table-layout:fixed;">
                 <tbody>
                 @foreach (var row in dolls.Chunk(dollsPerRow))
                 {

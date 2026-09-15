@@ -24,11 +24,11 @@ public class CustomColorsManagerTest
         };
         """;
 
-    private static IHttpResponse<Dictionary<string, string>> JsonResponse(Dictionary<string, string> data) =>
-        new HttpResponse<Dictionary<string, string>> { Data = data };
+    private static HttpResponse<Dictionary<string, string>> JsonResponse(Dictionary<string, string> data) =>
+        new() { Data = data };
 
-    private static IHttpResponse<string> JsResponse(string js) =>
-        new HttpResponse<string> { Data = js };
+    private static HttpResponse<string> JsResponse(string js) =>
+        new() { Data = js };
 
     [Test]
     public async Task Test_FetchCustomColorsAsync_ShouldMergeBothSources_WhenBothSucceed()

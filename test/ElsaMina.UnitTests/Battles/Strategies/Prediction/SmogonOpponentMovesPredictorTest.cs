@@ -83,8 +83,11 @@ public class SmogonOpponentMovesPredictorTest
         var predictions = (await _predictor.PredictAsync("gen9ou", "Garchomp", ["Earthquake"])).Moves;
 
         // Assert
-        Assert.That(predictions.Count(move => move.Name == "Earthquake"), Is.EqualTo(1));
-        Assert.That(predictions.Single(move => move.Name == "Earthquake").Probability, Is.EqualTo(1.0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(predictions.Count(move => move.Name == "Earthquake"), Is.EqualTo(1));
+            Assert.That(predictions.Single(move => move.Name == "Earthquake").Probability, Is.EqualTo(1.0));
+        }
     }
 
     [Test]
@@ -110,8 +113,11 @@ public class SmogonOpponentMovesPredictorTest
             ["Earthquake", "Dragon Claw", "Stealth Rock", "Fire Fang"]);
 
         // Assert
-        Assert.That(prediction.Moves, Has.Count.EqualTo(4));
-        Assert.That(prediction.Spread, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(prediction.Moves, Has.Count.EqualTo(4));
+            Assert.That(prediction.Spread, Is.Not.Null);
+        }
     }
 
     [Test]
@@ -192,7 +198,7 @@ public class SmogonOpponentMovesPredictorTest
             Assert.That(spread.AtkEvs, Is.EqualTo(252));
             Assert.That(spread.SpdEvs, Is.EqualTo(4));
             Assert.That(spread.SpeEvs, Is.EqualTo(252));
-            Assert.That(spread.HpEvs, Is.EqualTo(0));
+            Assert.That(spread.HpEvs, Is.Zero);
         }
     }
 

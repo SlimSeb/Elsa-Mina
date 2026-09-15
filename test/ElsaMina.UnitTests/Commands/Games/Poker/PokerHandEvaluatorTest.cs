@@ -214,7 +214,7 @@ public class PokerHandEvaluatorTest
         var first = Evaluate("Ah", "Ad", "7c", "7s", "Kh");
         var second = Evaluate("As", "Ac", "7h", "7d", "Ks");
 
-        Assert.That(first.CompareTo(second), Is.EqualTo(0));
+        Assert.That(first.CompareTo(second), Is.Zero);
     }
 
     [Test]

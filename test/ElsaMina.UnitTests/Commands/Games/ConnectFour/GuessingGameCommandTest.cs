@@ -115,8 +115,11 @@ public class GuessingGameCommandTest
         // Assert
         _dependencyContainerService.Received(1).Resolve<TriviaGame>();
         _room.Received(1).Game = triviaGame;
-        Assert.That(triviaGame.TurnsCount, Is.EqualTo(5));
-        Assert.That(triviaGame.Context, Is.EqualTo(_context));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(triviaGame.TurnsCount, Is.EqualTo(5));
+            Assert.That(triviaGame.Context, Is.EqualTo(_context));
+        }
     }
 
     [Test]

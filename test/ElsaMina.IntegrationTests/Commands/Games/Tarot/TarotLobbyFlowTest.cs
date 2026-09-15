@@ -14,6 +14,20 @@ namespace ElsaMina.IntegrationTests.Commands.Games.Tarot;
 [TestFixture]
 public class TarotLobbyFlowTest
 {
+    private static readonly string[] ExpectedRemainingPlayerIdsAfterJoin = ["player1"];
+    private static readonly string[] ExpectedPanelTrace = ["tarot-# new"];
+    private static readonly string[] ExpectedRemainingPlayerIdsAfterLeave = ["player2"];
+    private static readonly string[] ExpectedPanelTrace2 = ["tarot-# update"];
+    private static readonly string[] ExpectedReplyEntries = ["reply tarot_start_not_enough_players"];
+    private static readonly string[] ExpectedReplyEntries2 = ["reply tarot_start_already_started"];
+    private static readonly string[] ExpectedReplyEntries3 = ["reply tarot_start_not_a_player"];
+
+    private static readonly string[] ExpectedEntries =
+    [
+        "tpl Games/Tarot/TarotCancelled",
+        "panel tarot-# update"
+    ];
+
     private GameInteractionRecorder _recorder;
     private IRandomService _randomService;
     private IConfiguration _configuration;
@@ -51,8 +65,9 @@ public class TarotLobbyFlowTest
             Assert.That(success, Is.True);
             Assert.That(messageKey, Is.EqualTo("tarot_join_success"));
             Assert.That(args, Is.EqualTo(new object[] { "player1" }));
-            Assert.That(_game.Players.Select(player => player.UserId), Is.EqualTo(new[] { "player1" }));
-            Assert.That(_recorder.PanelTrace(), Is.EqualTo(new[] { "tarot-# new" }));
+            Assert.That(_game.Players.Select(player => player.UserId),
+                Is.EqualTo(ExpectedRemainingPlayerIdsAfterJoin));
+            Assert.That(_recorder.PanelTrace(), Is.EqualTo(ExpectedPanelTrace));
         }
     }
 
@@ -123,8 +138,9 @@ public class TarotLobbyFlowTest
             Assert.That(success, Is.True);
             Assert.That(messageKey, Is.EqualTo("tarot_quit_success"));
             Assert.That(args, Is.EqualTo(new object[] { "player1" }));
-            Assert.That(_game.Players.Select(player => player.UserId), Is.EqualTo(new[] { "player2" }));
-            Assert.That(_recorder.PanelTrace(), Is.EqualTo(new[] { "tarot-# update" }));
+            Assert.That(_game.Players.Select(player => player.UserId),
+                Is.EqualTo(ExpectedRemainingPlayerIdsAfterLeave));
+            Assert.That(_recorder.PanelTrace(), Is.EqualTo(ExpectedPanelTrace2));
         }
     }
 
@@ -171,8 +187,7 @@ public class TarotLobbyFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(TarotPhase.Lobby));
-            Assert.That(_recorder.EntriesOfKind("reply"),
-                Is.EqualTo(new[] { "reply tarot_start_not_enough_players" }));
+            Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries));
         }
     }
 
@@ -184,8 +199,7 @@ public class TarotLobbyFlowTest
 
         await _game.StartAsync(users[0]);
 
-        Assert.That(_recorder.EntriesOfKind("reply"),
-            Is.EqualTo(new[] { "reply tarot_start_already_started" }));
+        Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries2));
     }
 
     /// <summary>
@@ -205,8 +219,7 @@ public class TarotLobbyFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(TarotPhase.Lobby));
-            Assert.That(_recorder.EntriesOfKind("reply"),
-                Is.EqualTo(new[] { "reply tarot_start_not_a_player" }));
+            Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries3));
         }
     }
 
@@ -236,11 +249,7 @@ public class TarotLobbyFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(TarotPhase.Finished));
-            Assert.That(_recorder.Entries, Is.EqualTo(new[]
-            {
-                "tpl Games/Tarot/TarotCancelled",
-                "panel tarot-# update"
-            }));
+            Assert.That(_recorder.Entries, Is.EqualTo(ExpectedEntries));
         }
     }
 

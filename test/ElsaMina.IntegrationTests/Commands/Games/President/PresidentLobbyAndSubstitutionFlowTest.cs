@@ -14,6 +14,34 @@ namespace ElsaMina.IntegrationTests.Commands.Games.President;
 [TestFixture]
 public class PresidentLobbyAndSubstitutionFlowTest
 {
+    private static readonly string[] ExpectedPanelTrace = ["president-# new"];
+    private static readonly string[] ExpectedRemainingPlayerIds = ["player2"];
+    private static readonly string[] ExpectedPanelTrace2 = ["president-# update"];
+    private static readonly string[] ExpectedReplyEntries = ["reply president_start_not_enough_players"];
+    private static readonly string[] ExpectedReplyEntries2 = ["reply president_start_not_a_player"];
+    private static readonly string[] ExpectedReplyEntries3 = ["reply president_start_already_started"];
+
+    private static readonly string[] ExpectedEntries =
+    [
+        "tpl Games/President/PresidentCancelled",
+        "panel president-# update"
+    ];
+
+    private static readonly string[] ExpectedEntries2 =
+    [
+        "reply president_sub_requested",
+        "tpl Games/President/PresidentSub",
+        "panel president-#-sub new"
+    ];
+
+    private static readonly string[] ExpectedEntries3 =
+    [
+        "reply president_sub_cancelled",
+        "panel president-#-sub clear"
+    ];
+
+    private static readonly string[] ExpectedCloseEntries = ["close player2 president-#"];
+
     private GameInteractionRecorder _recorder;
     private IRandomService _randomService;
     private IConfiguration _configuration;
@@ -48,7 +76,7 @@ public class PresidentLobbyAndSubstitutionFlowTest
             Assert.That(success, Is.True);
             Assert.That(messageKey, Is.EqualTo("president_join_success"));
             Assert.That(args, Is.EqualTo(new object[] { "player1" }));
-            Assert.That(_recorder.PanelTrace(), Is.EqualTo(new[] { "president-# new" }));
+            Assert.That(_recorder.PanelTrace(), Is.EqualTo(ExpectedPanelTrace));
         }
     }
 
@@ -116,8 +144,8 @@ public class PresidentLobbyAndSubstitutionFlowTest
             Assert.That(success, Is.True);
             Assert.That(messageKey, Is.EqualTo("president_quit_success"));
             Assert.That(args, Is.EqualTo(new object[] { "player1" }));
-            Assert.That(_game.Players.Select(player => player.UserId), Is.EqualTo(new[] { "player2" }));
-            Assert.That(_recorder.PanelTrace(), Is.EqualTo(new[] { "president-# update" }));
+            Assert.That(_game.Players.Select(player => player.UserId), Is.EqualTo(ExpectedRemainingPlayerIds));
+            Assert.That(_recorder.PanelTrace(), Is.EqualTo(ExpectedPanelTrace2));
         }
     }
 
@@ -152,8 +180,7 @@ public class PresidentLobbyAndSubstitutionFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(PresidentPhase.Lobby));
-            Assert.That(_recorder.EntriesOfKind("reply"),
-                Is.EqualTo(new[] { "reply president_start_not_enough_players" }));
+            Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries));
         }
     }
 
@@ -170,8 +197,7 @@ public class PresidentLobbyAndSubstitutionFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(PresidentPhase.Lobby));
-            Assert.That(_recorder.EntriesOfKind("reply"),
-                Is.EqualTo(new[] { "reply president_start_not_a_player" }));
+            Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries2));
         }
     }
 
@@ -183,8 +209,7 @@ public class PresidentLobbyAndSubstitutionFlowTest
 
         await _game.StartAsync(_users[0]);
 
-        Assert.That(_recorder.EntriesOfKind("reply"),
-            Is.EqualTo(new[] { "reply president_start_already_started" }));
+        Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries3));
     }
 
     [Test]
@@ -199,11 +224,7 @@ public class PresidentLobbyAndSubstitutionFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(PresidentPhase.Finished));
-            Assert.That(_recorder.Entries, Is.EqualTo(new[]
-            {
-                "tpl Games/President/PresidentCancelled",
-                "panel president-# update"
-            }));
+            Assert.That(_recorder.Entries, Is.EqualTo(ExpectedEntries));
         }
     }
 
@@ -262,12 +283,7 @@ public class PresidentLobbyAndSubstitutionFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(success, Is.True);
-            Assert.That(_recorder.Entries, Is.EqualTo(new[]
-            {
-                "reply president_sub_requested",
-                "tpl Games/President/PresidentSub",
-                "panel president-#-sub new"
-            }));
+            Assert.That(_recorder.Entries, Is.EqualTo(ExpectedEntries2));
         }
     }
 
@@ -283,11 +299,7 @@ public class PresidentLobbyAndSubstitutionFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Players[1].WantsSub, Is.False);
-            Assert.That(_recorder.Entries, Is.EqualTo(new[]
-            {
-                "reply president_sub_cancelled",
-                "panel president-#-sub clear"
-            }));
+            Assert.That(_recorder.Entries, Is.EqualTo(ExpectedEntries3));
         }
     }
 
@@ -328,7 +340,7 @@ public class PresidentLobbyAndSubstitutionFlowTest
 
         await _game.AcceptSubAsync(GameUsers.User("substitute"), "player2");
 
-        Assert.That(_recorder.EntriesOfKind("close"), Is.EqualTo(new[] { "close player2 president-#" }));
+        Assert.That(_recorder.EntriesOfKind("close"), Is.EqualTo(ExpectedCloseEntries));
     }
 
     [Test]

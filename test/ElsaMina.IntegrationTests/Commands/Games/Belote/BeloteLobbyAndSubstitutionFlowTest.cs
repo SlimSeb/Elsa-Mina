@@ -15,6 +15,33 @@ namespace ElsaMina.IntegrationTests.Commands.Games.Belote;
 [TestFixture]
 public class BeloteLobbyAndSubstitutionFlowTest
 {
+    private static readonly string[] ExpectedPanelTrace = ["belote-# new"];
+    private static readonly string[] ExpectedReplyEntries = ["reply belote_start_not_enough_players"];
+    private static readonly string[] ExpectedReplyEntries2 = ["reply belote_start_already_started"];
+    private static readonly string[] ExpectedPanelTrace2 = ["belote-# clear", "belote-# new"];
+    private static readonly string[] ExpectedReplyEntries3 = ["reply belote_start_not_a_player"];
+
+    private static readonly string[] ExpectedEntries =
+    [
+        "tpl Games/Belote/BeloteCancelled",
+        "panel belote-# update"
+    ];
+
+    private static readonly string[] ExpectedEntries2 =
+    [
+        "reply belote_sub_requested",
+        "tpl Games/Belote/BeloteSub",
+        "panel belote-#-sub new"
+    ];
+
+    private static readonly string[] ExpectedEntries3 =
+    [
+        "reply belote_sub_cancelled",
+        "panel belote-#-sub clear"
+    ];
+
+    private static readonly string[] ExpectedCloseEntries = ["close player2 belote-#"];
+
     private GameInteractionRecorder _recorder;
     private IRandomService _randomService;
     private IConfiguration _configuration;
@@ -51,7 +78,7 @@ public class BeloteLobbyAndSubstitutionFlowTest
             Assert.That(success, Is.True);
             Assert.That(messageKey, Is.EqualTo("belote_join_success"));
             Assert.That(args, Is.EqualTo(new object[] { "player1" }));
-            Assert.That(_recorder.PanelTrace(), Is.EqualTo(new[] { "belote-# new" }));
+            Assert.That(_recorder.PanelTrace(), Is.EqualTo(ExpectedPanelTrace));
         }
     }
 
@@ -114,8 +141,7 @@ public class BeloteLobbyAndSubstitutionFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(BelotePhase.Lobby));
-            Assert.That(_recorder.EntriesOfKind("reply"),
-                Is.EqualTo(new[] { "reply belote_start_not_enough_players" }));
+            Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries));
         }
     }
 
@@ -127,8 +153,7 @@ public class BeloteLobbyAndSubstitutionFlowTest
 
         await _game.StartAsync(_users[0]);
 
-        Assert.That(_recorder.EntriesOfKind("reply"),
-            Is.EqualTo(new[] { "reply belote_start_already_started" }));
+        Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries2));
     }
 
     /// <summary>
@@ -146,7 +171,7 @@ public class BeloteLobbyAndSubstitutionFlowTest
         _recorder.Clear();
         await _game.StartAsync(GameUsers.User("player1"));
 
-        Assert.That(_recorder.PanelTrace().Take(2), Is.EqualTo(new[] { "belote-# clear", "belote-# new" }));
+        Assert.That(_recorder.PanelTrace().Take(2), Is.EqualTo(ExpectedPanelTrace2));
     }
 
     [Test]
@@ -162,8 +187,7 @@ public class BeloteLobbyAndSubstitutionFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(BelotePhase.Lobby));
-            Assert.That(_recorder.EntriesOfKind("reply"),
-                Is.EqualTo(new[] { "reply belote_start_not_a_player" }));
+            Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries3));
         }
     }
 
@@ -179,11 +203,7 @@ public class BeloteLobbyAndSubstitutionFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(BelotePhase.Finished));
-            Assert.That(_recorder.Entries, Is.EqualTo(new[]
-            {
-                "tpl Games/Belote/BeloteCancelled",
-                "panel belote-# update"
-            }));
+            Assert.That(_recorder.Entries, Is.EqualTo(ExpectedEntries));
         }
     }
 
@@ -226,12 +246,7 @@ public class BeloteLobbyAndSubstitutionFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(success, Is.True);
-            Assert.That(_recorder.Entries, Is.EqualTo(new[]
-            {
-                "reply belote_sub_requested",
-                "tpl Games/Belote/BeloteSub",
-                "panel belote-#-sub new"
-            }));
+            Assert.That(_recorder.Entries, Is.EqualTo(ExpectedEntries2));
         }
     }
 
@@ -247,11 +262,7 @@ public class BeloteLobbyAndSubstitutionFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Players[1].WantsSub, Is.False);
-            Assert.That(_recorder.Entries, Is.EqualTo(new[]
-            {
-                "reply belote_sub_cancelled",
-                "panel belote-#-sub clear"
-            }));
+            Assert.That(_recorder.Entries, Is.EqualTo(ExpectedEntries3));
         }
     }
 
@@ -293,7 +304,7 @@ public class BeloteLobbyAndSubstitutionFlowTest
 
         await _game.AcceptSubAsync(GameUsers.User("substitute"), "player2");
 
-        Assert.That(_recorder.EntriesOfKind("close"), Is.EqualTo(new[] { "close player2 belote-#" }));
+        Assert.That(_recorder.EntriesOfKind("close"), Is.EqualTo(ExpectedCloseEntries));
     }
 
     [Test]

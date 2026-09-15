@@ -88,7 +88,7 @@ public class ShowdownSinkTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(sentMessage.Length, Is.LessThanOrEqualTo(303));
+            Assert.That(sentMessage, Has.Length.LessThanOrEqualTo(303));
             Assert.That(sentMessage, Does.EndWith("..."));
         }
     }

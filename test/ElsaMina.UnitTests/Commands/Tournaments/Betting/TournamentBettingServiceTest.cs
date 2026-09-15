@@ -361,7 +361,7 @@ public class TournamentBettingServiceTest
 
         await using var dbContext = new BotDbContext(_dbOptions);
         var records = dbContext.BetRecords.Where(r => r.RoomId == "room1").ToList();
-        Assert.That(records.Count, Is.EqualTo(2));
+        Assert.That(records, Has.Count.EqualTo(2));
     }
 
     [Test]

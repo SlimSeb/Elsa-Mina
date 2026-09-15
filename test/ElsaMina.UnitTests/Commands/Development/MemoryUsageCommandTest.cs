@@ -41,9 +41,12 @@ public class MemoryUsageCommandTest
         var attribute = typeof(MemoryUsageCommand).GetCommandAttribute();
 
         Assert.That(attribute, Is.Not.Null);
-        Assert.That(attribute.Name, Is.EqualTo("memusage"));
-        Assert.That(attribute.Aliases, Does.Contain("systeminfo"));
-        Assert.That(attribute.Aliases, Does.Contain("memoryusage"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(attribute.Name, Is.EqualTo("memusage"));
+            Assert.That(attribute.Aliases, Does.Contain("systeminfo"));
+            Assert.That(attribute.Aliases, Does.Contain("memoryusage"));
+        }
     }
 
     [Test]

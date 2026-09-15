@@ -61,19 +61,9 @@ public abstract class BaseMarkovCommand : Command
             using var reader = new StreamReader(stream);
             while (await reader.ReadLineAsync(cancellationToken) is { } line)
             {
-                if (!ChatLogHelpers.TryParseLine(line, out var username, out var message))
+                if (TryGetUsableMessage(line, userFilter, out var message))
                 {
-                    continue;
-                }
-
-                if (userFilter != null && username.ToLowerAlphaNum() != userFilter)
-                {
-                    continue;
-                }
-
-                if (IsUsableMessage(message))
-                {
-                    messages.Add(message.Trim());
+                    messages.Add(message);
                 }
             }
         }
@@ -88,6 +78,20 @@ public abstract class BaseMarkovCommand : Command
         // on line boundaries rather than punctuation) is the right model for chat logs
         var corpus = string.Join('\n', messages);
         return new NewlineText(corpus, stateSize: STATE_SIZE, normalize: false, temperature: TEMPERATURE);
+    }
+
+    private bool TryGetUsableMessage(string line, string userFilter, out string usableMessage)
+    {
+        usableMessage = null;
+        if (!ChatLogHelpers.TryParseLine(line, out var username, out var message)
+            || (userFilter != null && username.ToLowerAlphaNum() != userFilter)
+            || !IsUsableMessage(message))
+        {
+            return false;
+        }
+
+        usableMessage = message.Trim();
+        return true;
     }
 
     private bool IsUsableMessage(string message)

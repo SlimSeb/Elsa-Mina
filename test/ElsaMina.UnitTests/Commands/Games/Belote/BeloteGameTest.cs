@@ -112,9 +112,9 @@ public class BeloteGameTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_game.Players[0].Team, Is.EqualTo(0));
+            Assert.That(_game.Players[0].Team, Is.Zero);
             Assert.That(_game.Players[1].Team, Is.EqualTo(1));
-            Assert.That(_game.Players[2].Team, Is.EqualTo(0));
+            Assert.That(_game.Players[2].Team, Is.Zero);
             Assert.That(_game.Players[3].Team, Is.EqualTo(1));
         }
     }

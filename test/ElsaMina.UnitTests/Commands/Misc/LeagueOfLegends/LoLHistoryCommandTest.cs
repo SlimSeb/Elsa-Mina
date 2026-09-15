@@ -29,7 +29,7 @@ public class LeagueOfLegendsHistoryCommandTest
         _command = new LeagueOfLegendsHistoryCommand(_httpService, _configuration, _templatesManager);
     }
 
-    private IContext MakeContext(string target)
+    private static IContext MakeContext(string target)
     {
         var context = Substitute.For<IContext>();
         context.Target.Returns(target);
@@ -238,7 +238,7 @@ public class LeagueOfLegendsHistoryCommandTest
             Assert.That(capturedVm, Is.Not.Null);
             Assert.That(capturedVm.GameName, Is.EqualTo("Player"));
             Assert.That(capturedVm.TagLine, Is.EqualTo("EUW"));
-            Assert.That(capturedVm.Games.Count, Is.EqualTo(1));
+            Assert.That(capturedVm.Games, Has.Count.EqualTo(1));
             Assert.That(capturedVm.Games[0].ChampionName, Is.EqualTo("Jinx"));
             Assert.That(capturedVm.Games[0].ChampionId, Is.EqualTo(222));
             Assert.That(capturedVm.Games[0].ChampionIconUrl, Does.Contain("222.png"));

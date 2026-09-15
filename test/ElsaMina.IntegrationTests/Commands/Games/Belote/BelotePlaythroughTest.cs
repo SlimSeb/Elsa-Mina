@@ -16,6 +16,8 @@ namespace ElsaMina.IntegrationTests.Commands.Games.Belote;
 [TestFixture]
 public class BelotePlaythroughTest
 {
+    private static readonly string[] ExpectedReplies = ["belote_taker_announced"];
+
     private GameInteractionRecorder _recorder;
     private IRandomService _randomService;
     private IConfiguration _configuration;
@@ -99,7 +101,7 @@ public class BelotePlaythroughTest
 
         var replies = _recorder.EntriesOfKind("reply").Select(entry => entry["reply ".Length..]).ToList();
 
-        Assert.That(replies, Is.EqualTo(new[] { "belote_taker_announced" }));
+        Assert.That(replies, Is.EqualTo(ExpectedReplies));
     }
 
     [Test]

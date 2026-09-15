@@ -37,7 +37,7 @@
         <div style="@cardHeaderStyle">
             @GetString("dashboard_category_quick_actions")
         </div>
-        <table style="@tableStyle">
+        <table role="presentation" style="@tableStyle">
             <tbody>
                 <!-- Mini-Games Automation -->
                 <tr style="@rowStyle">
@@ -130,7 +130,7 @@
 
     <!-- 2. Room Options Section -->
     <div style="margin-bottom: 16px;">
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;" width="100%">
+        <table role="presentation" style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
             <tr>
                 <td style="vertical-align: middle; text-align: left;">
                     <h3 style="margin: 0; font-size: 1.05em; font-weight: bold;">@GetString("dashboard_section_options")</h3>
@@ -163,10 +163,10 @@
                     <div style="@cardHeaderStyle">
                         @GetString(category.TitleKey)
                     </div>
-                    <table style="@optionsTableStyle" width="100%">
+                    <table role="presentation" style="@optionsTableStyle">
                         <colgroup>
-                            <col style="width: 50%;" width="50%" />
-                            <col style="width: 50%;" width="50%" />
+                            <col style="width: 50%;" />
+                            <col style="width: 50%;" />
                         </colgroup>
                         <tbody>
                         @foreach (var parameterModel in category.Parameters)
@@ -185,10 +185,10 @@
         else if (Model.RoomParameterLines != null)
         {
             <div style="@cardStyle">
-                <table style="@optionsTableStyle" width="100%">
+                <table role="presentation" style="@optionsTableStyle">
                     <colgroup>
-                        <col style="width: 50%;" width="50%" />
-                        <col style="width: 50%;" width="50%" />
+                        <col style="width: 50%;" />
+                        <col style="width: 50%;" />
                     </colgroup>
                     <tbody>
                     @foreach (var parameterModel in Model.RoomParameterLines)
@@ -224,7 +224,7 @@
 
             @if (Model.AvailableGames != null && Model.AvailableGames.Any())
             {
-                <table style="@tableStyle">
+                <table role="presentation" style="@tableStyle">
                     <tbody>
                         @foreach (var game in Model.AvailableGames)
                         {
@@ -256,7 +256,7 @@
         <div style="@cardHeaderStyle">
             @GetString("dashboard_section_diagnostics")
         </div>
-        <table style="@tableStyle">
+        <table role="presentation" style="@tableStyle">
             <tbody>
                 <tr style="@rowStyle">
                     <td style="padding: 8px 14px; font-size: 0.82em; font-weight: bold; width: 40%;">@GetString("dashboard_diag_users_online")</td>

@@ -114,8 +114,11 @@ public class EventRoleMappingServiceTest
         // Assert
         await using var context = new BotDbContext(_options);
         var stored = await context.EventRoleMappings.FindAsync("zelda", "room1");
-        Assert.That(stored.DiscordRoleId, Is.EqualTo("new"));
-        Assert.That(await context.EventRoleMappings.CountAsync(), Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(stored.DiscordRoleId, Is.EqualTo("new"));
+            Assert.That(await context.EventRoleMappings.CountAsync(), Is.EqualTo(1));
+        }
     }
 
     [Test]

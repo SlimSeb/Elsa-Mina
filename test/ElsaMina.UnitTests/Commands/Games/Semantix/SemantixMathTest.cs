@@ -45,13 +45,13 @@ public class SemantixMathTest
 
         var similarity = SemantixMath.CosineSimilarity(vectorA, vectorB);
 
-        Assert.That(similarity, Is.EqualTo(0));
+        Assert.That(similarity, Is.Zero);
     }
 
     [Test]
     public void Test_CosineSimilarity_ShouldReturnZero_WhenVectorIsNull()
     {
-        Assert.That(SemantixMath.CosineSimilarity(null, [1f]), Is.EqualTo(0));
+        Assert.That(SemantixMath.CosineSimilarity(null, [1f]), Is.Zero);
     }
 
     [Test]
@@ -78,8 +78,11 @@ public class SemantixMathTest
         var warm = SemantixMath.ToTemperature(0.30);
         var hot = SemantixMath.ToTemperature(0.50);
 
-        Assert.That(cold, Is.LessThan(warm));
-        Assert.That(warm, Is.LessThan(hot));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(cold, Is.LessThan(warm));
+            Assert.That(warm, Is.LessThan(hot));
+        }
     }
 
     [Test]

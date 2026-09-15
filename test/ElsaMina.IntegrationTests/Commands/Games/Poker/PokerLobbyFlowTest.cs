@@ -15,6 +15,11 @@ namespace ElsaMina.IntegrationTests.Commands.Games.Poker;
 [TestFixture]
 public class PokerLobbyFlowTest
 {
+    private static readonly string[] ExpectedPanelTrace = ["poker-#-0 new"];
+    private static readonly string[] ExpectedReplyEntries = ["reply poker_start_not_enough_players"];
+    private static readonly string[] ExpectedReplyEntries2 = ["reply poker_start_not_a_player"];
+    private static readonly string[] ExpectedReplyEntries3 = ["reply poker_start_already_started"];
+
     private GameInteractionRecorder _recorder;
     private IRandomService _randomService;
     private IConfiguration _configuration;
@@ -53,7 +58,7 @@ public class PokerLobbyFlowTest
             Assert.That(messageKey, Is.EqualTo("poker_join_success"));
             Assert.That(args, Is.EqualTo(new object[] { "player1", PokerConstants.DEFAULT_BUY_IN }));
             Assert.That(_game.Players[0].Stack, Is.EqualTo(PokerConstants.DEFAULT_BUY_IN));
-            Assert.That(_recorder.PanelTrace(), Is.EqualTo(new[] { "poker-#-0 new" }));
+            Assert.That(_recorder.PanelTrace(), Is.EqualTo(ExpectedPanelTrace));
         }
 
         await _moneyService.Received(1).AddAsync("testroom", "player1", -PokerConstants.DEFAULT_BUY_IN);
@@ -155,8 +160,7 @@ public class PokerLobbyFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(PokerPhase.Lobby));
-            Assert.That(_recorder.EntriesOfKind("reply"),
-                Is.EqualTo(new[] { "reply poker_start_not_enough_players" }));
+            Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries));
         }
     }
 
@@ -176,7 +180,7 @@ public class PokerLobbyFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(PokerPhase.Lobby));
-            Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(new[] { "reply poker_start_not_a_player" }));
+            Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries2));
         }
     }
 
@@ -188,7 +192,7 @@ public class PokerLobbyFlowTest
 
         await _game.StartAsync(users[0]);
 
-        Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(new[] { "reply poker_start_already_started" }));
+        Assert.That(_recorder.EntriesOfKind("reply"), Is.EqualTo(ExpectedReplyEntries3));
     }
 
     /// <summary>
@@ -206,7 +210,7 @@ public class PokerLobbyFlowTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_game.Phase, Is.EqualTo(PokerPhase.Finished));
-            Assert.That(_recorder.PanelTrace().First(), Is.EqualTo("poker-#-0 clear"));
+            Assert.That(_recorder.PanelTrace()[0], Is.EqualTo("poker-#-0 clear"));
             foreach (var player in _game.Players)
             {
                 await _moneyService.Received(1)

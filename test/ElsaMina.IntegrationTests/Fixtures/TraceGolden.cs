@@ -68,7 +68,7 @@ public static class TraceGolden
     /// A compact report of the first divergence plus the overall lengths, which is enough to tell a
     /// reordering apart from an extra or missing interaction.
     /// </summary>
-    private static string Describe(IReadOnlyList<string> expected, IReadOnlyList<string> actual)
+    private static string Describe(List<string> expected, IReadOnlyList<string> actual)
     {
         var report = new StringBuilder();
         report.AppendLine($"expected {expected.Count} entries, got {actual.Count}");

@@ -117,7 +117,7 @@ public class PokerGameTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(success, Is.True);
-            Assert.That(_moneyService.GetBalance("newbie"), Is.EqualTo(0));
+            Assert.That(_moneyService.GetBalance("newbie"), Is.Zero);
         }
     }
 
@@ -132,7 +132,7 @@ public class PokerGameTest
         {
             Assert.That(success, Is.False);
             Assert.That(messageKey, Is.EqualTo("poker_join_insufficient_funds"));
-            Assert.That(_game.PlayerCount, Is.EqualTo(0));
+            Assert.That(_game.PlayerCount, Is.Zero);
             Assert.That(_moneyService.GetBalance("player1"), Is.EqualTo(50));
         }
     }
@@ -233,8 +233,8 @@ public class PokerGameTest
         {
             Assert.That(_game.Phase, Is.EqualTo(PokerPhase.Finished));
             // No real bucks were ever taken on buy-in or paid out on settle.
-            Assert.That(_moneyService.GetBalance("player1"), Is.EqualTo(0));
-            Assert.That(_moneyService.GetBalance("player2"), Is.EqualTo(0));
+            Assert.That(_moneyService.GetBalance("player1"), Is.Zero);
+            Assert.That(_moneyService.GetBalance("player2"), Is.Zero);
         }
     }
 

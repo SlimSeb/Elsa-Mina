@@ -395,7 +395,7 @@ public class AddCustomCommandTests
             using (Assert.EnterMultipleScope())
             {
                 Assert.That(addedCommand, Is.Not.Null);
-                Assert.That(addedCommand.Content.Length, Is.EqualTo(300));
+                Assert.That(addedCommand.Content, Has.Length.EqualTo(300));
             }
         }
 

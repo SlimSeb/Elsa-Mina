@@ -11,7 +11,7 @@
     <h3 style="text-align: center; margin: 0;">🏁 Course de Pokémon 🏁</h3>
     <p style="text-align: center;">Une nouvelle course de Pokémon va commencer!</p>
 
-    <table style="margin: 0 auto; border-collapse: separate; border-spacing: 8px 4px;">
+    <table role="presentation" style="margin: 0 auto; border-collapse: separate; border-spacing: 8px 4px;">
         @for (var row = 0; row < numRows; row++)
         {
             <tr>
@@ -24,7 +24,7 @@
                         var isChosen = Model.ChosenPokemons.Contains(pokemonName);
                         var opacity = isChosen ? " opacity: 0.4;" : "";
                         <td style="text-align: center; padding: 2px; width: 80px;@opacity">
-                            <img src="@data.MiniSprite" width="32" height="32"><br>
+                            <img src="@data.MiniSprite" width="32" height="32" alt="@pokemonName"><br>
                             <b>@pokemonName</b><br>
                             <em style="color: gray">Vit @data.Speed</em><br>@data.Type
                         </td>
@@ -46,7 +46,7 @@
             {
                 var color = name.ToColorHexCodeWithCustoms();
                 <div style="text-align: center; padding: 5px; margin: 0 8px;">
-                    <img src="@PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite" width="40" height="40"><br>
+                    <img src="@PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite" width="40" height="40" alt="@pokemon"><br>
                     <b style="color: @color">@name</b><br>
                     <span>@pokemon</span>
                 </div>

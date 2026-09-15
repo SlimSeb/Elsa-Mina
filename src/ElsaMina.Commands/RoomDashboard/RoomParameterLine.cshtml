@@ -20,13 +20,13 @@
 }
 
 <tr style="@rowStyle">
-    <td width="50%" style="@labelCellStyle">
+    <td style="@labelCellStyle">
         <label for="@Model.RoomParameterDefinition.Identifier">
             <span style="@nameStyle">@GetString(Model.RoomParameterDefinition.NameKey)</span>
             <span style="@descStyle">@GetString(Model.RoomParameterDefinition.DescriptionKey)</span>
         </label>
     </td>
-    <td width="50%" style="@controlCellStyle">
+    <td style="@controlCellStyle">
         @switch (Model.RoomParameterDefinition.Type)
         {
             case RoomBotConfigurationType.Boolean:
@@ -58,7 +58,7 @@
                 var possibleValues = Model.RoomParameterDefinition.PossibleValues?.ToList();
                 if (possibleValues != null && possibleValues.Count <= 4)
                 {
-                    <table style="border-collapse: collapse; margin-left: auto; width: 100%; max-width: 170px;" align="right">
+                    <table role="presentation" style="border-collapse: collapse; margin-left: auto; width: 100%; max-width: 170px; float: right;">
                         <tbody>
                         @foreach (var option in possibleValues)
                         {
@@ -118,7 +118,7 @@
             case RoomBotConfigurationType.String:
             {
                 <form data-submitsend="/w @Model.BotName, @(Model.Trigger)rc @Model.RoomId, @(Model.RoomParameterDefinition.Identifier)={@(Model.RoomParameterDefinition.Identifier)}" style="margin: 0;">
-                    <table style="width: 100%; border-collapse: collapse;" width="100%">
+                    <table role="presentation" style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="padding: 0 4px 0 0; vertical-align: middle;">
                                 <input

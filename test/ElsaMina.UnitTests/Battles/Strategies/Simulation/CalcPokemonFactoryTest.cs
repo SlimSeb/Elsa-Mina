@@ -13,8 +13,11 @@ public class CalcPokemonFactoryTest
         var result = CalcPokemonFactory.TryBuildOpponentPokemon(null, out var pokemon);
 
         // Assert
-        Assert.That(result, Is.False);
-        Assert.That(pokemon, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.False);
+            Assert.That(pokemon, Is.Null);
+        }
     }
 
     [Test]
@@ -27,8 +30,11 @@ public class CalcPokemonFactoryTest
         var result = CalcPokemonFactory.TryBuildOpponentPokemon(state, out var pokemon);
 
         // Assert
-        Assert.That(result, Is.False);
-        Assert.That(pokemon, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.False);
+            Assert.That(pokemon, Is.Null);
+        }
     }
 
     [Test]
@@ -38,8 +44,11 @@ public class CalcPokemonFactoryTest
         var result = CalcPokemonFactory.TryBuildOurPokemon(null, out var pokemon);
 
         // Assert
-        Assert.That(result, Is.False);
-        Assert.That(pokemon, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.False);
+            Assert.That(pokemon, Is.Null);
+        }
     }
 
     [Test]
@@ -52,8 +61,11 @@ public class CalcPokemonFactoryTest
         var result = CalcPokemonFactory.TryBuildOurPokemon(state, out var pokemon);
 
         // Assert
-        Assert.That(result, Is.False);
-        Assert.That(pokemon, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.False);
+            Assert.That(pokemon, Is.Null);
+        }
     }
 
     [Test]
@@ -72,8 +84,11 @@ public class CalcPokemonFactoryTest
         var result = CalcPokemonFactory.TryBuildOurPokemon(state, out var pokemon);
 
         // Assert
-        Assert.That(result, Is.True);
-        Assert.That(pokemon, Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(pokemon, Is.Not.Null);
+        }
         Assert.That(pokemon.Name, Is.EqualTo("Garchomp"));
     }
 }

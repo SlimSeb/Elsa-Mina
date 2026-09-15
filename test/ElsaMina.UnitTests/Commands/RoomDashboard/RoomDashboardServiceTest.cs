@@ -208,7 +208,7 @@ public class RoomDashboardServiceTest
         {
             Assert.That(viewModel.UserCount, Is.EqualTo(2));
             Assert.That(viewModel.AvailableGames, Is.Not.Null);
-            Assert.That(viewModel.AvailableGames.Count, Is.GreaterThan(0));
+            Assert.That(viewModel.AvailableGames, Has.Count.GreaterThan(0));
             Assert.That(viewModel.RoomLocale, Does.Contain("English"));
             Assert.That(viewModel.RoomTimeZone, Is.Not.Null);
             Assert.That(viewModel.HasActiveGame, Is.False);

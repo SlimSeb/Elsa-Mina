@@ -62,7 +62,7 @@
     }
 
     <div style="@sectionStyle">
-        <div style="@sectionTitleStyle">@GetString("edit_profile_panel_emoji_section")</div>
+        <div style="@sectionTitleStyle"><label for="profile-flag-@Model.RoomId">@GetString("edit_profile_panel_emoji_section")</label></div>
         <div>
             <span>@GetString("edit_profile_panel_current_emoji")</span>
             @if (!string.IsNullOrEmpty(Model.CurrentEmoji))
@@ -82,7 +82,7 @@
             }
         </div>
         <form data-submitsend="/w @Model.BotName,@(Model.Trigger)setemoji @Model.RoomId, {flag}" style="margin-top: .5rem;">
-            <select name="flag" class="textbox">
+            <select id="profile-flag-@Model.RoomId" name="flag" class="textbox">
                 @foreach (var (_, flag, name) in flags)
                 {
                     <option value="@Raw(flag)">@flag @name</option>
@@ -107,7 +107,7 @@
                     <em style="margin-left: .5rem;">@GetString("edit_profile_panel_no_color")</em>
                 }
             </div>
-            <table style="border-collapse: separate; border-spacing: .3rem; margin-top: .35rem; table-layout: fixed; width: 100%;">
+            <table role="presentation" style="border-collapse: separate; border-spacing: .3rem; margin-top: .35rem; table-layout: fixed; width: 100%;">
                 <tbody>
                 @{
                     var colorEntries = colorSection.Colors
@@ -158,7 +158,7 @@
             @* The sprites sit on the same row as on the profile, with their arrows right underneath,
                so the panel doubles as a preview of the shelf being reordered. *@
             <div style="overflow-x: auto;">
-                <table style="border-collapse: collapse;">
+                <table role="presentation" style="border-collapse: collapse;">
                     <tbody>
                     <tr>
                         @foreach (var doll in Model.Dolls)

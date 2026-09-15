@@ -27,12 +27,12 @@ public class PollEndHandlerTests
         _sut = new PollEndHandler(_clockService, _dbContextFactory);
     }
 
-    private DbContextOptions<BotDbContext> CreateOptions() =>
+    private static DbContextOptions<BotDbContext> CreateOptions() =>
         new DbContextOptionsBuilder<BotDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-    private IBotDbContextFactory CreateFactory(DbContextOptions<BotDbContext> options)
+    private static IBotDbContextFactory CreateFactory(DbContextOptions<BotDbContext> options)
     {
         var factory = Substitute.For<IBotDbContextFactory>();
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())

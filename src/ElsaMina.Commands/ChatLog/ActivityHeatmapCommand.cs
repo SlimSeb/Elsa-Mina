@@ -41,28 +41,7 @@ public class ActivityHeatmapCommand : Command
             return;
         }
 
-        // Remaining arguments are an optional room and an optional "yyyy-MM" month, in any order.
-        var now = DateTime.UtcNow;
-        var roomId = context.RoomId;
-        var year = now.Year;
-        var month = now.Month;
-        foreach (var part in parts.Skip(1))
-        {
-            if (string.IsNullOrWhiteSpace(part))
-            {
-                continue;
-            }
-
-            if (TryParseMonth(part, out var parsedYear, out var parsedMonth))
-            {
-                year = parsedYear;
-                month = parsedMonth;
-            }
-            else
-            {
-                roomId = part.ToLowerAlphaNum();
-            }
-        }
+        var (roomId, year, month) = ParseOptionalArguments(parts.Skip(1), context.RoomId);
 
         try
         {
@@ -78,42 +57,7 @@ public class ActivityHeatmapCommand : Command
             // Logs are stored in UTC; bin activity in the room's local time zone.
             var timeZone = _roomsManager.GetRoom(roomId)?.TimeZone ?? TimeZoneInfo.Utc;
 
-            // counts[dayOfWeekIndex, hour] where dayOfWeekIndex is 0 = Monday ... 6 = Sunday
-            var counts = new double[DAYS_PER_WEEK, HOURS_PER_DAY];
-            var totalCount = 0;
-
-            foreach (var key in keys)
-            {
-                if (!TryGetDateFromKey(key, out var date))
-                {
-                    continue;
-                }
-
-                await using var stream = await _fileSharingService.GetFileAsync(key, cancellationToken);
-                if (stream == null)
-                {
-                    continue;
-                }
-
-                using var reader = new StreamReader(stream);
-                while (await reader.ReadLineAsync(cancellationToken) is { } line)
-                {
-                    if (!ChatLogHelpers.TryParseLine(line, out var username, out _)
-                        || username.ToLowerAlphaNum() != userId
-                        || !TryParseTimeOfDay(line, out var timeOfDay))
-                    {
-                        continue;
-                    }
-
-                    // Convert the UTC timestamp to the room's local time; the day of week may shift.
-                    var utc = DateTime.SpecifyKind(date.ToDateTime(timeOfDay), DateTimeKind.Utc);
-                    var local = TimeZoneInfo.ConvertTimeFromUtc(utc, timeZone);
-                    var dayIndex = ((int)local.DayOfWeek + 6) % 7; // Sunday(0) -> 6, Monday(1) -> 0
-
-                    counts[dayIndex, local.Hour]++;
-                    totalCount++;
-                }
-            }
+            var (counts, totalCount) = await CountUserActivityAsync(keys, userId, timeZone, cancellationToken);
 
             if (totalCount == 0)
             {
@@ -146,6 +90,73 @@ public class ActivityHeatmapCommand : Command
             Log.Error(exception, "Failed to generate activity heatmap for {UserId} in {RoomId}", userId, roomId);
             await context.HandleErrorAsync(exception, cancellationToken);
         }
+    }
+
+    // Remaining arguments are an optional room and an optional "yyyy-MM" month, in any order.
+    private static (string RoomId, int Year, int Month) ParseOptionalArguments(IEnumerable<string> arguments,
+        string defaultRoomId)
+    {
+        var now = DateTime.UtcNow;
+        var roomId = defaultRoomId;
+        var year = now.Year;
+        var month = now.Month;
+        foreach (var argument in arguments.Where(argument => !string.IsNullOrWhiteSpace(argument)))
+        {
+            if (TryParseMonth(argument, out var parsedYear, out var parsedMonth))
+            {
+                year = parsedYear;
+                month = parsedMonth;
+            }
+            else
+            {
+                roomId = argument.ToLowerAlphaNum();
+            }
+        }
+
+        return (roomId, year, month);
+    }
+
+    private async Task<(double[,] Counts, int TotalCount)> CountUserActivityAsync(IEnumerable<string> keys,
+        string userId, TimeZoneInfo timeZone, CancellationToken cancellationToken)
+    {
+        // counts[dayOfWeekIndex, hour] where dayOfWeekIndex is 0 = Monday ... 6 = Sunday
+        var counts = new double[DAYS_PER_WEEK, HOURS_PER_DAY];
+        var totalCount = 0;
+
+        foreach (var key in keys)
+        {
+            if (!TryGetDateFromKey(key, out var date))
+            {
+                continue;
+            }
+
+            await using var stream = await _fileSharingService.GetFileAsync(key, cancellationToken);
+            if (stream == null)
+            {
+                continue;
+            }
+
+            using var reader = new StreamReader(stream);
+            while (await reader.ReadLineAsync(cancellationToken) is { } line)
+            {
+                if (!ChatLogHelpers.TryParseLine(line, out var username, out _)
+                    || username.ToLowerAlphaNum() != userId
+                    || !TryParseTimeOfDay(line, out var timeOfDay))
+                {
+                    continue;
+                }
+
+                // Convert the UTC timestamp to the room's local time; the day of week may shift.
+                var utc = DateTime.SpecifyKind(date.ToDateTime(timeOfDay), DateTimeKind.Utc);
+                var local = TimeZoneInfo.ConvertTimeFromUtc(utc, timeZone);
+                var dayIndex = ((int)local.DayOfWeek + 6) % 7; // Sunday(0) -> 6, Monday(1) -> 0
+
+                counts[dayIndex, local.Hour]++;
+                totalCount++;
+            }
+        }
+
+        return (counts, totalCount);
     }
 
     private static byte[] GenerateHeatmap(IContext context, string title, double[,] counts, CultureInfo culture,

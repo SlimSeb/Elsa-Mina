@@ -53,7 +53,7 @@ public class BattleMessageParserHazardTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_context.OwnSideStealthRock, Is.False);
-            Assert.That(_context.OwnSideSpikesLayers, Is.EqualTo(0));
+            Assert.That(_context.OwnSideSpikesLayers, Is.Zero);
         }
     }
 
@@ -92,7 +92,7 @@ public class BattleMessageParserHazardTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_context.OwnSideStealthRock, Is.False);
-            Assert.That(_context.OwnSideSpikesLayers, Is.EqualTo(0));
+            Assert.That(_context.OwnSideSpikesLayers, Is.Zero);
         }
     }
 }

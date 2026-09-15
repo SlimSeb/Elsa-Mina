@@ -16,7 +16,7 @@ public class PlayTimeCommandTest
     private IBotDbContextFactory _dbContextFactory;
     private PlayTimeCommand _command;
 
-    private DbContextOptions<BotDbContext> CreateNewInMemoryOptions() =>
+    private static DbContextOptions<BotDbContext> CreateNewInMemoryOptions() =>
         new DbContextOptionsBuilder<BotDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;

@@ -28,7 +28,7 @@
     @if (game.Phase == TarotPhase.Bidding)
     {
         <p style="text-align:center;margin:4px 0"><b>@GetString("tarot_bidding_phase")</b></p>
-        <table style="margin:auto;border-collapse:collapse">
+        <table role="presentation" style="margin:auto;border-collapse:collapse">
             @foreach (var player in game.Players)
             {
                 var isCurrent = game.CurrentPlayer == player;

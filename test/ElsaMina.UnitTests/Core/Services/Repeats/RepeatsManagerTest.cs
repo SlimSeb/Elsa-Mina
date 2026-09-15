@@ -45,8 +45,11 @@ public class RepeatsManagerTest
         // Assert
         var trackedRepeats = _manager.GetRepeats("testroom").ToList();
         Assert.That(trackedRepeats, Has.Count.EqualTo(1));
-        Assert.That(trackedRepeats[0].Message, Is.EqualTo("hello"));
-        Assert.That(await CountRepeatsInDatabaseAsync(), Is.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(trackedRepeats[0].Message, Is.EqualTo("hello"));
+            Assert.That(await CountRepeatsInDatabaseAsync(), Is.EqualTo(1));
+        }
     }
 
     [Test]
@@ -60,9 +63,12 @@ public class RepeatsManagerTest
         var stopped = await _manager.StopRepeatAsync(repeatId);
 
         // Assert
-        Assert.That(stopped, Is.True);
-        Assert.That(_manager.GetRepeat(repeatId), Is.Null);
-        Assert.That(await CountRepeatsInDatabaseAsync(), Is.EqualTo(0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(stopped, Is.True);
+            Assert.That(_manager.GetRepeat(repeatId), Is.Null);
+            Assert.That(await CountRepeatsInDatabaseAsync(), Is.Zero);
+        }
     }
 
     [Test]
@@ -98,7 +104,10 @@ public class RepeatsManagerTest
         // Assert
         var reloaded = _manager.GetRepeat(repeatId);
         Assert.That(reloaded, Is.Not.Null);
-        Assert.That(reloaded.RoomId, Is.EqualTo("testroom"));
-        Assert.That(reloaded.Message, Is.EqualTo("persisted"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(reloaded.RoomId, Is.EqualTo("testroom"));
+            Assert.That(reloaded.Message, Is.EqualTo("persisted"));
+        }
     }
 }

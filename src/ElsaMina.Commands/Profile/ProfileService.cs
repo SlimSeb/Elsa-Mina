@@ -1,7 +1,6 @@
 using ElsaMina.Commands.Dolls;
 using ElsaMina.Commands.Profile.EditProfilePanel;
 using ElsaMina.Commands.Showdown.Ranking;
-using ElsaMina.Core.Services.Formats;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Services.UserData;
@@ -22,8 +21,7 @@ public class ProfileService : IProfileService
     private readonly IUserDetailsManager _userDetailsManager;
     private readonly ITemplatesManager _templatesManager;
     private readonly IUserDataService _userDataService;
-    private readonly IShowdownRanksProvider _showdownRanksProvider;
-    private readonly IFormatsManager _formatsManager;
+    private readonly IBestRankingProvider _bestRankingProvider;
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly IRoomsManager _roomsManager;
     private readonly IDollService _dollService;
@@ -31,8 +29,7 @@ public class ProfileService : IProfileService
     public ProfileService(IUserDetailsManager userDetailsManager,
         ITemplatesManager templatesManager,
         IUserDataService userDataService,
-        IShowdownRanksProvider showdownRanksProvider,
-        IFormatsManager formatsManager,
+        IBestRankingProvider bestRankingProvider,
         IBotDbContextFactory dbContextFactory,
         IRoomsManager roomsManager,
         IDollService dollService)
@@ -40,8 +37,7 @@ public class ProfileService : IProfileService
         _userDetailsManager = userDetailsManager;
         _templatesManager = templatesManager;
         _userDataService = userDataService;
-        _showdownRanksProvider = showdownRanksProvider;
-        _formatsManager = formatsManager;
+        _bestRankingProvider = bestRankingProvider;
         _dbContextFactory = dbContextFactory;
         _roomsManager = roomsManager;
         _dollService = dollService;
@@ -53,7 +49,7 @@ public class ProfileService : IProfileService
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var userDetailsTask = _userDetailsManager.GetUserDetailsAsync(userId, cancellationToken);
         var registerDateTask = _userDataService.GetRegisterDateAsync(userId, cancellationToken);
-        var ranksTask = _showdownRanksProvider.GetRankingDataAsync(userId, cancellationToken);
+        var bestRankingTask = _bestRankingProvider.GetBestRankingAsync(userId, cancellationToken);
 
         // Foreign keys guarantee that any user-owned row (room data, game scores) points at a Users row,
         // so the whole profile can be loaded from a single Users query through the navigation properties.
@@ -82,7 +78,7 @@ public class ProfileService : IProfileService
 
         var storedUserData = savedUser?.RoomData.FirstOrDefault();
 
-        await Task.WhenAll(userDetailsTask, registerDateTask, ranksTask);
+        await Task.WhenAll(userDetailsTask, registerDateTask, bestRankingTask);
 
         var showdownUserDetails = userDetailsTask.Result;
         var registerDate = registerDateTask.Result;
@@ -90,8 +86,7 @@ public class ProfileService : IProfileService
         var room = _roomsManager.GetRoom(roomId);
         var culture = room?.Culture;
         var avatarUrl = GetAvatar(storedUserData, showdownUserDetails);
-        var bestRanking = ranksTask.Result?.MaxBy(ranking => ranking.Elo);
-        bestRanking?.FormatId = _formatsManager.GetCleanFormat(bestRanking.FormatId);
+        var bestRanking = bestRankingTask.Result;
 
         var userRoomRank = GetUserRoomRank(roomId, showdownUserDetails);
         var userName = showdownUserDetails?.Name != userId && !string.IsNullOrEmpty(showdownUserDetails?.Name)

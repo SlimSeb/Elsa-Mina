@@ -18,7 +18,7 @@ public class PlayTimeUpdateServiceTest
     private IRoomsManager _roomsManager;
     private DbContextOptions<BotDbContext> _dbContextOptions;
 
-    private IBotDbContextFactory CreateFactory(DbContextOptions<BotDbContext> options)
+    private static IBotDbContextFactory CreateFactory(DbContextOptions<BotDbContext> options)
     {
         var factory = Substitute.For<IBotDbContextFactory>();
         factory.CreateDbContextAsync(Arg.Any<CancellationToken>())

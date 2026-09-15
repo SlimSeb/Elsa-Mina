@@ -15,6 +15,28 @@ namespace ElsaMina.IntegrationTests.Commands.Games.Tarot;
 [TestFixture]
 public class TarotSubstitutionFlowTest
 {
+    private static readonly string[] ExpectedEntries =
+    [
+        "reply tarot_sub_requested",
+        "tpl Games/Tarot/TarotSub",
+        "panel tarot-#-sub new"
+    ];
+
+    private static readonly string[] ExpectedEntries2 =
+    [
+        "reply tarot_sub_cancelled",
+        "panel tarot-#-sub clear"
+    ];
+
+    private static readonly string[] ExpectedEntries3 =
+    [
+        "reply tarot_sub_force_requested",
+        "tpl Games/Tarot/TarotSub",
+        "panel tarot-#-sub new"
+    ];
+
+    private static readonly string[] ExpectedCloseEntries = ["close player2 tarot-#"];
+
     private GameInteractionRecorder _recorder;
     private IRandomService _randomService;
     private IConfiguration _configuration;
@@ -100,12 +122,7 @@ public class TarotSubstitutionFlowTest
         {
             Assert.That(success, Is.True);
             Assert.That(_game.Players[1].WantsSub, Is.True);
-            Assert.That(_recorder.Entries, Is.EqualTo(new[]
-            {
-                "reply tarot_sub_requested",
-                "tpl Games/Tarot/TarotSub",
-                "panel tarot-#-sub new"
-            }));
+            Assert.That(_recorder.Entries, Is.EqualTo(ExpectedEntries));
         }
     }
 
@@ -122,11 +139,7 @@ public class TarotSubstitutionFlowTest
         {
             Assert.That(success, Is.True);
             Assert.That(_game.Players[1].WantsSub, Is.False);
-            Assert.That(_recorder.Entries, Is.EqualTo(new[]
-            {
-                "reply tarot_sub_cancelled",
-                "panel tarot-#-sub clear"
-            }));
+            Assert.That(_recorder.Entries, Is.EqualTo(ExpectedEntries2));
         }
     }
 
@@ -142,12 +155,7 @@ public class TarotSubstitutionFlowTest
         {
             Assert.That(success, Is.True);
             Assert.That(_game.Players[1].WantsSub, Is.True);
-            Assert.That(_recorder.Entries, Is.EqualTo(new[]
-            {
-                "reply tarot_sub_force_requested",
-                "tpl Games/Tarot/TarotSub",
-                "panel tarot-#-sub new"
-            }));
+            Assert.That(_recorder.Entries, Is.EqualTo(ExpectedEntries3));
         }
     }
 
@@ -231,10 +239,10 @@ public class TarotSubstitutionFlowTest
 
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_recorder.EntriesOfKind("close"), Is.EqualTo(new[] { "close player2 tarot-#" }));
+            Assert.That(_recorder.EntriesOfKind("close"), Is.EqualTo(ExpectedCloseEntries));
             Assert.That(entries.IndexOf("close player2 tarot-#"),
                 Is.LessThan(entries.IndexOf("page substitute tarot-#")));
-            Assert.That(_recorder.PanelTrace().Last(), Is.EqualTo("tarot-#-sub clear"));
+            Assert.That(_recorder.PanelTrace()[^1], Is.EqualTo("tarot-#-sub clear"));
         }
     }
 
@@ -341,14 +349,14 @@ public class TarotSubstitutionFlowTest
         _recorder.Clear();
 
         await _game.AcceptSubAsync(GameUsers.User("substitute1"), "player2");
-        var panelAfterFirst = _recorder.PanelTrace().Last();
+        var panelAfterFirst = _recorder.PanelTrace()[^1];
         _recorder.Clear();
         await _game.AcceptSubAsync(GameUsers.User("substitute2"), "player3");
 
         using (Assert.EnterMultipleScope())
         {
             Assert.That(panelAfterFirst, Is.EqualTo("tarot-#-sub update"));
-            Assert.That(_recorder.PanelTrace().Last(), Is.EqualTo("tarot-#-sub clear"));
+            Assert.That(_recorder.PanelTrace()[^1], Is.EqualTo("tarot-#-sub clear"));
         }
     }
 

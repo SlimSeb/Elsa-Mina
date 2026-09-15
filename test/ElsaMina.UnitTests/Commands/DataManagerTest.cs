@@ -6,6 +6,12 @@ namespace ElsaMina.UnitTests.Commands;
 [TestFixture]
 public class DataManagerTest
 {
+    private static readonly string[] WordleWordsSample = ["apple", "crane", "level"];
+    private static readonly string[] WordleWordsFrSample = ["avion", "blanc"];
+    private static readonly string[] SemantixWordsFrSample = ["mot", "arbre"];
+    private static readonly string[] SemantixAnswersFrSample = ["soleil", "lune"];
+    private static readonly string[] CachedWordleWordsSample = ["apple", "crane"];
+
     private string _tempDirectory;
     private DataManager _sut;
 
@@ -99,7 +105,7 @@ public class DataManagerTest
     public void Test_WordleWords_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonSerializer.Serialize(new[] { "apple", "crane", "level" });
+        var json = JsonSerializer.Serialize(WordleWordsSample);
         File.WriteAllText(Path.Combine(_tempDirectory, "wordle_words.json"), json);
 
         // Act
@@ -115,7 +121,7 @@ public class DataManagerTest
     public void Test_WordleWordsFr_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonSerializer.Serialize(new[] { "avion", "blanc" });
+        var json = JsonSerializer.Serialize(WordleWordsFrSample);
         File.WriteAllText(Path.Combine(_tempDirectory, "wordle_words_fr.json"), json);
 
         // Act
@@ -131,7 +137,7 @@ public class DataManagerTest
     public void Test_SemantixWordsFr_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonSerializer.Serialize(new[] { "mot", "arbre" });
+        var json = JsonSerializer.Serialize(SemantixWordsFrSample);
         File.WriteAllText(Path.Combine(_tempDirectory, "semantix_words_fr.json"), json);
 
         // Act
@@ -147,7 +153,7 @@ public class DataManagerTest
     public void Test_SemantixAnswersFr_ShouldLoadData_WhenPropertyAccessed()
     {
         // Arrange
-        var json = JsonSerializer.Serialize(new[] { "soleil", "lune" });
+        var json = JsonSerializer.Serialize(SemantixAnswersFrSample);
         File.WriteAllText(Path.Combine(_tempDirectory, "semantix_answers_fr.json"), json);
 
         // Act
@@ -163,7 +169,7 @@ public class DataManagerTest
     public void Test_Properties_ShouldReturnCachedInstance_OnSubsequentAccesses()
     {
         // Arrange
-        var json = JsonSerializer.Serialize(new[] { "apple", "crane" });
+        var json = JsonSerializer.Serialize(CachedWordleWordsSample);
         var filePath = Path.Combine(_tempDirectory, "wordle_words.json");
         File.WriteAllText(filePath, json);
 
@@ -180,12 +186,15 @@ public class DataManagerTest
     public void Test_Properties_ShouldHandleMissingFilesGracefully_WhenFilesDoNotExist()
     {
         // Act & Assert (none of these should throw unhandled exceptions)
-        Assert.That(_sut.CountriesGameData.Countries, Is.Empty);
-        Assert.That(_sut.PokemonDescriptions, Is.Null);
-        Assert.That(_sut.CapitalCitiesGameData.Capitals, Is.Empty);
-        Assert.That(_sut.WordleWords, Is.Null);
-        Assert.That(_sut.WordleWordsFr, Is.Null);
-        Assert.That(_sut.SemantixWordsFr, Is.Null);
-        Assert.That(_sut.SemantixAnswersFr, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_sut.CountriesGameData.Countries, Is.Empty);
+            Assert.That(_sut.PokemonDescriptions, Is.Null);
+            Assert.That(_sut.CapitalCitiesGameData.Capitals, Is.Empty);
+            Assert.That(_sut.WordleWords, Is.Null);
+            Assert.That(_sut.WordleWordsFr, Is.Null);
+            Assert.That(_sut.SemantixWordsFr, Is.Null);
+            Assert.That(_sut.SemantixAnswersFr, Is.Null);
+        }
     }
 }

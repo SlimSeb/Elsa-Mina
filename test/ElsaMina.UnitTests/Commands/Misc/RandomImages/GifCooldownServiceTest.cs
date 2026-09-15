@@ -18,8 +18,11 @@ public class GifCooldownServiceTest
     {
         var (roomRemaining, userRemaining) = _service.GetRemainingCooldowns("room1", "user1", DateTimeOffset.UtcNow);
 
-        Assert.That(roomRemaining, Is.EqualTo(TimeSpan.Zero));
-        Assert.That(userRemaining, Is.EqualTo(TimeSpan.Zero));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(roomRemaining, Is.EqualTo(TimeSpan.Zero));
+            Assert.That(userRemaining, Is.EqualTo(TimeSpan.Zero));
+        }
     }
 
     [Test]
@@ -103,10 +106,13 @@ public class GifCooldownServiceTest
         var elapsed = TimeSpan.FromSeconds(30);
         var (roomRemaining, userRemaining) = _service.GetRemainingCooldowns("room1", "user1", now + elapsed);
 
-        Assert.That(roomRemaining,
-            Is.EqualTo(GifConstants.PER_ROOM_COOLDOWN - elapsed).Within(TimeSpan.FromMilliseconds(1)));
-        Assert.That(userRemaining,
-            Is.EqualTo(GifConstants.PER_USER_COOLDOWN - elapsed).Within(TimeSpan.FromMilliseconds(1)));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(roomRemaining,
+                Is.EqualTo(GifConstants.PER_ROOM_COOLDOWN - elapsed).Within(TimeSpan.FromMilliseconds(1)));
+            Assert.That(userRemaining,
+                Is.EqualTo(GifConstants.PER_USER_COOLDOWN - elapsed).Within(TimeSpan.FromMilliseconds(1)));
+        }
     }
 
     [Test]
@@ -121,11 +127,14 @@ public class GifCooldownServiceTest
         var checkTime = resetTime.AddSeconds(30);
         var (roomRemaining, userRemaining) = _service.GetRemainingCooldowns("room1", "user1", checkTime);
 
-        Assert.That(roomRemaining,
-            Is.EqualTo(GifConstants.PER_ROOM_COOLDOWN - TimeSpan.FromSeconds(30))
-                .Within(TimeSpan.FromMilliseconds(1)));
-        Assert.That(userRemaining,
-            Is.EqualTo(GifConstants.PER_USER_COOLDOWN - TimeSpan.FromSeconds(30))
-                .Within(TimeSpan.FromMilliseconds(1)));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(roomRemaining,
+                Is.EqualTo(GifConstants.PER_ROOM_COOLDOWN - TimeSpan.FromSeconds(30))
+                    .Within(TimeSpan.FromMilliseconds(1)));
+            Assert.That(userRemaining,
+                Is.EqualTo(GifConstants.PER_USER_COOLDOWN - TimeSpan.FromSeconds(30))
+                    .Within(TimeSpan.FromMilliseconds(1)));
+        }
     }
 }

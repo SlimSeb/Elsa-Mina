@@ -121,8 +121,11 @@ public class WordleDailyServiceTest
         var answer = _service.GetDailyAnswer(ENGLISH, TimeZoneInfo.Utc);
 
         // Assert
-        Assert.That(answer, Is.EqualTo(answer.ToUpperInvariant()));
-        Assert.That(ENGLISH_ANSWERS, Does.Contain(answer));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(answer, Is.EqualTo(answer.ToUpperInvariant()));
+            Assert.That(ENGLISH_ANSWERS, Does.Contain(answer));
+        }
     }
 
     [Test]

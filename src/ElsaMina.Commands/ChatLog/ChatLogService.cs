@@ -77,7 +77,8 @@ public class ChatLogService : IChatLogService
     {
         AppLog.Information("ChatLogService starting with flush interval {FlushInterval}", _flushInterval);
         _cts = new CancellationTokenSource();
-        _ = Task.Run(() => FlushLoopAsync(_cts.Token));
+        var cancellationToken = _cts.Token;
+        _ = Task.Run(() => FlushLoopAsync(cancellationToken), cancellationToken);
     }
 
     private async Task FlushLoopAsync(CancellationToken cancellationToken)

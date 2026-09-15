@@ -14,6 +14,8 @@ public class CalcWithAiCommand : Command
 {
     private const string CALC_AI_ERROR = "calc_ai_error";
 
+    private static readonly JsonSerializerOptions JSON_OPTIONS = new() { PropertyNameCaseInsensitive = true };
+
     private readonly ILanguageModelProvider _languageModelProvider;
     private readonly IResourcesService _resourcesService;
     private readonly IDamageCalculator _damageCalculator;
@@ -59,7 +61,7 @@ public class CalcWithAiCommand : Command
         CalcRequestDto calcRequest;
         try
         {
-            calcRequest = JsonSerializer.Deserialize<CalcRequestDto>(ExtractJson(response), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            calcRequest = JsonSerializer.Deserialize<CalcRequestDto>(ExtractJson(response), JSON_OPTIONS);
         }
         catch (Exception exception)
         {

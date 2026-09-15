@@ -17,7 +17,7 @@ public class RoomTest
 {
     private const string ROOM_ID = "franais";
 
-    private IBotDbContextFactory _dbContextFactory;
+    private BotDbContextFactory _dbContextFactory;
     private RoomsManager _roomsManager;
     private PlayTimeUpdateService _playTimeUpdateService;
     private IUserSaveQueue _userSaveQueue;

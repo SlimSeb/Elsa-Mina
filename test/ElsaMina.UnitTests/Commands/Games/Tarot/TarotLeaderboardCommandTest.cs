@@ -124,7 +124,7 @@ public class TarotLeaderboardCommandTest
         using (Assert.EnterMultipleScope())
         {
             // Lowest 20 scorers (scores 0..19), displayed lowest-first.
-            Assert.That(entries[0].TotalScoreHalfPoints, Is.EqualTo(0));
+            Assert.That(entries[0].TotalScoreHalfPoints, Is.Zero);
             Assert.That(entries[^1].TotalScoreHalfPoints, Is.EqualTo(19));
             // The top scorers (scores 20..24) are excluded.
             Assert.That(entries.Select(entry => entry.TotalScoreHalfPoints), Has.None.GreaterThan(19));

@@ -15,6 +15,16 @@ public class DollServiceTest
 {
     private const string DRIVE_ID = "drive-poupees";
 
+    private static readonly string[] PikachuAndRioluCatalogueKeys = ["pikachu", "rioludeboutfacedeuxpieds"];
+    private static readonly string[] ClefairyOnlyCatalogueKeys = ["clefairy"];
+    private static readonly string[] PikachuOnlyCatalogueKeys = ["pikachu"];
+    private static readonly string[] SnorlaxOnlyCatalogueKeys = ["snorlax"];
+    private static readonly string[] ClefairySnorlaxPikachuOrder = ["clefairy", "snorlax", "pikachu"];
+    private static readonly string[] SnorlaxPikachuClefairyOrder = ["snorlax", "pikachu", "clefairy"];
+    private static readonly string[] ClefairyPikachuSnorlaxShelf = ["clefairy", "pikachu", "snorlax"];
+    private static readonly string[] PikachuClefairySnorlaxShelf = ["pikachu", "clefairy", "snorlax"];
+    private static readonly string[] ClefairyPikachuShelf = ["clefairy", "pikachu"];
+
     private DbContextOptions<BotDbContext> _options;
     private IBotDbContextFactory _dbContextFactory;
     private IDriveProvider _driveProvider;
@@ -107,8 +117,8 @@ public class DollServiceTest
         var catalogue = await _sut.GetCatalogueAsync();
 
         // Assert
-        Assert.That(catalogue.Keys, Is.EquivalentTo(new[] { "pikachu", "rioludeboutfacedeuxpieds" }));
-        Assert.Multiple(() =>
+        Assert.That(catalogue.Keys, Is.EquivalentTo(PikachuAndRioluCatalogueKeys));
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(catalogue["pikachu"].Size, Is.EqualTo(16));
             Assert.That(catalogue["pikachu"].Name, Is.EqualTo("Pikachu"));
@@ -116,7 +126,7 @@ public class DollServiceTest
                 Is.EqualTo("https://lh3.googleusercontent.com/d/file-pikachu_16x16.png"));
             Assert.That(catalogue["rioludeboutfacedeuxpieds"].Size, Is.EqualTo(32));
             Assert.That(catalogue["rioludeboutfacedeuxpieds"].Name, Is.EqualTo("Riolu debout face deux pieds"));
-        });
+        }
     }
 
     [Test]
@@ -131,7 +141,7 @@ public class DollServiceTest
         var catalogue = await _sut.GetCatalogueAsync();
 
         // Assert
-        Assert.That(catalogue.Keys, Is.EquivalentTo(new[] { "clefairy" }));
+        Assert.That(catalogue.Keys, Is.EquivalentTo(ClefairyOnlyCatalogueKeys));
     }
 
     [Test]
@@ -150,7 +160,7 @@ public class DollServiceTest
         var catalogue = await _sut.GetCatalogueAsync();
 
         // Assert
-        Assert.That(catalogue.Keys, Is.EquivalentTo(new[] { "pikachu" }));
+        Assert.That(catalogue.Keys, Is.EquivalentTo(PikachuOnlyCatalogueKeys));
     }
 
     [Test]
@@ -168,7 +178,7 @@ public class DollServiceTest
         var catalogue = await _sut.GetCatalogueAsync();
 
         // Assert
-        Assert.That(catalogue.Keys, Is.EquivalentTo(new[] { "snorlax" }));
+        Assert.That(catalogue.Keys, Is.EquivalentTo(SnorlaxOnlyCatalogueKeys));
         await _driveProvider.DidNotReceiveWithAnyArgs().FindFolderIdAsync(default);
         await _driveProvider.DidNotReceiveWithAnyArgs().FindSharedDriveIdAsync(default);
     }
@@ -190,7 +200,7 @@ public class DollServiceTest
         var catalogue = await _sut.GetCatalogueAsync();
 
         // Assert
-        Assert.That(catalogue.Keys, Is.EquivalentTo(new[] { "pikachu" }));
+        Assert.That(catalogue.Keys, Is.EquivalentTo(PikachuOnlyCatalogueKeys));
     }
 
     [Test]
@@ -256,7 +266,7 @@ public class DollServiceTest
         var catalogue = await _sut.RefreshCatalogueAsync();
 
         // Assert
-        Assert.That(catalogue.Keys, Is.EquivalentTo(new[] { "pikachu" }));
+        Assert.That(catalogue.Keys, Is.EquivalentTo(PikachuOnlyCatalogueKeys));
         await _driveProvider.Received(2).FindFolderIdAsync("Poupées", null, Arg.Any<CancellationToken>());
     }
 
@@ -284,8 +294,11 @@ public class DollServiceTest
         SetUpDrive(("Petites 16x16", ["pikachu.png"]));
 
         // Act & Assert
-        Assert.That(await _sut.GetDollAsync("unknown"), Is.Null);
-        Assert.That(await _sut.GetDollAsync("pikachu"), Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(await _sut.GetDollAsync("unknown"), Is.Null);
+            Assert.That(await _sut.GetDollAsync("pikachu"), Is.Not.Null);
+        }
     }
 
     [Test]
@@ -301,7 +314,7 @@ public class DollServiceTest
             ("pikachu", 0), ("snorlax", 0), ("clefairy", 0), ("deleted_from_drive", 0)));
 
         // Assert
-        Assert.That(dolls.Select(doll => doll.Id), Is.EqualTo(new[] { "clefairy", "snorlax", "pikachu" }));
+        Assert.That(dolls.Select(doll => doll.Id), Is.EqualTo(ClefairySnorlaxPikachuOrder));
     }
 
     [Test]
@@ -316,7 +329,7 @@ public class DollServiceTest
         var dolls = await _sut.ResolveDollsAsync(Holdings(("pikachu", 2), ("snorlax", 1), ("clefairy", 0)));
 
         // Assert
-        Assert.That(dolls.Select(doll => doll.Id), Is.EqualTo(new[] { "snorlax", "pikachu", "clefairy" }));
+        Assert.That(dolls.Select(doll => doll.Id), Is.EqualTo(SnorlaxPikachuClefairyOrder));
     }
 
     [Test]
@@ -348,9 +361,12 @@ public class DollServiceTest
         var result = await _sut.MoveDollAsync("room1", "alice", "pikachu", -1);
 
         // Assert
-        Assert.That(result, Is.EqualTo(DollMoveResult.Moved));
-        Assert.That(await GetShelfAsync("room1", "alice"),
-            Is.EqualTo(new[] { "clefairy", "pikachu", "snorlax" }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.EqualTo(DollMoveResult.Moved));
+            Assert.That(await GetShelfAsync("room1", "alice"),
+                Is.EqualTo(ClefairyPikachuSnorlaxShelf));
+        }
 
         await using var dbContext = new BotDbContext(_options);
         Assert.That(await dbContext.DollHoldings.CountAsync(holding => holding.Position == 0), Is.Zero);
@@ -373,7 +389,7 @@ public class DollServiceTest
 
         // Assert
         Assert.That(await GetShelfAsync("room1", "alice"),
-            Is.EqualTo(new[] { "pikachu", "clefairy", "snorlax" }));
+            Is.EqualTo(PikachuClefairySnorlaxShelf));
     }
 
     [Test]
@@ -388,8 +404,11 @@ public class DollServiceTest
         var result = await _sut.MoveDollAsync("room1", "alice", "clefairy", -1);
 
         // Assert
-        Assert.That(result, Is.EqualTo(DollMoveResult.AlreadyAtEdge));
-        Assert.That(await GetShelfAsync("room1", "alice"), Is.EqualTo(new[] { "clefairy", "pikachu" }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.EqualTo(DollMoveResult.AlreadyAtEdge));
+            Assert.That(await GetShelfAsync("room1", "alice"), Is.EqualTo(ClefairyPikachuShelf));
+        }
     }
 
     [Test]
@@ -413,9 +432,12 @@ public class DollServiceTest
         await SeedHoldingAsync("pikachu", "room1", "alice");
 
         // Act & Assert
-        Assert.That(await _sut.IsDollOwnedByUserAsync("room1", "alice", "pikachu"), Is.True);
-        Assert.That(await _sut.IsDollOwnedByUserAsync("room2", "alice", "pikachu"), Is.False);
-        Assert.That(await _sut.IsDollOwnedByUserAsync("room1", "bob", "pikachu"), Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(await _sut.IsDollOwnedByUserAsync("room1", "alice", "pikachu"), Is.True);
+            Assert.That(await _sut.IsDollOwnedByUserAsync("room2", "alice", "pikachu"), Is.False);
+            Assert.That(await _sut.IsDollOwnedByUserAsync("room1", "bob", "pikachu"), Is.False);
+        }
     }
 
     [Test]

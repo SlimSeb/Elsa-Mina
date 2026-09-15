@@ -70,7 +70,7 @@ public class TarotStatsServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(taker.Wins, Is.EqualTo(1));
-            Assert.That(defender.Wins, Is.EqualTo(0));
+            Assert.That(defender.Wins, Is.Zero);
             Assert.That(taker.GamesPlayed, Is.EqualTo(1));
             Assert.That(defender.GamesPlayed, Is.EqualTo(1));
         }
@@ -92,7 +92,7 @@ public class TarotStatsServiceTest
         {
             Assert.That(taker.TimesTaker, Is.EqualTo(1));
             Assert.That(taker.TakerWins, Is.EqualTo(1));
-            Assert.That(defender.TimesTaker, Is.EqualTo(0));
+            Assert.That(defender.TimesTaker, Is.Zero);
         }
     }
 
@@ -110,7 +110,7 @@ public class TarotStatsServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(taker.TimesTaker, Is.EqualTo(1));
-            Assert.That(taker.TakerWins, Is.EqualTo(0));
+            Assert.That(taker.TakerWins, Is.Zero);
         }
     }
 
@@ -158,6 +158,6 @@ public class TarotStatsServiceTest
         await _sut.RecordDealAsync(players, result);
 
         await using var dbContext = new BotDbContext(_dbOptions);
-        Assert.That(await dbContext.TarotStats.CountAsync(), Is.EqualTo(0));
+        Assert.That(await dbContext.TarotStats.CountAsync(), Is.Zero);
     }
 }

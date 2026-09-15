@@ -28,7 +28,7 @@ public class TurnResolverTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.OpponentHpRatio, Is.EqualTo(0.0));
+            Assert.That(result.OpponentHpRatio, Is.Zero);
             Assert.That(result.MemberHpRatios[0], Is.EqualTo(1.0));
         }
     }
@@ -54,7 +54,7 @@ public class TurnResolverTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.MemberHpRatios[0], Is.EqualTo(0.0));
+            Assert.That(result.MemberHpRatios[0], Is.Zero);
             Assert.That(result.OpponentHpRatio, Is.EqualTo(1.0));
         }
     }
@@ -80,7 +80,7 @@ public class TurnResolverTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(result.OpponentHpRatio, Is.EqualTo(0.0));
+            Assert.That(result.OpponentHpRatio, Is.Zero);
             Assert.That(result.MemberHpRatios[0], Is.EqualTo(0.4));
         }
     }
@@ -104,7 +104,7 @@ public class TurnResolverTest
         var result = TurnResolver.Resolve(model, model.CreateInitialState(), FIRST_MOVE_ACTION, 0);
 
         // Assert
-        Assert.That(result.MemberHpRatios[0], Is.EqualTo(0.0));
+        Assert.That(result.MemberHpRatios[0], Is.Zero);
     }
 
     [Test]

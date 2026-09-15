@@ -13,9 +13,12 @@ public class DictionaryApiResponseConverterTest
         var result = JsonSerializer.Deserialize<DictionaryApiResponse>(json);
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.HasSuggestions, Is.True);
-        Assert.That(result.Suggestions, Is.EqualTo(new List<string> { "apple", "application" }));
-        Assert.That(result.Entries, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.HasSuggestions, Is.True);
+            Assert.That(result.Suggestions, Is.EqualTo(new List<string> { "apple", "application" }));
+            Assert.That(result.Entries, Is.Null);
+        }
     }
 
     [Test]
@@ -25,10 +28,16 @@ public class DictionaryApiResponseConverterTest
         var result = JsonSerializer.Deserialize<DictionaryApiResponse>(json);
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.HasSuggestions, Is.False);
-        Assert.That(result.Entries, Has.Count.EqualTo(1));
-        Assert.That(result.Entries[0].PartOfSpeech, Is.EqualTo("noun"));
-        Assert.That(result.Entries[0].ShortDefinitions, Is.EqualTo(new List<string> { "a round fruit" }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.HasSuggestions, Is.False);
+            Assert.That(result.Entries, Has.Count.EqualTo(1));
+        }
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.Entries[0].PartOfSpeech, Is.EqualTo("noun"));
+            Assert.That(result.Entries[0].ShortDefinitions, Is.EqualTo(new List<string> { "a round fruit" }));
+        }
     }
 
     [Test]

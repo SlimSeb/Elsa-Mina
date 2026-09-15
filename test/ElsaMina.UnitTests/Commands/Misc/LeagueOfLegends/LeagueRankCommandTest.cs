@@ -29,7 +29,7 @@ public class LeagueRankCommandTest
         _command = new LeagueRankCommand(_httpService, _configuration, _templatesManager);
     }
 
-    private IContext MakeContext(string target)
+    private static IContext MakeContext(string target)
     {
         var context = Substitute.For<IContext>();
         context.Target.Returns(target);
@@ -287,7 +287,7 @@ public class LeagueRankCommandTest
 
         await _command.RunAsync(context);
 
-        Assert.That(capturedVm.SoloQueue.WinRate, Is.EqualTo(0));
+        Assert.That(capturedVm.SoloQueue.WinRate, Is.Zero);
     }
 
     [Test]

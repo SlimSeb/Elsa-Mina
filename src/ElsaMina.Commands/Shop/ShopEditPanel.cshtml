@@ -7,9 +7,9 @@
     {
         <form method="post" data-submitsend="/pm @Model.BotName, -edititem @article.Id,{msg},{msg2},{msg3}">
             @article.Id |
-            <input type="text" disabled="" style="width: 10px" name="msg" value="@palier"> |
-            <input type="text" name="msg2" value="@article.Article"> |
-            <input type="text" name="msg3" value="@article.Price">
+            <label for="shop-tier-@article.Id"><input type="text" id="shop-tier-@article.Id" aria-label="@GetString("shop_tier_column")" disabled="" style="width: 10px" name="msg" value="@palier"></label> |
+            <label for="shop-article-@article.Id"><input type="text" id="shop-article-@article.Id" aria-label="@GetString("shop_article_column")" name="msg2" value="@article.Article"></label> |
+            <label for="shop-price-@article.Id"><input type="text" id="shop-price-@article.Id" aria-label="@GetString("shop_price_column")" name="msg3" value="@article.Price"></label>
             <span style="margin: 0 5px;">|</span>
             <input type="submit" value="@GetString("shop_edit_submit")" name="submit">
         </form>

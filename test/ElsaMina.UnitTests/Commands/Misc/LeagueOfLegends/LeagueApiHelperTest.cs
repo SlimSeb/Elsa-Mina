@@ -145,10 +145,13 @@ public class LeagueApiHelperTest
     [Test]
     public void Test_GetRankEmblemUrl_ShouldReturnUnrankedUrl_WhenTierIsNullOrEmpty()
     {
-        Assert.That(LeagueApiHelper.GetRankEmblemUrl(null),
-            Is.EqualTo("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"));
-        Assert.That(LeagueApiHelper.GetRankEmblemUrl(""),
-            Is.EqualTo("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(LeagueApiHelper.GetRankEmblemUrl(null),
+                Is.EqualTo("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"));
+            Assert.That(LeagueApiHelper.GetRankEmblemUrl(""),
+                Is.EqualTo("https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-mini-crests/unranked.png"));
+        }
     }
 
     // --- GetChampionIconUrl ---

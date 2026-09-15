@@ -19,13 +19,16 @@ public class SystemServiceTest
         var info = _systemService.GetSystemInfo();
 
         Assert.That(info, Is.Not.Null);
-        Assert.That(info.FrameworkDescription, Is.Not.Null.And.Not.Empty);
-        Assert.That(info.RuntimeIdentifier, Is.Not.Null.And.Not.Empty);
-        Assert.That(info.OsDescription, Is.Not.Null.And.Not.Empty);
-        Assert.That(info.ProcessorCount, Is.GreaterThan(0));
-        Assert.That(info.ProcessId, Is.GreaterThan(0));
-        Assert.That(info.WorkingSet, Is.GreaterThan(0));
-        Assert.That(info.PeakWorkingSet, Is.GreaterThanOrEqualTo(info.WorkingSet));
-        Assert.That(info.GcTotalMemory, Is.GreaterThan(0));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(info.FrameworkDescription, Is.Not.Null.And.Not.Empty);
+            Assert.That(info.RuntimeIdentifier, Is.Not.Null.And.Not.Empty);
+            Assert.That(info.OsDescription, Is.Not.Null.And.Not.Empty);
+            Assert.That(info.ProcessorCount, Is.GreaterThan(0));
+            Assert.That(info.ProcessId, Is.GreaterThan(0));
+            Assert.That(info.WorkingSet, Is.GreaterThan(0));
+            Assert.That(info.PeakWorkingSet, Is.GreaterThanOrEqualTo(info.WorkingSet));
+            Assert.That(info.GcTotalMemory, Is.GreaterThan(0));
+        }
     }
 }

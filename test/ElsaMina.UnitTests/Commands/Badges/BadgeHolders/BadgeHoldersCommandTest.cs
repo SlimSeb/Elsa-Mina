@@ -18,7 +18,7 @@ public class BadgeHoldersCommandTest
     private IBotDbContextFactory _dbContextFactory;
     private BadgeHoldersCommand _command;
 
-    private DbContextOptions<BotDbContext> CreateNewInMemoryOptions() =>
+    private static DbContextOptions<BotDbContext> CreateNewInMemoryOptions() =>
         new DbContextOptionsBuilder<BotDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;

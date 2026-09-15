@@ -10,6 +10,8 @@ namespace ElsaMina.UnitTests.Core.Services.Rooms.Parameters;
 
 public class ParametersDefinitionFactoryTest
 {
+    private static readonly string[] ExpectedLocalePossibleValues = ["en-US", "fr-FR"];
+
     private IConfiguration _configuration;
     private IResourcesService _resourcesService;
     private ParametersDefinitionFactory _factory;
@@ -73,7 +75,7 @@ public class ParametersDefinitionFactoryTest
             Assert.That(locale.Type, Is.EqualTo(RoomBotConfigurationType.Enumeration));
             Assert.That(locale.DefaultValue, Is.EqualTo("en-US"));
             Assert.That(locale.PossibleValues.Select(value => value.InternalValue),
-                Is.EquivalentTo(new[] { "en-US", "fr-FR" }));
+                Is.EquivalentTo(ExpectedLocalePossibleValues));
         }
     }
 

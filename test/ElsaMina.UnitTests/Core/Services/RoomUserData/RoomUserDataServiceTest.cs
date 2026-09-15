@@ -109,7 +109,7 @@ public class RoomUserDataServiceTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_service.JoinPhrases.Count, Is.EqualTo(2));
+            Assert.That(_service.JoinPhrases, Has.Count.EqualTo(2));
             Assert.That(_service.JoinPhrases[Tuple.Create("user1", "room1")], Is.EqualTo("Hello"));
             Assert.That(_service.JoinPhrases[Tuple.Create("user2", "room2")], Is.EqualTo("Welcome"));
         }

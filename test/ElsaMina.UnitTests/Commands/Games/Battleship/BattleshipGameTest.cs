@@ -78,7 +78,7 @@ public class BattleshipGameTest
             Assert.That(game.Players, Has.Count.EqualTo(2));
             Assert.That(game.IsPlacementPhase, Is.True);
             Assert.That(game.IsStarted, Is.False);
-            Assert.That(game.TurnCount, Is.EqualTo(0));
+            Assert.That(game.TurnCount, Is.Zero);
         }
     }
 
@@ -212,7 +212,7 @@ public class BattleshipGameTest
         await game.Fire(_mockUser1, "A1");
 
         // Assert
-        Assert.That(game.TurnCount, Is.EqualTo(0));
+        Assert.That(game.TurnCount, Is.Zero);
     }
 
     [Test]
@@ -360,7 +360,7 @@ public class BattleshipGameTest
         Assert.That(game.WinnerName, Is.Null);
     }
 
-    private async Task PlayUntilWinnerAsync(BattleshipGame game, IUser intendedWinner)
+    private static async Task PlayUntilWinnerAsync(BattleshipGame game, IUser intendedWinner)
     {
         var safety = 0;
         while (!game.IsEnded && safety++ < 500)
@@ -381,10 +381,10 @@ public class BattleshipGameTest
         }
     }
 
-    private static BattleshipPlayer CurrentPlayer(IBattleshipGame game) =>
+    private static BattleshipPlayer CurrentPlayer(BattleshipGame game) =>
         game.Players.First(player => Equals(player.User, game.PlayerCurrentlyPlaying));
 
-    private static BattleshipPlayer Opponent(IBattleshipGame game, BattleshipPlayer player) =>
+    private static BattleshipPlayer Opponent(BattleshipGame game, BattleshipPlayer player) =>
         game.Players.First(other => !Equals(other.User, player.User));
 
     private static int CountShipCells(BattleshipBoard board)

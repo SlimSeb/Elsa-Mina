@@ -10,6 +10,13 @@ namespace ElsaMina.UnitTests.Commands.Misc.RandomImages;
 [TestFixture]
 public class KlipyServiceTest
 {
+    private static readonly string[] ExpectedOrderedFullUrls =
+    [
+        "https://static.klipy.com/a-sm.gif",
+        "https://static.klipy.com/b-sm.gif",
+        "https://static.klipy.com/c-sm.gif"
+    ];
+
     private IHttpService _httpService;
     private IConfiguration _configuration;
     private IRandomService _randomService;
@@ -211,12 +218,7 @@ public class KlipyServiceTest
 
         var result = await _klipyService.SearchAsync("cats", 8);
 
-        Assert.That(result.Select(hit => hit.Full.Url), Is.EqualTo(new[]
-        {
-            "https://static.klipy.com/a-sm.gif",
-            "https://static.klipy.com/b-sm.gif",
-            "https://static.klipy.com/c-sm.gif"
-        }));
+        Assert.That(result.Select(hit => hit.Full.Url), Is.EqualTo(ExpectedOrderedFullUrls));
     }
 
     [Test]

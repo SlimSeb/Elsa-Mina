@@ -68,11 +68,14 @@ public class WordleGameTest
         var outcome = await _game.SubmitGuess(_owner, "crane");
 
         // Assert
-        Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.Accepted));
-        Assert.That(_game.IsWon, Is.True);
-        Assert.That(_game.IsRoundActive, Is.False);
-        Assert.That(_game.Guesses[0].States,
-            Is.All.EqualTo(WordleLetterState.Correct));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.Accepted));
+            Assert.That(_game.IsWon, Is.True);
+            Assert.That(_game.IsRoundActive, Is.False);
+            Assert.That(_game.Guesses[0].States,
+                Is.All.EqualTo(WordleLetterState.Correct));
+        }
     }
 
     [Test]
@@ -130,11 +133,14 @@ public class WordleGameTest
         var lastOutcome = await _game.SubmitGuess(_owner, "stomp");
 
         // Assert
-        Assert.That(lastOutcome, Is.EqualTo(WordleGuessOutcome.Accepted));
-        Assert.That(_game.Guesses, Has.Count.EqualTo(WordleConstants.MAX_GUESSES));
-        Assert.That(_game.IsWon, Is.False);
-        Assert.That(_game.IsRoundActive, Is.False);
-        Assert.That(_game.RevealedAnswer, Is.EqualTo("CRANE"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(lastOutcome, Is.EqualTo(WordleGuessOutcome.Accepted));
+            Assert.That(_game.Guesses, Has.Count.EqualTo(WordleConstants.MAX_GUESSES));
+            Assert.That(_game.IsWon, Is.False);
+            Assert.That(_game.IsRoundActive, Is.False);
+            Assert.That(_game.RevealedAnswer, Is.EqualTo("CRANE"));
+        }
     }
 
     [Test]
@@ -147,8 +153,11 @@ public class WordleGameTest
         var outcome = await _game.SubmitGuess(_owner, "cat");
 
         // Assert
-        Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.InvalidLength));
-        Assert.That(_game.Guesses, Is.Empty);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.InvalidLength));
+            Assert.That(_game.Guesses, Is.Empty);
+        }
     }
 
     [Test]
@@ -161,8 +170,11 @@ public class WordleGameTest
         var outcome = await _game.SubmitGuess(_owner, "zzzzz");
 
         // Assert
-        Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.NotInWordList));
-        Assert.That(_game.Guesses, Is.Empty);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.NotInWordList));
+            Assert.That(_game.Guesses, Is.Empty);
+        }
     }
 
     [Test]
@@ -177,8 +189,11 @@ public class WordleGameTest
         var outcome = await _game.SubmitGuess(other, "crane");
 
         // Assert
-        Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.NotOwner));
-        Assert.That(_game.IsWon, Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.NotOwner));
+            Assert.That(_game.IsWon, Is.False);
+        }
     }
 
     [Test]
@@ -192,8 +207,11 @@ public class WordleGameTest
         var outcome = await _game.SubmitGuess(_owner, "about");
 
         // Assert
-        Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.AlreadyGuessed));
-        Assert.That(_game.Guesses, Has.Count.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.AlreadyGuessed));
+            Assert.That(_game.Guesses, Has.Count.EqualTo(1));
+        }
     }
 
     [Test]
@@ -273,9 +291,12 @@ public class WordleGameTest
 
         // Assert
         Assert.That(_game.Guesses, Has.Count.EqualTo(1));
-        Assert.That(_game.Guesses[0].Word, Is.EqualTo("CRANE"));
-        Assert.That(_game.IsWon, Is.True);
-        Assert.That(_game.CurrentInput, Is.Empty);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Guesses[0].Word, Is.EqualTo("CRANE"));
+            Assert.That(_game.IsWon, Is.True);
+            Assert.That(_game.CurrentInput, Is.Empty);
+        }
     }
 
     [Test]
@@ -290,8 +311,11 @@ public class WordleGameTest
         await _game.SubmitCurrentInput(_owner);
 
         // Assert
-        Assert.That(_game.Guesses, Is.Empty);
-        Assert.That(_game.CurrentInput, Is.EqualTo("CA"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.Guesses, Is.Empty);
+            Assert.That(_game.CurrentInput, Is.EqualTo("CA"));
+        }
     }
 
     [Test]
@@ -336,8 +360,11 @@ public class WordleGameTest
         await _game.SubmitGuess(_owner, "cabin");
 
         // Assert: C is correct, A is correct (position 2 in CRANE... actually verify)
-        Assert.That(_game.KeyboardStates['C'], Is.EqualTo(WordleLetterState.Correct));
-        Assert.That(_game.KeyboardStates['B'], Is.EqualTo(WordleLetterState.Absent));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_game.KeyboardStates['C'], Is.EqualTo(WordleLetterState.Correct));
+            Assert.That(_game.KeyboardStates['B'], Is.EqualTo(WordleLetterState.Absent));
+        }
     }
 
     [Test]
@@ -372,8 +399,11 @@ public class WordleGameTest
         var outcome = await _game.SubmitWord(intruder, "crane");
 
         // Assert
-        Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.NotOwner));
-        Assert.That(_game.Guesses, Is.Empty);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(outcome, Is.EqualTo(WordleGuessOutcome.NotOwner));
+            Assert.That(_game.Guesses, Is.Empty);
+        }
         _context.DidNotReceive().SendMessageIn(Arg.Any<string>(), Arg.Any<string>());
         _context.DidNotReceive().ReplyLocalizedMessage(Arg.Any<string>(), Arg.Any<object[]>());
     }

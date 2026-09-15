@@ -30,8 +30,7 @@ public class BadgeDisplayCommand : Command
         var badgeId = context.Target.ToLowerAlphaNum();
         var badge = await dbContext.Badges
             .Include(badge => badge.BadgeHolders)
-            .ThenInclude(badgeHolding => badgeHolding.RoomUser)
-            .ThenInclude(roomUser => roomUser.User)
+            .ThenInclude(badgeHolding => badgeHolding.RoomUser.User)
             .Where(badge => badge.RoomId == context.RoomId && badge.Id == badgeId)
             .FirstOrDefaultAsync(cancellationToken);
 

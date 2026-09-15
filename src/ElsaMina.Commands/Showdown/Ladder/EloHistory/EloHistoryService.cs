@@ -39,7 +39,8 @@ public class EloHistoryService : IEloHistoryService
     {
         Log.Information("EloHistoryService starting with poll interval {PollInterval}", _pollInterval);
         _cts = new CancellationTokenSource();
-        _ = Task.Run(() => PollLoopAsync(_cts.Token));
+        var cancellationToken = _cts.Token;
+        _ = Task.Run(() => PollLoopAsync(cancellationToken), cancellationToken);
     }
 
     private async Task PollLoopAsync(CancellationToken cancellationToken)

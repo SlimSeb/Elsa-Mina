@@ -131,7 +131,7 @@ public class RemovePointsCommandTest
 
         using var assertContext = new BotDbContext(_dbOptions);
         var updatedUser = await assertContext.UserPoints.FindAsync("user1");
-        Assert.That(updatedUser.Points, Is.EqualTo(0.0));
+        Assert.That(updatedUser.Points, Is.Zero);
     }
 
     [Test]

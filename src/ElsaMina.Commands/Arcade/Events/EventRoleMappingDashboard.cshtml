@@ -44,14 +44,14 @@
     <hr/>
     <h3>@GetString("eventroles_add_new")</h3>
     <form data-submitsend="/w @Model.BotName,@(Model.Trigger)saveeventrole @Model.RoomId;;{eventname};;{roleid}">
-        <table style="width:100%">
+        <table role="presentation" style="width:100%">
             <tr>
-                <td><b>@GetString("eventroles_field_event")</b></td>
-                <td><input type="text" name="eventname" placeholder="ex: Tournoi Hebdo" style="@inputStyle" required/></td>
+                <td><label for="eventroles-eventname-@Model.RoomId"><b>@GetString("eventroles_field_event")</b></label></td>
+                <td><input type="text" id="eventroles-eventname-@Model.RoomId" name="eventname" placeholder="ex: Tournoi Hebdo" style="@inputStyle" required/></td>
             </tr>
             <tr>
-                <td><b>@GetString("eventroles_field_roleid")</b></td>
-                <td><input type="text" name="roleid" placeholder="ex: 1234567890123456789" style="@inputStyle" required/></td>
+                <td><label for="eventroles-roleid-@Model.RoomId"><b>@GetString("eventroles_field_roleid")</b></label></td>
+                <td><input type="text" id="eventroles-roleid-@Model.RoomId" name="roleid" placeholder="ex: 1234567890123456789" style="@inputStyle" required/></td>
             </tr>
         </table>
         <br/>

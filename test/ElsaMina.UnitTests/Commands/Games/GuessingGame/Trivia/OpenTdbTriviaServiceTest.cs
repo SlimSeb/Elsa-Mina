@@ -10,6 +10,8 @@ namespace ElsaMina.UnitTests.Commands.Games.GuessingGame.Trivia;
 [TestFixture]
 public class OpenTdbTriviaServiceTest
 {
+    private static readonly string[] TrueFalseOptions = ["True", "False"];
+
     private IHttpService _httpService;
     private IRandomService _randomService;
     private OpenTdbTriviaService _service;
@@ -55,12 +57,15 @@ public class OpenTdbTriviaServiceTest
         // Assert
         Assert.That(result, Has.Count.EqualTo(1));
         var question = result[0];
-        Assert.That(question.Category, Is.EqualTo("Science & Nature"));
-        Assert.That(question.Question, Is.EqualTo("What snowy mob was added in Minecraft 1.10?"));
-        Assert.That(question.CorrectAnswer, Is.EqualTo("Polar \"bears\""));
-        Assert.That(question.Type, Is.EqualTo(TriviaQuestionType.Multiple));
-        Assert.That(question.Options, Has.Count.EqualTo(4));
-        Assert.That(question.ValidAnswers, Does.Contain("Polar \"bears\""));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(question.Category, Is.EqualTo("Science & Nature"));
+            Assert.That(question.Question, Is.EqualTo("What snowy mob was added in Minecraft 1.10?"));
+            Assert.That(question.CorrectAnswer, Is.EqualTo("Polar \"bears\""));
+            Assert.That(question.Type, Is.EqualTo(TriviaQuestionType.Multiple));
+            Assert.That(question.Options, Has.Count.EqualTo(4));
+            Assert.That(question.ValidAnswers, Does.Contain("Polar \"bears\""));
+        }
     }
 
     [Test]
@@ -96,11 +101,14 @@ public class OpenTdbTriviaServiceTest
         // Assert
         Assert.That(result, Has.Count.EqualTo(1));
         var question = result[0];
-        Assert.That(question.Type, Is.EqualTo(TriviaQuestionType.Boolean));
-        Assert.That(question.CorrectAnswer, Is.EqualTo("True"));
-        Assert.That(question.Options, Is.EqualTo(new[] { "True", "False" }));
-        Assert.That(question.ValidAnswers, Does.Contain("True"));
-        Assert.That(question.ValidAnswers, Does.Contain("Vrai"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(question.Type, Is.EqualTo(TriviaQuestionType.Boolean));
+            Assert.That(question.CorrectAnswer, Is.EqualTo("True"));
+            Assert.That(question.Options, Is.EqualTo(TrueFalseOptions));
+            Assert.That(question.ValidAnswers, Does.Contain("True"));
+            Assert.That(question.ValidAnswers, Does.Contain("Vrai"));
+        }
     }
 
     [Test]

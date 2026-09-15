@@ -173,6 +173,6 @@ public class DayLineCountCommandTest
         return context;
     }
 
-    private static Stream ToStream(string content) =>
+    private static MemoryStream ToStream(string content) =>
         new MemoryStream(Encoding.UTF8.GetBytes(content));
 }

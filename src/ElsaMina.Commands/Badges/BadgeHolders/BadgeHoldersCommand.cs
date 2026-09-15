@@ -30,8 +30,7 @@ public class BadgeHoldersCommand : Command
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var badges = await dbContext.Badges
             .Include(badge => badge.BadgeHolders)
-            .ThenInclude(badgeHolding => badgeHolding.RoomUser)
-            .ThenInclude(roomUser => roomUser.User)
+            .ThenInclude(badgeHolding => badgeHolding.RoomUser.User)
             .Where(badge => badge.RoomId == roomId)
             .OrderBy(badge => badge.Name)
             .AsNoTracking()

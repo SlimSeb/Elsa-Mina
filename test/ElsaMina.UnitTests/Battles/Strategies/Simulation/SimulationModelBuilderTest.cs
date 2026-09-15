@@ -76,7 +76,7 @@ public class SimulationModelBuilderTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(model.Members, Has.Count.EqualTo(2));
-            Assert.That(model.ActiveMemberIndex, Is.EqualTo(0));
+            Assert.That(model.ActiveMemberIndex, Is.Zero);
 
             var thunderbolt = model.Members[0].Moves.Single(move => move.Name == "Thunderbolt");
             Assert.That(thunderbolt.RequestMoveIndex, Is.EqualTo(1));

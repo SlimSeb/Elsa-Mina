@@ -12,6 +12,9 @@ namespace ElsaMina.Commands.Development;
 [NamedCommand("templates", Aliases = ["templates-debug", "templatedebug"])]
 public class TemplatesDebugCommand : DevelopmentCommand
 {
+    private const string SPEKS = "speks";
+    private const string MORSAY = "morsay";
+
     private readonly ITemplatesManager _templatesManager;
 
     public TemplatesDebugCommand(ITemplatesManager templatesManager)
@@ -37,8 +40,8 @@ public class TemplatesDebugCommand : DevelopmentCommand
                 Culture = context.Culture,
                 Scores = new Dictionary<GuessingGamePlayer, int>
                 {
-                    [new GuessingGamePlayer("speks", "speks")] = 14,
-                    [new GuessingGamePlayer("morsay", "Morsay")] = 12,
+                    [new GuessingGamePlayer(SPEKS, SPEKS)] = 14,
+                    [new GuessingGamePlayer(MORSAY, "Morsay")] = 12,
                     [new GuessingGamePlayer("thylane", "Thylane")] = 7,
                     [new GuessingGamePlayer("lionyx", "Lionyx")] = 1
                 }
@@ -53,16 +56,16 @@ public class TemplatesDebugCommand : DevelopmentCommand
                 SecondsToClose = 120,
                 Players =
                 ((string[])[
-                    "speks", "morsay", "thylane", "lionyx", "awa", "piratilla", "flutes",
+                    SPEKS, MORSAY, "thylane", "lionyx", "awa", "piratilla", "flutes",
                     "bluxio", "simioth", "nagham", "turtlek", "leafywind", "kazuki"
                 ]).Select(p => new TournamentPlayer(p, p)).ToArray(),
                 BetsByPlayer = new Dictionary<string, IReadOnlyList<string>>
                 {
-                    ["speks"] = ["awa", "piratilla", "nagham"],
-                    ["morsay"] = ["thylane", "bluxio"],
+                    [SPEKS] = ["awa", "piratilla", "nagham"],
+                    [MORSAY] = ["thylane", "bluxio"],
                     ["lionyx"] = ["simioth"],
                     ["flutes"] = ["zozo", "shinzoabe"],
-                    ["turtlek"] = ["kazuki", "morsay", "leafywind", "cortexovitch", "concerto"]
+                    ["turtlek"] = ["kazuki", MORSAY, "leafywind", "cortexovitch", "concerto"]
                 }
             },
             _ => null

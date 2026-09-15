@@ -23,7 +23,7 @@ public class DictionaryCommandTest
         _command = new DictionaryCommand(_httpService, _configuration);
     }
 
-    private static IHttpResponse<DictionaryApiResponse> MakeEntryResponse(string word, params string[] shortDefs) =>
+    private static HttpResponse<DictionaryApiResponse> MakeEntryResponse(string word, params string[] shortDefs) =>
         new HttpResponse<DictionaryApiResponse>
         {
             Data = new DictionaryApiResponse
@@ -39,13 +39,13 @@ public class DictionaryCommandTest
             }
         };
 
-    private static IHttpResponse<DictionaryApiResponse> MakeSuggestionsResponse(params string[] suggestions) =>
+    private static HttpResponse<DictionaryApiResponse> MakeSuggestionsResponse(params string[] suggestions) =>
         new HttpResponse<DictionaryApiResponse>
         {
             Data = new DictionaryApiResponse { Suggestions = suggestions.ToList() }
         };
 
-    private static IHttpResponse<DictionaryApiResponse> MakeEmptyResponse() =>
+    private static HttpResponse<DictionaryApiResponse> MakeEmptyResponse() =>
         new HttpResponse<DictionaryApiResponse> { Data = new DictionaryApiResponse() };
 
     [Test]

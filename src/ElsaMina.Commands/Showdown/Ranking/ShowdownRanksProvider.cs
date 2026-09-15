@@ -59,6 +59,6 @@ public class ShowdownRanksProvider : IShowdownRanksProvider
             }
         }
 
-        throw lastException!;
+        throw lastException;
     }
 }

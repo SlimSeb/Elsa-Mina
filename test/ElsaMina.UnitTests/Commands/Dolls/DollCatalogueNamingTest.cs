@@ -15,8 +15,11 @@ public class DollCatalogueNamingTest
         var result = DollCatalogueNaming.TryParseSize(folderName, out var size);
 
         // Assert
-        Assert.That(result, Is.True);
-        Assert.That(size, Is.EqualTo(expectedSize));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(size, Is.EqualTo(expectedSize));
+        }
     }
 
     [TestCase("Brouillons")]

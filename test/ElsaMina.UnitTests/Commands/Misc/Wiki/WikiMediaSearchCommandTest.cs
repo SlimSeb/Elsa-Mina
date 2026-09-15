@@ -79,7 +79,7 @@ public class WikiMediaSearchCommandTest
             .Returns(new HttpResponse<WikipediaExtractResponse> { Data = response });
     }
 
-    private IContext MakeContext(string target = "test")
+    private static IContext MakeContext(string target = "test")
     {
         var context = Substitute.For<IContext>();
         context.Target.Returns(target);

@@ -12,7 +12,7 @@
     <h3 style="text-align: center; margin: 0;">🏁 Course de Pokémon 🏁</h3>
     <p style="text-align: center;">Les Pokémon se préparent sur la ligne de départ!</p>
 
-    <table style="margin: 0 auto; border-collapse: separate; border-spacing: 8px 4px;">
+    <table role="presentation" style="margin: 0 auto; border-collapse: separate; border-spacing: 8px 4px;">
         @for (var row = 0; row < numRows; row++)
         {
             <tr>
@@ -24,7 +24,7 @@
                         var (name, pokemon) = playersList[idx];
                         var color = name.ToColorHexCodeWithCustoms();
                         <td style="text-align: center; padding: 5px; width: 100px;">
-                            <img src="@PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite" width="40" height="40"><br>
+                            <img src="@PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite" width="40" height="40" alt="@pokemon"><br>
                             <b style="color: @color">@name</b><br>
                             <span>@pokemon</span>
                         </td>

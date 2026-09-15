@@ -60,17 +60,7 @@ public class KlipyGifCommand : Command
             _cooldownService.GetRemainingCooldowns(context.RoomId, context.Sender.UserId, now);
         if (!context.IsSenderWhitelisted && (roomRemaining > TimeSpan.Zero || userRemaining > TimeSpan.Zero))
         {
-            string reply;
-            if (roomRemaining >= userRemaining)
-            {
-                reply = context.GetString("klipygif_room_cooldown", (int)roomRemaining.TotalSeconds);
-            }
-            else
-            {
-                reply = context.GetString("klipygif_user_cooldown",
-                    (int)userRemaining.TotalMinutes, userRemaining.Seconds);
-            }
-
+            var reply = GetCooldownMessage(context, roomRemaining, userRemaining);
             context.Reply($"/pm {context.Sender.UserId}, {reply}");
             return;
         }
@@ -82,31 +72,7 @@ public class KlipyGifCommand : Command
             return;
         }
 
-        var separatorIndex = target.LastIndexOf('|');
-        string url;
-        int width = 0, height = 0;
-
-        if (separatorIndex > 0)
-        {
-            var dimensionPart = target[(separatorIndex + 1)..];
-            var urlAndWidth = target[..separatorIndex];
-            var widthSeparator = urlAndWidth.LastIndexOf('|');
-
-            if (widthSeparator > 0
-                && int.TryParse(urlAndWidth[(widthSeparator + 1)..], out width)
-                && int.TryParse(dimensionPart, out height))
-            {
-                url = urlAndWidth[..widthSeparator];
-            }
-            else
-            {
-                url = target;
-            }
-        }
-        else
-        {
-            url = target;
-        }
+        var (url, width, height) = ParseTarget(target);
 
         if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)
             || !uri.Host.Equals(KLIPY_CDN_HOST, StringComparison.OrdinalIgnoreCase)
@@ -134,6 +100,43 @@ public class KlipyGifCommand : Command
 
         context.ReplyHtml(template.RemoveNewlines());
         _cooldownService.SetCooldown(context.RoomId, context.Sender.UserId, now);
+    }
+
+    private static string GetCooldownMessage(IContext context, TimeSpan roomRemaining, TimeSpan userRemaining)
+    {
+        if (roomRemaining >= userRemaining)
+        {
+            return context.GetString("klipygif_room_cooldown", (int)roomRemaining.TotalSeconds);
+        }
+
+        return context.GetString("klipygif_user_cooldown",
+            (int)userRemaining.TotalMinutes, userRemaining.Seconds);
+    }
+
+    /// <summary>
+    /// Splits a "url|width|height" target. When the dimensions are missing or invalid, the whole
+    /// target is the url and the dimensions are 0 so that they get fetched from the image itself.
+    /// </summary>
+    private static (string Url, int Width, int Height) ParseTarget(string target)
+    {
+        var separatorIndex = target.LastIndexOf('|');
+        if (separatorIndex <= 0)
+        {
+            return (target, 0, 0);
+        }
+
+        var dimensionPart = target[(separatorIndex + 1)..];
+        var urlAndWidth = target[..separatorIndex];
+        var widthSeparator = urlAndWidth.LastIndexOf('|');
+
+        if (widthSeparator > 0
+            && int.TryParse(urlAndWidth[(widthSeparator + 1)..], out var width)
+            && int.TryParse(dimensionPart, out var height))
+        {
+            return (urlAndWidth[..widthSeparator], width, height);
+        }
+
+        return (target, 0, 0);
     }
 
     private static (int Width, int Height) ScaleToMaxWidth(int width, int height)

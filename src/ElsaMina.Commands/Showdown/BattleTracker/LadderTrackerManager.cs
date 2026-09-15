@@ -167,7 +167,8 @@ public sealed class LadderTrackerManager : ILadderTrackerManager
     private void StartPollingNoLock()
     {
         _pollingCts = new CancellationTokenSource();
-        _ = Task.Run(() => PollLoopAsync(_pollingCts.Token));
+        var pollingToken = _pollingCts.Token;
+        _ = Task.Run(() => PollLoopAsync(pollingToken), pollingToken);
     }
 
     private async Task PollLoopAsync(CancellationToken cancellationToken)

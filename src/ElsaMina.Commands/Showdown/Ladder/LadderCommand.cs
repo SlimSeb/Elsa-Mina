@@ -53,74 +53,14 @@ public class LadderCommand : Command
                 return;
             }
 
-            var index = 0;
-            var innerIndex = 0;
-            var players = new List<LadderPlayerDto>();
-            foreach (var player in response.Data.TopList)
-            {
-                index++;
-                if (player.Username.ToLower().Trim().StartsWith(prefix))
-                {
-                    innerIndex++;
-                    player.Index = index;
-                    player.InnerIndex = innerIndex;
-                    players.Add(player);
-                }
-
-                // limit when there's no prefix because the message becomes too big (> 100KB)
-                if (!hasPrefix && index >= MAX_PLAYERS_WITHOUT_PREFIX)
-                {
-                    break;
-                }
-            }
-
+            var players = GetMatchingPlayers(response.Data.TopList, prefix, hasPrefix);
             if (players.Count == 0)
             {
                 context.ReplyLocalizedMessage("ladder_no_players");
                 return;
             }
 
-            var previousEntries = _ladderHistoryManager.GetPreviousEntriesAndSave(tier, players);
-            var previousPlacements = _ladderHistoryManager.GetPreviousPlacementsAndSave(tier, players);
-            var previousPrefixedPlacements = hasPrefix
-                ? _ladderHistoryManager.GetPreviousPrefixedPlacementsAndSave(tier, prefix, players)
-                : null;
-            foreach (var player in players)
-            {
-                var playerId = string.IsNullOrWhiteSpace(player.UserId)
-                    ? string.Empty
-                    : player.UserId.ToLowerAlphaNum();
-                if (string.IsNullOrWhiteSpace(playerId))
-                {
-                    playerId = string.IsNullOrWhiteSpace(player.Username)
-                        ? string.Empty
-                        : player.Username.ToLowerAlphaNum();
-                }
-
-                if (string.IsNullOrWhiteSpace(playerId))
-                {
-                    continue;
-                }
-
-                if (previousEntries.TryGetValue(playerId, out var previousElo))
-                {
-                    var currentElo = (int)Math.Round(player.Elo, MidpointRounding.AwayFromZero);
-                    player.EloDifference = currentElo - previousElo;
-                }
-
-                if (previousPlacements.TryGetValue(playerId, out var previousPlacement))
-                {
-                    // différence positive => amélioration
-                    player.IndexDifference = previousPlacement - player.Index;
-                }
-
-                if (hasPrefix && previousPrefixedPlacements != null &&
-                    previousPrefixedPlacements.TryGetValue(playerId, out var previousPrefixedPlacement))
-                {
-                    // différence positive => amélioration
-                    player.InnerIndexDifference = previousPrefixedPlacement - player.InnerIndex;
-                }
-            }
+            ApplyTrends(tier, prefix, hasPrefix, players);
 
             var template = await _templatesManager.GetTemplateAsync("Showdown/Ladder/LadderTable",
                 new LadderTableViewModel
@@ -139,5 +79,83 @@ public class LadderCommand : Command
             Log.Error(exception, "Failed to get Ladder");
             context.ReplyLocalizedMessage("ladder_error");
         }
+    }
+
+    private static List<LadderPlayerDto> GetMatchingPlayers(IEnumerable<LadderPlayerDto> topList, string prefix,
+        bool hasPrefix)
+    {
+        var index = 0;
+        var innerIndex = 0;
+        var players = new List<LadderPlayerDto>();
+        foreach (var player in topList)
+        {
+            index++;
+            if (player.Username.ToLower().Trim().StartsWith(prefix))
+            {
+                innerIndex++;
+                player.Index = index;
+                player.InnerIndex = innerIndex;
+                players.Add(player);
+            }
+
+            // limit when there's no prefix because the message becomes too big (> 100KB)
+            if (!hasPrefix && index >= MAX_PLAYERS_WITHOUT_PREFIX)
+            {
+                break;
+            }
+        }
+
+        return players;
+    }
+
+    private void ApplyTrends(string tier, string prefix, bool hasPrefix, List<LadderPlayerDto> players)
+    {
+        var previousEntries = _ladderHistoryManager.GetPreviousEntriesAndSave(tier, players);
+        var previousPlacements = _ladderHistoryManager.GetPreviousPlacementsAndSave(tier, players);
+        var previousPrefixedPlacements = hasPrefix
+            ? _ladderHistoryManager.GetPreviousPrefixedPlacementsAndSave(tier, prefix, players)
+            : null;
+        foreach (var player in players)
+        {
+            var playerId = GetPlayerId(player);
+            if (string.IsNullOrWhiteSpace(playerId))
+            {
+                continue;
+            }
+
+            if (previousEntries.TryGetValue(playerId, out var previousElo))
+            {
+                var currentElo = (int)Math.Round(player.Elo, MidpointRounding.AwayFromZero);
+                player.EloDifference = currentElo - previousElo;
+            }
+
+            if (previousPlacements.TryGetValue(playerId, out var previousPlacement))
+            {
+                // différence positive => amélioration
+                player.IndexDifference = previousPlacement - player.Index;
+            }
+
+            if (hasPrefix && previousPrefixedPlacements != null &&
+                previousPrefixedPlacements.TryGetValue(playerId, out var previousPrefixedPlacement))
+            {
+                // différence positive => amélioration
+                player.InnerIndexDifference = previousPrefixedPlacement - player.InnerIndex;
+            }
+        }
+    }
+
+    private static string GetPlayerId(LadderPlayerDto player)
+    {
+        var playerId = string.IsNullOrWhiteSpace(player.UserId)
+            ? string.Empty
+            : player.UserId.ToLowerAlphaNum();
+        if (!string.IsNullOrWhiteSpace(playerId))
+        {
+            return playerId;
+        }
+
+        return string.IsNullOrWhiteSpace(player.Username)
+            ? string.Empty
+            : player.Username.ToLowerAlphaNum();
     }
 }

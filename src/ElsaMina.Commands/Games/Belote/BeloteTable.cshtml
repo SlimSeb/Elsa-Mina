@@ -31,7 +31,7 @@
                 <text>&nbsp;<span style="color:#bbb;font-size:0.85em">(@GetString("belote_turned_card_refused"))</span></text>
             }
         </p>
-        <table style="margin:auto;border-collapse:collapse">
+        <table role="presentation" style="margin:auto;border-collapse:collapse">
             @foreach (var player in game.Players)
             {
                 var isCurrent = game.CurrentPlayer == player;
