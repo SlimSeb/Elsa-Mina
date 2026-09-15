@@ -156,6 +156,26 @@ public class PokeRaceGame : Game, IPokeRaceGame
         }
 
         _turn++;
+        RecordTurnEvents(AdvanceRacers());
+
+        if (_finished.Count == _positions.Count)
+        {
+            _raceUpdateTimer.Stop();
+            var resultsHtml = await BuildRaceResultsHtmlAsync();
+            Context.SendUpdatableHtml(HtmlId, resultsHtml, true);
+            OnEnd();
+            return;
+        }
+
+        var html = await BuildRaceUpdateHtmlAsync();
+        Context.SendUpdatableHtml(HtmlId, html, true);
+    }
+
+    /// <summary>
+    /// Moves every Pokémon still racing one turn forward and returns the texts of the events that fired.
+    /// </summary>
+    private List<string> AdvanceRacers()
+    {
         var turnEvents = new List<string>();
 
         var sortedByPosition = _positions
@@ -175,46 +195,51 @@ public class PokeRaceGame : Game, IPokeRaceGame
                 continue;
             }
 
-            var baseMove = 1.0 + (PokeRaceConstants.RACE_POKEMON[pokemon].Speed - 100.0) / 200.0;
-            var randomFactor = _randomService.NextDouble() * (1.8 - 0.7) + 0.7;
-
-            RaceEvent raceEvent = null;
-            if (_randomService.NextDouble() < 0.3)
-            {
-                raceEvent = ChooseEvent(pokemon, leader, trailing, gap);
-                turnEvents.Add(raceEvent.TextTemplate.Replace("{pokemon}", pokemon));
-            }
-
-            var movement = Math.Max(0.3, baseMove * randomFactor + (raceEvent?.Effect ?? 0));
-            _positions[pokemon] += movement;
-
-            if (_positions[pokemon] >= PokeRaceConstants.RACE_LENGTH)
-            {
-                _positions[pokemon] = PokeRaceConstants.RACE_LENGTH;
-                _finished.Add(pokemon);
-            }
+            MoveRacer(pokemon, leader, trailing, gap, turnEvents);
         }
 
-        if (turnEvents.Count > 0)
+        return turnEvents;
+    }
+
+    /// <summary>
+    /// Moves a single Pokémon forward, rolling for a race event and banking a finish.
+    /// </summary>
+    private void MoveRacer(string pokemon, string leader, string trailing, double gap, List<string> turnEvents)
+    {
+        var baseMove = 1.0 + (PokeRaceConstants.RACE_POKEMON[pokemon].Speed - 100.0) / 200.0;
+        var randomFactor = _randomService.NextDouble() * (1.8 - 0.7) + 0.7;
+
+        RaceEvent raceEvent = null;
+        if (_randomService.NextDouble() < 0.3)
         {
-            _allEvents.AddRange(turnEvents.Select(eventText => $"Tour {_turn}: {eventText}"));
-            if (_allEvents.Count > PokeRaceConstants.MAX_RECENT_EVENTS)
-            {
-                _allEvents.RemoveRange(0, _allEvents.Count - PokeRaceConstants.MAX_RECENT_EVENTS);
-            }
+            raceEvent = ChooseEvent(pokemon, leader, trailing, gap);
+            turnEvents.Add(raceEvent.TextTemplate.Replace("{pokemon}", pokemon));
         }
 
-        if (_finished.Count == _positions.Count)
+        var movement = Math.Max(0.3, baseMove * randomFactor + (raceEvent?.Effect ?? 0));
+        _positions[pokemon] += movement;
+
+        if (_positions[pokemon] >= PokeRaceConstants.RACE_LENGTH)
         {
-            _raceUpdateTimer.Stop();
-            var html = await BuildRaceResultsHtmlAsync();
-            Context.SendUpdatableHtml(HtmlId, html, true);
-            OnEnd();
+            _positions[pokemon] = PokeRaceConstants.RACE_LENGTH;
+            _finished.Add(pokemon);
         }
-        else
+    }
+
+    /// <summary>
+    /// Appends this turn's events to the running log, keeping only the most recent ones.
+    /// </summary>
+    private void RecordTurnEvents(List<string> turnEvents)
+    {
+        if (turnEvents.Count == 0)
         {
-            var html = await BuildRaceUpdateHtmlAsync();
-            Context.SendUpdatableHtml(HtmlId, html, true);
+            return;
+        }
+
+        _allEvents.AddRange(turnEvents.Select(eventText => $"Tour {_turn}: {eventText}"));
+        if (_allEvents.Count > PokeRaceConstants.MAX_RECENT_EVENTS)
+        {
+            _allEvents.RemoveRange(0, _allEvents.Count - PokeRaceConstants.MAX_RECENT_EVENTS);
         }
     }
 

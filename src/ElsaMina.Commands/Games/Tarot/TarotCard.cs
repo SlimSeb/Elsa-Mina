@@ -154,7 +154,7 @@ public sealed record TarotCard(TarotCardKind Kind, Suit? Suit, int Rank)
             return $"t{Rank}";
         }
 
-        return $"{RankToken()}{CardToken.SuitLetter(Suit!.Value)}";
+        return $"{RankToken()}{CardToken.SuitLetter(Suit.Value)}";
     }
 
     /// <summary>
@@ -175,7 +175,7 @@ public sealed record TarotCard(TarotCardKind Kind, Suit? Suit, int Rank)
             return $"{CardToken.TrumpPrefix(isFrench)}{Rank}";
         }
 
-        return $"{DisplayRankToken(isFrench)}{CardToken.SuitSymbol(Suit!.Value)}";
+        return $"{DisplayRankToken(isFrench)}{CardToken.SuitSymbol(Suit.Value)}";
     }
 
     /// <summary>

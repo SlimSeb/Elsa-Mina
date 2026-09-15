@@ -111,7 +111,7 @@ public class SemantixGame : Game, ISemantixGame
             return SemantixGuessOutcome.RoundNotActive;
         }
 
-        if (user.UserId != Owner?.UserId)
+        if (Owner is null || user.UserId != Owner.UserId)
         {
             return SemantixGuessOutcome.NotOwner;
         }

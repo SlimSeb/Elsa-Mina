@@ -37,8 +37,7 @@ public class DeleteAllTeamsByTierCommand : Command
             await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
             var roomTeamsToDelete = (await dbContext.RoomTeams
-                    .Include(roomTeam => roomTeam.Team)
-                        .ThenInclude(team => team.Rooms)
+                    .Include(roomTeam => roomTeam.Team.Rooms)
                     .Where(roomTeam => roomTeam.RoomId == context.RoomId)
                     .ToListAsync(cancellationToken))
                 .Where(roomTeam => roomTeam.Team.Format.ToLowerAlphaNum() == normalizedTier)

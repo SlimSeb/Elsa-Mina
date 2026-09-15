@@ -88,7 +88,7 @@ public static class CalcPokemonFactory
         }
         catch (Exception exception)
         {
-            Log.Error(exception, "Failed to build calc Pokemon for opponent {Species}", state?.Species ?? "unknown");
+            Log.Error(exception, "Failed to build calc Pokemon for opponent {Species}", state.Species);
             return false;
         }
     }

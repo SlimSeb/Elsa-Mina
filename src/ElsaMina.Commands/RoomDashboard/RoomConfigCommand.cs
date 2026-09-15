@@ -65,6 +65,12 @@ public class RoomConfigCommand : Command
             context.Culture = room.Culture;
         }
 
+        await ApplyConfigurationPairsAsync(context, room, roomId, parts, cancellationToken);
+    }
+
+    private async Task ApplyConfigurationPairsAsync(IContext context, IRoom room, string roomId, string[] parts,
+        CancellationToken cancellationToken)
+    {
         var roomParameters = _parametersDefinitionFactory.GetParametersDefinitions();
         try
         {
@@ -81,34 +87,8 @@ public class RoomConfigCommand : Command
                     continue;
                 }
 
-                var items = pair.Split('=');
-                if (items.Length != 2)
+                if (!await TryApplyParameterPairAsync(context, room, pair, roomParameters, cancellationToken))
                 {
-                    context.ReplyLocalizedMessage("room_config_invalid_pair", pair);
-                    return;
-                }
-
-                var parameterId = items[0].Trim();
-                var value = items[1].Trim();
-                var match = roomParameters
-                    .FirstOrDefault(kvp => string.Equals(kvp.Value.Identifier, parameterId, StringComparison.OrdinalIgnoreCase) ||
-                                           string.Equals(kvp.Key.ToString(), parameterId, StringComparison.OrdinalIgnoreCase));
-                if (match.Value == null)
-                {
-                    context.ReplyLocalizedMessage("room_config_unknown_parameter", parameterId);
-                    return;
-                }
-
-                if (match.Value.Type == RoomBotConfigurationType.Boolean && value.Equals("toggle", StringComparison.OrdinalIgnoreCase))
-                {
-                    var currentValue = await room.GetParameterValueAsync(match.Key, cancellationToken);
-                    value = (!currentValue.ToBoolean()).ToString().ToLowerInvariant();
-                }
-
-                var success = await room.SetParameterValueAsync(match.Key, value, cancellationToken);
-                if (!success)
-                {
-                    context.ReplyLocalizedMessage("room_config_invalid_value", value, parameterId);
                     return;
                 }
             }
@@ -123,6 +103,54 @@ public class RoomConfigCommand : Command
         }
     }
 
+    private static async Task<bool> TryApplyParameterPairAsync(
+        IContext context,
+        IRoom room,
+        string pair,
+        IReadOnlyDictionary<Parameter, IParameterDefinition> roomParameters,
+        CancellationToken cancellationToken)
+    {
+        var items = pair.Split('=');
+        if (items.Length != 2)
+        {
+            context.ReplyLocalizedMessage("room_config_invalid_pair", pair);
+            return false;
+        }
+
+        var parameterId = items[0].Trim();
+        var value = items[1].Trim();
+        var match = FindParameter(roomParameters, parameterId);
+        if (match.Value == null)
+        {
+            context.ReplyLocalizedMessage("room_config_unknown_parameter", parameterId);
+            return false;
+        }
+
+        if (match.Value.Type == RoomBotConfigurationType.Boolean &&
+            value.Equals("toggle", StringComparison.OrdinalIgnoreCase))
+        {
+            var currentValue = await room.GetParameterValueAsync(match.Key, cancellationToken);
+            value = (!currentValue.ToBoolean()).ToString().ToLowerInvariant();
+        }
+
+        if (await room.SetParameterValueAsync(match.Key, value, cancellationToken))
+        {
+            return true;
+        }
+
+        context.ReplyLocalizedMessage("room_config_invalid_value", value, parameterId);
+        return false;
+    }
+
+    private static KeyValuePair<Parameter, IParameterDefinition> FindParameter(
+        IReadOnlyDictionary<Parameter, IParameterDefinition> roomParameters,
+        string parameterId)
+    {
+        return roomParameters.FirstOrDefault(kvp =>
+            string.Equals(kvp.Value.Identifier, parameterId, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(kvp.Key.ToString(), parameterId, StringComparison.OrdinalIgnoreCase));
+    }
+
     private async Task<bool> TryHandleQuickActionAsync(
         string pair,
         IRoom room,
@@ -130,168 +158,157 @@ public class RoomConfigCommand : Command
         IReadOnlyDictionary<Parameter, IParameterDefinition> roomParameters,
         CancellationToken cancellationToken)
     {
+        if (await TryHandleNamedActionAsync(pair, room, roomId, roomParameters, cancellationToken))
+        {
+            return true;
+        }
 
-        if (pair.Equals("mutegames", StringComparison.OrdinalIgnoreCase) ||
-            pair.Equals("mute", StringComparison.OrdinalIgnoreCase))
+        if (!pair.Contains('='))
+        {
+            return false;
+        }
+
+        var split = pair.Split('=', 2);
+        var actionKey = split[0].Trim();
+        var actionValue = split[1].Trim();
+
+        if (IsAnyOf(actionKey, "toggle") &&
+            await TryToggleBooleanParameterAsync(room, actionValue, roomParameters, cancellationToken))
+        {
+            return true;
+        }
+
+        if (IsAnyOf(actionKey, "action"))
+        {
+            return await TryHandleNamedActionAsync(actionValue, room, roomId, roomParameters, cancellationToken);
+        }
+
+        if (IsAnyOf(actionKey, "mutegames"))
+        {
+            return HandleMuteGamesValue(roomId, actionValue);
+        }
+
+        if (IsAnyOf(actionKey, "games"))
+        {
+            return TryHandleGamesStateValue(roomId, actionValue);
+        }
+
+        return false;
+    }
+
+    private async Task<bool> TryHandleNamedActionAsync(
+        string action,
+        IRoom room,
+        string roomId,
+        IReadOnlyDictionary<Parameter, IParameterDefinition> roomParameters,
+        CancellationToken cancellationToken)
+    {
+        if (IsAnyOf(action, "mutegames", "mute"))
         {
             _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(DEFAULT_MUTE_GAMES_MINUTES));
             return true;
         }
 
-        if (pair.Equals("unmutegames", StringComparison.OrdinalIgnoreCase) ||
-            pair.Equals("unmute", StringComparison.OrdinalIgnoreCase))
+        if (IsAnyOf(action, "unmutegames", "unmute"))
         {
             _arcadeEventsService.UnmuteGames(roomId);
             return true;
         }
 
-        if (pair.Equals("togglegames", StringComparison.OrdinalIgnoreCase))
+        if (IsAnyOf(action, "togglegames"))
         {
-            if (_arcadeEventsService.AreGamesMuted(roomId))
-            {
-                _arcadeEventsService.UnmuteGames(roomId);
-            }
-            else
-            {
-                _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(DEFAULT_MUTE_GAMES_MINUTES));
-            }
+            ToggleGamesMuteState(roomId);
             return true;
         }
 
-        if (pair.Equals("cancelgame", StringComparison.OrdinalIgnoreCase) ||
-            pair.Equals("endgame", StringComparison.OrdinalIgnoreCase))
+        if (IsAnyOf(action, "cancelgame", "endgame"))
         {
             await TryCancelActiveGameAsync(room);
             return true;
         }
 
-        if (pair.Equals("cancelbets", StringComparison.OrdinalIgnoreCase) ||
-            pair.Equals("clearbets", StringComparison.OrdinalIgnoreCase) ||
-            pair.Equals("returnbets", StringComparison.OrdinalIgnoreCase))
+        if (IsAnyOf(action, "cancelbets", "clearbets", "returnbets"))
         {
             await _tournamentBettingService.ReturnBetsAsync(roomId, cancellationToken);
             return true;
         }
 
-        if (pair.Equals("reset", StringComparison.OrdinalIgnoreCase) ||
-            pair.Equals("defaults", StringComparison.OrdinalIgnoreCase) ||
-            pair.Equals("resetdefaults", StringComparison.OrdinalIgnoreCase))
+        if (IsAnyOf(action, "reset", "defaults", "resetdefaults"))
         {
             await ResetParametersToDefaultsAsync(room, roomParameters, cancellationToken);
             return true;
         }
 
-        if (pair.Contains('='))
+        return false;
+    }
+
+    private bool HandleMuteGamesValue(string roomId, string actionValue)
+    {
+        if (int.TryParse(actionValue, out var durationMinutes) && durationMinutes > 0)
         {
-            var split = pair.Split('=', 2);
-            var actionKey = split[0].Trim();
-            var actionValue = split[1].Trim();
+            _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(durationMinutes));
+            return true;
+        }
 
-            if (actionKey.Equals("toggle", StringComparison.OrdinalIgnoreCase))
-            {
-                var match = roomParameters
-                    .FirstOrDefault(kvp => string.Equals(kvp.Value.Identifier, actionValue, StringComparison.OrdinalIgnoreCase) ||
-                                           string.Equals(kvp.Key.ToString(), actionValue, StringComparison.OrdinalIgnoreCase));
-                if (match.Value != null && match.Value.Type == RoomBotConfigurationType.Boolean)
-                {
-                    var currentValue = await room.GetParameterValueAsync(match.Key, cancellationToken);
-                    var toggledValue = (!currentValue.ToBoolean()).ToString().ToLowerInvariant();
-                    await room.SetParameterValueAsync(match.Key, toggledValue, cancellationToken);
-                    return true;
-                }
-            }
+        if (IsAnyOf(actionValue, "false", "off"))
+        {
+            _arcadeEventsService.UnmuteGames(roomId);
+            return true;
+        }
 
-            if (actionKey.Equals("action", StringComparison.OrdinalIgnoreCase))
-            {
-                if (actionValue.Equals("mutegames", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("mute", StringComparison.OrdinalIgnoreCase))
-                {
-                    _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(DEFAULT_MUTE_GAMES_MINUTES));
-                    return true;
-                }
+        _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(DEFAULT_MUTE_GAMES_MINUTES));
+        return true;
+    }
 
-                if (actionValue.Equals("unmutegames", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("unmute", StringComparison.OrdinalIgnoreCase))
-                {
-                    _arcadeEventsService.UnmuteGames(roomId);
-                    return true;
-                }
+    private bool TryHandleGamesStateValue(string roomId, string actionValue)
+    {
+        if (IsAnyOf(actionValue, "mute", "muted", "disabled"))
+        {
+            _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(DEFAULT_MUTE_GAMES_MINUTES));
+            return true;
+        }
 
-                if (actionValue.Equals("togglegames", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (_arcadeEventsService.AreGamesMuted(roomId))
-                    {
-                        _arcadeEventsService.UnmuteGames(roomId);
-                    }
-                    else
-                    {
-                        _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(DEFAULT_MUTE_GAMES_MINUTES));
-                    }
-                    return true;
-                }
-
-                if (actionValue.Equals("cancelgame", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("endgame", StringComparison.OrdinalIgnoreCase))
-                {
-                    await TryCancelActiveGameAsync(room);
-                    return true;
-                }
-
-                if (actionValue.Equals("cancelbets", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("clearbets", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("returnbets", StringComparison.OrdinalIgnoreCase))
-                {
-                    await _tournamentBettingService.ReturnBetsAsync(roomId, cancellationToken);
-                    return true;
-                }
-
-                if (actionValue.Equals("reset", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("defaults", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("resetdefaults", StringComparison.OrdinalIgnoreCase))
-                {
-                    await ResetParametersToDefaultsAsync(room, roomParameters, cancellationToken);
-                    return true;
-                }
-            }
-            else if (actionKey.Equals("mutegames", StringComparison.OrdinalIgnoreCase))
-            {
-                if (int.TryParse(actionValue, out var durationMinutes) && durationMinutes > 0)
-                {
-                    _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(durationMinutes));
-                    return true;
-                }
-
-                if (actionValue.Equals("false", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("off", StringComparison.OrdinalIgnoreCase))
-                {
-                    _arcadeEventsService.UnmuteGames(roomId);
-                    return true;
-                }
-
-                _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(DEFAULT_MUTE_GAMES_MINUTES));
-                return true;
-            }
-            else if (actionKey.Equals("games", StringComparison.OrdinalIgnoreCase))
-            {
-                if (actionValue.Equals("mute", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("muted", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("disabled", StringComparison.OrdinalIgnoreCase))
-                {
-                    _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(DEFAULT_MUTE_GAMES_MINUTES));
-                    return true;
-                }
-
-                if (actionValue.Equals("unmute", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("active", StringComparison.OrdinalIgnoreCase) ||
-                    actionValue.Equals("enabled", StringComparison.OrdinalIgnoreCase))
-                {
-                    _arcadeEventsService.UnmuteGames(roomId);
-                    return true;
-                }
-            }
+        if (IsAnyOf(actionValue, "unmute", "active", "enabled"))
+        {
+            _arcadeEventsService.UnmuteGames(roomId);
+            return true;
         }
 
         return false;
+    }
+
+    private void ToggleGamesMuteState(string roomId)
+    {
+        if (_arcadeEventsService.AreGamesMuted(roomId))
+        {
+            _arcadeEventsService.UnmuteGames(roomId);
+            return;
+        }
+
+        _arcadeEventsService.MuteGames(roomId, TimeSpan.FromMinutes(DEFAULT_MUTE_GAMES_MINUTES));
+    }
+
+    private static async Task<bool> TryToggleBooleanParameterAsync(
+        IRoom room,
+        string parameterId,
+        IReadOnlyDictionary<Parameter, IParameterDefinition> roomParameters,
+        CancellationToken cancellationToken)
+    {
+        var match = FindParameter(roomParameters, parameterId);
+        if (match.Value == null || match.Value.Type != RoomBotConfigurationType.Boolean)
+        {
+            return false;
+        }
+
+        var currentValue = await room.GetParameterValueAsync(match.Key, cancellationToken);
+        var toggledValue = (!currentValue.ToBoolean()).ToString().ToLowerInvariant();
+        await room.SetParameterValueAsync(match.Key, toggledValue, cancellationToken);
+        return true;
+    }
+
+    private static bool IsAnyOf(string value, params string[] candidates)
+    {
+        return candidates.Any(candidate => value.Equals(candidate, StringComparison.OrdinalIgnoreCase));
     }
 
     private static async Task TryCancelActiveGameAsync(IRoom room)

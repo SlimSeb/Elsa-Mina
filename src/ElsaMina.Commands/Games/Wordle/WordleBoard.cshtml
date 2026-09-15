@@ -96,9 +96,10 @@
                 {
                     <div style="text-align: center; margin-bottom: 8px;">
                         <form data-submitsend="@guessCommand">
-                            <label for="wordle-word-@Model.RoomId"><input id="wordle-word-@Model.RoomId" class="textbox" type="text" name="word"
+                            <input id="wordle-word-@Model.RoomId" class="textbox" type="text" name="word"
+                                   aria-label="@GetString("wordle_panel_input_placeholder", game.WordLength)"
                                    placeholder="@GetString("wordle_panel_input_placeholder", game.WordLength)"
-                                   style="width: 140px; text-transform: uppercase;" required/></label>
+                                   style="width: 140px; text-transform: uppercase;" required/>
                             <button class="button" type="submit"><strong>@GetString("wordle_panel_submit")</strong></button>
                         </form>
                     </div>

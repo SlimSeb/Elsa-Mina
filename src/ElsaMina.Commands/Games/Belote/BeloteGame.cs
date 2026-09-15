@@ -95,14 +95,14 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
         _randomService.ShuffleInPlace(_deck);
 
         _dealCursor = 0;
-        foreach (var player in Seats)
+        foreach (var hand in Seats.Select(player => player.Hand))
         {
             for (var card = 0; card < 5; card++)
             {
-                player.Hand.Add(_deck[_dealCursor++]);
+                hand.Add(_deck[_dealCursor++]);
             }
 
-            SortHand(player.Hand, null);
+            SortHand(hand, null);
         }
 
         TurnedCard = _deck[_dealCursor++];
@@ -231,12 +231,9 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
     {
         var king = new BeloteCard(trump, BeloteCard.KING);
         var queen = new BeloteCard(trump, BeloteCard.QUEEN);
-        foreach (var player in Seats)
+        foreach (var player in Seats.Where(seat => seat.Hand.Contains(king) && seat.Hand.Contains(queen)))
         {
-            if (player.Hand.Contains(king) && player.Hand.Contains(queen))
-            {
-                player.HasBelote = true;
-            }
+            player.HasBelote = true;
         }
     }
 
@@ -313,7 +310,7 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
         WipePublicPanel();
 
         TrickNumber++;
-        CurrentTrick = new BeloteTrick(Trump!.Value);
+        CurrentTrick = new BeloteTrick(Trump.Value);
         await RenderAllAsync(resendLog: true);
         RestartTurnTimer();
     }
@@ -332,7 +329,7 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
         }
 
         var trump = Trump.Value;
-        var leadSuit = CurrentTrick.LeadSuit!.Value;
+        var leadSuit = CurrentTrick.LeadSuit.Value;
         var handTrumps = hand.Where(card => card.IsTrump(trump)).ToList();
         var highestTrumpStrength = CurrentTrick.HighestTrumpStrength;
 
@@ -379,17 +376,26 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
 
     private async Task FinishAsync()
     {
-        var trump = Trump!.Value;
+        var trump = Trump.Value;
         var team0CardPoints = Seats
             .Where(player => player.Team == 0)
-            .Sum(player => player.CapturedPile.Sum(card => card.GetPoints(trump)));
+            .Sum((BelotePlayer player) => player.CapturedPile.Sum((BeloteCard card) => card.GetPoints(trump)));
         var team1CardPoints = Seats
             .Where(player => player.Team == 1)
-            .Sum(player => player.CapturedPile.Sum(card => card.GetPoints(trump)));
+            .Sum((BelotePlayer player) => player.CapturedPile.Sum((BeloteCard card) => card.GetPoints(trump)));
         var beloteTeam = Seats.FirstOrDefault(player => player.HasBelote)?.Team ?? -1;
 
-        ScoreResult = BeloteScorer.Compute(Taker.Team, team0CardPoints, team1CardPoints, _lastTrickTeam,
-            _team0Tricks, _team1Tricks, beloteTeam, Seats);
+        ScoreResult = BeloteScorer.Compute(new BeloteScoreInput
+        {
+            TakerTeam = Taker.Team,
+            Team0CardPoints = team0CardPoints,
+            Team1CardPoints = team1CardPoints,
+            LastTrickTeam = _lastTrickTeam,
+            Team0Tricks = _team0Tricks,
+            Team1Tricks = _team1Tricks,
+            BeloteTeam = beloteTeam,
+            Players = Seats
+        });
 
         Phase = BelotePhase.Finished;
         StopTurnTimer();

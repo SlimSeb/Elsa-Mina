@@ -97,54 +97,45 @@ public class ChessBoard
     /// </summary>
     public bool IsSquareAttacked(int row, int column, bool byWhite)
     {
-        // Pawn attacks: a white pawn attacks the squares diagonally above it (smaller row).
+        var queen = byWhite ? 'Q' : 'q';
+
+        return IsAttackedByPawn(row, column, byWhite)
+               // Knight and king attacks
+               || IsAttackedFromOffsets(row, column, KnightOffsets, byWhite ? 'N' : 'n')
+               || IsAttackedFromOffsets(row, column, KingOffsets, byWhite ? 'K' : 'k')
+               // Sliding attacks: rook / queen along ranks and files, bishop / queen along diagonals
+               || IsAttackedFromDirections(row, column, RookDirections, byWhite ? 'R' : 'r', queen)
+               || IsAttackedFromDirections(row, column, BishopDirections, byWhite ? 'B' : 'b', queen);
+    }
+
+    /// <summary>
+    /// A white pawn attacks the squares diagonally above it (smaller row), a black pawn those below it.
+    /// </summary>
+    private bool IsAttackedByPawn(int row, int column, bool byWhite)
+    {
         var pawnRow = byWhite ? row + 1 : row - 1;
         var pawn = byWhite ? 'P' : 'p';
-        if (IsInsideBoard(pawnRow, column - 1) && Squares[pawnRow, column - 1] == pawn)
-        {
-            return true;
-        }
 
-        if (IsInsideBoard(pawnRow, column + 1) && Squares[pawnRow, column + 1] == pawn)
-        {
-            return true;
-        }
+        return (IsInsideBoard(pawnRow, column - 1) && Squares[pawnRow, column - 1] == pawn)
+               || (IsInsideBoard(pawnRow, column + 1) && Squares[pawnRow, column + 1] == pawn);
+    }
 
-        // Knight attacks
-        var knight = byWhite ? 'N' : 'n';
-        foreach (var (rowOffset, columnOffset) in KnightOffsets)
+    /// <summary>
+    /// Whether the given piece stands on any of the squares one offset away, as knights and kings do.
+    /// </summary>
+    private bool IsAttackedFromOffsets(int row, int column, (int Row, int Column)[] offsets, char piece)
+    {
+        foreach (var (rowOffset, columnOffset) in offsets)
         {
             var checkedRow = row + rowOffset;
             var checkedColumn = column + columnOffset;
-            if (IsInsideBoard(checkedRow, checkedColumn) && Squares[checkedRow, checkedColumn] == knight)
+            if (IsInsideBoard(checkedRow, checkedColumn) && Squares[checkedRow, checkedColumn] == piece)
             {
                 return true;
             }
         }
 
-        // King attacks
-        var king = byWhite ? 'K' : 'k';
-        foreach (var (rowOffset, columnOffset) in KingOffsets)
-        {
-            var checkedRow = row + rowOffset;
-            var checkedColumn = column + columnOffset;
-            if (IsInsideBoard(checkedRow, checkedColumn) && Squares[checkedRow, checkedColumn] == king)
-            {
-                return true;
-            }
-        }
-
-        // Sliding attacks: rook / queen along ranks and files
-        var rook = byWhite ? 'R' : 'r';
-        var queen = byWhite ? 'Q' : 'q';
-        if (IsAttackedFromDirections(row, column, RookDirections, rook, queen))
-        {
-            return true;
-        }
-
-        // Sliding attacks: bishop / queen along diagonals
-        var bishop = byWhite ? 'B' : 'b';
-        return IsAttackedFromDirections(row, column, BishopDirections, bishop, queen);
+        return false;
     }
 
     private bool IsAttackedFromDirections(int row, int column, (int Row, int Column)[] directions,

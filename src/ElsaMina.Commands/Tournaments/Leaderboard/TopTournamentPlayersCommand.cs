@@ -41,8 +41,7 @@ public class TopTournamentPlayersCommand : Command
             await using var dbContext = await _botDbContextFactory.CreateDbContextAsync(cancellationToken);
             var topRecords = await dbContext.TournamentRecords
                 .Where(record => record.RoomId == roomId)
-                .Include(record => record.RoomUser)
-                .ThenInclude(roomUser => roomUser.User)
+                .Include(record => record.RoomUser.User)
                 .OrderByDescending(record => record.WinsCount)
                 .ThenByDescending(record => record.RunnerUpCount)
                 .ThenByDescending(record => record.ThirdPlaceCount)

@@ -10,6 +10,8 @@ public static class ShowdownTeamsUtils
 {
     private static readonly string[] STAT_KEYS = ["hp", "atk", "def", "spa", "spd", "spe"];
 
+    private const int DEFAULT_INDIVIDUAL_VALUE = 31;
+
     private static readonly Dictionary<string, string> BATTLE_STAT_IDS = new()
     {
         ["HP"] = "hp",
@@ -44,6 +46,8 @@ public static class ShowdownTeamsUtils
     private static readonly Regex NATURE_REGEX =
         new("^[A-Za-z]+ (N|n)ature", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
 
+    #region Team export deserialization
+
     public static IReadOnlyList<PokemonSet> DeserializeTeamExport(string export)
     {
         var team = new List<PokemonSet>();
@@ -55,208 +59,297 @@ public static class ShowdownTeamsUtils
             if (line == string.Empty || line == "---")
             {
                 currentSet = null;
+                continue;
             }
-            else if (currentSet == null)
-            {
-                currentSet = new PokemonSet
-                {
-                    Name = string.Empty,
-                    Species = string.Empty,
-                    Gender = string.Empty
-                };
 
+            if (currentSet == null)
+            {
+                currentSet = CreateSetFromHeaderLine(line);
                 team.Add(currentSet);
-                var atIndex = line.LastIndexOf(" @ ", StringComparison.Ordinal);
-                if (atIndex != -1)
-                {
-                    currentSet.Item = line.Substring(atIndex + 3);
-                    if (currentSet.Item.ToLowerAlphaNum() == "noitem")
-                    {
-                        currentSet.Item = string.Empty;
-                    }
+                continue;
+            }
 
-                    line = line.Substring(0, atIndex);
-                }
-
-                if (line.Length >= 4 && line.Substring(line.Length - 4) == " (M)")
-                {
-                    currentSet.Gender = "M";
-                    line = line.Substring(0, line.Length - 4);
-                }
-
-                if (line.Length >= 4 && line.Substring(line.Length - 4) == " (F)")
-                {
-                    currentSet.Gender = "F";
-                    line = line.Substring(0, line.Length - 4);
-                }
-
-                var parenIndex = line.LastIndexOf(" (", StringComparison.Ordinal);
-
-                if (line.Length >= 1 && line.Substring(line.Length - 1) == ")" && parenIndex != -1)
-                {
-                    line = line.Substring(0, line.Length - 1);
-                    currentSet.Species = line.Substring(parenIndex + 2); // TODO : dex
-                    line = line.Substring(0, parenIndex);
-                    currentSet.Name = line;
-                }
-                else
-                {
-                    currentSet.Species = line; // TODO : dex
-                    currentSet.Name = string.Empty;
-                }
-            }
-            else if (line.Length > 7 && line.Substring(0, 7) == "Trait: ")
-            {
-                line = line.Substring(7);
-                currentSet.Ability = line;
-            }
-            else if (line.Length > 9 && line.Substring(0, 9) == "Ability: ")
-            {
-                line = line.Substring(9);
-                currentSet.Ability = line;
-            }
-            else if (line == "Shiny: Yes")
-            {
-                currentSet.IsShiny = true;
-            }
-            else if (line.Length > 7 && line.Substring(0, 7) == "Level: ")
-            {
-                line = line.Substring(7);
-                currentSet.Level = int.Parse(line);
-            }
-            else if (line.Length > 11 && line.Substring(0, 11) == "Happiness: ")
-            {
-                line = line.Substring(11);
-                currentSet.Happiness = int.Parse(line);
-            }
-            else if (line.Length > 10 && line.Substring(0, 10) == "Pokeball: ")
-            {
-                line = line.Substring(10);
-                currentSet.Pokeball = line;
-            }
-            else if (line.Length > 14 && line.Substring(0, 14) == "Hidden Power: ")
-            {
-                line = line.Substring(14);
-                currentSet.HiddenPowerType = line;
-            }
-            else if (line.Length > 11 && line.Substring(0, 11) == "Tera Type: ")
-            {
-                line = line.Substring(11);
-                currentSet.TeraType = line;
-            }
-            else if (line.Length > 15 && line.Substring(0, 15) == "Dynamax Level: ")
-            {
-                line = line.Substring(15);
-                currentSet.DynamaxLevel = int.Parse(line);
-            }
-            else if (line == "Gigantamax: Yes")
-            {
-                currentSet.IsGigantamax = true;
-            }
-            else if (line.Length > 5 && line.Substring(0, 5) == "EVs: ")
-            {
-                line = line.Substring(5);
-                var evLines = line.Split("/");
-                currentSet.EffortValues = new Dictionary<string, int>
-                {
-                    ["hp"] = 0,
-                    ["atk"] = 0,
-                    ["def"] = 0,
-                    ["spa"] = 0,
-                    ["spd"] = 0,
-                    ["spe"] = 0,
-                };
-                foreach (var untrimmedEvLine in evLines)
-                {
-                    var evLine = untrimmedEvLine.Trim();
-                    var spaceIndex = evLine.IndexOf(' ');
-                    if (spaceIndex == -1)
-                    {
-                        continue;
-                    }
-
-                    var statId = BATTLE_STAT_IDS[evLine.Substring(spaceIndex + 1)];
-                    var statVal = int.Parse(evLine.Substring(0, spaceIndex));
-                    if (string.IsNullOrEmpty(statId))
-                    {
-                        continue;
-                    }
-
-                    currentSet.EffortValues[statId] = statVal;
-                }
-            }
-            else if (line.Length > 5 && line.Substring(0, 5) == "IVs: ")
-            {
-                line = line.Substring(5);
-                var ivLines = line.Split(" / ");
-                currentSet.IndividualValues = new Dictionary<string, int>
-                {
-                    ["hp"] = 31,
-                    ["atk"] = 31,
-                    ["def"] = 31,
-                    ["spa"] = 31,
-                    ["spd"] = 31,
-                    ["spe"] = 31,
-                };
-                foreach (var untrimmedIvLine in ivLines)
-                {
-                    var ivLine = untrimmedIvLine.Trim();
-                    var spaceIndex = ivLine.IndexOf(' ');
-                    if (spaceIndex == -1)
-                    {
-                        continue;
-                    }
-
-                    var statId = BATTLE_STAT_IDS[ivLine.Substring(spaceIndex + 1)];
-                    var statVal = int.Parse(ivLine.Substring(0, spaceIndex));
-                    if (string.IsNullOrEmpty(statId))
-                    {
-                        continue;
-                    }
-
-                    currentSet.IndividualValues[statId] = statVal;
-                }
-            }
-            else if (NATURE_REGEX.IsMatch(line))
-            {
-                var natureIndex = line.IndexOf(" Nature", StringComparison.Ordinal);
-                if (natureIndex == -1)
-                {
-                    natureIndex = line.IndexOf(" nature", StringComparison.Ordinal);
-                }
-
-                if (natureIndex == -1)
-                {
-                    continue;
-                }
-
-                line = line.Substring(0, natureIndex);
-                if (!string.IsNullOrEmpty(line))
-                {
-                    currentSet.Nature = line;
-                }
-            }
-            else if (line.Length > 0 && line.Substring(0, 1) == "-" || line.Substring(0, 1) == "~")
-            {
-                line = line.Substring(1);
-                if (line.Substring(0, 1) == " ")
-                {
-                    line = line.Substring(1);
-                }
-
-                if (currentSet.Moves == null)
-                {
-                    currentSet.Moves = new List<string>();
-                }
-
-                // TODO: hidden power
-
-                currentSet.Moves.Add(line);
-            }
+            ParseSetDetailLine(currentSet, line);
         }
 
         return team;
     }
+
+    private static PokemonSet CreateSetFromHeaderLine(string headerLine)
+    {
+        var set = new PokemonSet
+        {
+            Name = string.Empty,
+            Species = string.Empty,
+            Gender = string.Empty
+        };
+
+        var remainder = ParseItemFromHeaderLine(set, headerLine);
+        remainder = ParseGenderFromHeaderLine(set, remainder);
+        ParseNameAndSpeciesFromHeaderLine(set, remainder);
+
+        return set;
+    }
+
+    private static string ParseItemFromHeaderLine(PokemonSet set, string line)
+    {
+        var atIndex = line.LastIndexOf(" @ ", StringComparison.Ordinal);
+        if (atIndex == -1)
+        {
+            return line;
+        }
+
+        set.Item = line.Substring(atIndex + 3);
+        if (set.Item.ToLowerAlphaNum() == "noitem")
+        {
+            set.Item = string.Empty;
+        }
+
+        return line.Substring(0, atIndex);
+    }
+
+    private static string ParseGenderFromHeaderLine(PokemonSet set, string line)
+    {
+        var remainder = line;
+        if (remainder.Length >= 4 && remainder.Substring(remainder.Length - 4) == " (M)")
+        {
+            set.Gender = "M";
+            remainder = remainder.Substring(0, remainder.Length - 4);
+        }
+
+        if (remainder.Length >= 4 && remainder.Substring(remainder.Length - 4) == " (F)")
+        {
+            set.Gender = "F";
+            remainder = remainder.Substring(0, remainder.Length - 4);
+        }
+
+        return remainder;
+    }
+
+    private static void ParseNameAndSpeciesFromHeaderLine(PokemonSet set, string line)
+    {
+        var parenIndex = line.LastIndexOf(" (", StringComparison.Ordinal);
+        if (line.Length < 1 || line.Substring(line.Length - 1) != ")" || parenIndex == -1)
+        {
+            set.Species = line; // TODO : dex
+            set.Name = string.Empty;
+            return;
+        }
+
+        var withoutClosingParenthesis = line.Substring(0, line.Length - 1);
+        set.Species = withoutClosingParenthesis.Substring(parenIndex + 2); // TODO : dex
+        set.Name = withoutClosingParenthesis.Substring(0, parenIndex);
+    }
+
+    private static void ParseSetDetailLine(PokemonSet set, string line)
+    {
+        if (TryParseTextField(set, line))
+        {
+            return;
+        }
+
+        if (TryParseNumericField(set, line))
+        {
+            return;
+        }
+
+        if (TryParseBooleanField(set, line))
+        {
+            return;
+        }
+
+        if (TryParseStatsField(set, line))
+        {
+            return;
+        }
+
+        if (TryParseNature(set, line))
+        {
+            return;
+        }
+
+        TryParseMove(set, line);
+    }
+
+    private static bool TryParseTextField(PokemonSet set, string line)
+    {
+        if (TryGetPrefixedValue(line, "Trait: ", out var trait))
+        {
+            set.Ability = trait;
+            return true;
+        }
+
+        if (TryGetPrefixedValue(line, "Ability: ", out var ability))
+        {
+            set.Ability = ability;
+            return true;
+        }
+
+        if (TryGetPrefixedValue(line, "Pokeball: ", out var pokeball))
+        {
+            set.Pokeball = pokeball;
+            return true;
+        }
+
+        if (TryGetPrefixedValue(line, "Hidden Power: ", out var hiddenPowerType))
+        {
+            set.HiddenPowerType = hiddenPowerType;
+            return true;
+        }
+
+        if (TryGetPrefixedValue(line, "Tera Type: ", out var teraType))
+        {
+            set.TeraType = teraType;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryParseNumericField(PokemonSet set, string line)
+    {
+        if (TryGetPrefixedValue(line, "Level: ", out var level))
+        {
+            set.Level = int.Parse(level);
+            return true;
+        }
+
+        if (TryGetPrefixedValue(line, "Happiness: ", out var happiness))
+        {
+            set.Happiness = int.Parse(happiness);
+            return true;
+        }
+
+        if (TryGetPrefixedValue(line, "Dynamax Level: ", out var dynamaxLevel))
+        {
+            set.DynamaxLevel = int.Parse(dynamaxLevel);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryParseBooleanField(PokemonSet set, string line)
+    {
+        switch (line)
+        {
+            case "Shiny: Yes":
+                set.IsShiny = true;
+                return true;
+            case "Gigantamax: Yes":
+                set.IsGigantamax = true;
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private static bool TryParseStatsField(PokemonSet set, string line)
+    {
+        if (TryGetPrefixedValue(line, "EVs: ", out var effortValues))
+        {
+            set.EffortValues = ParseStats(effortValues.Split("/"), 0);
+            return true;
+        }
+
+        if (TryGetPrefixedValue(line, "IVs: ", out var individualValues))
+        {
+            set.IndividualValues = ParseStats(individualValues.Split(" / "), DEFAULT_INDIVIDUAL_VALUE);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static Dictionary<string, int> ParseStats(IEnumerable<string> statEntries, int defaultValue)
+    {
+        var stats = STAT_KEYS.ToDictionary(statKey => statKey, _ => defaultValue);
+
+        foreach (var untrimmedEntry in statEntries)
+        {
+            var entry = untrimmedEntry.Trim();
+            var spaceIndex = entry.IndexOf(' ');
+            if (spaceIndex == -1)
+            {
+                continue;
+            }
+
+            var statId = BATTLE_STAT_IDS[entry.Substring(spaceIndex + 1)];
+            var statValue = int.Parse(entry.Substring(0, spaceIndex));
+            if (string.IsNullOrEmpty(statId))
+            {
+                continue;
+            }
+
+            stats[statId] = statValue;
+        }
+
+        return stats;
+    }
+
+    private static bool TryParseNature(PokemonSet set, string line)
+    {
+        if (!NATURE_REGEX.IsMatch(line))
+        {
+            return false;
+        }
+
+        var natureIndex = line.IndexOf(" Nature", StringComparison.Ordinal);
+        if (natureIndex == -1)
+        {
+            natureIndex = line.IndexOf(" nature", StringComparison.Ordinal);
+        }
+
+        if (natureIndex == -1)
+        {
+            return true;
+        }
+
+        var nature = line.Substring(0, natureIndex);
+        if (!string.IsNullOrEmpty(nature))
+        {
+            set.Nature = nature;
+        }
+
+        return true;
+    }
+
+    private static void TryParseMove(PokemonSet set, string line)
+    {
+        var isMoveLine = (line.Length > 0 && line.Substring(0, 1) == "-") || line.Substring(0, 1) == "~";
+        if (!isMoveLine)
+        {
+            return;
+        }
+
+        var move = line.Substring(1);
+        if (move.Substring(0, 1) == " ")
+        {
+            move = move.Substring(1);
+        }
+
+        set.Moves ??= new List<string>();
+
+        // TODO: hidden power
+
+        set.Moves.Add(move);
+    }
+
+    private static bool TryGetPrefixedValue(string line, string prefix, out string value)
+    {
+        if (line.Length > prefix.Length && line.Substring(0, prefix.Length) == prefix)
+        {
+            value = line.Substring(prefix.Length);
+            return true;
+        }
+
+        value = null;
+        return false;
+    }
+
+    #endregion
+
+    #region Team export serialization
 
     public static string GetTeamExport(IEnumerable<PokemonSet> sets)
     {
@@ -266,14 +359,22 @@ public static class ShowdownTeamsUtils
     public static string GetSetExport(PokemonSet set)
     {
         var builder = new StringBuilder();
-        if (set.Name != null && set.Name != set.Species)
-        {
-            builder.Append($"{set.Name} ({set.Species})");
-        }
-        else
-        {
-            builder.Append(set.Species);
-        }
+
+        AppendExportedHeaderLine(builder, set);
+        AppendExportedAttributes(builder, set);
+        AppendExportedEffortValues(builder, set);
+        AppendExportedNature(builder, set);
+        AppendExportedIndividualValues(builder, set);
+        AppendExportedMoves(builder, set);
+
+        return builder.ToString();
+    }
+
+    private static void AppendExportedHeaderLine(StringBuilder builder, PokemonSet set)
+    {
+        builder.Append(set.Name != null && set.Name != set.Species
+            ? $"{set.Name} ({set.Species})"
+            : set.Species);
 
         if (set.Gender == "M")
         {
@@ -291,7 +392,10 @@ public static class ShowdownTeamsUtils
         }
 
         builder.AppendLine();
+    }
 
+    private static void AppendExportedAttributes(StringBuilder builder, PokemonSet set)
+    {
         if (set.Ability != null)
         {
             builder.AppendLine($"Ability: {set.Ability} ");
@@ -331,91 +435,98 @@ public static class ShowdownTeamsUtils
         {
             builder.AppendLine("Gigantamax: Yes ");
         }
+    }
 
-        var firstEv = true;
-        if (set.EffortValues != null)
+    private static void AppendExportedEffortValues(StringBuilder builder, PokemonSet set)
+    {
+        if (set.EffortValues == null)
         {
-            foreach (var (key, battleStatValue) in BATTLE_STAT_NAMES)
-            {
-                if (!set.EffortValues.TryGetValue(key, out var effortValue) || effortValue == 0)
-                {
-                    continue;
-                }
-
-                if (firstEv)
-                {
-                    builder.Append("EVs: ");
-                    firstEv = false;
-                }
-                else
-                {
-                    builder.Append(" / ");
-                }
-
-                builder.Append($"{set.EffortValues[key]} {battleStatValue}");
-            }
+            return;
         }
 
-        if (!firstEv)
+        var isFirstEffortValue = true;
+        foreach (var (statKey, statName) in BATTLE_STAT_NAMES)
+        {
+            if (!set.EffortValues.TryGetValue(statKey, out var effortValue) || effortValue == 0)
+            {
+                continue;
+            }
+
+            builder.Append(isFirstEffortValue ? "EVs: " : " / ");
+            isFirstEffortValue = false;
+            builder.Append($"{effortValue} {statName}");
+        }
+
+        if (!isFirstEffortValue)
         {
             builder.AppendLine();
         }
+    }
 
+    private static void AppendExportedNature(StringBuilder builder, PokemonSet set)
+    {
         if (set.Nature != null)
         {
             builder.AppendLine($"{set.Nature} Nature ");
         }
-
-        var firstIv = true;
-        if (set.IndividualValues != null)
-        {
-            foreach (var (key, value) in BATTLE_STAT_NAMES)
-            {
-                if (set.IndividualValues[key] == 31)
-                {
-                    continue;
-                }
-
-                if (firstIv)
-                {
-                    builder.Append("IVs: ");
-                    firstIv = false;
-                }
-                else
-                {
-                    builder.Append(" / ");
-                }
-
-                builder.Append($"{set.IndividualValues[key]} {value}");
-            }
-        }
-
-        if (!firstIv)
-        {
-            builder.AppendLine();
-        }
-
-        if (set.Moves != null)
-        {
-            foreach (var setMove in set.Moves)
-            {
-                var move = setMove;
-                if (move.Length > 13 && move.Substring(0, 13) == "Hidden Power ")
-                {
-                    move = $"{move.Substring(0, 13)} [{move.Substring(13)}]";
-                }
-
-                if (!string.IsNullOrEmpty(move))
-                {
-                    builder.AppendLine($"- {move}");
-                }
-            }
-
-            builder.AppendLine();
-        }
-
-        return builder.ToString();
     }
+
+    private static void AppendExportedIndividualValues(StringBuilder builder, PokemonSet set)
+    {
+        if (set.IndividualValues == null)
+        {
+            return;
+        }
+
+        var isFirstIndividualValue = true;
+        foreach (var (statKey, statName) in BATTLE_STAT_NAMES)
+        {
+            var individualValue = set.IndividualValues[statKey];
+            if (individualValue == DEFAULT_INDIVIDUAL_VALUE)
+            {
+                continue;
+            }
+
+            builder.Append(isFirstIndividualValue ? "IVs: " : " / ");
+            isFirstIndividualValue = false;
+            builder.Append($"{individualValue} {statName}");
+        }
+
+        if (!isFirstIndividualValue)
+        {
+            builder.AppendLine();
+        }
+    }
+
+    private static void AppendExportedMoves(StringBuilder builder, PokemonSet set)
+    {
+        if (set.Moves == null)
+        {
+            return;
+        }
+
+        foreach (var setMove in set.Moves)
+        {
+            var move = FormatExportedMove(setMove);
+            if (!string.IsNullOrEmpty(move))
+            {
+                builder.AppendLine($"- {move}");
+            }
+        }
+
+        builder.AppendLine();
+    }
+
+    private static string FormatExportedMove(string move)
+    {
+        return move.Length > 13 && move.Substring(0, 13) == "Hidden Power "
+            ? $"{move.Substring(0, 13)} [{move.Substring(13)}]"
+            : move;
+    }
+
+    #endregion
+
+    #region Packed team parsing
 
     public static IReadOnlyList<PokemonSet> UnpackTeam(string buf)
     {
@@ -423,154 +534,240 @@ public static class ShowdownTeamsUtils
             return [];
 
         var team = new List<PokemonSet>();
-        var i = 0;
-        var lastI = -1;
+        var index = 0;
+        var lastIndex = -1;
 
-        while (i < buf.Length)
+        while (index < buf.Length)
         {
             var set = new PokemonSet();
             team.Add(set);
 
-            // name
-            var j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            var name = buf.Substring(i, j - i);
-            i = j + 1;
-
-            // species
-            j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            var speciesStr = buf.Substring(i, j - i);
-            set.Species = string.IsNullOrEmpty(speciesStr) ? name : speciesStr;
-            if (set.Species != name && !string.IsNullOrEmpty(name))
-                set.Name = name;
-            i = j + 1;
-
-            // item
-            j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            set.Item = buf.Substring(i, j - i);
-            i = j + 1;
-
-            // ability
-            j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            set.Ability = buf.Substring(i, j - i);
-            i = j + 1;
-
-            // moves
-            j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            set.Moves = buf.Substring(i, j - i).Split(',').ToList();
-            i = j + 1;
-
-            // nature
-            j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            var nature = buf.Substring(i, j - i);
-            if (nature != "undefined")
-                set.Nature = nature;
-            i = j + 1;
-
-            // evs
-            j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            if (j != i)
+            if (!TryUnpackIdentityFields(buf, set, ref index) || !TryUnpackBattleFields(buf, set, ref index))
             {
-                var evString = buf.Substring(i, j - i);
-                if (evString.Length > 5)
-                {
-                    var evs = evString.Split(',');
-                    set.EffortValues = new Dictionary<string, int>
-                    {
-                        ["hp"] = int.TryParse(evs[0], out var evHp) ? evHp : 0,
-                        ["atk"] = int.TryParse(evs[1], out var evAtk) ? evAtk : 0,
-                        ["def"] = int.TryParse(evs[2], out var evDef) ? evDef : 0,
-                        ["spa"] = int.TryParse(evs[3], out var evSpa) ? evSpa : 0,
-                        ["spd"] = int.TryParse(evs[4], out var evSpd) ? evSpd : 0,
-                        ["spe"] = int.TryParse(evs[5], out var evSpe) ? evSpe : 0,
-                    };
-                }
-                else if (evString == "0")
-                {
-                    set.EffortValues = new Dictionary<string, int>
-                        { ["hp"] = 0, ["atk"] = 0, ["def"] = 0, ["spa"] = 0, ["spd"] = 0, ["spe"] = 0 };
-                }
+                break;
             }
 
-            i = j + 1;
-
-            // gender
-            j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            if (i != j)
-                set.Gender = buf.Substring(i, j - i);
-            i = j + 1;
-
-            // ivs
-            j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            if (j != i)
+            var miscSeparatorIndex = UnpackMiscFields(buf, set, ref index);
+            if (miscSeparatorIndex < 0 || index <= lastIndex)
             {
-                var ivs = buf.Substring(i, j - i).Split(',');
-                set.IndividualValues = new Dictionary<string, int>
-                {
-                    ["hp"] = ivs[0] == "" ? 31 : int.Parse(ivs[0]),
-                    ["atk"] = ivs[1] == "" ? 31 : int.Parse(ivs[1]),
-                    ["def"] = ivs[2] == "" ? 31 : int.Parse(ivs[2]),
-                    ["spa"] = ivs[3] == "" ? 31 : int.Parse(ivs[3]),
-                    ["spd"] = ivs[4] == "" ? 31 : int.Parse(ivs[4]),
-                    ["spe"] = ivs[5] == "" ? 31 : int.Parse(ivs[5]),
-                };
+                break;
             }
 
-            i = j + 1;
-
-            // shiny
-            j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            if (i != j)
-                set.IsShiny = true;
-            i = j + 1;
-
-            // level
-            j = buf.IndexOf('|', i);
-            if (j < 0) break;
-            if (i != j)
-                set.Level = int.Parse(buf.Substring(i, j - i));
-            i = j + 1;
-
-            // happiness and misc (comma-separated, terminated by ] or end of string)
-            j = buf.IndexOf(']', i);
-            string[] misc = null;
-            if (j < 0)
-            {
-                if (i < buf.Length)
-                    misc = buf.Substring(i).Split(',', 6);
-            }
-            else
-            {
-                if (i != j)
-                    misc = buf.Substring(i, j - i).Split(',', 6);
-            }
-
-            if (misc != null)
-            {
-                set.Happiness = misc.Length > 0 && !string.IsNullOrEmpty(misc[0]) ? int.Parse(misc[0]) : -1;
-                set.HiddenPowerType = misc.Length > 1 && !string.IsNullOrEmpty(misc[1]) ? misc[1] : null;
-                set.Pokeball = misc.Length > 2 && !string.IsNullOrEmpty(misc[2]) ? misc[2] : null;
-                set.IsGigantamax = misc.Length > 3 && !string.IsNullOrEmpty(misc[3]);
-                set.DynamaxLevel = misc.Length > 4 && !string.IsNullOrEmpty(misc[4]) ? int.Parse(misc[4]) : -1;
-                set.TeraType = misc.Length > 5 && !string.IsNullOrEmpty(misc[5]) ? misc[5] : null;
-            }
-
-            i = j + 1;
-            if (j < 0 || i <= lastI) break;
-            lastI = i;
+            lastIndex = index;
         }
 
         return team;
     }
+
+    private static bool TryUnpackIdentityFields(string buf, PokemonSet set, ref int index)
+    {
+        // name and species
+        if (!TryReadPackedField(buf, ref index, out var name) ||
+            !TryReadPackedField(buf, ref index, out var species))
+        {
+            return false;
+        }
+
+        set.Species = string.IsNullOrEmpty(species) ? name : species;
+        if (set.Species != name && !string.IsNullOrEmpty(name))
+        {
+            set.Name = name;
+        }
+
+        // item
+        if (!TryReadPackedField(buf, ref index, out var item))
+        {
+            return false;
+        }
+
+        set.Item = item;
+
+        // ability
+        if (!TryReadPackedField(buf, ref index, out var ability))
+        {
+            return false;
+        }
+
+        set.Ability = ability;
+
+        // moves
+        if (!TryReadPackedField(buf, ref index, out var moves))
+        {
+            return false;
+        }
+
+        set.Moves = moves.Split(',').ToList();
+        return true;
+    }
+
+    private static bool TryUnpackBattleFields(string buf, PokemonSet set, ref int index)
+    {
+        // nature
+        if (!TryReadPackedField(buf, ref index, out var nature))
+        {
+            return false;
+        }
+
+        if (nature != "undefined")
+        {
+            set.Nature = nature;
+        }
+
+        // evs
+        if (!TryReadPackedField(buf, ref index, out var effortValues))
+        {
+            return false;
+        }
+
+        ApplyPackedEffortValues(set, effortValues);
+
+        // gender
+        if (!TryReadPackedField(buf, ref index, out var gender))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(gender))
+        {
+            set.Gender = gender;
+        }
+
+        // ivs
+        if (!TryReadPackedField(buf, ref index, out var individualValues))
+        {
+            return false;
+        }
+
+        ApplyPackedIndividualValues(set, individualValues);
+
+        // shiny
+        if (!TryReadPackedField(buf, ref index, out var shiny))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(shiny))
+        {
+            set.IsShiny = true;
+        }
+
+        // level
+        if (!TryReadPackedField(buf, ref index, out var level))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(level))
+        {
+            set.Level = int.Parse(level);
+        }
+
+        return true;
+    }
+
+    private static bool TryReadPackedField(string buf, ref int index, out string value)
+    {
+        var separatorIndex = buf.IndexOf('|', index);
+        if (separatorIndex < 0)
+        {
+            value = null;
+            return false;
+        }
+
+        value = buf.Substring(index, separatorIndex - index);
+        index = separatorIndex + 1;
+        return true;
+    }
+
+    private static void ApplyPackedEffortValues(PokemonSet set, string packedEffortValues)
+    {
+        if (packedEffortValues.Length > 5)
+        {
+            var effortValues = packedEffortValues.Split(',');
+            set.EffortValues = new Dictionary<string, int>
+            {
+                ["hp"] = ParsePackedEffortValue(effortValues[0]),
+                ["atk"] = ParsePackedEffortValue(effortValues[1]),
+                ["def"] = ParsePackedEffortValue(effortValues[2]),
+                ["spa"] = ParsePackedEffortValue(effortValues[3]),
+                ["spd"] = ParsePackedEffortValue(effortValues[4]),
+                ["spe"] = ParsePackedEffortValue(effortValues[5])
+            };
+            return;
+        }
+
+        if (packedEffortValues == "0")
+        {
+            set.EffortValues = STAT_KEYS.ToDictionary(statKey => statKey, _ => 0);
+        }
+    }
+
+    private static int ParsePackedEffortValue(string value)
+    {
+        return int.TryParse(value, out var effortValue) ? effortValue : 0;
+    }
+
+    private static void ApplyPackedIndividualValues(PokemonSet set, string packedIndividualValues)
+    {
+        if (string.IsNullOrEmpty(packedIndividualValues))
+        {
+            return;
+        }
+
+        var individualValues = packedIndividualValues.Split(',');
+        set.IndividualValues = new Dictionary<string, int>
+        {
+            ["hp"] = ParsePackedIndividualValue(individualValues[0]),
+            ["atk"] = ParsePackedIndividualValue(individualValues[1]),
+            ["def"] = ParsePackedIndividualValue(individualValues[2]),
+            ["spa"] = ParsePackedIndividualValue(individualValues[3]),
+            ["spd"] = ParsePackedIndividualValue(individualValues[4]),
+            ["spe"] = ParsePackedIndividualValue(individualValues[5])
+        };
+    }
+
+    private static int ParsePackedIndividualValue(string value)
+    {
+        return value == "" ? DEFAULT_INDIVIDUAL_VALUE : int.Parse(value);
+    }
+
+    // happiness and misc (comma-separated, terminated by ] or end of string)
+    private static int UnpackMiscFields(string buf, PokemonSet set, ref int index)
+    {
+        var separatorIndex = buf.IndexOf(']', index);
+        var misc = ReadPackedMiscFields(buf, index, separatorIndex);
+        if (misc != null)
+        {
+            ApplyPackedMiscFields(set, misc);
+        }
+
+        index = separatorIndex + 1;
+        return separatorIndex;
+    }
+
+    private static string[] ReadPackedMiscFields(string buf, int index, int separatorIndex)
+    {
+        if (separatorIndex < 0)
+        {
+            return index < buf.Length ? buf.Substring(index).Split(',', 6) : null;
+        }
+
+        return index != separatorIndex ? buf.Substring(index, separatorIndex - index).Split(',', 6) : null;
+    }
+
+    private static void ApplyPackedMiscFields(PokemonSet set, string[] misc)
+    {
+        set.Happiness = misc.Length > 0 && !string.IsNullOrEmpty(misc[0]) ? int.Parse(misc[0]) : -1;
+        set.HiddenPowerType = misc.Length > 1 && !string.IsNullOrEmpty(misc[1]) ? misc[1] : null;
+        set.Pokeball = misc.Length > 2 && !string.IsNullOrEmpty(misc[2]) ? misc[2] : null;
+        set.IsGigantamax = misc.Length > 3 && !string.IsNullOrEmpty(misc[3]);
+        set.DynamaxLevel = misc.Length > 4 && !string.IsNullOrEmpty(misc[4]) ? int.Parse(misc[4]) : -1;
+        set.TeraType = misc.Length > 5 && !string.IsNullOrEmpty(misc[5]) ? misc[5] : null;
+    }
+
+    #endregion
+
+    #region Team packing
 
     public static string PackTeam(IReadOnlyList<PokemonSet> team)
     {
@@ -589,113 +786,140 @@ public static class ShowdownTeamsUtils
                 buf.Append(']');
             }
 
-            // name
-            buf.Append(!string.IsNullOrEmpty(set.Name) ? set.Name : set.Species);
-
-            // species
-            var speciesId = set.Species.ToLowerAlphaNum();
-            var nameId = (!string.IsNullOrEmpty(set.Name) ? set.Name : set.Species).ToLowerAlphaNum();
-            buf.Append('|').Append(nameId == speciesId ? string.Empty : speciesId);
-
-            // item
-            buf.Append('|').Append(set.Item?.ToLowerAlphaNum());
-
-            // ability
-            buf.Append('|').Append(set.Ability?.ToLowerAlphaNum());
-
-            // moves
-            buf.Append('|');
-            if (set.Moves != null)
-            {
-                var first = true;
-                foreach (var move in set.Moves)
-                {
-                    var moveId = move.ToLowerAlphaNum();
-                    if (!first && string.IsNullOrEmpty(moveId))
-                    {
-                        continue;
-                    }
-
-                    buf.Append(first ? string.Empty : ",").Append(moveId);
-                    first = false;
-
-                    if (moveId.StartsWith("hiddenpower") && moveId.Length > 11)
-                    {
-                        hasHiddenPower = true;
-                    }
-                }
-            }
-
-            // nature
+            AppendPackedIdentity(buf, set);
+            hasHiddenPower |= AppendPackedMoves(buf, set);
             buf.Append('|').Append(set.Nature);
-
-            // evs
-            if (set.EffortValues != null)
-            {
-                var evString = string.Join(",", STAT_KEYS
-                    .Select(stat => set.EffortValues.TryGetValue(stat, out var value) ? value.ToString() : string.Empty));
-
-                if (evString == ",,,,,")
-                {
-                    buf.Append('|');
-                    if (set.EffortValues.TryGetValue("hp", out var hp) && hp == 0)
-                    {
-                        buf.Append('0');
-                    }
-                }
-                else
-                {
-                    buf.Append('|').Append(evString);
-                }
-            }
-            else
-            {
-                buf.Append('|');
-            }
-
-            // gender
+            AppendPackedEffortValues(buf, set);
             buf.Append('|').Append(set.Gender);
-
-            // ivs
-            if (set.IndividualValues != null)
-            {
-                var ivString = string.Join(",", STAT_KEYS
-                    .Select(stat => !set.IndividualValues.TryGetValue(stat, out var value) || value == 31
-                        ? string.Empty
-                        : value.ToString()));
-
-                buf.Append('|').Append(ivString == ",,,,," ? string.Empty : ivString);
-            }
-            else
-            {
-                buf.Append('|');
-            }
-
-            // shiny
-            buf.Append('|').Append(set.IsShiny ? "S" : string.Empty);
-
-            // level
-            buf.Append('|').Append(set.Level != 0 && set.Level != 100 ? set.Level.ToString() : string.Empty);
-
-            // happiness
-            buf.Append('|').Append(set.Happiness >= 0 && set.Happiness != 255 ? set.Happiness.ToString() : string.Empty);
-
-            if (!string.IsNullOrEmpty(set.Pokeball)
-                || (!string.IsNullOrEmpty(set.HiddenPowerType) && !hasHiddenPower)
-                || set.IsGigantamax
-                || (set.DynamaxLevel >= 0 && set.DynamaxLevel != 10)
-                || !string.IsNullOrEmpty(set.TeraType))
-            {
-                buf.Append(',').Append(!hasHiddenPower ? set.HiddenPowerType : string.Empty);
-                buf.Append(',').Append(set.Pokeball?.ToLowerAlphaNum());
-                buf.Append(',').Append(set.IsGigantamax ? "G" : string.Empty);
-                buf.Append(',').Append(set.DynamaxLevel >= 0 && set.DynamaxLevel != 10 ? set.DynamaxLevel.ToString() : string.Empty);
-                buf.Append(',').Append(set.TeraType);
-            }
+            AppendPackedIndividualValues(buf, set);
+            AppendPackedMiscFields(buf, set, hasHiddenPower);
         }
 
         return buf.ToString();
     }
+
+    private static void AppendPackedIdentity(StringBuilder buf, PokemonSet set)
+    {
+        // name
+        var displayedName = !string.IsNullOrEmpty(set.Name) ? set.Name : set.Species;
+        buf.Append(displayedName);
+
+        // species
+        var speciesId = set.Species.ToLowerAlphaNum();
+        var nameId = displayedName.ToLowerAlphaNum();
+        buf.Append('|').Append(nameId == speciesId ? string.Empty : speciesId);
+
+        // item
+        buf.Append('|').Append(set.Item?.ToLowerAlphaNum());
+
+        // ability
+        buf.Append('|').Append(set.Ability?.ToLowerAlphaNum());
+    }
+
+    private static bool AppendPackedMoves(StringBuilder buf, PokemonSet set)
+    {
+        buf.Append('|');
+        if (set.Moves == null)
+        {
+            return false;
+        }
+
+        var hasHiddenPower = false;
+        var isFirstMove = true;
+        foreach (var move in set.Moves)
+        {
+            var moveId = move.ToLowerAlphaNum();
+            if (!isFirstMove && string.IsNullOrEmpty(moveId))
+            {
+                continue;
+            }
+
+            buf.Append(isFirstMove ? string.Empty : ",").Append(moveId);
+            isFirstMove = false;
+
+            if (moveId.StartsWith("hiddenpower") && moveId.Length > 11)
+            {
+                hasHiddenPower = true;
+            }
+        }
+
+        return hasHiddenPower;
+    }
+
+    private static void AppendPackedEffortValues(StringBuilder buf, PokemonSet set)
+    {
+        if (set.EffortValues == null)
+        {
+            buf.Append('|');
+            return;
+        }
+
+        var effortValuesString = string.Join(",", STAT_KEYS
+            .Select(stat => set.EffortValues.TryGetValue(stat, out var value) ? value.ToString() : string.Empty));
+
+        if (effortValuesString != ",,,,,")
+        {
+            buf.Append('|').Append(effortValuesString);
+            return;
+        }
+
+        buf.Append('|');
+        if (set.EffortValues.TryGetValue("hp", out var hitPoints) && hitPoints == 0)
+        {
+            buf.Append('0');
+        }
+    }
+
+    private static void AppendPackedIndividualValues(StringBuilder buf, PokemonSet set)
+    {
+        if (set.IndividualValues == null)
+        {
+            buf.Append('|');
+            return;
+        }
+
+        var individualValuesString = string.Join(",", STAT_KEYS
+            .Select(stat => !set.IndividualValues.TryGetValue(stat, out var value) || value == DEFAULT_INDIVIDUAL_VALUE
+                ? string.Empty
+                : value.ToString()));
+
+        buf.Append('|').Append(individualValuesString == ",,,,," ? string.Empty : individualValuesString);
+    }
+
+    private static void AppendPackedMiscFields(StringBuilder buf, PokemonSet set, bool hasHiddenPower)
+    {
+        // shiny
+        buf.Append('|').Append(set.IsShiny ? "S" : string.Empty);
+
+        // level
+        buf.Append('|').Append(set.Level != 0 && set.Level != 100 ? set.Level.ToString() : string.Empty);
+
+        // happiness
+        buf.Append('|').Append(set.Happiness >= 0 && set.Happiness != 255 ? set.Happiness.ToString() : string.Empty);
+
+        if (!HasPackedExtraFields(set, hasHiddenPower))
+        {
+            return;
+        }
+
+        buf.Append(',').Append(!hasHiddenPower ? set.HiddenPowerType : string.Empty);
+        buf.Append(',').Append(set.Pokeball?.ToLowerAlphaNum());
+        buf.Append(',').Append(set.IsGigantamax ? "G" : string.Empty);
+        buf.Append(',')
+            .Append(set.DynamaxLevel >= 0 && set.DynamaxLevel != 10 ? set.DynamaxLevel.ToString() : string.Empty);
+        buf.Append(',').Append(set.TeraType);
+    }
+
+    private static bool HasPackedExtraFields(PokemonSet set, bool hasHiddenPower)
+    {
+        return !string.IsNullOrEmpty(set.Pokeball)
+               || (!string.IsNullOrEmpty(set.HiddenPowerType) && !hasHiddenPower)
+               || set.IsGigantamax
+               || (set.DynamaxLevel >= 0 && set.DynamaxLevel != 10)
+               || !string.IsNullOrEmpty(set.TeraType);
+    }
+
+    #endregion
 
     public static string TeamExportToJson(string export)
     {

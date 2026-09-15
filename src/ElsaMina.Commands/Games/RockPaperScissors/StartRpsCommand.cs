@@ -34,7 +34,7 @@ public class StartRpsCommand : Command
 
         var game = _dependencyContainerService.Resolve<RpsGame>();
         game.Context = context;
-        context.Room!.Game = game;
+        context.Room.Game = game;
 
         context.ReplyLocalizedMessage("rps_game_created");
         return Task.CompletedTask;

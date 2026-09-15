@@ -21,65 +21,89 @@ public static class TurnResolver
         // Moves are enumerated before switches so that on equal search value we attack instead of switching
         if (activeIsAlive)
         {
-            var activeMember = model.Members[activeIndex];
-            var canTerastallize = model.CanTerastallize && !state.HasTerastallized &&
-                                  activeIndex == model.ActiveMemberIndex;
-
-            for (var moveIndex = 0; moveIndex < activeMember.Moves.Count; moveIndex++)
-            {
-                actions.Add(new SimulationAction(SimulationActionKind.Move, activeIndex, moveIndex));
-                if (canTerastallize && activeMember.Moves[moveIndex].TeraDamageRatio.HasValue)
-                {
-                    actions.Add(new SimulationAction(SimulationActionKind.Move, activeIndex, moveIndex,
-                        UseTerastallize: true));
-                }
-            }
+            AddMoveActions(actions, model, state, activeIndex);
         }
 
         var isTrappedAtRoot = model.ActiveIsTrapped && activeIndex == model.ActiveMemberIndex;
         if (!activeIsAlive || !isTrappedAtRoot)
         {
-            for (var memberIndex = 0; memberIndex < model.Members.Count; memberIndex++)
-            {
-                if (memberIndex != activeIndex && state.MemberHpRatios[memberIndex] > 0)
-                {
-                    actions.Add(new SimulationAction(SimulationActionKind.Switch, memberIndex));
-                }
-            }
+            AddSwitchActions(actions, model, state, activeIndex);
         }
 
         return actions;
     }
 
+    private static void AddMoveActions(List<SimulationAction> actions, SimulationModel model,
+        SimulationState state, int activeIndex)
+    {
+        var activeMember = model.Members[activeIndex];
+        var canTerastallize = model.CanTerastallize && !state.HasTerastallized &&
+                              activeIndex == model.ActiveMemberIndex;
+
+        for (var moveIndex = 0; moveIndex < activeMember.Moves.Count; moveIndex++)
+        {
+            actions.Add(new SimulationAction(SimulationActionKind.Move, activeIndex, moveIndex));
+            if (canTerastallize && activeMember.Moves[moveIndex].TeraDamageRatio.HasValue)
+            {
+                actions.Add(new SimulationAction(SimulationActionKind.Move, activeIndex, moveIndex,
+                    UseTerastallize: true));
+            }
+        }
+    }
+
+    private static void AddSwitchActions(List<SimulationAction> actions, SimulationModel model,
+        SimulationState state, int activeIndex)
+    {
+        for (var memberIndex = 0; memberIndex < model.Members.Count; memberIndex++)
+        {
+            if (memberIndex != activeIndex && state.MemberHpRatios[memberIndex] > 0)
+            {
+                actions.Add(new SimulationAction(SimulationActionKind.Switch, memberIndex));
+            }
+        }
+    }
+
     public static SimulationState Resolve(SimulationModel model, SimulationState state,
         SimulationAction ourAction, int opponentMoveIndex)
     {
-        var memberHpRatios = (double[])state.MemberHpRatios.Clone();
-        var opponentHpRatio = state.OpponentHpRatio;
         var opponentMove = model.OpponentMoves.Count > 0 ? model.OpponentMoves[opponentMoveIndex] : null;
 
-        if (ourAction.Kind == SimulationActionKind.Switch)
+        return ourAction.Kind == SimulationActionKind.Switch
+            ? ResolveSwitch(model, state, ourAction, opponentMove)
+            : ResolveMove(model, state, ourAction, opponentMove);
+    }
+
+    private static SimulationState ResolveSwitch(SimulationModel model, SimulationState state,
+        SimulationAction ourAction, OpponentSimulationMove opponentMove)
+    {
+        var memberHpRatios = (double[])state.MemberHpRatios.Clone();
+
+        // Entry hazards chip the incoming pokemon as it enters, then the opponent's move hits it
+        var incomingIndex = ourAction.MemberIndex;
+        memberHpRatios[incomingIndex] = Math.Max(0.0,
+            memberHpRatios[incomingIndex] - model.Members[incomingIndex].SwitchInChipRatio);
+
+        if (opponentMove != null && state.OpponentHpRatio > 0 && memberHpRatios[incomingIndex] > 0)
         {
-            // Entry hazards chip the incoming pokemon as it enters, then the opponent's move hits it
-            var incomingIndex = ourAction.MemberIndex;
             memberHpRatios[incomingIndex] = Math.Max(0.0,
-                memberHpRatios[incomingIndex] - model.Members[incomingIndex].SwitchInChipRatio);
-
-            if (opponentMove != null && opponentHpRatio > 0 && memberHpRatios[incomingIndex] > 0)
-            {
-                memberHpRatios[incomingIndex] = Math.Max(0.0,
-                    memberHpRatios[incomingIndex] - GetOpponentDamage(model, state, opponentMove, incomingIndex));
-            }
-
-            // Hazards already up keep exerting pressure this turn even though we only switched
-            return state with
-            {
-                ActiveMemberIndex = incomingIndex,
-                MemberHpRatios = memberHpRatios,
-                AccruedFieldValue = state.AccruedFieldValue
-                                    + StateEvaluator.PerTurnFieldPressure(model, state.OpponentField)
-            };
+                memberHpRatios[incomingIndex] - GetOpponentDamage(model, state, opponentMove, incomingIndex));
         }
+
+        // Hazards already up keep exerting pressure this turn even though we only switched
+        return state with
+        {
+            ActiveMemberIndex = incomingIndex,
+            MemberHpRatios = memberHpRatios,
+            AccruedFieldValue = state.AccruedFieldValue
+                                + StateEvaluator.PerTurnFieldPressure(model, state.OpponentField)
+        };
+    }
+
+    private static SimulationState ResolveMove(SimulationModel model, SimulationState state,
+        SimulationAction ourAction, OpponentSimulationMove opponentMove)
+    {
+        var memberHpRatios = (double[])state.MemberHpRatios.Clone();
+        var opponentHpRatio = state.OpponentHpRatio;
 
         var actingIndex = ourAction.MemberIndex;
         var actingMember = model.Members[actingIndex];
@@ -87,17 +111,8 @@ public static class TurnResolver
 
         var isTerastallized = ourAction.UseTerastallize ||
                               (state.RootActiveIsTerastallized && actingIndex == model.ActiveMemberIndex);
-        var ourDamage = isTerastallized && move.TeraDamageRatio.HasValue
-            ? move.TeraDamageRatio.Value
-            : move.DamageRatio;
-
-        var incomingDamage = 0.0;
-        if (opponentMove != null)
-        {
-            incomingDamage = isTerastallized && actingIndex == model.ActiveMemberIndex
-                ? opponentMove.DamageToTerastallizedActive
-                : opponentMove.DamageToMembers[actingIndex];
-        }
+        var ourDamage = ComputeOurDamage(move, isTerastallized);
+        var incomingDamage = ComputeIncomingDamage(model, opponentMove, actingIndex, isTerastallized);
 
         bool ourMoveLands;
         if (WeActFirst(actingMember, move, model, opponentMove))
@@ -136,6 +151,26 @@ public static class TurnResolver
             // this turn on, so setting them earlier is strictly better than deferring)
             AccruedFieldValue = state.AccruedFieldValue + StateEvaluator.PerTurnFieldPressure(model, opponentField)
         };
+    }
+
+    private static double ComputeOurDamage(SimulationMove move, bool isTerastallized)
+    {
+        return isTerastallized && move.TeraDamageRatio.HasValue
+            ? move.TeraDamageRatio.Value
+            : move.DamageRatio;
+    }
+
+    private static double ComputeIncomingDamage(SimulationModel model, OpponentSimulationMove opponentMove,
+        int actingIndex, bool isTerastallized)
+    {
+        if (opponentMove == null)
+        {
+            return 0.0;
+        }
+
+        return isTerastallized && actingIndex == model.ActiveMemberIndex
+            ? opponentMove.DamageToTerastallizedActive
+            : opponentMove.DamageToMembers[actingIndex];
     }
 
     private static OpponentFieldConditions ApplyStatusEffect(OpponentFieldConditions field,

@@ -27,8 +27,17 @@ public class BeloteScorerTest
     public void Test_Compute_ShouldMakeContract_WhenTakerOutscoresDefenders()
     {
         // Taker team 0 has 90 card points + the dix de der; defenders 62.
-        var result = BeloteScorer.Compute(0, 90, 62, lastTrickTeam: 0,
-            team0Tricks: 5, team1Tricks: 3, beloteTeam: -1, Players());
+        var result = BeloteScorer.Compute(new BeloteScoreInput
+        {
+            TakerTeam = 0,
+            Team0CardPoints = 90,
+            Team1CardPoints = 62,
+            LastTrickTeam = 0,
+            Team0Tricks = 5,
+            Team1Tricks = 3,
+            BeloteTeam = -1,
+            Players = Players()
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -43,8 +52,17 @@ public class BeloteScorerTest
     [Test]
     public void Test_Compute_ShouldFailContract_WhenTakerFallsShort()
     {
-        var result = BeloteScorer.Compute(0, 40, 112, lastTrickTeam: 1,
-            team0Tricks: 2, team1Tricks: 6, beloteTeam: -1, Players());
+        var result = BeloteScorer.Compute(new BeloteScoreInput
+        {
+            TakerTeam = 0,
+            Team0CardPoints = 40,
+            Team1CardPoints = 112,
+            LastTrickTeam = 1,
+            Team0Tricks = 2,
+            Team1Tricks = 6,
+            BeloteTeam = -1,
+            Players = Players()
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -58,8 +76,17 @@ public class BeloteScorerTest
     public void Test_Compute_ShouldFailContract_WhenScoresAreTied()
     {
         // 81 each after the dix de der: the taker must strictly exceed the defenders.
-        var result = BeloteScorer.Compute(0, 81, 71, lastTrickTeam: 1,
-            team0Tricks: 4, team1Tricks: 4, beloteTeam: -1, Players());
+        var result = BeloteScorer.Compute(new BeloteScoreInput
+        {
+            TakerTeam = 0,
+            Team0CardPoints = 81,
+            Team1CardPoints = 71,
+            LastTrickTeam = 1,
+            Team0Tricks = 4,
+            Team1Tricks = 4,
+            BeloteTeam = -1,
+            Players = Players()
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -72,8 +99,17 @@ public class BeloteScorerTest
     [Test]
     public void Test_Compute_ShouldScoreCapot_WhenTakerWinsEveryTrick()
     {
-        var result = BeloteScorer.Compute(0, 152, 0, lastTrickTeam: 0,
-            team0Tricks: 8, team1Tricks: 0, beloteTeam: -1, Players());
+        var result = BeloteScorer.Compute(new BeloteScoreInput
+        {
+            TakerTeam = 0,
+            Team0CardPoints = 152,
+            Team1CardPoints = 0,
+            LastTrickTeam = 0,
+            Team0Tricks = 8,
+            Team1Tricks = 0,
+            BeloteTeam = -1,
+            Players = Players()
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -87,8 +123,17 @@ public class BeloteScorerTest
     [Test]
     public void Test_Compute_ShouldScoreCapot_WhenDefendersWinEveryTrick()
     {
-        var result = BeloteScorer.Compute(0, 0, 152, lastTrickTeam: 1,
-            team0Tricks: 0, team1Tricks: 8, beloteTeam: -1, Players());
+        var result = BeloteScorer.Compute(new BeloteScoreInput
+        {
+            TakerTeam = 0,
+            Team0CardPoints = 0,
+            Team1CardPoints = 152,
+            LastTrickTeam = 1,
+            Team0Tricks = 0,
+            Team1Tricks = 8,
+            BeloteTeam = -1,
+            Players = Players()
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -102,8 +147,17 @@ public class BeloteScorerTest
     [Test]
     public void Test_Compute_ShouldAddBeloteBonus_ToTheHoldingTeam()
     {
-        var result = BeloteScorer.Compute(0, 90, 62, lastTrickTeam: 0,
-            team0Tricks: 5, team1Tricks: 3, beloteTeam: 1, Players());
+        var result = BeloteScorer.Compute(new BeloteScoreInput
+        {
+            TakerTeam = 0,
+            Team0CardPoints = 90,
+            Team1CardPoints = 62,
+            LastTrickTeam = 0,
+            Team0Tricks = 5,
+            Team1Tricks = 3,
+            BeloteTeam = 1,
+            Players = Players()
+        });
 
         using (Assert.EnterMultipleScope())
         {

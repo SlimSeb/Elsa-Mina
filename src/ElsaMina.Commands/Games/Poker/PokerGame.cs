@@ -131,10 +131,10 @@ public class PokerGame : SeatedCardGame<PokerPlayer>, IPokerGame
         _deck.AddRange(PokerConstants.BuildDeck());
         _randomService.ShuffleInPlace(_deck);
 
-        foreach (var player in Seats)
+        foreach (var holeCards in Seats.Select(player => player.HoleCards))
         {
-            player.HoleCards.Add(DrawCard());
-            player.HoleCards.Add(DrawCard());
+            holeCards.Add(DrawCard());
+            holeCards.Add(DrawCard());
         }
 
         Phase = PokerPhase.Preflop;
@@ -494,9 +494,9 @@ public class PokerGame : SeatedCardGame<PokerPlayer>, IPokerGame
 
         Phase = PokerPhase.Finished;
         Context.SendUpdatableHtml(PublicPanelId, string.Empty, true);
-        foreach (var player in Seats)
+        foreach (var userId in Seats.Select(player => player.UserId))
         {
-            Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
+            Context.SendPrivateUpdatableHtml(userId, Context.RoomId, HandPanelId(userId),
                 string.Empty, true);
         }
 
@@ -566,9 +566,9 @@ public class PokerGame : SeatedCardGame<PokerPlayer>, IPokerGame
         WipePublicPanel();
         _publicPanelSegment++;
 
-        foreach (var player in Seats)
+        foreach (var userId in Seats.Select(player => player.UserId))
         {
-            Context.SendPrivateUpdatableHtml(player.UserId, Context.RoomId, HandPanelId(player.UserId),
+            Context.SendPrivateUpdatableHtml(userId, Context.RoomId, HandPanelId(userId),
                 string.Empty, true);
         }
 

@@ -130,52 +130,20 @@ public class FloodItGame : Game, IFloodItGame
             return;
         }
 
-        for (var row = 0; row < GridSize; row++)
-        {
-            for (var col = 0; col < GridSize; col++)
-            {
-                if (IsClaimed[row, col])
-                {
-                    Grid[row, col] = colorIndex;
-                }
-            }
-        }
-
-        var queue = new Queue<(int Row, int Col)>();
-        for (var row = 0; row < GridSize; row++)
-        {
-            for (var col = 0; col < GridSize; col++)
-            {
-                if (!IsClaimed[row, col]) continue;
-                foreach (var (nr, nc) in GetNeighbors(row, col))
-                {
-                    if (!IsClaimed[nr, nc] && Grid[nr, nc] == colorIndex)
-                    {
-                        IsClaimed[nr, nc] = true;
-                        _claimedCount++;
-                        queue.Enqueue((nr, nc));
-                    }
-                }
-            }
-        }
-
-        while (queue.Count > 0)
-        {
-            var (row, col) = queue.Dequeue();
-            foreach (var (nr, nc) in GetNeighbors(row, col))
-            {
-                if (!IsClaimed[nr, nc] && Grid[nr, nc] == colorIndex)
-                {
-                    IsClaimed[nr, nc] = true;
-                    _claimedCount++;
-                    queue.Enqueue((nr, nc));
-                }
-            }
-        }
+        ApplyFloodFillToArrays(Grid, IsClaimed, ref _claimedCount, colorIndex);
 
         MoveCount++;
         _inactivityTimer.Restart();
 
+        await ResolveRoundOutcomeAsync();
+        await DisplayBoard(firstTime: false);
+    }
+
+    /// <summary>
+    /// Ends the round when the board has been flooded, or when the move budget has just run out.
+    /// </summary>
+    private async Task ResolveRoundOutcomeAsync()
+    {
         if (_claimedCount == GridSize * GridSize)
         {
             IsRoundActive = false;
@@ -186,8 +154,10 @@ public class FloodItGame : Game, IFloodItGame
             await SavePlayerDataAsync(Stars);
             _inactivityTimer.Stop();
             OnEnd();
+            return;
         }
-        else if (MoveCount >= MaxMoves)
+
+        if (MoveCount >= MaxMoves)
         {
             IsRoundActive = false;
             Level = Math.Max(1, Level - 1);
@@ -196,8 +166,6 @@ public class FloodItGame : Game, IFloodItGame
             _inactivityTimer.Stop();
             OnEnd();
         }
-
-        await DisplayBoard(firstTime: false);
     }
 
     public async Task CancelAsync()
@@ -349,47 +317,77 @@ public class FloodItGame : Game, IFloodItGame
         return gain;
     }
 
+    /// <summary>
+    /// Repaints the claimed region in the given color, then grows it over every cell that now matches.
+    /// </summary>
     private void ApplyFloodFillToArrays(int[,] grid, bool[,] claimed, ref int claimedCount, int colorIndex)
     {
-        for (var r = 0; r < GridSize; r++)
+        RecolorClaimedCells(grid, claimed, colorIndex);
+        ExpandClaimedRegion(grid, claimed, ref claimedCount, colorIndex);
+    }
+
+    private void RecolorClaimedCells(int[,] grid, bool[,] claimed, int colorIndex)
+    {
+        for (var row = 0; row < GridSize; row++)
         {
-            for (var c = 0; c < GridSize; c++)
+            for (var col = 0; col < GridSize; col++)
             {
-                if (claimed[r, c]) grid[r, c] = colorIndex;
+                if (claimed[row, col])
+                {
+                    grid[row, col] = colorIndex;
+                }
             }
         }
+    }
 
+    /// <summary>
+    /// Claims every cell of the given color reachable from the region that is already claimed.
+    /// </summary>
+    private void ExpandClaimedRegion(int[,] grid, bool[,] claimed, ref int claimedCount, int colorIndex)
+    {
+        var total = claimedCount;
         var queue = new Queue<(int Row, int Col)>();
-        for (var r = 0; r < GridSize; r++)
+        for (var row = 0; row < GridSize; row++)
         {
-            for (var c = 0; c < GridSize; c++)
+            for (var col = 0; col < GridSize; col++)
             {
-                if (!claimed[r, c]) continue;
-                foreach (var (nr, nc) in GetNeighbors(r, c))
+                if (claimed[row, col])
                 {
-                    if (!claimed[nr, nc] && grid[nr, nc] == colorIndex)
-                    {
-                        claimed[nr, nc] = true;
-                        claimedCount++;
-                        queue.Enqueue((nr, nc));
-                    }
+                    total += ClaimMatchingNeighbors(grid, claimed, colorIndex, row, col, queue);
                 }
             }
         }
 
         while (queue.Count > 0)
         {
-            var (r, c) = queue.Dequeue();
-            foreach (var (nr, nc) in GetNeighbors(r, c))
-            {
-                if (!claimed[nr, nc] && grid[nr, nc] == colorIndex)
-                {
-                    claimed[nr, nc] = true;
-                    claimedCount++;
-                    queue.Enqueue((nr, nc));
-                }
-            }
+            var (row, col) = queue.Dequeue();
+            total += ClaimMatchingNeighbors(grid, claimed, colorIndex, row, col, queue);
         }
+
+        claimedCount = total;
+    }
+
+    /// <summary>
+    /// Claims the neighbours of the given cell that match the given color, queues them for their own
+    /// neighbours to be visited, and returns how many were claimed.
+    /// </summary>
+    private int ClaimMatchingNeighbors(int[,] grid, bool[,] claimed, int colorIndex, int row, int col,
+        Queue<(int Row, int Col)> queue)
+    {
+        var claimedHere = 0;
+        foreach (var (neighborRow, neighborCol) in GetNeighbors(row, col))
+        {
+            if (claimed[neighborRow, neighborCol] || grid[neighborRow, neighborCol] != colorIndex)
+            {
+                continue;
+            }
+
+            claimed[neighborRow, neighborCol] = true;
+            claimedHere++;
+            queue.Enqueue((neighborRow, neighborCol));
+        }
+
+        return claimedHere;
     }
 
     private async Task OnInactivityTimeout()

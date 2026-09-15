@@ -6,31 +6,24 @@ namespace ElsaMina.Commands.Games.Poker;
 /// </summary>
 public static class PokerHandEvaluator
 {
+    private const int HAND_SIZE = 5;
+
     /// <summary>
     /// Returns the strongest five-card hand that can be made from the given cards. Requires at
     /// least five cards.
     /// </summary>
     public static PokerHandEvaluation EvaluateBest(IReadOnlyList<PokerCard> cards)
     {
-        if (cards is null || cards.Count < 5)
+        if (cards is null || cards.Count < HAND_SIZE)
         {
             throw new ArgumentException("At least five cards are required to evaluate a poker hand.", nameof(cards));
         }
 
         PokerHandEvaluation best = null;
-        var indices = new int[5];
 
         // Enumerate every 5-card combination and keep the strongest evaluation.
-        for (indices[0] = 0; indices[0] < cards.Count - 4; indices[0]++)
-        for (indices[1] = indices[0] + 1; indices[1] < cards.Count - 3; indices[1]++)
-        for (indices[2] = indices[1] + 1; indices[2] < cards.Count - 2; indices[2]++)
-        for (indices[3] = indices[2] + 1; indices[3] < cards.Count - 1; indices[3]++)
-        for (indices[4] = indices[3] + 1; indices[4] < cards.Count; indices[4]++)
+        foreach (var hand in EnumerateHands(cards, new PokerCard[HAND_SIZE], 0, 0))
         {
-            var hand = new[]
-            {
-                cards[indices[0]], cards[indices[1]], cards[indices[2]], cards[indices[3]], cards[indices[4]]
-            };
             var evaluation = EvaluateFive(hand);
             if (best is null || evaluation.CompareTo(best) > 0)
             {
@@ -42,11 +35,35 @@ public static class PokerHandEvaluator
     }
 
     /// <summary>
+    /// Enumerates every combination of <see cref="HAND_SIZE"/> cards, in ascending index order. The
+    /// yielded hand is a snapshot, so it stays valid once the enumeration has moved on.
+    /// </summary>
+    private static IEnumerable<PokerCard[]> EnumerateHands(IReadOnlyList<PokerCard> cards, PokerCard[] hand,
+        int slot, int firstIndex)
+    {
+        if (slot == hand.Length)
+        {
+            yield return (PokerCard[])hand.Clone();
+            yield break;
+        }
+
+        var lastIndex = cards.Count - (hand.Length - slot);
+        for (var index = firstIndex; index <= lastIndex; index++)
+        {
+            hand[slot] = cards[index];
+            foreach (var combination in EnumerateHands(cards, hand, slot + 1, index + 1))
+            {
+                yield return combination;
+            }
+        }
+    }
+
+    /// <summary>
     /// Evaluates exactly five cards.
     /// </summary>
     public static PokerHandEvaluation EvaluateFive(IReadOnlyList<PokerCard> cards)
     {
-        if (cards is null || cards.Count != 5)
+        if (cards is null || cards.Count != HAND_SIZE)
         {
             throw new ArgumentException("Exactly five cards are required.", nameof(cards));
         }

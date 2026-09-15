@@ -53,13 +53,11 @@ public class StartPresidentCommand : Command
 
         var rounds = PresidentConstants.DEFAULT_ROUNDS;
         var argument = context.Target?.Trim();
-        if (!string.IsNullOrEmpty(argument))
+        if (!string.IsNullOrEmpty(argument)
+            && (!int.TryParse(argument, out rounds) || rounds < 1 || rounds > PresidentConstants.MAX_ROUNDS))
         {
-            if (!int.TryParse(argument, out rounds) || rounds < 1 || rounds > PresidentConstants.MAX_ROUNDS)
-            {
-                context.ReplyLocalizedMessage("president_rounds_invalid", PresidentConstants.MAX_ROUNDS);
-                return;
-            }
+            context.ReplyLocalizedMessage("president_rounds_invalid", PresidentConstants.MAX_ROUNDS);
+            return;
         }
 
         var game = _dependencyContainerService.Resolve<PresidentGame>();

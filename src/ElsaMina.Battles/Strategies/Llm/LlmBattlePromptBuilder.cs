@@ -10,6 +10,8 @@ namespace ElsaMina.Battles.Strategies.Llm;
 
 public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
 {
+    private const string UNKNOWN_TYPES = "Unknown";
+
     private static readonly double[] SpikesChipByLayers = [0.0, 12.5, 16.67, 25.0];
 
     public string BuildSystemPrompt()
@@ -55,46 +57,51 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
         stringBuilder.AppendLine("--- OUR TEAM ---");
         for (var i = 0; i < context.SidePokemon.Count; i++)
         {
-            var pokemon = context.SidePokemon[i];
-            var species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemon.Details);
-            var types = GetOurPokemonTypes(pokemon);
-            var typesStr = types.Count > 0 ? string.Join("/", types) : "Unknown";
-
-            stringBuilder.AppendLine($"Slot {i + 1}: {species} [{typesStr}]");
-            stringBuilder.AppendLine($"  Ability: {pokemon.Ability} | Item: {pokemon.Item} | Tera Type: {pokemon.TeraType}");
-            stringBuilder.AppendLine($"  Stats: HP:{pokemon.MaxHp} Atk:{pokemon.Stats.Atk} Def:{pokemon.Stats.Def} SpA:{pokemon.Stats.SpA} SpD:{pokemon.Stats.SpD} Spe:{pokemon.Stats.Spe}");
-            stringBuilder.AppendLine($"  Moves: {string.Join(", ", pokemon.Moves)}");
+            AppendTeamPreviewMember(stringBuilder, context.SidePokemon[i], i + 1);
         }
         stringBuilder.AppendLine();
 
         stringBuilder.AppendLine("--- OPPONENT TEAM ---");
-        if (context.OpponentPokemon.Count == 0)
-        {
-            stringBuilder.AppendLine("  (No opponent Pokémon revealed yet)");
-        }
-        else
-        {
-            for (var i = 0; i < context.OpponentPokemon.Count; i++)
-            {
-                var opponent = context.OpponentPokemon[i];
-                var oppTypes = GetOpponentTypes(opponent);
-                var oppTypesStr = oppTypes.Count > 0 ? string.Join("/", oppTypes) : "Unknown";
-                stringBuilder.AppendLine($"  {i + 1}. {opponent.Species} (Lvl {opponent.Level}) [{oppTypesStr}]");
-            }
-        }
+        AppendTeamPreviewOpponents(stringBuilder, context);
         stringBuilder.AppendLine();
 
         stringBuilder.AppendLine("--- LEGAL CHOICES ---");
         for (var i = 0; i < context.SidePokemon.Count; i++)
         {
-            var pokemon = context.SidePokemon[i];
-            var species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemon.Details);
+            var species = CalcPokemonFactory.ExtractSpeciesFromDetails(context.SidePokemon[i].Details);
             stringBuilder.AppendLine($"- TEAM {i + 1}: Lead with {species}");
         }
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("Choose your lead Pokémon. Return JSON with decision \"teampreview\" and index (1-6).");
 
         return stringBuilder.ToString();
+    }
+
+    private static void AppendTeamPreviewMember(StringBuilder stringBuilder, BattlePokemonState pokemon, int slot)
+    {
+        var species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemon.Details);
+        var typesStr = FormatTypes(GetOurPokemonTypes(pokemon));
+
+        stringBuilder.AppendLine($"Slot {slot}: {species} [{typesStr}]");
+        stringBuilder.AppendLine($"  Ability: {pokemon.Ability} | Item: {pokemon.Item} | Tera Type: {pokemon.TeraType}");
+        stringBuilder.AppendLine($"  Stats: HP:{pokemon.MaxHp} Atk:{pokemon.Stats.Atk} Def:{pokemon.Stats.Def} SpA:{pokemon.Stats.SpA} SpD:{pokemon.Stats.SpD} Spe:{pokemon.Stats.Spe}");
+        stringBuilder.AppendLine($"  Moves: {string.Join(", ", pokemon.Moves)}");
+    }
+
+    private static void AppendTeamPreviewOpponents(StringBuilder stringBuilder, BattleContext context)
+    {
+        if (context.OpponentPokemon.Count == 0)
+        {
+            stringBuilder.AppendLine("  (No opponent Pokémon revealed yet)");
+            return;
+        }
+
+        for (var i = 0; i < context.OpponentPokemon.Count; i++)
+        {
+            var opponent = context.OpponentPokemon[i];
+            var oppTypesStr = FormatTypes(GetOpponentTypes(opponent));
+            stringBuilder.AppendLine($"  {i + 1}. {opponent.Species} (Lvl {opponent.Level}) [{oppTypesStr}]");
+        }
     }
 
     public string BuildForcedSwitchPrompt(BattleContext context, OpponentPrediction prediction,
@@ -123,69 +130,54 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
                 continue;
             }
 
-            var pokemon = context.SidePokemon[slotIndex - 1];
-            var species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemon.Details);
-            var types = GetOurPokemonTypes(pokemon);
-            var typesStr = types.Count > 0 ? string.Join("/", types) : "Unknown";
-            var hpPercent = pokemon.MaxHp > 0 ? (double)pokemon.CurrentHp / pokemon.MaxHp * 100.0 : 0.0;
-
-            stringBuilder.AppendLine($"Slot {slotIndex}: {species} [{typesStr}] - HP: {pokemon.CurrentHp}/{pokemon.MaxHp} ({hpPercent:F1}%)");
-            stringBuilder.AppendLine($"  Ability: {pokemon.Ability} | Item: {pokemon.Item} | Spe: {pokemon.Stats.Spe}");
-            stringBuilder.AppendLine($"  Moves: {string.Join(", ", pokemon.Moves)}");
-
-            // Hazard chip
-            var chip = ComputeSwitchInChipPercent(types, context.OwnSideStealthRock, context.OwnSideSpikesLayers);
-            if (chip > 0)
-            {
-                stringBuilder.AppendLine($"  ⚠️ Entry hazard chip on switch-in: takes {chip:F1}% max HP damage");
-            }
-
-            // Damage from opponent active
-            if (calcOpponent != null && CalcPokemonFactory.TryBuildOurPokemon(pokemon, out var calcMember) && prediction?.Moves != null)
-            {
-                var damageNotes = new List<string>();
-                foreach (var predictedMove in prediction.Moves)
-                {
-                    try
-                    {
-                        var move = new Move(CalcPokemonFactory.Generation, predictedMove.Name);
-                        if (move.Category == MoveCategories.Status) continue;
-
-                        var result = Calc.Calculate(CalcPokemonFactory.Generation, calcOpponent, calcMember, move, null);
-                        var (minDmg, maxDmg) = result.Range();
-                        var maxHp = calcMember.MaxHP(false);
-                        if (maxHp > 0)
-                        {
-                            var minPct = (double)minDmg / maxHp * 100.0;
-                            var maxPct = (double)maxDmg / maxHp * 100.0;
-                            damageNotes.Add($"{predictedMove.Name}: {minPct:F1}-{maxPct:F1}%");
-                        }
-                    }
-                    catch
-                    {
-                        // Ignore calc errors
-                    }
-                }
-
-                if (damageNotes.Count > 0)
-                {
-                    stringBuilder.AppendLine($"  🛡️ Expected damage taken from opponent: {string.Join(", ", damageNotes)}");
-                }
-            }
+            AppendSwitchCandidate(stringBuilder, context, slotIndex, calcOpponent, prediction);
         }
         stringBuilder.AppendLine();
 
         stringBuilder.AppendLine("--- LEGAL CHOICES ---");
         foreach (var slotIndex in candidateIndices)
         {
-            var pokemon = context.SidePokemon[slotIndex - 1];
-            var species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemon.Details);
+            var species = CalcPokemonFactory.ExtractSpeciesFromDetails(context.SidePokemon[slotIndex - 1].Details);
             stringBuilder.AppendLine($"- SWITCH {slotIndex}: Switch in {species}");
         }
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("Your active Pokémon fainted or was forced to switch. Choose which Pokémon to switch in.");
 
         return stringBuilder.ToString();
+    }
+
+    private static void AppendSwitchCandidate(StringBuilder stringBuilder, BattleContext context, int slotIndex,
+        Pokemon calcOpponent, OpponentPrediction prediction)
+    {
+        var pokemon = context.SidePokemon[slotIndex - 1];
+        var species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemon.Details);
+        var types = GetOurPokemonTypes(pokemon);
+        var typesStr = FormatTypes(types);
+        var hpPercent = ComputeHpPercent(pokemon);
+
+        stringBuilder.AppendLine($"Slot {slotIndex}: {species} [{typesStr}] - HP: {pokemon.CurrentHp}/{pokemon.MaxHp} ({hpPercent:F1}%)");
+        stringBuilder.AppendLine($"  Ability: {pokemon.Ability} | Item: {pokemon.Item} | Spe: {pokemon.Stats.Spe}");
+        stringBuilder.AppendLine($"  Moves: {string.Join(", ", pokemon.Moves)}");
+
+        // Hazard chip
+        var chip = ComputeSwitchInChipPercent(types, context.OwnSideStealthRock, context.OwnSideSpikesLayers);
+        if (chip > 0)
+        {
+            stringBuilder.AppendLine($"  ⚠️ Entry hazard chip on switch-in: takes {chip:F1}% max HP damage");
+        }
+
+        // Damage from opponent active
+        if (calcOpponent == null || !CalcPokemonFactory.TryBuildOurPokemon(pokemon, out var calcMember) ||
+            prediction?.Moves == null)
+        {
+            return;
+        }
+
+        var damageNotes = BuildIncomingDamageNotes(calcOpponent, calcMember, prediction.Moves);
+        if (damageNotes.Count > 0)
+        {
+            stringBuilder.AppendLine($"  🛡️ Expected damage taken from opponent: {string.Join(", ", damageNotes)}");
+        }
     }
 
     public string BuildTurnPrompt(BattleContext context, OpponentPrediction prediction)
@@ -198,48 +190,13 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
         AppendFieldHazards(stringBuilder, context);
 
         var activeSlot = context.ActiveSlots.Count > 0 ? context.ActiveSlots[0] : null;
-        var ourActivePokemon = context.SidePokemon.FirstOrDefault(p => p.IsActive);
+        var ourActivePokemon = context.SidePokemon.FirstOrDefault(pokemon => pokemon.IsActive);
         var opponent = context.ActiveOpponent;
 
         // Our active details
         if (ourActivePokemon != null)
         {
-            var species = CalcPokemonFactory.ExtractSpeciesFromDetails(ourActivePokemon.Details);
-            var types = GetOurPokemonTypes(ourActivePokemon);
-            var typesStr = types.Count > 0 ? string.Join("/", types) : "Unknown";
-            var hpPercent = ourActivePokemon.MaxHp > 0 ? (double)ourActivePokemon.CurrentHp / ourActivePokemon.MaxHp * 100.0 : 0.0;
-            var statusStr = string.IsNullOrEmpty(ourActivePokemon.Condition) ? "Healthy" : ourActivePokemon.Condition;
-            var effectiveSpeed = ourActivePokemon.Stats != null ? ourActivePokemon.Stats.Spe : 100;
-            if (CalcPokemonFactory.ExtractStatus(ourActivePokemon.Condition) == "par")
-            {
-                effectiveSpeed /= 2;
-            }
-
-            stringBuilder.AppendLine("--- OUR ACTIVE POKÉMON ---");
-            stringBuilder.AppendLine($"Name: {species} [{typesStr}]");
-            stringBuilder.AppendLine($"HP: {ourActivePokemon.CurrentHp}/{ourActivePokemon.MaxHp} ({hpPercent:F1}%) | Status: {statusStr}");
-            if (ourActivePokemon.Stats != null)
-            {
-                stringBuilder.AppendLine($"Stats: HP:{ourActivePokemon.MaxHp} Atk:{ourActivePokemon.Stats.Atk} Def:{ourActivePokemon.Stats.Def} SpA:{ourActivePokemon.Stats.SpA} SpD:{ourActivePokemon.Stats.SpD} Spe:{ourActivePokemon.Stats.Spe} (Effective Spe: {effectiveSpeed})");
-            }
-            else
-            {
-                stringBuilder.AppendLine($"Stats: HP:{ourActivePokemon.MaxHp}");
-            }
-            stringBuilder.AppendLine($"Ability: {ourActivePokemon.Ability} | Item: {ourActivePokemon.Item} | Tera Type: {ourActivePokemon.TeraType}");
-            if (!string.IsNullOrEmpty(ourActivePokemon.Terastallized))
-            {
-                stringBuilder.AppendLine($"Terastallized: {ourActivePokemon.Terastallized}");
-            }
-            if (activeSlot != null)
-            {
-                var canTeraStr = !string.IsNullOrEmpty(activeSlot.CanTerastallize)
-                    ? $"YES (Can Terastallize into {activeSlot.CanTerastallize})"
-                    : "NO";
-                stringBuilder.AppendLine($"Can Terastallize this turn: {canTeraStr}");
-                stringBuilder.AppendLine($"Trapped: {(activeSlot.Trapped ? "YES (Cannot switch)" : "NO")}");
-            }
-            stringBuilder.AppendLine();
+            AppendOurActiveInfo(stringBuilder, ourActivePokemon, activeSlot);
         }
 
         // Opponent active details
@@ -257,25 +214,7 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
         // Speed comparison
         if (ourActivePokemon?.Stats != null && opponent != null)
         {
-            var ourSpeed = ourActivePokemon.Stats.Spe;
-            if (CalcPokemonFactory.ExtractStatus(ourActivePokemon.Condition) == "par") ourSpeed /= 2;
-
-            var oppSpeed = ComputeOpponentSpeedEstimate(opponent, prediction?.Spread);
-            string speedComparison;
-            if (ourSpeed > oppSpeed)
-            {
-                speedComparison = $"⚡ You are FASTER (Your Spe: {ourSpeed} vs Opponent est: {oppSpeed})";
-            }
-            else if (ourSpeed < oppSpeed)
-            {
-                speedComparison = $"⚡ Opponent is FASTER (Opponent est: {oppSpeed} vs Your Spe: {ourSpeed})";
-            }
-            else
-            {
-                speedComparison = $"⚡ Speed tie likely (Your Spe: {ourSpeed} vs Opponent est: {oppSpeed})";
-            }
-            stringBuilder.AppendLine(speedComparison);
-            stringBuilder.AppendLine();
+            AppendSpeedComparison(stringBuilder, ourActivePokemon, opponent, prediction);
         }
 
         // In-depth Damage Calculations (Our Moves vs Opponent Active)
@@ -304,6 +243,76 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
         return stringBuilder.ToString();
     }
 
+    private static void AppendOurActiveInfo(StringBuilder stringBuilder, BattlePokemonState ourActivePokemon,
+        BattleActiveSlot activeSlot)
+    {
+        var species = CalcPokemonFactory.ExtractSpeciesFromDetails(ourActivePokemon.Details);
+        var typesStr = FormatTypes(GetOurPokemonTypes(ourActivePokemon));
+        var hpPercent = ComputeHpPercent(ourActivePokemon);
+        var statusStr = string.IsNullOrEmpty(ourActivePokemon.Condition) ? "Healthy" : ourActivePokemon.Condition;
+
+        stringBuilder.AppendLine("--- OUR ACTIVE POKÉMON ---");
+        stringBuilder.AppendLine($"Name: {species} [{typesStr}]");
+        stringBuilder.AppendLine($"HP: {ourActivePokemon.CurrentHp}/{ourActivePokemon.MaxHp} ({hpPercent:F1}%) | Status: {statusStr}");
+        AppendOurActiveStats(stringBuilder, ourActivePokemon);
+        stringBuilder.AppendLine($"Ability: {ourActivePokemon.Ability} | Item: {ourActivePokemon.Item} | Tera Type: {ourActivePokemon.TeraType}");
+        if (!string.IsNullOrEmpty(ourActivePokemon.Terastallized))
+        {
+            stringBuilder.AppendLine($"Terastallized: {ourActivePokemon.Terastallized}");
+        }
+        if (activeSlot != null)
+        {
+            AppendTerastallizeAndTrapStatus(stringBuilder, activeSlot);
+        }
+        stringBuilder.AppendLine();
+    }
+
+    private static void AppendOurActiveStats(StringBuilder stringBuilder, BattlePokemonState ourActivePokemon)
+    {
+        if (ourActivePokemon.Stats == null)
+        {
+            stringBuilder.AppendLine($"Stats: HP:{ourActivePokemon.MaxHp}");
+            return;
+        }
+
+        var effectiveSpeed = ComputeEffectiveSpeed(ourActivePokemon);
+        stringBuilder.AppendLine($"Stats: HP:{ourActivePokemon.MaxHp} Atk:{ourActivePokemon.Stats.Atk} Def:{ourActivePokemon.Stats.Def} SpA:{ourActivePokemon.Stats.SpA} SpD:{ourActivePokemon.Stats.SpD} Spe:{ourActivePokemon.Stats.Spe} (Effective Spe: {effectiveSpeed})");
+    }
+
+    private static void AppendTerastallizeAndTrapStatus(StringBuilder stringBuilder, BattleActiveSlot activeSlot)
+    {
+        var canTeraStr = !string.IsNullOrEmpty(activeSlot.CanTerastallize)
+            ? $"YES (Can Terastallize into {activeSlot.CanTerastallize})"
+            : "NO";
+        stringBuilder.AppendLine($"Can Terastallize this turn: {canTeraStr}");
+        stringBuilder.AppendLine($"Trapped: {(activeSlot.Trapped ? "YES (Cannot switch)" : "NO")}");
+    }
+
+    private static void AppendSpeedComparison(StringBuilder stringBuilder, BattlePokemonState ourActivePokemon,
+        OpponentPokemonState opponent, OpponentPrediction prediction)
+    {
+        var ourSpeed = ComputeEffectiveSpeed(ourActivePokemon);
+        var oppSpeed = ComputeOpponentSpeedEstimate(opponent, prediction?.Spread);
+
+        stringBuilder.AppendLine(FormatSpeedComparison(ourSpeed, oppSpeed));
+        stringBuilder.AppendLine();
+    }
+
+    private static string FormatSpeedComparison(int ourSpeed, int oppSpeed)
+    {
+        if (ourSpeed > oppSpeed)
+        {
+            return $"⚡ You are FASTER (Your Spe: {ourSpeed} vs Opponent est: {oppSpeed})";
+        }
+
+        if (ourSpeed < oppSpeed)
+        {
+            return $"⚡ Opponent is FASTER (Opponent est: {oppSpeed} vs Your Spe: {ourSpeed})";
+        }
+
+        return $"⚡ Speed tie likely (Your Spe: {ourSpeed} vs Opponent est: {oppSpeed})";
+    }
+
     private static void AppendFieldHazards(StringBuilder stringBuilder, BattleContext context)
     {
         stringBuilder.AppendLine("--- FIELD CONDITIONS & HAZARDS ---");
@@ -329,9 +338,11 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
     private static void AppendOpponentActiveInfo(StringBuilder stringBuilder, OpponentPokemonState opponent,
         OpponentPrediction prediction)
     {
-        var oppTypes = GetOpponentTypes(opponent);
-        var oppTypesStr = oppTypes.Count > 0 ? string.Join("/", oppTypes) : "Unknown";
-        var boostsList = opponent.Boosts.Where(b => b.Value != 0).Select(b => $"{b.Key}: {(b.Value > 0 ? "+" : "")}{b.Value}").ToList();
+        var oppTypesStr = FormatTypes(GetOpponentTypes(opponent));
+        var boostsList = opponent.Boosts
+            .Where(boost => boost.Value != 0)
+            .Select(boost => $"{boost.Key}: {(boost.Value > 0 ? "+" : "")}{boost.Value}")
+            .ToList();
         var boostsStr = boostsList.Count > 0 ? string.Join(", ", boostsList) : "None";
 
         stringBuilder.AppendLine("--- OPPONENT ACTIVE POKÉMON ---");
@@ -347,19 +358,28 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
             stringBuilder.AppendLine($"Revealed moves: {string.Join(", ", opponent.RevealedMoves)}");
         }
 
-        if (prediction != null)
-        {
-            if (prediction.Moves != null && prediction.Moves.Count > 0)
-            {
-                var predMovesStr = string.Join(", ", prediction.Moves.Select(m => $"{m.Name} ({m.Probability * 100.0:F0}%)"));
-                stringBuilder.AppendLine($"Smogon predicted moves: {predMovesStr}");
-            }
-            if (prediction.Spread != null)
-            {
-                stringBuilder.AppendLine($"Smogon predicted set: Nature: {prediction.Spread.Nature} | EVs: HP:{prediction.Spread.HpEvs} Atk:{prediction.Spread.AtkEvs} Def:{prediction.Spread.DefEvs} SpA:{prediction.Spread.SpaEvs} SpD:{prediction.Spread.SpdEvs} Spe:{prediction.Spread.SpeEvs}");
-            }
-        }
+        AppendPredictionInfo(stringBuilder, prediction);
         stringBuilder.AppendLine();
+    }
+
+    private static void AppendPredictionInfo(StringBuilder stringBuilder, OpponentPrediction prediction)
+    {
+        if (prediction == null)
+        {
+            return;
+        }
+
+        if (prediction.Moves is { Count: > 0 })
+        {
+            var predMovesStr = string.Join(", ",
+                prediction.Moves.Select(move => $"{move.Name} ({move.Probability * 100.0:F0}%)"));
+            stringBuilder.AppendLine($"Smogon predicted moves: {predMovesStr}");
+        }
+
+        if (prediction.Spread != null)
+        {
+            stringBuilder.AppendLine($"Smogon predicted set: Nature: {prediction.Spread.Nature} | EVs: HP:{prediction.Spread.HpEvs} Atk:{prediction.Spread.AtkEvs} Def:{prediction.Spread.DefEvs} SpA:{prediction.Spread.SpaEvs} SpD:{prediction.Spread.SpdEvs} Spe:{prediction.Spread.SpeEvs}");
+        }
     }
 
     private static void AppendDamageCalculations(StringBuilder stringBuilder, BattleActiveSlot activeSlot,
@@ -374,86 +394,124 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
             return;
         }
 
-        Pokemon teraAttacker = null;
-        if (!string.IsNullOrEmpty(activeSlot.CanTerastallize) &&
-            CalcPokemonFactory.TryBuildOurPokemon(ourPokemon, out var teraCandidate))
-        {
-            teraCandidate.TeraType = activeSlot.CanTerastallize;
-            teraAttacker = teraCandidate;
-        }
-
+        var teraAttacker = BuildTerastallizedAttacker(activeSlot, ourPokemon);
         var defenderMaxHp = defender.MaxHP(false);
 
         for (var i = 0; i < activeSlot.Moves.Count; i++)
         {
-            var moveState = activeSlot.Moves[i];
-            var isDisabled = moveState.IsDisabled || (moveState.Pp == 0 && moveState.MaxPp > 0);
-            var statusNote = isDisabled ? " [DISABLED/NO PP]" : "";
-
-            try
-            {
-                var calcMove = new Move(CalcPokemonFactory.Generation, moveState.Name);
-                var category = calcMove.Category.ToString();
-                var moveType = calcMove.Type ?? "Normal";
-                var typeMultiplier = TypeMatchupTable.GetMultiplier(moveType, defender.Types);
-                var effectiveness = FormatEffectiveness(typeMultiplier);
-
-                if (calcMove.Category == MoveCategories.Status)
-                {
-                    stringBuilder.AppendLine($"Move {i + 1}: {moveState.Name} (Type: {moveType}, Status){statusNote}");
-                    stringBuilder.AppendLine($"  Effect: Status move");
-                }
-                else
-                {
-                    var result = Calc.Calculate(CalcPokemonFactory.Generation, attacker, defender, calcMove, null);
-                    var (minDmg, maxDmg) = result.Range();
-                    var (koChance, nHko, _) = result.Kochance(false);
-                    var minPct = defenderMaxHp > 0 ? (double)minDmg / defenderMaxHp * 100.0 : 0.0;
-                    var maxPct = defenderMaxHp > 0 ? (double)maxDmg / defenderMaxHp * 100.0 : 0.0;
-                    var koText = FormatKoChance(koChance, nHko);
-
-                    stringBuilder.AppendLine($"Move {i + 1}: {moveState.Name} (Type: {moveType}, {category}){statusNote}");
-                    stringBuilder.AppendLine($"  💥 Damage: {minPct:F1}% - {maxPct:F1}% [{effectiveness}] -> {koText}");
-
-                    if (teraAttacker != null)
-                    {
-                        var teraResult = Calc.Calculate(CalcPokemonFactory.Generation, teraAttacker, defender, calcMove, null);
-                        var (teraMin, teraMax) = teraResult.Range();
-                        var (teraKoChance, teraNHko, _) = teraResult.Kochance(false);
-                        var teraMinPct = defenderMaxHp > 0 ? (double)teraMin / defenderMaxHp * 100.0 : 0.0;
-                        var teraMaxPct = defenderMaxHp > 0 ? (double)teraMax / defenderMaxHp * 100.0 : 0.0;
-                        var teraKoText = FormatKoChance(teraKoChance, teraNHko);
-
-                        stringBuilder.AppendLine($"  ✨ With Tera ({activeSlot.CanTerastallize}): {teraMinPct:F1}% - {teraMaxPct:F1}% -> {teraKoText}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                stringBuilder.AppendLine($"Move {i + 1}: {moveState.Name}{statusNote} (Calc unavailable: {ex.Message})");
-            }
+            AppendMoveDamage(stringBuilder, activeSlot, i, attacker, teraAttacker, defender, defenderMaxHp);
         }
         stringBuilder.AppendLine();
+    }
+
+    private static Pokemon BuildTerastallizedAttacker(BattleActiveSlot activeSlot, BattlePokemonState ourPokemon)
+    {
+        if (string.IsNullOrEmpty(activeSlot.CanTerastallize) ||
+            !CalcPokemonFactory.TryBuildOurPokemon(ourPokemon, out var teraCandidate))
+        {
+            return null;
+        }
+
+        teraCandidate.TeraType = activeSlot.CanTerastallize;
+        return teraCandidate;
+    }
+
+    private static void AppendMoveDamage(StringBuilder stringBuilder, BattleActiveSlot activeSlot, int moveIndex,
+        Pokemon attacker, Pokemon teraAttacker, Pokemon defender, int defenderMaxHp)
+    {
+        var moveState = activeSlot.Moves[moveIndex];
+        var isDisabled = moveState.IsDisabled || (moveState.Pp == 0 && moveState.MaxPp > 0);
+        var statusNote = isDisabled ? " [DISABLED/NO PP]" : "";
+
+        try
+        {
+            var calcMove = new Move(CalcPokemonFactory.Generation, moveState.Name);
+            var category = calcMove.Category.ToString();
+            var moveType = calcMove.Type ?? "Normal";
+            var typeMultiplier = TypeMatchupTable.GetMultiplier(moveType, defender.Types);
+            var effectiveness = FormatEffectiveness(typeMultiplier);
+
+            if (calcMove.Category == MoveCategories.Status)
+            {
+                stringBuilder.AppendLine($"Move {moveIndex + 1}: {moveState.Name} (Type: {moveType}, Status){statusNote}");
+                stringBuilder.AppendLine("  Effect: Status move");
+                return;
+            }
+
+            var result = Calc.Calculate(CalcPokemonFactory.Generation, attacker, defender, calcMove, null);
+            var (minDmg, maxDmg) = result.Range();
+            var (koChance, nHko, _) = result.Kochance(false);
+            var minPct = ToPercentOfMaxHp(minDmg, defenderMaxHp);
+            var maxPct = ToPercentOfMaxHp(maxDmg, defenderMaxHp);
+            var koText = FormatKoChance(koChance, nHko);
+
+            stringBuilder.AppendLine($"Move {moveIndex + 1}: {moveState.Name} (Type: {moveType}, {category}){statusNote}");
+            stringBuilder.AppendLine($"  💥 Damage: {minPct:F1}% - {maxPct:F1}% [{effectiveness}] -> {koText}");
+
+            if (teraAttacker != null)
+            {
+                AppendTeraMoveDamage(stringBuilder, calcMove, teraAttacker, defender, defenderMaxHp,
+                    activeSlot.CanTerastallize);
+            }
+        }
+        catch (Exception exception)
+        {
+            stringBuilder.AppendLine($"Move {moveIndex + 1}: {moveState.Name}{statusNote} (Calc unavailable: {exception.Message})");
+        }
+    }
+
+    private static void AppendTeraMoveDamage(StringBuilder stringBuilder, Move calcMove, Pokemon teraAttacker,
+        Pokemon defender, int defenderMaxHp, string teraType)
+    {
+        var teraResult = Calc.Calculate(CalcPokemonFactory.Generation, teraAttacker, defender, calcMove, null);
+        var (teraMin, teraMax) = teraResult.Range();
+        var (teraKoChance, teraNHko, _) = teraResult.Kochance(false);
+        var teraMinPct = ToPercentOfMaxHp(teraMin, defenderMaxHp);
+        var teraMaxPct = ToPercentOfMaxHp(teraMax, defenderMaxHp);
+        var teraKoText = FormatKoChance(teraKoChance, teraNHko);
+
+        stringBuilder.AppendLine($"  ✨ With Tera ({teraType}): {teraMinPct:F1}% - {teraMaxPct:F1}% -> {teraKoText}");
     }
 
     private static void AppendOpponentAttacksOnUs(StringBuilder stringBuilder, BattlePokemonState ourPokemon,
         OpponentPokemonState opponent, OpponentPrediction prediction)
     {
-        if (!CalcPokemonFactory.TryBuildOurPokemon(ourPokemon, out var defender) ||
-            !CalcPokemonFactory.TryBuildOpponentPokemon(opponent, out var attacker, prediction?.Spread))
+        if (prediction?.Moves == null ||
+            !CalcPokemonFactory.TryBuildOurPokemon(ourPokemon, out var defender) ||
+            !CalcPokemonFactory.TryBuildOpponentPokemon(opponent, out var attacker, prediction.Spread))
         {
             return;
         }
 
         var ourMaxHp = defender.MaxHP(false);
-        if (ourMaxHp <= 0) return;
+        if (ourMaxHp <= 0)
+        {
+            return;
+        }
 
+        var attacks = BuildOpponentAttackNotes(attacker, defender, ourMaxHp, prediction.Moves);
+        if (attacks.Count == 0)
+        {
+            return;
+        }
+
+        stringBuilder.AppendLine("--- OPPONENT EXPECTED DAMAGE ON OUR ACTIVE ---");
+        foreach (var attack in attacks)
+        {
+            stringBuilder.AppendLine(attack);
+        }
+        stringBuilder.AppendLine();
+    }
+
+    private static List<string> BuildOpponentAttackNotes(Pokemon attacker, Pokemon defender, int ourMaxHp,
+        IEnumerable<PredictedMove> predictedMoves)
+    {
         var attacks = new List<string>();
-        foreach (var predictedMove in prediction.Moves)
+        foreach (var moveName in predictedMoves.Select(predictedMove => predictedMove.Name))
         {
             try
             {
-                var calcMove = new Move(CalcPokemonFactory.Generation, predictedMove.Name);
+                var calcMove = new Move(CalcPokemonFactory.Generation, moveName);
                 if (calcMove.Category == MoveCategories.Status) continue;
 
                 var result = Calc.Calculate(CalcPokemonFactory.Generation, attacker, defender, calcMove, null);
@@ -463,7 +521,7 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
                 var maxPct = (double)maxDmg / ourMaxHp * 100.0;
                 var koText = FormatKoChance(koChance, nHko);
 
-                attacks.Add($"  {predictedMove.Name}: {minPct:F1}% - {maxPct:F1}% ({koText})");
+                attacks.Add($"  {moveName}: {minPct:F1}% - {maxPct:F1}% ({koText})");
             }
             catch
             {
@@ -471,30 +529,13 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
             }
         }
 
-        if (attacks.Count > 0)
-        {
-            stringBuilder.AppendLine("--- OPPONENT EXPECTED DAMAGE ON OUR ACTIVE ---");
-            foreach (var attack in attacks)
-            {
-                stringBuilder.AppendLine(attack);
-            }
-            stringBuilder.AppendLine();
-        }
+        return attacks;
     }
 
     private static void AppendBenchAnalysis(StringBuilder stringBuilder, BattleContext context,
         OpponentPokemonState opponent, OpponentPrediction prediction)
     {
-        var benchPokemon = new List<(int slotIndex, BattlePokemonState pokemon)>();
-        for (var i = 0; i < context.SidePokemon.Count; i++)
-        {
-            var p = context.SidePokemon[i];
-            if (!p.IsActive && !p.IsFainted && p.CurrentHp > 0)
-            {
-                benchPokemon.Add((i + 1, p));
-            }
-        }
-
+        var benchPokemon = CollectBenchPokemon(context);
         if (benchPokemon.Count == 0)
         {
             stringBuilder.AppendLine("--- OUR BENCH TEAMMATES ---");
@@ -512,72 +553,108 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
 
         foreach (var (slotIndex, member) in benchPokemon)
         {
-            var species = CalcPokemonFactory.ExtractSpeciesFromDetails(member.Details);
-            var types = GetOurPokemonTypes(member);
-            var typesStr = types.Count > 0 ? string.Join("/", types) : "Unknown";
-            var hpPercent = member.MaxHp > 0 ? (double)member.CurrentHp / member.MaxHp * 100.0 : 0.0;
-            var speStr = member.Stats != null ? $" | Spe: {member.Stats.Spe}" : "";
-
-            stringBuilder.AppendLine($"Slot {slotIndex}: {species} [{typesStr}] - HP: {member.CurrentHp}/{member.MaxHp} ({hpPercent:F1}%)");
-            stringBuilder.AppendLine($"  Ability: {member.Ability} | Item: {member.Item}{speStr}");
-            stringBuilder.AppendLine($"  Moves: {string.Join(", ", member.Moves)}");
-
-            var chip = ComputeSwitchInChipPercent(types, context.OwnSideStealthRock, context.OwnSideSpikesLayers);
-            if (chip > 0)
-            {
-                stringBuilder.AppendLine($"  ⚠️ Hazard chip: takes {chip:F1}% max HP on switch-in");
-            }
-
-            if (calcOpponent != null && CalcPokemonFactory.TryBuildOurPokemon(member, out var calcMember) && prediction?.Moves != null)
-            {
-                var hits = new List<string>();
-                foreach (var predMove in prediction.Moves)
-                {
-                    try
-                    {
-                        var move = new Move(CalcPokemonFactory.Generation, predMove.Name);
-                        if (move.Category == MoveCategories.Status) continue;
-
-                        var result = Calc.Calculate(CalcPokemonFactory.Generation, calcOpponent, calcMember, move, null);
-                        var (minDmg, maxDmg) = result.Range();
-                        var maxHp = calcMember.MaxHP(false);
-                        if (maxHp > 0)
-                        {
-                            var minPct = (double)minDmg / maxHp * 100.0;
-                            var maxPct = (double)maxDmg / maxHp * 100.0;
-                            hits.Add($"{predMove.Name}: {minPct:F1}-{maxPct:F1}%");
-                        }
-                    }
-                    catch
-                    {
-                        // Ignore
-                    }
-                }
-
-                if (hits.Count > 0)
-                {
-                    stringBuilder.AppendLine($"  🛡️ Dmg from opponent: {string.Join(", ", hits)}");
-                }
-            }
+            AppendBenchMember(stringBuilder, context, slotIndex, member, calcOpponent, prediction);
         }
         stringBuilder.AppendLine();
     }
 
+    private static List<(int SlotIndex, BattlePokemonState Pokemon)> CollectBenchPokemon(BattleContext context)
+    {
+        return context.SidePokemon
+            .Select((pokemon, index) => (SlotIndex: index + 1, Pokemon: pokemon))
+            .Where(entry => !entry.Pokemon.IsActive && !entry.Pokemon.IsFainted && entry.Pokemon.CurrentHp > 0)
+            .ToList();
+    }
+
+    private static void AppendBenchMember(StringBuilder stringBuilder, BattleContext context, int slotIndex,
+        BattlePokemonState member, Pokemon calcOpponent, OpponentPrediction prediction)
+    {
+        var species = CalcPokemonFactory.ExtractSpeciesFromDetails(member.Details);
+        var types = GetOurPokemonTypes(member);
+        var typesStr = FormatTypes(types);
+        var hpPercent = ComputeHpPercent(member);
+        var speStr = member.Stats != null ? $" | Spe: {member.Stats.Spe}" : "";
+
+        stringBuilder.AppendLine($"Slot {slotIndex}: {species} [{typesStr}] - HP: {member.CurrentHp}/{member.MaxHp} ({hpPercent:F1}%)");
+        stringBuilder.AppendLine($"  Ability: {member.Ability} | Item: {member.Item}{speStr}");
+        stringBuilder.AppendLine($"  Moves: {string.Join(", ", member.Moves)}");
+
+        var chip = ComputeSwitchInChipPercent(types, context.OwnSideStealthRock, context.OwnSideSpikesLayers);
+        if (chip > 0)
+        {
+            stringBuilder.AppendLine($"  ⚠️ Hazard chip: takes {chip:F1}% max HP on switch-in");
+        }
+
+        if (calcOpponent == null || !CalcPokemonFactory.TryBuildOurPokemon(member, out var calcMember) ||
+            prediction?.Moves == null)
+        {
+            return;
+        }
+
+        var hits = BuildIncomingDamageNotes(calcOpponent, calcMember, prediction.Moves);
+        if (hits.Count > 0)
+        {
+            stringBuilder.AppendLine($"  🛡️ Dmg from opponent: {string.Join(", ", hits)}");
+        }
+    }
+
+    private static List<string> BuildIncomingDamageNotes(Pokemon calcOpponent, Pokemon calcMember,
+        IEnumerable<PredictedMove> predictedMoves)
+    {
+        var notes = new List<string>();
+        foreach (var moveName in predictedMoves.Select(predictedMove => predictedMove.Name))
+        {
+            try
+            {
+                var move = new Move(CalcPokemonFactory.Generation, moveName);
+                if (move.Category == MoveCategories.Status) continue;
+
+                var result = Calc.Calculate(CalcPokemonFactory.Generation, calcOpponent, calcMember, move, null);
+                var (minDmg, maxDmg) = result.Range();
+                var maxHp = calcMember.MaxHP(false);
+                if (maxHp > 0)
+                {
+                    var minPct = (double)minDmg / maxHp * 100.0;
+                    var maxPct = (double)maxDmg / maxHp * 100.0;
+                    notes.Add($"{moveName}: {minPct:F1}-{maxPct:F1}%");
+                }
+            }
+            catch
+            {
+                // Ignore calc errors
+            }
+        }
+
+        return notes;
+    }
+
     private static void AppendOpponentBench(StringBuilder stringBuilder, BattleContext context)
     {
-        var opponentBench = context.OpponentPokemon.Where(p => !p.IsActive).ToList();
-        if (opponentBench.Count > 0)
+        var opponentBench = context.OpponentPokemon.Where(pokemon => !pokemon.IsActive).ToList();
+        if (opponentBench.Count == 0)
         {
-            stringBuilder.AppendLine("--- OPPONENT BENCH ---");
-            foreach (var p in opponentBench)
-            {
-                var status = p.IsFainted ? "FAINTED" : $"{p.HpPercent:F0}% HP" + (string.IsNullOrEmpty(p.Status) ? "" : $" ({p.Status})");
-                var types = GetOpponentTypes(p);
-                var typesStr = types.Count > 0 ? string.Join("/", types) : "Unknown";
-                stringBuilder.AppendLine($"  {p.Species} [{typesStr}] - {status}");
-            }
-            stringBuilder.AppendLine();
+            return;
         }
+
+        stringBuilder.AppendLine("--- OPPONENT BENCH ---");
+        foreach (var benched in opponentBench)
+        {
+            var status = FormatBenchedOpponentStatus(benched);
+            var typesStr = FormatTypes(GetOpponentTypes(benched));
+            stringBuilder.AppendLine($"  {benched.Species} [{typesStr}] - {status}");
+        }
+        stringBuilder.AppendLine();
+    }
+
+    private static string FormatBenchedOpponentStatus(OpponentPokemonState benched)
+    {
+        if (benched.IsFainted)
+        {
+            return "FAINTED";
+        }
+
+        var statusSuffix = string.IsNullOrEmpty(benched.Status) ? "" : $" ({benched.Status})";
+        return $"{benched.HpPercent:F0}% HP{statusSuffix}";
     }
 
     private static void AppendLegalChoices(StringBuilder stringBuilder, BattleContext context,
@@ -586,41 +663,78 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
         stringBuilder.AppendLine("--- LEGAL ACTIONS ---");
         if (activeSlot != null)
         {
-            for (var i = 0; i < activeSlot.Moves.Count; i++)
-            {
-                var move = activeSlot.Moves[i];
-                var isUsable = move.Name == "Recharge" || move.MaxPp == 0 || (!move.IsDisabled && move.Pp > 0);
-                if (isUsable)
-                {
-                    stringBuilder.AppendLine($"- MOVE {i + 1}: Use {move.Name}");
-                    if (!string.IsNullOrEmpty(activeSlot.CanTerastallize))
-                    {
-                        stringBuilder.AppendLine($"- MOVE {i + 1} TERA: Use {move.Name} (with Terastallize into {activeSlot.CanTerastallize})");
-                    }
-                }
-            }
-
-            if (!activeSlot.Trapped)
-            {
-                for (var i = 0; i < context.SidePokemon.Count; i++)
-                {
-                    var pokemon = context.SidePokemon[i];
-                    if (!pokemon.IsActive && !pokemon.IsFainted && pokemon.CurrentHp > 0)
-                    {
-                        var species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemon.Details);
-                        stringBuilder.AppendLine($"- SWITCH {i + 1}: Switch to {species}");
-                    }
-                }
-            }
-            else
-            {
-                stringBuilder.AppendLine("(Cannot switch: Pokémon is trapped)");
-            }
+            AppendMoveChoices(stringBuilder, activeSlot);
+            AppendSwitchChoices(stringBuilder, context, activeSlot);
         }
         stringBuilder.AppendLine();
     }
 
-    private static IReadOnlyList<string> GetOurPokemonTypes(BattlePokemonState state)
+    private static void AppendMoveChoices(StringBuilder stringBuilder, BattleActiveSlot activeSlot)
+    {
+        for (var i = 0; i < activeSlot.Moves.Count; i++)
+        {
+            var move = activeSlot.Moves[i];
+            var isUsable = move.Name == "Recharge" || move.MaxPp == 0 || (!move.IsDisabled && move.Pp > 0);
+            if (!isUsable)
+            {
+                continue;
+            }
+
+            stringBuilder.AppendLine($"- MOVE {i + 1}: Use {move.Name}");
+            if (!string.IsNullOrEmpty(activeSlot.CanTerastallize))
+            {
+                stringBuilder.AppendLine($"- MOVE {i + 1} TERA: Use {move.Name} (with Terastallize into {activeSlot.CanTerastallize})");
+            }
+        }
+    }
+
+    private static void AppendSwitchChoices(StringBuilder stringBuilder, BattleContext context,
+        BattleActiveSlot activeSlot)
+    {
+        if (activeSlot.Trapped)
+        {
+            stringBuilder.AppendLine("(Cannot switch: Pokémon is trapped)");
+            return;
+        }
+
+        for (var i = 0; i < context.SidePokemon.Count; i++)
+        {
+            var pokemon = context.SidePokemon[i];
+            if (!pokemon.IsActive && !pokemon.IsFainted && pokemon.CurrentHp > 0)
+            {
+                var species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemon.Details);
+                stringBuilder.AppendLine($"- SWITCH {i + 1}: Switch to {species}");
+            }
+        }
+    }
+
+    private static string FormatTypes(string[] types)
+    {
+        return types.Length > 0 ? string.Join("/", types) : UNKNOWN_TYPES;
+    }
+
+    private static double ComputeHpPercent(BattlePokemonState state)
+    {
+        return state.MaxHp > 0 ? (double)state.CurrentHp / state.MaxHp * 100.0 : 0.0;
+    }
+
+    private static double ToPercentOfMaxHp(int damage, int maxHp)
+    {
+        return maxHp > 0 ? (double)damage / maxHp * 100.0 : 0.0;
+    }
+
+    private static int ComputeEffectiveSpeed(BattlePokemonState state)
+    {
+        var speed = state.Stats.Spe;
+        if (CalcPokemonFactory.ExtractStatus(state.Condition) == "par")
+        {
+            speed /= 2;
+        }
+
+        return speed;
+    }
+
+    private static string[] GetOurPokemonTypes(BattlePokemonState state)
     {
         if (CalcPokemonFactory.TryBuildOurPokemon(state, out var pokemon))
         {
@@ -630,7 +744,7 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
         return [];
     }
 
-    private static IReadOnlyList<string> GetOpponentTypes(OpponentPokemonState state)
+    private static string[] GetOpponentTypes(OpponentPokemonState state)
     {
         if (CalcPokemonFactory.TryBuildOpponentPokemon(state, out var pokemon))
         {
@@ -679,7 +793,7 @@ public class LlmBattlePromptBuilder : ILlmBattlePromptBuilder
 
     private static bool IsGrounded(IReadOnlyList<string> types)
     {
-        return types == null || !types.Any(t => t.Equals("Flying", StringComparison.OrdinalIgnoreCase));
+        return types == null || !types.Any(type => type.Equals("Flying", StringComparison.OrdinalIgnoreCase));
     }
 
     private static string FormatEffectiveness(double multiplier)

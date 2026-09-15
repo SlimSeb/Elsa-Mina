@@ -18,7 +18,15 @@ public class TarotScorerTest
     public void Test_Compute_ShouldMarkContractMade_WhenTakerReachesTarget()
     {
         // 2 oudlers -> target 82 half-points; taker has 120.
-        var result = TarotScorer.Compute(120, 2, TarotBid.Garde, 4, 0, -1);
+        var result = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 120,
+            OudlerCount = 2,
+            Bid = TarotBid.Garde,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -33,7 +41,15 @@ public class TarotScorerTest
     [Test]
     public void Test_Compute_ShouldMarkContractFailed_WhenTakerFallsShort()
     {
-        var result = TarotScorer.Compute(70, 2, TarotBid.Petite, 4, 0, -1);
+        var result = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 70,
+            OudlerCount = 2,
+            Bid = TarotBid.Petite,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -107,7 +123,16 @@ public class TarotScorerTest
     public void Test_Compute_ShouldAddPetitAuBout_FollowingTheMultiplier()
     {
         // 2 oudlers -> target 82; taker has 120 (diff 38). Garde (×2). Petit won by the taker side.
-        var result = TarotScorer.Compute(120, 2, TarotBid.Garde, 4, 0, -1, petitAuBoutSide: 1);
+        var result = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 120,
+            OudlerCount = 2,
+            Bid = TarotBid.Garde,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1,
+            PetitAuBoutSide = 1
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -123,7 +148,16 @@ public class TarotScorerTest
     public void Test_Compute_ShouldGivePetitAuBoutToDefenders_EvenWhenContractFailed()
     {
         // Failed contract, but the defenders won the Petit at the end: the bonus goes their way.
-        var result = TarotScorer.Compute(70, 2, TarotBid.Petite, 4, 0, -1, petitAuBoutSide: -1);
+        var result = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 70,
+            OudlerCount = 2,
+            Bid = TarotBid.Petite,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1,
+            PetitAuBoutSide = -1
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -137,8 +171,26 @@ public class TarotScorerTest
     [Test]
     public void Test_Compute_ShouldAddPoigneeToTheDealWinner_RegardlessOfDeclarer()
     {
-        var made = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1, poigneeHalfPoints: 40);
-        var failed = TarotScorer.Compute(60, 2, TarotBid.Petite, 4, 0, -1, poigneeHalfPoints: 40);
+        var made = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 120,
+            OudlerCount = 2,
+            Bid = TarotBid.Petite,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1,
+            PoigneeHalfPoints = 40
+        });
+        var failed = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 60,
+            OudlerCount = 2,
+            Bid = TarotBid.Petite,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1,
+            PoigneeHalfPoints = 40
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -155,8 +207,16 @@ public class TarotScorerTest
         // Made Petite: base 88 per defender -> deltas {264, -88, -88, -88}.
         // Player 1 (a defender) declares one misère worth 20 half-points: they collect 20 from each of
         // the three other players (+60) while every other player pays 20.
-        var result = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1,
-            miserePlayerHalfPoints: [0, 20, 0, 0]);
+        var result = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 120,
+            OudlerCount = 2,
+            Bid = TarotBid.Petite,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1,
+            MiserePlayerHalfPoints = [0, 20, 0, 0]
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -169,8 +229,16 @@ public class TarotScorerTest
     public void Test_Compute_ShouldStackMultipleMiseres_AndStayZeroSum()
     {
         // Player 0 declares both misères (40) and player 2 declares one (20), independent of the contract.
-        var result = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1,
-            miserePlayerHalfPoints: [40, 0, 20, 0]);
+        var result = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 120,
+            OudlerCount = 2,
+            Bid = TarotBid.Petite,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1,
+            MiserePlayerHalfPoints = [40, 0, 20, 0]
+        });
 
         using (Assert.EnterMultipleScope())
         {
@@ -183,10 +251,37 @@ public class TarotScorerTest
     [Test]
     public void Test_Compute_ShouldAddSlamBonus()
     {
-        var announced = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1,
-            slamWinnerSide: 1, slamAnnounced: true);
-        var unannounced = TarotScorer.Compute(120, 2, TarotBid.Petite, 4, 0, -1, slamWinnerSide: 1);
-        var failed = TarotScorer.Compute(60, 2, TarotBid.Petite, 4, 0, -1, slamAnnounced: true);
+        var announced = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 120,
+            OudlerCount = 2,
+            Bid = TarotBid.Petite,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1,
+            SlamWinnerSide = 1,
+            SlamAnnounced = true
+        });
+        var unannounced = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 120,
+            OudlerCount = 2,
+            Bid = TarotBid.Petite,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1,
+            SlamWinnerSide = 1
+        });
+        var failed = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = 60,
+            OudlerCount = 2,
+            Bid = TarotBid.Petite,
+            PlayerCount = 4,
+            TakerIndex = 0,
+            PartnerIndex = -1,
+            SlamAnnounced = true
+        });
 
         using (Assert.EnterMultipleScope())
         {

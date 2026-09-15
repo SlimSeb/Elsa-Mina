@@ -37,63 +37,84 @@ public class TournamentBettingHandler : Handler
             return;
         }
 
-        if (parts[2] == "update" && parts.Length >= 4)
+        switch (parts[2])
         {
-            var sanitizedJson = parts[3].Replace(@"\'", "'");
-            var update = JsonSerializer.Deserialize<TournamentUpdate>(sanitizedJson, JSON_OPTIONS);
-            var incomingUsers = update?.BracketData?.Users;
-            if (incomingUsers != null && incomingUsers.Length > 0)
-            {
-                _pendingPlayers[roomId] = incomingUsers
-                    .Select(username => new TournamentPlayer(username.ToLowerAlphaNum(), username))
-                    .DistinctBy(player => player.UserId)
-                    .ToArray();
-            }
-        }
-        else if (parts[2] == "start")
-        {
-            var room = _roomsManager.GetRoom(roomId);
-            var isBettingEnabled = room == null ||
-                                   (await room.GetParameterValueAsync(Parameter.TournamentBettingEnabled,
-                                       cancellationToken)).ToBoolean();
-            if (!isBettingEnabled)
-            {
+            case "update" when parts.Length >= 4:
+                UpdatePendingPlayers(roomId, parts[3]);
+                break;
+            case "start":
+                await StartBettingAsync(roomId, cancellationToken);
+                break;
+            case "forceend":
                 _pendingPlayers.Remove(roomId, out _);
-                return;
-            }
+                await _tournamentBettingService.ReturnBetsAsync(roomId, cancellationToken);
+                break;
+            case "end" when parts.Length >= 4:
+                await ResolveBettingAsync(roomId, parts[3], cancellationToken);
+                break;
+            default:
+                // Any other tournament update is irrelevant for betting.
+                break;
+        }
+    }
 
-            if (_pendingPlayers.TryGetValue(roomId, out var users))
-            {
-                _pendingPlayers.Remove(roomId, out _);
-                await _tournamentBettingService.AnnounceBetsAsync(users, roomId, cancellationToken);
-            }
+    private void UpdatePendingPlayers(string roomId, string rawUpdate)
+    {
+        var sanitizedJson = rawUpdate.Replace(@"\'", "'");
+        var update = JsonSerializer.Deserialize<TournamentUpdate>(sanitizedJson, JSON_OPTIONS);
+        var incomingUsers = update?.BracketData?.Users;
+        if (incomingUsers == null || incomingUsers.Length == 0)
+        {
+            return;
         }
-        else if (parts[2] == "forceend")
+
+        _pendingPlayers[roomId] = incomingUsers
+            .Select(username => new TournamentPlayer(username.ToLowerAlphaNum(), username))
+            .DistinctBy(player => player.UserId)
+            .ToArray();
+    }
+
+    private async Task StartBettingAsync(string roomId, CancellationToken cancellationToken)
+    {
+        var room = _roomsManager.GetRoom(roomId);
+        var isBettingEnabled = room == null ||
+                               (await room.GetParameterValueAsync(Parameter.TournamentBettingEnabled,
+                                   cancellationToken)).ToBoolean();
+        if (!isBettingEnabled)
         {
             _pendingPlayers.Remove(roomId, out _);
-            await _tournamentBettingService.ReturnBetsAsync(roomId, cancellationToken);
+            return;
         }
-        else if (parts[2] == "end" && parts.Length >= 4)
-        {
-            _pendingPlayers.Remove(roomId, out _);
 
-            try
+        if (!_pendingPlayers.TryGetValue(roomId, out var users))
+        {
+            return;
+        }
+
+        _pendingPlayers.Remove(roomId, out _);
+        await _tournamentBettingService.AnnounceBetsAsync(users, roomId, cancellationToken);
+    }
+
+    private async Task ResolveBettingAsync(string roomId, string rawResults, CancellationToken cancellationToken)
+    {
+        _pendingPlayers.Remove(roomId, out _);
+
+        try
+        {
+            var result = TournamentHelper.ParseTourResults(rawResults);
+            if (result?.Winner != null)
             {
-                var result = TournamentHelper.ParseTourResults(parts[3]);
-                if (result?.Winner != null)
-                {
-                    await _tournamentBettingService.ResolveBetsAsync(result.Winner, roomId, cancellationToken);
-                }
-                else
-                {
-                    await _tournamentBettingService.ReturnBetsAsync(roomId, cancellationToken);
-                }
+                await _tournamentBettingService.ResolveBetsAsync(result.Winner, roomId, cancellationToken);
             }
-            catch (Exception ex)
+            else
             {
-                Log.Error(ex, "Error resolving bets for room {RoomId}", roomId);
                 await _tournamentBettingService.ReturnBetsAsync(roomId, cancellationToken);
             }
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error resolving bets for room {RoomId}", roomId);
+            await _tournamentBettingService.ReturnBetsAsync(roomId, cancellationToken);
         }
     }
 }

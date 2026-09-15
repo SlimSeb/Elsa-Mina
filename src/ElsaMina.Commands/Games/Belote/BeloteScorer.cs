@@ -7,24 +7,26 @@ namespace ElsaMina.Commands.Games.Belote;
 /// </summary>
 public static class BeloteScorer
 {
-    public static BeloteScoreResult Compute(int takerTeam, int team0CardPoints, int team1CardPoints,
-        int lastTrickTeam, int team0Tricks, int team1Tricks, int beloteTeam, IReadOnlyList<BelotePlayer> players)
+    public static BeloteScoreResult Compute(BeloteScoreInput input)
     {
+        var takerTeam = input.TakerTeam;
+        var players = input.Players;
+
         // Bank the dix de der to the team that won the last trick.
-        var team0Total = team0CardPoints + (lastTrickTeam == 0 ? BeloteConstants.LAST_TRICK_BONUS : 0);
-        var team1Total = team1CardPoints + (lastTrickTeam == 1 ? BeloteConstants.LAST_TRICK_BONUS : 0);
+        var team0Total = input.Team0CardPoints + (input.LastTrickTeam == 0 ? BeloteConstants.LAST_TRICK_BONUS : 0);
+        var team1Total = input.Team1CardPoints + (input.LastTrickTeam == 1 ? BeloteConstants.LAST_TRICK_BONUS : 0);
 
         var takerCardPoints = takerTeam == 0 ? team0Total : team1Total;
         var defenderCardPoints = takerTeam == 0 ? team1Total : team0Total;
 
-        var capotTeam = DetermineCapotTeam(team0Tricks, team1Tricks);
+        var capotTeam = DetermineCapotTeam(input.Team0Tricks, input.Team1Tricks);
         var (takerScore, defenderScore, made) =
             ResolveContract(takerTeam, capotTeam, takerCardPoints, defenderCardPoints, team0Total + team1Total);
 
         var team0Score = takerTeam == 0 ? takerScore : defenderScore;
         var team1Score = takerTeam == 0 ? defenderScore : takerScore;
 
-        (team0Score, team1Score) = ApplyBeloteBonus(beloteTeam, team0Score, team1Score);
+        (team0Score, team1Score) = ApplyBeloteBonus(input.BeloteTeam, team0Score, team1Score);
 
         var deltas = new int[players.Count];
         for (var i = 0; i < players.Count; i++)
@@ -37,8 +39,8 @@ public static class BeloteScorer
             TakerTeam = takerTeam,
             Team0CardPoints = team0Total,
             Team1CardPoints = team1Total,
-            LastTrickTeam = lastTrickTeam,
-            BeloteTeam = beloteTeam,
+            LastTrickTeam = input.LastTrickTeam,
+            BeloteTeam = input.BeloteTeam,
             Team0Score = team0Score,
             Team1Score = team1Score,
             Made = made,

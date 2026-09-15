@@ -31,6 +31,40 @@ public static class SimulationModelBuilder
 
         var activeSlot = context.ActiveSlots.Count > 0 ? context.ActiveSlots[0] : null;
 
+        var team = BuildTeam(context, activeSlot, opponentPokemon, opponentMaxHp, forcedSwitch);
+        if (team.Members.Count == 0)
+        {
+            return null;
+        }
+
+        var opponentMoves = BuildOpponentMoves(prediction.Moves, opponentPokemon, team.Members,
+            team.MemberPokemons, team.TerastallizedActivePokemon, team.ActiveMemberIndex);
+
+        return new SimulationModel
+        {
+            Members = team.Members,
+            ActiveMemberIndex = team.ActiveMemberIndex,
+            CanTerastallize = team.TerastallizedActivePokemon != null,
+            ActiveIsTrapped = activeSlot?.Trapped ?? false,
+            OpponentMoves = opponentMoves,
+            OpponentSpeed = ComputeOpponentSpeed(opponent, opponentPokemon),
+            OpponentHpRatio = opponent.HpPercent / 100.0,
+            OpponentBenchAliveCount = context.OpponentPokemon.Count(pokemon => !pokemon.IsFainted && !pokemon.IsActive),
+            OpponentIsPassive = ComputeOpponentIsPassive(opponentMoves, team.ActiveMemberIndex),
+            InitialOpponentField = new OpponentFieldConditions
+            {
+                StealthRock = context.OpponentSideStealthRock,
+                SpikesLayers = context.OpponentSideSpikesLayers,
+                ToxicSpikes = context.OpponentSideToxicSpikes,
+                StickyWeb = context.OpponentSideStickyWeb,
+                Taunted = context.OpponentActiveTaunted
+            }
+        };
+    }
+
+    private static SimulationTeamBuildResult BuildTeam(BattleContext context, BattleActiveSlot activeSlot,
+        Pokemon opponentPokemon, int opponentMaxHp, bool forcedSwitch)
+    {
         var members = new List<SimulationTeamMember>();
         var memberPokemons = new List<Pokemon>();
         var activeMemberIndex = -1;
@@ -46,14 +80,7 @@ public static class SimulationModelBuilder
             }
 
             var isActive = pokemonState.IsActive && !forcedSwitch;
-            Pokemon teraPokemon = null;
-            if (isActive && activeSlot != null && !string.IsNullOrEmpty(activeSlot.CanTerastallize) &&
-                CalcPokemonFactory.TryBuildOurPokemon(pokemonState, out var teraVariant))
-            {
-                teraVariant.TeraType = activeSlot.CanTerastallize;
-                teraPokemon = teraVariant;
-            }
-
+            var teraPokemon = BuildTerastallizedVariant(pokemonState, activeSlot, isActive);
             var moves = isActive && activeSlot != null
                 ? BuildActiveMoves(activeSlot, memberPokemon, teraPokemon, opponentPokemon, opponentMaxHp)
                 : BuildBenchMoves(pokemonState.Moves, memberPokemon, opponentPokemon, opponentMaxHp);
@@ -64,46 +91,38 @@ public static class SimulationModelBuilder
                 terastallizedActivePokemon = teraPokemon;
             }
 
-            members.Add(new SimulationTeamMember
-            {
-                TeamSlot = slotIndex + 1,
-                Species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemonState.Details),
-                InitialHpRatio = (double)pokemonState.CurrentHp / pokemonState.MaxHp,
-                Speed = ComputeOurSpeed(pokemonState),
-                SwitchInChipRatio = ComputeSwitchInChip(memberPokemon.Types,
-                    context.OwnSideStealthRock, context.OwnSideSpikesLayers),
-                Moves = moves
-            });
+            members.Add(BuildTeamMember(context, pokemonState, slotIndex, memberPokemon, moves));
             memberPokemons.Add(memberPokemon);
         }
 
-        if (members.Count == 0)
+        return new SimulationTeamBuildResult(members, memberPokemons, activeMemberIndex, terastallizedActivePokemon);
+    }
+
+    private static Pokemon BuildTerastallizedVariant(BattlePokemonState pokemonState, BattleActiveSlot activeSlot,
+        bool isActive)
+    {
+        if (!isActive || activeSlot == null || string.IsNullOrEmpty(activeSlot.CanTerastallize) ||
+            !CalcPokemonFactory.TryBuildOurPokemon(pokemonState, out var teraVariant))
         {
             return null;
         }
 
-        var opponentMoves = BuildOpponentMoves(prediction.Moves, opponentPokemon, members,
-            memberPokemons, terastallizedActivePokemon, activeMemberIndex);
+        teraVariant.TeraType = activeSlot.CanTerastallize;
+        return teraVariant;
+    }
 
-        return new SimulationModel
+    private static SimulationTeamMember BuildTeamMember(BattleContext context, BattlePokemonState pokemonState,
+        int slotIndex, Pokemon memberPokemon, List<SimulationMove> moves)
+    {
+        return new SimulationTeamMember
         {
-            Members = members,
-            ActiveMemberIndex = activeMemberIndex,
-            CanTerastallize = terastallizedActivePokemon != null,
-            ActiveIsTrapped = activeSlot?.Trapped ?? false,
-            OpponentMoves = opponentMoves,
-            OpponentSpeed = ComputeOpponentSpeed(opponent, opponentPokemon),
-            OpponentHpRatio = opponent.HpPercent / 100.0,
-            OpponentBenchAliveCount = context.OpponentPokemon.Count(pokemon => !pokemon.IsFainted && !pokemon.IsActive),
-            OpponentIsPassive = ComputeOpponentIsPassive(opponentMoves, activeMemberIndex),
-            InitialOpponentField = new OpponentFieldConditions
-            {
-                StealthRock = context.OpponentSideStealthRock,
-                SpikesLayers = context.OpponentSideSpikesLayers,
-                ToxicSpikes = context.OpponentSideToxicSpikes,
-                StickyWeb = context.OpponentSideStickyWeb,
-                Taunted = context.OpponentActiveTaunted
-            }
+            TeamSlot = slotIndex + 1,
+            Species = CalcPokemonFactory.ExtractSpeciesFromDetails(pokemonState.Details),
+            InitialHpRatio = (double)pokemonState.CurrentHp / pokemonState.MaxHp,
+            Speed = ComputeOurSpeed(pokemonState),
+            SwitchInChipRatio = ComputeSwitchInChip(memberPokemon.Types,
+                context.OwnSideStealthRock, context.OwnSideSpikesLayers),
+            Moves = moves
         };
     }
 

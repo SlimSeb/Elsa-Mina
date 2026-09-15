@@ -19,11 +19,6 @@ namespace ElsaMina.Commands.Games.Cards;
 /// <typeparam name="TPlayer">The game's own seat type.</typeparam>
 public abstract class SeatedCardGame<TPlayer> : Game, ICardGame where TPlayer : class, ISeatedPlayer
 {
-    // Generic statics are per closed type, so each game keeps its own counter: tarot, belote, président
-    // and poker all number their panels from 1. Do not hoist this into a non-generic base or otherwise
-    // share it: every panel id would silently shift.
-    private static int _nextGameId;
-
     private readonly SemaphoreSlim _actionLock = new(1, 1);
     private readonly PeriodicTimerRunner _turnTimer;
     private readonly PeriodicTimerRunner _turnWarningTimer;
@@ -34,7 +29,7 @@ public abstract class SeatedCardGame<TPlayer> : Game, ICardGame where TPlayer : 
         TimeSpan? turnWarningRemaining)
     {
         TemplatesManager = templatesManager;
-        GameId = Interlocked.Increment(ref _nextGameId);
+        GameId = SeatedCardGameIdGenerator.NextId(typeof(TPlayer));
         _turnTimer = new PeriodicTimerRunner(turnTimeout, OnTurnTimerTickAsync, runOnce: true);
 
         // Warn the active player by PM once only the warning threshold of time is left on their turn.
@@ -357,6 +352,22 @@ public abstract class SeatedCardGame<TPlayer> : Game, ICardGame where TPlayer : 
     protected bool PublicPanelInitialized { get; set; }
 
     /// <summary>
+    /// The template rendered in the public panel for the phase the game is currently in.
+    /// </summary>
+    private string PublicTemplateName
+    {
+        get
+        {
+            if (IsInLobby)
+            {
+                return "Lobby";
+            }
+
+            return IsFinished ? "Result" : "Table";
+        }
+    }
+
+    /// <summary>
     /// Renders the public table as a chat panel so spectators (and players) can follow the game from
     /// the room itself. The lobby and the final result are only ever shown here. When
     /// <paramref name="forceResend"/> is set, it is re-posted at the bottom of the chat instead of
@@ -364,7 +375,7 @@ public abstract class SeatedCardGame<TPlayer> : Game, ICardGame where TPlayer : 
     /// </summary>
     protected async Task RenderPublicAsync(bool forceResend = false)
     {
-        var templateKey = TemplateKey(IsInLobby ? "Lobby" : IsFinished ? "Result" : "Table");
+        var templateKey = TemplateKey(PublicTemplateName);
 
         var html = await TemplatesManager.GetTemplateAsync(templateKey, BuildModel(null));
         Context.SendUpdatableHtml(PublicPanelId, html.RemoveNewlines(),

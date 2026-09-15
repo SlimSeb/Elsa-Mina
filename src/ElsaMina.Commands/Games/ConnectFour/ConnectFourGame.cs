@@ -247,32 +247,7 @@ public class ConnectFourGame : Game, IConnectFourGame
         {
             for (var j = 0; j < ConnectFourConstants.GRID_WIDTH; j++)
             {
-                var currentIndices = new List<(int, int)>();
-                for (var k = 0; k < ConnectFourConstants.WINNING_LENGTH; k++)
-                {
-                    var row = i + k * rowOffset;
-                    var col = j + k * colOffset;
-
-                    if (row < 0
-                        || row >= ConnectFourConstants.GRID_HEIGHT
-                        || col < 0
-                        || col >= ConnectFourConstants.GRID_WIDTH)
-                    {
-                        currentIndices.Clear();
-                        break;
-                    }
-
-                    currentIndices.Add((row, col));
-
-                    if (Grid[row, col] == symbol)
-                    {
-                        continue;
-                    }
-
-                    currentIndices.Clear();
-                    break;
-                }
-
+                var currentIndices = CollectWinningLine(symbol, i, j, rowOffset, colOffset);
                 if (currentIndices.Count == ConnectFourConstants.WINNING_LENGTH)
                 {
                     return currentIndices;
@@ -282,6 +257,34 @@ public class ConnectFourGame : Game, IConnectFourGame
 
         return [];
     }
+
+    /// <summary>
+    /// The cells of the run of <see cref="ConnectFourConstants.WINNING_LENGTH"/> cells starting at the
+    /// given cell and walking in the given direction, or an empty list when the run leaves the grid or
+    /// hits a cell that does not belong to the given symbol.
+    /// </summary>
+    private List<(int, int)> CollectWinningLine(char symbol, int startRow, int startColumn, int rowOffset,
+        int colOffset)
+    {
+        var currentIndices = new List<(int, int)>();
+        for (var k = 0; k < ConnectFourConstants.WINNING_LENGTH; k++)
+        {
+            var row = startRow + k * rowOffset;
+            var col = startColumn + k * colOffset;
+
+            if (!IsInsideGrid(row, col) || Grid[row, col] != symbol)
+            {
+                return [];
+            }
+
+            currentIndices.Add((row, col));
+        }
+
+        return currentIndices;
+    }
+
+    private static bool IsInsideGrid(int row, int col) =>
+        row >= 0 && row < ConnectFourConstants.GRID_HEIGHT && col >= 0 && col < ConnectFourConstants.GRID_WIDTH;
 
     private async Task StartGame()
     {

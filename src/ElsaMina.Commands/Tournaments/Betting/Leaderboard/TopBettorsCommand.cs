@@ -41,8 +41,7 @@ public class TopBettorsCommand : Command
             await using var dbContext = await _botDbContextFactory.CreateDbContextAsync(cancellationToken);
             var topRecords = await dbContext.BetRecords
                 .Where(record => record.RoomId == roomId)
-                .Include(record => record.RoomUser)
-                .ThenInclude(roomUser => roomUser.User)
+                .Include(record => record.RoomUser.User)
                 .OrderByDescending(record => record.CorrectBetsCount)
                 .ThenByDescending(record => record.TotalBetsCount)
                 .Take(TOP_COUNT)

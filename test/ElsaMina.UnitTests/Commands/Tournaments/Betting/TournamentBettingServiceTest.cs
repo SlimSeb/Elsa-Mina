@@ -28,6 +28,7 @@ public class TournamentBettingServiceTest
     private IClockService _clockService;
     private IBotDbContextFactory _botDbContextFactory;
     private IRoomUserDataService _roomUserDataService;
+    private IBetRecordsStore _betRecordsStore;
     private DbContextOptions<BotDbContext> _dbOptions;
     private TournamentBettingService _service;
 
@@ -59,8 +60,9 @@ public class TournamentBettingServiceTest
         _botDbContextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromResult(new BotDbContext(_dbOptions)));
 
+        _betRecordsStore = new BetRecordsStore(_botDbContextFactory, _roomUserDataService);
         _service = new TournamentBettingService(_bot, _templatesManager, _configuration,
-            _resourcesService, _roomsManager, _clockService, _botDbContextFactory, _roomUserDataService);
+            _resourcesService, _roomsManager, _clockService, _betRecordsStore);
     }
 
     [TearDown]

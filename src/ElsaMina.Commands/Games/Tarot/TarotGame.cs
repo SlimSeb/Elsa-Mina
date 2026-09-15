@@ -115,14 +115,14 @@ public class TarotGame : SubstitutableCardGame<TarotPlayer>, ITarotGame
         var dogSize = TarotConstants.DOG_SIZE[Seats.Count];
 
         var cursor = 0;
-        foreach (var player in Seats)
+        foreach (var hand in Seats.Select(player => player.Hand))
         {
             for (var card = 0; card < handSize; card++)
             {
-                player.Hand.Add(deck[cursor++]);
+                hand.Add(deck[cursor++]);
             }
 
-            SortHand(player.Hand);
+            SortHand(hand);
         }
 
         for (var card = 0; card < dogSize; card++)
@@ -684,16 +684,30 @@ public class TarotGame : SubstitutableCardGame<TarotPlayer>, ITarotGame
 
     #region Scoring & ending
 
+    /// <summary>
+    /// +1 when the taker side won every trick, -1 when the defenders did, 0 when there was no slam.
+    /// </summary>
+    private int ComputeSlamWinnerSide()
+    {
+        if (_takerSideTrickWins == TotalTricks)
+        {
+            return 1;
+        }
+
+        return _takerSideTrickWins == 0 ? -1 : 0;
+    }
+
     private async Task FinishAsync()
     {
         var takerSide = Seats.Where(player => player.IsTaker || player.IsPartner).ToList();
-        var takerHalfPoints = takerSide.Sum(player => player.CapturedPile.Sum(card => card.HalfPoints));
+        var takerHalfPoints =
+            takerSide.Sum((TarotPlayer player) => player.CapturedPile.Sum((TarotCard card) => card.HalfPoints));
         var oudlerCount = takerSide.Sum(player => player.CapturedPile.Count(card => card.IsOudler));
 
         var petitAuBoutSide = TarotRules.ComputePetitAuBoutSide(LastTrick, LastTrickWinner);
         var poigneeHalfPoints =
             _declaredPoignees.Sum(declaration => TarotConstants.POIGNEE_HALF_POINTS[declaration.Tier]);
-        var slamWinnerSide = _takerSideTrickWins == TotalTricks ? 1 : _takerSideTrickWins == 0 ? -1 : 0;
+        var slamWinnerSide = ComputeSlamWinnerSide();
 
         var miserePlayerHalfPoints = new int[Seats.Count];
         foreach (var (player, _) in _declaredMiseres)
@@ -701,10 +715,20 @@ public class TarotGame : SubstitutableCardGame<TarotPlayer>, ITarotGame
             miserePlayerHalfPoints[SeatIndexOf(player)] += TarotConstants.MISERE_HALF_POINTS;
         }
 
-        ScoreResult = TarotScorer.Compute(takerHalfPoints, oudlerCount, HighestBid,
-            Seats.Count, _takerIndex, _partnerIndex,
-            petitAuBoutSide, poigneeHalfPoints, slamWinnerSide, _slamAnnounced,
-            miserePlayerHalfPoints);
+        ScoreResult = TarotScorer.Compute(new TarotScoreInput
+        {
+            TakerHalfPoints = takerHalfPoints,
+            OudlerCount = oudlerCount,
+            Bid = HighestBid,
+            PlayerCount = Seats.Count,
+            TakerIndex = _takerIndex,
+            PartnerIndex = _partnerIndex,
+            PetitAuBoutSide = petitAuBoutSide,
+            PoigneeHalfPoints = poigneeHalfPoints,
+            SlamWinnerSide = slamWinnerSide,
+            SlamAnnounced = _slamAnnounced,
+            MiserePlayerHalfPoints = miserePlayerHalfPoints
+        });
 
         Phase = TarotPhase.Finished;
         StopTurnTimer();

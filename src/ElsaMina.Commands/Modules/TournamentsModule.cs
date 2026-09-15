@@ -41,6 +41,7 @@ public class TournamentsModule : Module
         builder.RegisterHandler<TournamentBettingHandler>();
         builder.RegisterHandler<TourEndHandler>();
 
+        builder.RegisterType<BetRecordsStore>().As<IBetRecordsStore>().SingleInstance();
         builder.RegisterType<TournamentBettingService>().As<ITournamentBettingService>().SingleInstance();
         builder.RegisterType<TourConfigService>().As<ITourConfigService>().SingleInstance();
         builder.RegisterType<TourConfigLauncher>().As<IDynamicCommandProvider>().SingleInstance();

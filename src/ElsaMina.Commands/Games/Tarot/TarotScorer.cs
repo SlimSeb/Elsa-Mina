@@ -11,45 +11,36 @@ public static class TarotScorer
     public static int GetTargetHalfPoints(int oudlerCount) =>
         TarotConstants.TARGET_HALF_POINTS[Math.Clamp(oudlerCount, 0, 3)];
 
-    /// <param name="petitAuBoutSide">+1 if the taker side won the Petit in the last trick, -1 if the
-    /// defenders did, 0 if the Petit was not in the last trick.</param>
-    /// <param name="poigneeHalfPoints">Total declared poignée bonus, in half-points. Always benefits
-    /// the side that wins the deal.</param>
-    /// <param name="slamWinnerSide">+1 if the taker side won every trick, -1 if the defenders did,
-    /// 0 if there was no slam.</param>
-    /// <param name="slamAnnounced">Whether the taker announced a chelem before play.</param>
-    /// <param name="miserePlayerHalfPoints">Per-player misère bonus, in half-points, indexed like the
-    /// player list. Each amount is paid to that player by every other player, independent of the contract.</param>
-    public static TarotScoreResult Compute(int takerHalfPoints, int oudlerCount, TarotBid bid,
-        int playerCount, int takerIndex, int partnerIndex,
-        int petitAuBoutSide = 0, int poigneeHalfPoints = 0,
-        int slamWinnerSide = 0, bool slamAnnounced = false,
-        IReadOnlyList<int> miserePlayerHalfPoints = null)
+    public static TarotScoreResult Compute(TarotScoreInput input)
     {
-        var target = GetTargetHalfPoints(oudlerCount);
+        var takerHalfPoints = input.TakerHalfPoints;
+        var petitAuBoutSide = input.PetitAuBoutSide;
+        var poigneeHalfPoints = input.PoigneeHalfPoints;
+
+        var target = GetTargetHalfPoints(input.OudlerCount);
         var diff = takerHalfPoints - target;
         var made = diff >= 0;
         var madeSign = made ? 1 : -1;
         var baseHalfPoints = BASE_HALF_POINTS + Math.Abs(diff);
-        var multiplier = TarotConstants.BID_MULTIPLIER[bid];
+        var multiplier = TarotConstants.BID_MULTIPLIER[input.Bid];
         var contractValue = baseHalfPoints * multiplier;
 
         // The petit au bout follows the contract multiplier; the poignée and chelem bonuses are flat.
         var petitAuBoutHalfPoints = petitAuBoutSide * TarotConstants.PETIT_AU_BOUT_HALF_POINTS * multiplier;
         var poigneeContribution = madeSign * poigneeHalfPoints;
-        var slamHalfPoints = ComputeSlamHalfPoints(slamWinnerSide, slamAnnounced);
+        var slamHalfPoints = ComputeSlamHalfPoints(input.SlamWinnerSide, input.SlamAnnounced);
 
         var perDefender = madeSign * contractValue
                           + petitAuBoutHalfPoints
                           + poigneeContribution
                           + slamHalfPoints;
 
-        var deltas = Distribute(perDefender, playerCount, takerIndex, partnerIndex);
-        ApplyMiserePayments(deltas, miserePlayerHalfPoints);
+        var deltas = Distribute(perDefender, input.PlayerCount, input.TakerIndex, input.PartnerIndex);
+        ApplyMiserePayments(deltas, input.MiserePlayerHalfPoints);
 
         return new TarotScoreResult
         {
-            OudlerCount = oudlerCount,
+            OudlerCount = input.OudlerCount,
             TargetHalfPoints = target,
             TakerHalfPoints = takerHalfPoints,
             DiffHalfPoints = diff,
@@ -60,8 +51,8 @@ public static class TarotScorer
             PetitAuBoutSide = petitAuBoutSide,
             PetitAuBoutHalfPoints = petitAuBoutHalfPoints,
             PoigneeHalfPoints = poigneeHalfPoints,
-            SlamWinnerSide = slamWinnerSide,
-            SlamAnnounced = slamAnnounced,
+            SlamWinnerSide = input.SlamWinnerSide,
+            SlamAnnounced = input.SlamAnnounced,
             SlamHalfPoints = slamHalfPoints,
             PerDefenderHalfPoints = perDefender,
             Deltas = deltas

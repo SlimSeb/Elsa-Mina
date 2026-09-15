@@ -298,7 +298,7 @@ public class ScattergoriesGame : Game, IScattergoriesGame
         }
     }
 
-    private IReadOnlyList<(string Name, int Points)> GetOrderedScores()
+    private List<(string Name, int Points)> GetOrderedScores()
     {
         lock (_roundLock)
         {

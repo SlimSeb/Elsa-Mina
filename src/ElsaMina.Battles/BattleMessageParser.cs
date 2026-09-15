@@ -97,270 +97,270 @@ public class BattleMessageParser : IBattleMessageParser
         {
             // Team preview: |poke|p1|Garchomp, L80, M|item
             case "poke" when parts.Length >= 4:
-            {
-                var playerSide = parts[2];
-                if (playerSide == context.OpponentSideId)
-                {
-                    var (species, level, gender) = ParseDetails(parts[3]);
-                    var pokemon = GetOrCreateOpponentPokemon(context, species);
-                    pokemon.Level = level;
-                    pokemon.Gender = gender;
-                }
+                ApplyTeamPreviewPokemon(context, parts[2], parts[3]);
                 return true;
-            }
 
             // Switch / drag / replace (Zoroark illusion broken):
             // |switch|p1a: Garchomp|Garchomp, L80, M|88/100
             case "switch" or "drag" or "replace" when parts.Length >= 5:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                var (species, level, gender) = ParseDetails(parts[3]);
-                ParseHpStatus(parts[4], out var hpPercent, out var status, out var fainted);
-
-                foreach (var pokemon in context.OpponentPokemon)
-                {
-                    pokemon.IsActive = false;
-                }
-
-                var switched = GetOrCreateOpponentPokemon(context, species);
-                switched.Level = level;
-                switched.Gender = gender;
-                switched.HpPercent = hpPercent;
-                switched.Status = status;
-                switched.IsActive = !fainted;
-                switched.IsFainted = fainted;
-                switched.Boosts.Clear();
-                // Taunt only affects the pokemon that was on the field, so it wears off on a switch
-                context.OpponentActiveTaunted = false;
+                ApplySwitch(context, parts[2], parts[3], parts[4]);
                 return true;
-            }
 
             // Forme change: |detailschange|p1a: Mimikyu|Mimikyu-Busted, L79, F
             case "detailschange" when parts.Length >= 4:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                var oldSpecies = ExtractSpeciesFromIdent(parts[2]);
-                var (newSpecies, _, _) = ParseDetails(parts[3]);
-                var pokemon = context.OpponentPokemon.FirstOrDefault(p => p.Species == oldSpecies);
-                if (pokemon != null)
-                {
-                    pokemon.Species = newSpecies;
-                }
-
+                ApplyDetailsChange(context, parts[2], parts[3]);
                 return true;
-            }
 
             // Move used: |move|p1a: Garchomp|Earthquake|p2a: Mimikyu
             case "move" when parts.Length >= 4:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                var species = ExtractSpeciesFromIdent(parts[2]);
-                var moveName = parts[3];
-                var pokemon = GetOrCreateOpponentPokemon(context, species);
-                EnsureActive(context, pokemon);
-                pokemon.LastUsedMove = moveName;
-                pokemon.RevealedMoves.Add(moveName);
+                ApplyMoveUsed(context, parts[2], parts[3]);
                 return true;
-            }
 
             // HP damage: |-damage|p1a: Garchomp|64/100
             case "-damage" when parts.Length >= 4:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                var species = ExtractSpeciesFromIdent(parts[2]);
-                ParseHpStatus(parts[3], out var hpPercent, out var status, out var fainted);
-                var pokemon = GetOrCreateOpponentPokemon(context, species);
-                EnsureActive(context, pokemon);
-                pokemon.HpPercent = hpPercent;
-                pokemon.IsFainted = fainted;
-                if (fainted)
-                {
-                    pokemon.IsActive = false;
-                }
-
-                if (!string.IsNullOrEmpty(status))
-                {
-                    pokemon.Status = status;
-                }
-
+                ApplyDamage(context, parts[2], parts[3]);
                 return true;
-            }
 
             // HP heal: |-heal|p1a: Garchomp|80/100
             case "-heal" when parts.Length >= 4:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                var species = ExtractSpeciesFromIdent(parts[2]);
-                ParseHpStatus(parts[3], out var hpPercent, out _, out _);
-                var pokemon = GetOrCreateOpponentPokemon(context, species);
-                EnsureActive(context, pokemon);
-                pokemon.HpPercent = hpPercent;
-
+                ApplyHeal(context, parts[2], parts[3]);
                 return true;
-            }
 
             // Fainted: |faint|p1a: Garchomp
             case "faint" when parts.Length >= 3:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                var species = ExtractSpeciesFromIdent(parts[2]);
-                var pokemon = context.OpponentPokemon.FirstOrDefault(p => p.Species == species);
-                if (pokemon != null)
-                {
-                    pokemon.HpPercent = 0;
-                    pokemon.IsFainted = true;
-                    pokemon.IsActive = false;
-                }
-
+                ApplyFaint(context, parts[2]);
                 return true;
-            }
 
             // Status applied: |-status|p1a: Garchomp|brn
             case "-status" when parts.Length >= 4:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                var species = ExtractSpeciesFromIdent(parts[2]);
-                var pokemon = context.OpponentPokemon.FirstOrDefault(p => p.Species == species);
-                if (pokemon != null)
-                {
-                    pokemon.Status = parts[3];
-                }
-
+                ApplyStatus(context, parts[2], parts[3]);
                 return true;
-            }
 
             // Status cured: |-curestatus|p1a: Garchomp|brn
             case "-curestatus" when parts.Length >= 3:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                var species = ExtractSpeciesFromIdent(parts[2]);
-                var pokemon = context.OpponentPokemon.FirstOrDefault(p => p.Species == species);
-                if (pokemon != null)
-                {
-                    pokemon.Status = "";
-                }
-
+                ApplyStatus(context, parts[2], "");
                 return true;
-            }
 
             // Stat boost: |-boost|p1a: Garchomp|atk|2
             case "-boost" when parts.Length >= 5:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                ApplyBoost(context, parts[2], parts[3], parts[4], negative: false);
+                ApplyBoostMessage(context, parts[2], parts[3], parts[4], negative: false);
                 return true;
-            }
 
             // Stat unboost: |-unboost|p1a: Garchomp|atk|2
             case "-unboost" when parts.Length >= 5:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                ApplyBoost(context, parts[2], parts[3], parts[4], negative: true);
+                ApplyBoostMessage(context, parts[2], parts[3], parts[4], negative: true);
                 return true;
-            }
 
             // Clear a single pokemon's boosts: |-clearboost|p1a: Garchomp
             case "-clearboost" when parts.Length >= 3:
-            {
-                if (!IsOpponentIdent(parts[2], context.SideId))
-                {
-                    return true;
-                }
-
-                var species = ExtractSpeciesFromIdent(parts[2]);
-                var pokemon = context.OpponentPokemon.FirstOrDefault(p => p.Species == species);
-                pokemon?.Boosts.Clear();
+                ApplyClearBoost(context, parts[2]);
                 return true;
-            }
 
             // Clear all boosts on both sides: |-clearallboost|
             case "-clearallboost":
-            {
-                foreach (var pokemon in context.OpponentPokemon)
-                {
-                    pokemon.Boosts.Clear();
-                }
-
+                ApplyClearAllBoosts(context);
                 return true;
-            }
 
             // Hazard set on a side: |-sidestart|p1: Slim|move: Stealth Rock
             case "-sidestart" when parts.Length >= 4:
-            {
                 ApplyHazardChange(context, parts[2], parts[3], removed: false);
                 return true;
-            }
 
             // Hazard cleared: |-sideend|p1: Slim|Stealth Rock|[from] move: Rapid Spin
             case "-sideend" when parts.Length >= 4:
-            {
                 ApplyHazardChange(context, parts[2], parts[3], removed: true);
                 return true;
-            }
 
             // Volatile status started: |-start|p1a: Garchomp|move: Taunt
             case "-start" when parts.Length >= 4:
-            {
-                if (IsOpponentIdent(parts[2], context.SideId) && IsTauntCondition(parts[3]))
-                {
-                    context.OpponentActiveTaunted = true;
-                }
+                ApplyTauntChange(context, parts[2], parts[3], taunted: true);
                 return true;
-            }
 
             // Volatile status ended: |-end|p1a: Garchomp|move: Taunt
             case "-end" when parts.Length >= 4:
-            {
-                if (IsOpponentIdent(parts[2], context.SideId) && IsTauntCondition(parts[3]))
-                {
-                    context.OpponentActiveTaunted = false;
-                }
+                ApplyTauntChange(context, parts[2], parts[3], taunted: false);
                 return true;
-            }
 
             default:
                 return false;
         }
+    }
+
+    private static void ApplyTeamPreviewPokemon(BattleContext context, string playerSide, string details)
+    {
+        if (playerSide != context.OpponentSideId)
+        {
+            return;
+        }
+
+        var (species, level, gender) = ParseDetails(details);
+        var pokemon = GetOrCreateOpponentPokemon(context, species);
+        pokemon.Level = level;
+        pokemon.Gender = gender;
+    }
+
+    private static void ApplySwitch(BattleContext context, string ident, string details, string hpStatus)
+    {
+        if (!IsOpponentIdent(ident, context.SideId))
+        {
+            return;
+        }
+
+        var (species, level, gender) = ParseDetails(details);
+        ParseHpStatus(hpStatus, out var hpPercent, out var status, out var fainted);
+
+        foreach (var pokemon in context.OpponentPokemon)
+        {
+            pokemon.IsActive = false;
+        }
+
+        var switched = GetOrCreateOpponentPokemon(context, species);
+        switched.Level = level;
+        switched.Gender = gender;
+        switched.HpPercent = hpPercent;
+        switched.Status = status;
+        switched.IsActive = !fainted;
+        switched.IsFainted = fainted;
+        switched.Boosts.Clear();
+        // Taunt only affects the pokemon that was on the field, so it wears off on a switch
+        context.OpponentActiveTaunted = false;
+    }
+
+    private static void ApplyDetailsChange(BattleContext context, string ident, string details)
+    {
+        if (!IsOpponentIdent(ident, context.SideId))
+        {
+            return;
+        }
+
+        var oldSpecies = ExtractSpeciesFromIdent(ident);
+        var (newSpecies, _, _) = ParseDetails(details);
+        var pokemon = FindOpponentPokemon(context, oldSpecies);
+        if (pokemon != null)
+        {
+            pokemon.Species = newSpecies;
+        }
+    }
+
+    private static void ApplyMoveUsed(BattleContext context, string ident, string moveName)
+    {
+        if (!IsOpponentIdent(ident, context.SideId))
+        {
+            return;
+        }
+
+        var pokemon = GetOrCreateOpponentPokemon(context, ExtractSpeciesFromIdent(ident));
+        EnsureActive(context, pokemon);
+        pokemon.LastUsedMove = moveName;
+        pokemon.RevealedMoves.Add(moveName);
+    }
+
+    private static void ApplyDamage(BattleContext context, string ident, string hpStatus)
+    {
+        if (!IsOpponentIdent(ident, context.SideId))
+        {
+            return;
+        }
+
+        ParseHpStatus(hpStatus, out var hpPercent, out var status, out var fainted);
+        var pokemon = GetOrCreateOpponentPokemon(context, ExtractSpeciesFromIdent(ident));
+        EnsureActive(context, pokemon);
+        pokemon.HpPercent = hpPercent;
+        pokemon.IsFainted = fainted;
+        if (fainted)
+        {
+            pokemon.IsActive = false;
+        }
+
+        if (!string.IsNullOrEmpty(status))
+        {
+            pokemon.Status = status;
+        }
+    }
+
+    private static void ApplyHeal(BattleContext context, string ident, string hpStatus)
+    {
+        if (!IsOpponentIdent(ident, context.SideId))
+        {
+            return;
+        }
+
+        ParseHpStatus(hpStatus, out var hpPercent, out _, out _);
+        var pokemon = GetOrCreateOpponentPokemon(context, ExtractSpeciesFromIdent(ident));
+        EnsureActive(context, pokemon);
+        pokemon.HpPercent = hpPercent;
+    }
+
+    private static void ApplyFaint(BattleContext context, string ident)
+    {
+        if (!IsOpponentIdent(ident, context.SideId))
+        {
+            return;
+        }
+
+        var pokemon = FindOpponentPokemon(context, ExtractSpeciesFromIdent(ident));
+        if (pokemon != null)
+        {
+            pokemon.HpPercent = 0;
+            pokemon.IsFainted = true;
+            pokemon.IsActive = false;
+        }
+    }
+
+    private static void ApplyStatus(BattleContext context, string ident, string status)
+    {
+        if (!IsOpponentIdent(ident, context.SideId))
+        {
+            return;
+        }
+
+        var pokemon = FindOpponentPokemon(context, ExtractSpeciesFromIdent(ident));
+        if (pokemon != null)
+        {
+            pokemon.Status = status;
+        }
+    }
+
+    private static void ApplyBoostMessage(BattleContext context, string ident, string stat, string amount,
+        bool negative)
+    {
+        if (!IsOpponentIdent(ident, context.SideId))
+        {
+            return;
+        }
+
+        ApplyBoost(context, ident, stat, amount, negative);
+    }
+
+    private static void ApplyClearBoost(BattleContext context, string ident)
+    {
+        if (!IsOpponentIdent(ident, context.SideId))
+        {
+            return;
+        }
+
+        FindOpponentPokemon(context, ExtractSpeciesFromIdent(ident))?.Boosts.Clear();
+    }
+
+    private static void ApplyClearAllBoosts(BattleContext context)
+    {
+        foreach (var pokemon in context.OpponentPokemon)
+        {
+            pokemon.Boosts.Clear();
+        }
+    }
+
+    private static void ApplyTauntChange(BattleContext context, string ident, string condition, bool taunted)
+    {
+        if (IsOpponentIdent(ident, context.SideId) && IsTauntCondition(condition))
+        {
+            context.OpponentActiveTaunted = taunted;
+        }
+    }
+
+    private static OpponentPokemonState FindOpponentPokemon(BattleContext context, string species)
+    {
+        return context.OpponentPokemon.FirstOrDefault(pokemon => pokemon.Species == species);
     }
 
     private static bool IsOpponentIdent(string ident, string ourSideId)
@@ -377,39 +377,19 @@ public class BattleMessageParser : IBattleMessageParser
         }
 
         var isOurSide = sideIdent[..2] == context.SideId;
-        var hazardName = condition.StartsWith(MOVE_PREFIX, StringComparison.OrdinalIgnoreCase)
-            ? condition[MOVE_PREFIX.Length..]
-            : condition;
+        var hazardName = StripMovePrefix(condition);
 
         if (hazardName.Equals("Stealth Rock", StringComparison.OrdinalIgnoreCase))
         {
-            if (isOurSide)
-            {
-                context.OwnSideStealthRock = !removed;
-            }
-            else
-            {
-                context.OpponentSideStealthRock = !removed;
-            }
+            ApplyStealthRockChange(context, isOurSide, removed);
         }
         else if (hazardName.Equals("Spikes", StringComparison.OrdinalIgnoreCase))
         {
-            // Spikes stack up to three layers; -sideend clears all of them at once
-            if (isOurSide)
-            {
-                context.OwnSideSpikesLayers = removed ? 0 : Math.Min(3, context.OwnSideSpikesLayers + 1);
-            }
-            else
-            {
-                context.OpponentSideSpikesLayers = removed ? 0 : Math.Min(3, context.OpponentSideSpikesLayers + 1);
-            }
+            ApplySpikesChange(context, isOurSide, removed);
         }
-        else if (hazardName.Equals("Toxic Spikes", StringComparison.OrdinalIgnoreCase))
+        else if (hazardName.Equals("Toxic Spikes", StringComparison.OrdinalIgnoreCase) && !isOurSide)
         {
-            if (!isOurSide)
-            {
-                context.OpponentSideToxicSpikes = !removed;
-            }
+            context.OpponentSideToxicSpikes = !removed;
         }
         else if (hazardName.Equals("Sticky Web", StringComparison.OrdinalIgnoreCase) && !isOurSide)
         {
@@ -417,12 +397,41 @@ public class BattleMessageParser : IBattleMessageParser
         }
     }
 
-    private static bool IsTauntCondition(string condition)
+    private static void ApplyStealthRockChange(BattleContext context, bool isOurSide, bool removed)
     {
-        var name = condition.StartsWith(MOVE_PREFIX, StringComparison.OrdinalIgnoreCase)
+        if (isOurSide)
+        {
+            context.OwnSideStealthRock = !removed;
+        }
+        else
+        {
+            context.OpponentSideStealthRock = !removed;
+        }
+    }
+
+    private static void ApplySpikesChange(BattleContext context, bool isOurSide, bool removed)
+    {
+        // Spikes stack up to three layers; -sideend clears all of them at once
+        if (isOurSide)
+        {
+            context.OwnSideSpikesLayers = removed ? 0 : Math.Min(3, context.OwnSideSpikesLayers + 1);
+        }
+        else
+        {
+            context.OpponentSideSpikesLayers = removed ? 0 : Math.Min(3, context.OpponentSideSpikesLayers + 1);
+        }
+    }
+
+    private static string StripMovePrefix(string condition)
+    {
+        return condition.StartsWith(MOVE_PREFIX, StringComparison.OrdinalIgnoreCase)
             ? condition[MOVE_PREFIX.Length..]
             : condition;
-        return name.Equals("Taunt", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsTauntCondition(string condition)
+    {
+        return StripMovePrefix(condition).Equals("Taunt", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string ExtractSpeciesFromIdent(string ident)
@@ -497,7 +506,7 @@ public class BattleMessageParser : IBattleMessageParser
     // Does not override the active flag if another opponent is already marked active.
     private static void EnsureActive(BattleContext context, OpponentPokemonState pokemon)
     {
-        if (!pokemon.IsActive && context.OpponentPokemon.All(p => !p.IsActive))
+        if (!pokemon.IsActive && context.OpponentPokemon.All(opponent => !opponent.IsActive))
         {
             pokemon.IsActive = true;
         }
@@ -505,7 +514,7 @@ public class BattleMessageParser : IBattleMessageParser
 
     private static OpponentPokemonState GetOrCreateOpponentPokemon(BattleContext context, string species)
     {
-        var existing = context.OpponentPokemon.FirstOrDefault(p => p.Species == species);
+        var existing = FindOpponentPokemon(context, species);
         if (existing != null)
         {
             return existing;
@@ -518,8 +527,7 @@ public class BattleMessageParser : IBattleMessageParser
 
     private static void ApplyBoost(BattleContext context, string ident, string stat, string amountStr, bool negative)
     {
-        var species = ExtractSpeciesFromIdent(ident);
-        var pokemon = context.OpponentPokemon.FirstOrDefault(p => p.Species == species);
+        var pokemon = FindOpponentPokemon(context, ExtractSpeciesFromIdent(ident));
         if (pokemon == null || !int.TryParse(amountStr, out var amount))
         {
             return;
