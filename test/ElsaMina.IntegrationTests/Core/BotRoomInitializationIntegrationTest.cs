@@ -4,6 +4,7 @@ using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Start;
@@ -40,7 +41,7 @@ public class BotRoomInitializationIntegrationTest
         var telemetry = Substitute.For<ITelemetryService>();
         var handlerManager = new HandlerManager(dependencyContainerService, telemetry);
         _bot = new Bot(client, clockService, _roomsManager, handlerManager,
-            systemService, startManager, playTimeUpdateService, telemetry);
+            systemService, new BotLifecycleService(startManager, playTimeUpdateService), telemetry);
 
         var builder = new ContainerBuilder();
         builder.RegisterInstance(dependencyContainerService).As<IDependencyContainerService>();

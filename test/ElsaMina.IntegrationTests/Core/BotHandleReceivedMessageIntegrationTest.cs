@@ -8,6 +8,7 @@ using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Resources;
@@ -69,8 +70,7 @@ public class BotHandleReceivedMessageIntegrationTest
             _roomsManager,
             handlerManager,
             _systemService,
-            _startManager,
-            _playTimeUpdateService,
+            new BotLifecycleService(_startManager, _playTimeUpdateService),
             telemetry);
 
         var builder = new ContainerBuilder();

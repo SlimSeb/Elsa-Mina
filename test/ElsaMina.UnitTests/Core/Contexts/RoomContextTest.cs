@@ -36,11 +36,7 @@ public class RoomContextTest
         _sender.UserId.Returns(TEST_USER_ID);
 
         _roomContext = new RoomContext(
-            _configuration,
-            _resourcesService,
-            _roomsManager,
-            _userDetailsManager,
-            _bot,
+            new ContextDependencies(_configuration, _resourcesService, _roomsManager, _userDetailsManager, _bot),
             message,
             target,
             _sender,

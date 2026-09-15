@@ -7,7 +7,7 @@ public interface IHandler
 
     /// <summary>
     /// L'ensemble des types de messages que cet handler gère
-    /// Retourner null pour gérer n'importe quel type de message
+    /// Retourner un ensemble vide (ou null) pour gérer n'importe quel type de message
     /// </summary>
     IReadOnlySet<string> HandledMessageTypes { get; }
 

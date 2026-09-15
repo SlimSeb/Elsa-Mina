@@ -8,7 +8,7 @@ public sealed class PokedexEntry
     public int Num { get; set; }
 
     [JsonPropertyName("name")]
-    public string Name { get; set; } = null!;
+    public string Name { get; set; }
 
     [JsonPropertyName("types")]
     public string[] Types { get; set; }

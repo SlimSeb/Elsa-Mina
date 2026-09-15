@@ -73,10 +73,10 @@ public static class TimeSpanStringExtensions
 
         var total = TimeSpan.Zero;
 
-        foreach (Match match in matches)
+        foreach (var groups in matches.Select(match => match.Groups))
         {
             if (!double.TryParse(
-                    match.Groups[1].Value,
+                    groups[1].Value,
                     NumberStyles.Float,
                     CultureInfo.InvariantCulture,
                     out var value))
@@ -84,7 +84,7 @@ public static class TimeSpanStringExtensions
                 return null;
             }
 
-            var unit = match.Groups[2].Value;
+            var unit = groups[2].Value;
 
             if (!TIME_UNITS.TryGetValue(unit, out var factory))
             {

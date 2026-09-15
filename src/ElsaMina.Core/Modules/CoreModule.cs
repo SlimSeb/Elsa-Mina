@@ -32,6 +32,7 @@ using ElsaMina.Core.Services.LanguageModel.Google;
 using ElsaMina.Core.Services.LanguageModel.Mistral;
 using ElsaMina.Core.Services.LanguageModel.OpenAi;
 using ElsaMina.Core.Services.Smogon;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.Start;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
@@ -87,6 +88,7 @@ public class CoreModule : Module
         builder.RegisterType<CustomColorsManager>().As<ICustomColorsManager>().SingleInstance();
         builder.RegisterType<DexManager>().As<IDexManager>().SingleInstance();
         builder.RegisterType<StartManager>().As<IStartManager>().SingleInstance();
+        builder.RegisterType<BotLifecycleService>().As<IBotLifecycleService>().SingleInstance();
         builder.RegisterType<ImageService>().As<IImageService>().SingleInstance();
         builder.RegisterType<GeminiFlashProvider>().AsSelf().SingleInstance();
         builder.RegisterType<MistralSmallProvider>().AsSelf().SingleInstance();

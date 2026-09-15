@@ -32,9 +32,12 @@ public class BestRankingProviderTest
         var result = await _provider.GetBestRankingAsync("alice");
 
         // Assert
-        Assert.That(result, Is.SameAs(highRanking));
-        Assert.That(result.FormatId, Is.EqualTo("[Gen 9] Ubers"));
-        Assert.That(lowRanking.FormatId, Is.EqualTo("gen9ou"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.SameAs(highRanking));
+            Assert.That(result.FormatId, Is.EqualTo("[Gen 9] Ubers"));
+            Assert.That(lowRanking.FormatId, Is.EqualTo("gen9ou"));
+        }
     }
 
     [Test]

@@ -35,7 +35,7 @@ public class RoomUserDataService : IRoomUserDataService
 
         foreach (var userData in usersWithJoinPhrase)
         {
-            _joinPhrases[Tuple.Create(userData.Id, userData.RoomId)] = userData.JoinPhrase!;
+            _joinPhrases[Tuple.Create(userData.Id, userData.RoomId)] = userData.JoinPhrase;
         }
     }
 

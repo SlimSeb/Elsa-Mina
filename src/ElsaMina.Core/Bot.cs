@@ -1,8 +1,7 @@
 ﻿using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Services.Clock;
-using ElsaMina.Core.Services.PlayTime;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.Start;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Logging;
@@ -20,8 +19,7 @@ public class Bot : IBot
     private readonly IRoomsManager _roomsManager;
     private readonly IHandlerManager _handlerManager;
     private readonly ISystemService _systemService;
-    private readonly IStartManager _startManager;
-    private readonly IPlayTimeUpdateService _playTimeUpdateService;
+    private readonly IBotLifecycleService _botLifecycleService;
     private readonly ITelemetryService _telemetryService;
 
     private readonly SemaphoreSlim _initializeRoomSemaphore = new(1, 1);
@@ -37,8 +35,7 @@ public class Bot : IBot
         IRoomsManager roomsManager,
         IHandlerManager handlerManager,
         ISystemService systemService,
-        IStartManager startManager,
-        IPlayTimeUpdateService playTimeUpdateService,
+        IBotLifecycleService botLifecycleService,
         ITelemetryService telemetryService)
     {
         _client = client;
@@ -46,14 +43,13 @@ public class Bot : IBot
         _roomsManager = roomsManager;
         _handlerManager = handlerManager;
         _systemService = systemService;
-        _startManager = startManager;
-        _playTimeUpdateService = playTimeUpdateService;
+        _botLifecycleService = botLifecycleService;
         _telemetryService = telemetryService;
     }
 
     public async Task StartAsync()
     {
-        await _startManager.LoadStaticDataAsync(_cancellationTokenSource.Token);
+        await _botLifecycleService.OnStartingAsync(_cancellationTokenSource.Token);
         await _client.Connect();
         _connectionTime = _clockService.CurrentUtcDateTimeOffset;
     }
@@ -72,7 +68,7 @@ public class Bot : IBot
     public void OnExit()
     {
         Log.Information("Exiting bot...");
-        _playTimeUpdateService.ProcessPendingPlayTimeUpdatesAsync();
+        _ = _botLifecycleService.OnExitingAsync();
     }
 
     public TimeSpan UpTime => _clockService.CurrentUtcDateTimeOffset - _connectionTime;
@@ -94,9 +90,9 @@ public class Bot : IBot
 
         if (lines.Length > 2 && lines[1].StartsWith("|init|chat"))
         {
+            await _initializeRoomSemaphore.WaitAsync(_cancellationTokenSource.Token);
             try
             {
-                await _initializeRoomSemaphore.WaitAsync();
                 await _roomsManager.InitializeRoomAsync(room, lines, _cancellationTokenSource.Token);
             }
             finally

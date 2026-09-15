@@ -9,6 +9,8 @@ namespace ElsaMina.Core;
 
 public class Client : IClient
 {
+    private const string WEB_SOCKET_LOG_TEMPLATE = "[WebSocket] {0}";
+
     private static readonly TimeSpan RECONNECT_DELAY = TimeSpan.FromSeconds(30);
     private readonly IConfiguration _configuration;
     private readonly WebSocketClient _webSocketClient;
@@ -86,16 +88,16 @@ public class Client : IClient
         switch (level)
         {
             case WebSocketLogLevel.Error:
-                Log.Error(exception, "[WebSocket] {0}", message);
+                Log.Error(exception, WEB_SOCKET_LOG_TEMPLATE, message);
                 break;
             case WebSocketLogLevel.Warning:
-                Log.Warning(exception, "[WebSocket] {0}", message);
+                Log.Warning(exception, WEB_SOCKET_LOG_TEMPLATE, message);
                 break;
             case WebSocketLogLevel.Information:
-                Log.Information("[WebSocket] {0}", message);
+                Log.Information(WEB_SOCKET_LOG_TEMPLATE, message);
                 break;
             default:
-                Log.Debug("[WebSocket] {0}", message);
+                Log.Debug(WEB_SOCKET_LOG_TEMPLATE, message);
                 break;
         }
     }

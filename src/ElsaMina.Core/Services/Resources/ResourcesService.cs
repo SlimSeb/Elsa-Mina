@@ -52,7 +52,7 @@ public class ResourcesService : IResourcesService
                 LazyThreadSafetyMode.ExecutionAndPublication)).Value;
     }
 
-    private IReadOnlyDictionary<string, string> LoadCultureStrings(string cultureName)
+    private Dictionary<string, string> LoadCultureStrings(string cultureName)
     {
         var culture = string.IsNullOrEmpty(cultureName)
             ? CultureInfo.InvariantCulture
@@ -61,8 +61,7 @@ public class ResourcesService : IResourcesService
         var strings = new Dictionary<string, string>();
         foreach (var manager in _resourceManagers)
         {
-            var resourceSet = TryGetResourceSet(manager, culture);
-            if (resourceSet == null)
+            if (!TryGetResourceSet(manager, culture, out var resourceSet))
             {
                 continue;
             }
@@ -74,14 +73,14 @@ public class ResourcesService : IResourcesService
                     continue;
                 }
 
-                strings.TryAdd(entry.Key.ToString()!, stringValue);
+                strings.TryAdd(entry.Key.ToString(), stringValue);
             }
         }
 
         return strings;
     }
 
-    private IReadOnlyList<CultureInfo> GetSupportedCultures()
+    private List<CultureInfo> GetSupportedCultures()
     {
         var supportedLocales = new HashSet<CultureInfo>();
         var candidateCultures = new List<CultureInfo> { CultureInfo.InvariantCulture };
@@ -89,37 +88,28 @@ public class ResourcesService : IResourcesService
 
         foreach (var culture in candidateCultures)
         {
-            foreach (var manager in _resourceManagers)
+            if (_resourceManagers.Any(manager => TryGetResourceSet(manager, culture, out _)))
             {
-                var resourceSet = TryGetResourceSet(manager, culture);
-                if (resourceSet != null)
-                {
-                    supportedLocales.Add(string.IsNullOrEmpty(culture.Name) ? CultureInfo.InvariantCulture : culture);
-                    break;
-                }
+                supportedLocales.Add(string.IsNullOrEmpty(culture.Name) ? CultureInfo.InvariantCulture : culture);
             }
         }
 
         return supportedLocales.ToList();
     }
 
-    private static ResourceSet TryGetResourceSet(ResourceManager manager, CultureInfo culture)
+    private static bool TryGetResourceSet(ResourceManager manager, CultureInfo culture, out ResourceSet resourceSet)
     {
         try
         {
-            return manager.GetResourceSet(culture, true, false);
+            resourceSet = manager.GetResourceSet(culture, true, false);
+            return resourceSet != null;
         }
-        catch (CultureNotFoundException)
+        catch (Exception exception) when (exception is CultureNotFoundException
+                                              or MissingManifestResourceException
+                                              or MissingSatelliteAssemblyException)
         {
-            return null;
-        }
-        catch (MissingManifestResourceException)
-        {
-            return null;
-        }
-        catch (MissingSatelliteAssemblyException)
-        {
-            return null;
+            resourceSet = null;
+            return false;
         }
     }
 }

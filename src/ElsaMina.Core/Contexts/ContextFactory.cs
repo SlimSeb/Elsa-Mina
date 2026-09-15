@@ -13,11 +13,9 @@ public class ContextFactory : IContextFactory
     private const string BOT_MESSAGE_PREFIX = "/botmsg ";
 
     private readonly IConfiguration _configuration;
-    private readonly IResourcesService _resourcesService;
     private readonly IRoomsManager _roomsManager;
-    private readonly IUserDetailsManager _userDetailsManager;
-    private readonly IBot _bot;
     private readonly IPmSendersManager _pmSendersManager;
+    private readonly ContextDependencies _contextDependencies;
 
     // todo : refactor this shit~
     public ContextFactory(IConfiguration configuration,
@@ -28,11 +26,10 @@ public class ContextFactory : IContextFactory
         IPmSendersManager pmSendersManager)
     {
         _configuration = configuration;
-        _resourcesService = resourcesService;
         _roomsManager = roomsManager;
-        _userDetailsManager = userDetailsManager;
-        _bot = bot;
         _pmSendersManager = pmSendersManager;
+        _contextDependencies = new ContextDependencies(configuration, resourcesService, roomsManager,
+            userDetailsManager, bot);
     }
 
     public IContext TryBuildContextFromReceivedMessage(string[] parts, string roomId = null)
@@ -61,8 +58,7 @@ public class ContextFactory : IContextFactory
                     return null;
                 }
 
-                return new RoomContext(_configuration, _resourcesService, _roomsManager, _userDetailsManager,
-                    _bot, message, target, user, command, room, timestamp)
+                return new RoomContext(_contextDependencies, message, target, user, command, room, timestamp)
                 {
                     RawMessage = string.Join("|", parts)
                 };
@@ -78,8 +74,8 @@ public class ContextFactory : IContextFactory
                 }
 
                 var (target, command) = GetTargetAndCommand(message);
-                return new PmContext(_configuration, _resourcesService, _roomsManager, _userDetailsManager,
-                    _bot, message, target, _pmSendersManager.GetUser(parts[2]), command)
+                return new PmContext(_contextDependencies, message, target,
+                    _pmSendersManager.GetUser(parts[2]), command)
                 {
                     RawMessage = string.Join("|", parts)
                 };

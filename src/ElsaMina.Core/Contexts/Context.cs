@@ -14,22 +14,18 @@ public abstract class Context : IContext
     private readonly IRoomsManager _roomsManager;
     private readonly IUserDetailsManager _userDetailsManager;
 
-    protected Context(IConfiguration configuration,
-        IResourcesService resourcesService,
-        IRoomsManager roomsManager,
-        IUserDetailsManager userDetailsManager,
-        IBot bot,
+    protected Context(ContextDependencies dependencies,
         string message,
         string target,
         IUser sender,
         string command)
     {
-        _configuration = configuration;
-        _resourcesService = resourcesService;
-        _roomsManager = roomsManager;
-        _userDetailsManager = userDetailsManager;
+        _configuration = dependencies.Configuration;
+        _resourcesService = dependencies.ResourcesService;
+        _roomsManager = dependencies.RoomsManager;
+        _userDetailsManager = dependencies.UserDetailsManager;
 
-        Bot = bot;
+        Bot = dependencies.Bot;
         Message = message;
         Target = target;
         Sender = sender;

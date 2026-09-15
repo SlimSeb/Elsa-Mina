@@ -49,9 +49,14 @@ public class HandlerManager : IHandlerManager
 
     private static bool IsHandlerAdequate(IHandler handler, string messageType)
     {
-        return handler.IsEnabled
-               && (handler.HandledMessageTypes == null ||
-                   (messageType != null && handler.HandledMessageTypes.Contains(messageType)));
+        if (!handler.IsEnabled)
+        {
+            return false;
+        }
+
+        var handledMessageTypes = handler.HandledMessageTypes;
+        return handledMessageTypes is null or { Count: 0 }
+               || (messageType != null && handledMessageTypes.Contains(messageType));
     }
 
     private async Task TryHandleMessageAsync(string[] parts, string roomId, IHandler handler,

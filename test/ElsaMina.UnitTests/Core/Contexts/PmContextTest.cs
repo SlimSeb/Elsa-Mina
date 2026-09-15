@@ -39,8 +39,8 @@ public class PmContextTests
     }
 
     private PmContext CreatePmContext() =>
-        new(_configuration, _resourcesService, _roomsManager, _userDetailsManager,
-            _bot, _message, _target, _sender, _command);
+        new(new ContextDependencies(_configuration, _resourcesService, _roomsManager, _userDetailsManager, _bot),
+            _message, _target, _sender, _command);
 
     [Test]
     public void Test_PmContext_ShouldHavePrivateMessageFlag()

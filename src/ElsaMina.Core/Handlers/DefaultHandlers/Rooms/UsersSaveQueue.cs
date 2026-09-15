@@ -44,7 +44,7 @@ public sealed class UserSaveQueue : IUserSaveQueue
         _batchSize = configuration.UserUpdateBatchSize;
         _timer = new PeriodicTimer(configuration.UserUpdateFlushInterval);
 
-        _ = Task.Run(BackgroundFlushAsync);
+        _ = Task.Run(BackgroundFlushAsync, _timerBasedBackgroundSaveCts.Token);
     }
 
     public void Enqueue(string userName, string roomId, UserAction action)

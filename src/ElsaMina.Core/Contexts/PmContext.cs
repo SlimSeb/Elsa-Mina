@@ -8,16 +8,11 @@ namespace ElsaMina.Core.Contexts;
 
 public class PmContext : Context
 {
-    public PmContext(IConfiguration configuration,
-        IResourcesService resourcesService,
-        IRoomsManager roomsManager,
-        IUserDetailsManager userDetailsManager,
-        IBot bot,
+    public PmContext(ContextDependencies dependencies,
         string message,
         string target,
         IUser sender,
-        string command) : base(configuration, resourcesService, roomsManager, userDetailsManager,
-        bot, message, target, sender, command)
+        string command) : base(dependencies, message, target, sender, command)
     {
         Culture = DefaultCulture;
         RoomId = DefaultRoom;

@@ -8,6 +8,7 @@ using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Resources;
@@ -81,7 +82,7 @@ public class BotChatCommandIntegrationTest
         var telemetry = Substitute.For<ITelemetryService>();
         var handlerManager = new HandlerManager(_dependencyContainerService, telemetry);
         _bot = new Bot(_client, clockService, _roomsManager, handlerManager,
-            systemService, startManager, playTimeUpdateService, telemetry);
+            systemService, new BotLifecycleService(startManager, playTimeUpdateService), telemetry);
 
         var builder = new ContainerBuilder();
         builder.RegisterInstance(_dependencyContainerService).As<IDependencyContainerService>();

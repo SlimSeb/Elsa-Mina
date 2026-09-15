@@ -12,18 +12,13 @@ public class RoomContext : Context
 {
     private readonly IRoom _room;
 
-    public RoomContext(IConfiguration configuration,
-        IResourcesService resourcesService,
-        IRoomsManager roomsManager,
-        IUserDetailsManager userDetailsManager,
-        IBot bot,
+    public RoomContext(ContextDependencies dependencies,
         string message,
         string target,
         IUser sender,
         string command,
         IRoom room,
-        long timestamp) : base(configuration, resourcesService, roomsManager, userDetailsManager,
-        bot, message, target, sender, command)
+        long timestamp) : base(dependencies, message, target, sender, command)
     {
         _room = room;
         Timestamp = DateTimeOffset.FromUnixTimeSeconds(timestamp);

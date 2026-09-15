@@ -24,7 +24,7 @@ public static class FileSystem
 
     public static string MakeRelativePath(string filePath, string referencePath)
     {
-        var parentDirectory = Path.GetDirectoryName(referencePath)!;
+        var parentDirectory = Path.GetDirectoryName(referencePath);
         return Path.GetRelativePath(parentDirectory, filePath)
             .Replace(Path.DirectorySeparatorChar, '/');
     }
