@@ -45,7 +45,7 @@ public class AddTeamCommand : Command
             var parts = context.Target.Split(',');
             link = parts[0].Trim();
             name = TEAM_NAME_FILTER.Replace(parts[1].Trim(), string.Empty);
-            format = parts[2].Trim();
+            format = parts[2].Trim().ToLowerAlphaNum();
         }
         catch (Exception)
         {

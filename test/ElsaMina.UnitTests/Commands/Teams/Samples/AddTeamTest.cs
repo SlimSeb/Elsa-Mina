@@ -202,4 +202,30 @@ public class AddTeamCommandTests
         // Assert
         _context.Received().ReplyLocalizedMessage("add_team_failure", Arg.Any<string>());
     }
+
+    [TestCase("[Gen 9] OU", "gen9ou")]
+    [TestCase("  Gen 9 OU  ", "gen9ou")]
+    [TestCase("VGC 2024 Reg G", "vgc2024regg")]
+    [TestCase("format-with-special!chars?", "formatwithspecialchars")]
+    public async Task Test_RunAsync_ShouldNormalizeFormat_WhenAddingTeam(string rawFormat, string expectedFormat)
+    {
+        // Arrange
+        _context.Target.Returns($"link, name, {rawFormat}");
+        _context.RoomId.Returns("room");
+        _context.Sender.Name.Returns("author");
+
+        var teamLinkMatch = Substitute.For<ITeamLinkMatch>();
+        var sharedTeam = new SharedTeam { TeamExport = "export_data" };
+        teamLinkMatch.GetTeamExport().Returns(Task.FromResult(sharedTeam));
+
+        _teamLinkMatchFactory.FindTeamLinkMatch("link").Returns(teamLinkMatch);
+
+        // Act
+        await _command.RunAsync(_context);
+
+        // Assert
+        await using var dbContext = new BotDbContext(_options);
+        var team = dbContext.Teams.Single();
+        Assert.That(team.Format, Is.EqualTo(expectedFormat));
+    }
 }
