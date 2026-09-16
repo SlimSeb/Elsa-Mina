@@ -41,7 +41,6 @@ public class HelpCommand : Command
                 Version = _versionProvider.Version,
                 BotName = _configuration.Name,
                 Trigger = _configuration.Trigger,
-                ReportBugLink = _configuration.BugReportLink,
                 RepositoryLink = "https://github.com/SlimSeb/Elsa-Mina"
             });
             context.ReplyHtml(template.RemoveNewlines(), rankAware: true);

@@ -32,7 +32,6 @@ public class HelpCommandTest
         _versionProvider.Version.Returns("1.0.0");
         _configuration.Name.Returns("Elsa-Mina");
         _configuration.Trigger.Returns("-");
-        _configuration.BugReportLink.Returns("https://github.com/SlimSeb/Elsa-Mina/issues");
 
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<HelpViewModel>())
             .Returns("help rendered");
@@ -87,7 +86,6 @@ public class HelpCommandTest
                 vm.Version == "1.0.0" &&
                 vm.BotName == "Elsa-Mina" &&
                 vm.Trigger == "-" &&
-                vm.ReportBugLink == "https://github.com/SlimSeb/Elsa-Mina/issues" &&
                 vm.RepositoryLink == "https://github.com/SlimSeb/Elsa-Mina"));
         _context.Received(1).ReplyHtml("help rendered", rankAware: true);
         _commandExecutor.DidNotReceive().GetAllCommands();

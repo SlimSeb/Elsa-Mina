@@ -5,5 +5,4 @@
 <button name="send" value="/w @Model.BotName,@(Model.Trigger)allcommands">@GetString("help_commands_list")</button> 
 &bullet; <a href="@Model.RepositoryLink" target="_blank" rel="noopener">
     <button>@GetString("help_source_code")</button></a> 
-&bullet; <a href="@Model.ReportBugLink" target="_blank" rel="noopener">
-    <button>@GetString("help_report_bug")</button></a>
+&bullet; <button name="send" value="/w @Model.BotName,@(Model.Trigger)bugreport">@GetString("help_report_bug")</button>
