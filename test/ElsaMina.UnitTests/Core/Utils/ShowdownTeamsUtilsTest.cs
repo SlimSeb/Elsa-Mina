@@ -10,8 +10,6 @@ public class ShowdownTeamsUtilsTest
     private static readonly string[] ExpectedPikachuMoves = ["volttackle", "irontail"];
     private static readonly string[] ExpectedGreatTuskMoves = ["headlongrush", "closecombat"];
 
-    // TODO : make the bot cross-platform as this doesn't work on Windows
-
     [Test]
     public void Test_DeserializeTeamExport_ShouldReturnEmptyTeam_WhenExportIsEmpty()
     {
@@ -82,7 +80,8 @@ public class ShowdownTeamsUtilsTest
                                       - Volt Tackle
                                       - Iron Tail
                                       """;
-        Assert.That(result.Trim(), Is.EqualTo(expectedExport));
+        // Raw string literals inherit the source file's line endings, which depend on the git checkout
+        Assert.That(result.Trim(), Is.EqualTo(expectedExport.ReplaceLineEndings("\n")));
     }
 
     [Test]
@@ -142,6 +141,40 @@ public class ShowdownTeamsUtilsTest
             Assert.That(result[1].Ability, Is.EqualTo("Blaze"));
             Assert.That(result[1].Nature, Is.EqualTo("Adamant"));
             Assert.That(result[1].Moves, Is.EquivalentTo(expectedMoves));
+        }
+    }
+
+    [Test]
+    [TestCase("\r\n")]
+    [TestCase("\r")]
+    [TestCase("\n")]
+    public void Test_DeserializeTeamExport_ShouldParseMultiplePokemon_WhenExportUsesAnyLineEnding(string lineEnding)
+    {
+        // Arrange
+        var export = string.Join(lineEnding,
+            "Pikachu @ Light Ball",
+            "Ability: Static",
+            "- Volt Tackle",
+            "",
+            "Charizard @ Charizardite X",
+            "Ability: Blaze",
+            "- Flare Blitz");
+
+        // Act
+        var result = ShowdownTeamsUtils.DeserializeTeamExport(export).ToList();
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(2));
+            Assert.That(result[0].Species, Is.EqualTo("Pikachu"));
+            Assert.That(result[0].Item, Is.EqualTo("Light Ball"));
+            Assert.That(result[0].Ability, Is.EqualTo("Static"));
+            Assert.That(result[0].Moves, Is.EquivalentTo(new[] { "Volt Tackle" }));
+            Assert.That(result[1].Species, Is.EqualTo("Charizard"));
+            Assert.That(result[1].Item, Is.EqualTo("Charizardite X"));
+            Assert.That(result[1].Ability, Is.EqualTo("Blaze"));
+            Assert.That(result[1].Moves, Is.EquivalentTo(new[] { "Flare Blitz" }));
         }
     }
 
@@ -408,6 +441,65 @@ public class ShowdownTeamsUtilsTest
             Assert.That(result, Does.Contain("Pikachu"));
             Assert.That(result, Does.Contain("Charizard"));
             Assert.That(result, Does.Contain("\n\n"));
+        }
+    }
+
+    [Test]
+    public void Test_GetTeamExport_ShouldOnlyUseLineFeeds_WhenExportingOnAnyPlatform()
+    {
+        // Arrange
+        var sets = new List<PokemonSet>
+        {
+            new()
+            {
+                Species = "Pikachu",
+                Item = "Light Ball",
+                Ability = "Static",
+                Level = 50,
+                Nature = "Jolly",
+                EffortValues = new Dictionary<string, int> { { "atk", 252 }, { "spe", 252 } },
+                Moves = new List<string> { "Volt Tackle", "Iron Tail" }
+            },
+            new() { Species = "Charizard", Moves = new List<string> { "Flare Blitz" } }
+        };
+
+        // Act
+        var result = ShowdownTeamsUtils.GetTeamExport(sets);
+
+        // Assert
+        Assert.That(result, Does.Not.Contain("\r"));
+    }
+
+    [Test]
+    public void Test_DeserializeTeamExport_ShouldRoundTrip_WhenExportIsGeneratedFromSets()
+    {
+        // Arrange
+        var sets = new List<PokemonSet>
+        {
+            new()
+            {
+                Species = "Pikachu",
+                Item = "Light Ball",
+                Ability = "Static",
+                Nature = "Jolly",
+                Moves = new List<string> { "Volt Tackle", "Iron Tail" }
+            },
+            new() { Species = "Charizard", Ability = "Blaze", Moves = new List<string> { "Flare Blitz" } }
+        };
+
+        // Act
+        var result = ShowdownTeamsUtils.DeserializeTeamExport(ShowdownTeamsUtils.GetTeamExport(sets));
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Has.Count.EqualTo(2));
+            Assert.That(result[0].Species, Is.EqualTo("Pikachu"));
+            Assert.That(result[0].Ability, Is.EqualTo("Static"));
+            Assert.That(result[0].Nature, Is.EqualTo("Jolly"));
+            Assert.That(result[0].Moves, Is.EquivalentTo(new[] { "Volt Tackle", "Iron Tail" }));
+            Assert.That(result[1].Species, Is.EqualTo("Charizard"));
+            Assert.That(result[1].Moves, Is.EquivalentTo(new[] { "Flare Blitz" }));
         }
     }
 }

@@ -326,7 +326,6 @@ public class RoomConfigCommand : Command
             }
             else
             {
-                // TODO: ça pue la fuite mémoire
                 room.Game = null;
             }
         }

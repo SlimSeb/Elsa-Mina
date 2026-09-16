@@ -12,6 +12,9 @@ public static class ShowdownTeamsUtils
 
     private const int DEFAULT_INDIVIDUAL_VALUE = 31;
 
+    // Showdown exports always use LF, regardless of the platform the bot runs on
+    private const string NEW_LINE = "\n";
+
     private static readonly Dictionary<string, string> BATTLE_STAT_IDS = new()
     {
         ["HP"] = "hp",
@@ -53,7 +56,7 @@ public static class ShowdownTeamsUtils
         var team = new List<PokemonSet>();
         PokemonSet currentSet = null;
 
-        foreach (var teamLine in export.Split("\n"))
+        foreach (var teamLine in export.ReplaceLineEndings(NEW_LINE).Split(NEW_LINE))
         {
             var line = teamLine.Trim();
             if (line == string.Empty || line == "---")
@@ -131,13 +134,13 @@ public static class ShowdownTeamsUtils
         var parenIndex = line.LastIndexOf(" (", StringComparison.Ordinal);
         if (line.Length < 1 || line.Substring(line.Length - 1) != ")" || parenIndex == -1)
         {
-            set.Species = line; // TODO : dex
+            set.Species = line;
             set.Name = string.Empty;
             return;
         }
 
         var withoutClosingParenthesis = line.Substring(0, line.Length - 1);
-        set.Species = withoutClosingParenthesis.Substring(parenIndex + 2); // TODO : dex
+        set.Species = withoutClosingParenthesis.Substring(parenIndex + 2);
         set.Name = withoutClosingParenthesis.Substring(0, parenIndex);
     }
 
@@ -353,7 +356,7 @@ public static class ShowdownTeamsUtils
 
     public static string GetTeamExport(IEnumerable<PokemonSet> sets)
     {
-        return string.Join("\n\n", sets.Select(GetSetExport));
+        return string.Join(NEW_LINE + NEW_LINE, sets.Select(GetSetExport));
     }
 
     public static string GetSetExport(PokemonSet set)
@@ -391,49 +394,49 @@ public static class ShowdownTeamsUtils
             builder.Append($" @ {set.Item}");
         }
 
-        builder.AppendLine();
+        builder.Append(NEW_LINE);
     }
 
     private static void AppendExportedAttributes(StringBuilder builder, PokemonSet set)
     {
         if (set.Ability != null)
         {
-            builder.AppendLine($"Ability: {set.Ability} ");
+            builder.Append($"Ability: {set.Ability} ").Append(NEW_LINE);
         }
 
         if (set.Level != 0 && set.Level != 100)
         {
-            builder.AppendLine($"Level: {set.Level} ");
+            builder.Append($"Level: {set.Level} ").Append(NEW_LINE);
         }
 
         if (set.IsShiny)
         {
-            builder.AppendLine("Shiny: Yes ");
+            builder.Append("Shiny: Yes ").Append(NEW_LINE);
         }
 
         if (set.Happiness >= 0 && set.Happiness != 255)
         {
-            builder.AppendLine($"Happiness: {set.Happiness} ");
+            builder.Append($"Happiness: {set.Happiness} ").Append(NEW_LINE);
         }
 
         if (set.Pokeball != null)
         {
-            builder.AppendLine($"Pokeball: {set.Pokeball} ");
+            builder.Append($"Pokeball: {set.Pokeball} ").Append(NEW_LINE);
         }
 
         if (set.HiddenPowerType != null)
         {
-            builder.AppendLine($"Hidden Power: {set.HiddenPowerType} ");
+            builder.Append($"Hidden Power: {set.HiddenPowerType} ").Append(NEW_LINE);
         }
 
         if (set.DynamaxLevel >= 0)
         {
-            builder.AppendLine($"Dynamax Level: {set.DynamaxLevel} ");
+            builder.Append($"Dynamax Level: {set.DynamaxLevel} ").Append(NEW_LINE);
         }
 
         if (set.IsGigantamax)
         {
-            builder.AppendLine("Gigantamax: Yes ");
+            builder.Append("Gigantamax: Yes ").Append(NEW_LINE);
         }
     }
 
@@ -459,7 +462,7 @@ public static class ShowdownTeamsUtils
 
         if (!isFirstEffortValue)
         {
-            builder.AppendLine();
+            builder.Append(NEW_LINE);
         }
     }
 
@@ -467,7 +470,7 @@ public static class ShowdownTeamsUtils
     {
         if (set.Nature != null)
         {
-            builder.AppendLine($"{set.Nature} Nature ");
+            builder.Append($"{set.Nature} Nature ").Append(NEW_LINE);
         }
     }
 
@@ -494,7 +497,7 @@ public static class ShowdownTeamsUtils
 
         if (!isFirstIndividualValue)
         {
-            builder.AppendLine();
+            builder.Append(NEW_LINE);
         }
     }
 
@@ -510,11 +513,11 @@ public static class ShowdownTeamsUtils
             var move = FormatExportedMove(setMove);
             if (!string.IsNullOrEmpty(move))
             {
-                builder.AppendLine($"- {move}");
+                builder.Append($"- {move}").Append(NEW_LINE);
             }
         }
 
-        builder.AppendLine();
+        builder.Append(NEW_LINE);
     }
 
     private static string FormatExportedMove(string move)
