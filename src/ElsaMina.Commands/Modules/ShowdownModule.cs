@@ -18,6 +18,7 @@ public class ShowdownModule : Module
 
         builder.RegisterCommand<RankingCommand>();
         builder.RegisterCommand<SmogonStatsCommand>();
+        builder.RegisterCommand<UsageHistoryCommand>();
         builder.RegisterCommand<LadderCommand>();
         builder.RegisterCommand<ShowAvatarCommand>();
         builder.RegisterCommand<ToggleLadderTrackerCommand>();

@@ -213,4 +213,28 @@
     <data name="showavy_not_found" xml:space="preserve">
         <value>Avatar '{0}' introuvable.</value>
     </data>
+    <data name="usage_history_help" xml:space="preserve">
+        <value>Trace l'évolution de l'utilisation d'un Pokémon dans un format. Syntaxe : -usagehistory &lt;pokemon&gt;, &lt;format&gt;[, &lt;mois&gt;[, &lt;niveau&gt;]]</value>
+    </data>
+    <data name="usage_history_chart_title" xml:space="preserve">
+        <value>Historique d'utilisation - {0} ({1})</value>
+    </data>
+    <data name="usage_history_chart_x_label" xml:space="preserve">
+        <value>Mois</value>
+    </data>
+    <data name="usage_history_chart_y_label" xml:space="preserve">
+        <value>Utilisation %</value>
+    </data>
+    <data name="usage_history_not_enough_data" xml:space="preserve">
+        <value>Pas assez de données d'utilisation pour {0} en {1}.</value>
+    </data>
+    <data name="usage_history_upload_failed" xml:space="preserve">
+        <value>Echec de l'envoi du graphique. Veuillez réessayer plus tard.</value>
+    </data>
+    <data name="usage_history_peak" xml:space="preserve">
+        <value>pic = {0}% ({1})</value>
+    </data>
+    <data name="usage_history_latest" xml:space="preserve">
+        <value>dernier = {0}% ({1})</value>
+    </data>
 </root>

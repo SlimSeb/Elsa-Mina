@@ -213,4 +213,28 @@
     <data name="showavy_not_found" xml:space="preserve">
         <value>Avatar '{0}' no encontrado.</value>
     </data>
+    <data name="usage_history_help" xml:space="preserve">
+        <value>Traza la evolución del uso de un Pokémon en un formato. Sintaxis: -usagehistory &lt;pokemon&gt;, &lt;formato&gt;[, &lt;meses&gt;[, &lt;nivel&gt;]]</value>
+    </data>
+    <data name="usage_history_chart_title" xml:space="preserve">
+        <value>Historial de uso - {0} ({1})</value>
+    </data>
+    <data name="usage_history_chart_x_label" xml:space="preserve">
+        <value>Mes</value>
+    </data>
+    <data name="usage_history_chart_y_label" xml:space="preserve">
+        <value>Uso %</value>
+    </data>
+    <data name="usage_history_not_enough_data" xml:space="preserve">
+        <value>No hay suficientes datos de uso para {0} en {1}.</value>
+    </data>
+    <data name="usage_history_upload_failed" xml:space="preserve">
+        <value>Error al subir el gráfico. Inténtalo de nuevo más tarde.</value>
+    </data>
+    <data name="usage_history_peak" xml:space="preserve">
+        <value>máximo = {0}% ({1})</value>
+    </data>
+    <data name="usage_history_latest" xml:space="preserve">
+        <value>último = {0}% ({1})</value>
+    </data>
 </root>

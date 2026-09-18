@@ -174,7 +174,7 @@
     <data name="ladder_graph_trend_r_squared" xml:space="preserve">
         <value>R² = {0}</value>
     </data>
-y    <data name="ladder_graph_std_dev" xml:space="preserve">
+    <data name="ladder_graph_std_dev" xml:space="preserve">
         <value>σ = {0} Elo</value>
     </data>
     <data name="ladder_graph_mean" xml:space="preserve">
@@ -212,5 +212,29 @@ y    <data name="ladder_graph_std_dev" xml:space="preserve">
     </data>
     <data name="showavy_not_found" xml:space="preserve">
         <value>Avatar '{0}' not found.</value>
+    </data>
+    <data name="usage_history_help" xml:space="preserve">
+        <value>Plots the usage evolution of a Pokémon in a format. Syntax: -usagehistory &lt;pokemon&gt;, &lt;format&gt;[, &lt;months&gt;[, &lt;level&gt;]]</value>
+    </data>
+    <data name="usage_history_chart_title" xml:space="preserve">
+        <value>Usage history - {0} ({1})</value>
+    </data>
+    <data name="usage_history_chart_x_label" xml:space="preserve">
+        <value>Month</value>
+    </data>
+    <data name="usage_history_chart_y_label" xml:space="preserve">
+        <value>Usage %</value>
+    </data>
+    <data name="usage_history_not_enough_data" xml:space="preserve">
+        <value>Not enough usage data for {0} in {1}.</value>
+    </data>
+    <data name="usage_history_upload_failed" xml:space="preserve">
+        <value>Failed to upload the graph. Please try again later.</value>
+    </data>
+    <data name="usage_history_peak" xml:space="preserve">
+        <value>peak = {0}% ({1})</value>
+    </data>
+    <data name="usage_history_latest" xml:space="preserve">
+        <value>latest = {0}% ({1})</value>
     </data>
 </root>
