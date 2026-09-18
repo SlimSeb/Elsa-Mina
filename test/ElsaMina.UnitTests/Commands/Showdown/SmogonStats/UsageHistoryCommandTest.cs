@@ -206,7 +206,7 @@ public class UsageHistoryCommandTest
             Arg.Any<byte[]>(),
             Arg.Is<string>(name => name.StartsWith("usagegraphs/usagegraph-ogerponwellspring-gen9ou-")),
             description: "Usage history for Ogerpon-Wellspring in gen9ou",
-            mimeType: "image/png",
+            mimeType: "image/jpeg",
             cancellationToken: Arg.Any<CancellationToken>());
     }
 

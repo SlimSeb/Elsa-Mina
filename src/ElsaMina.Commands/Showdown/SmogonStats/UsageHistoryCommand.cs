@@ -83,7 +83,7 @@ public class UsageHistoryCommand : Command
                            $"{_clockService.CurrentUtcDateTimeOffset.ToUnixTimeSeconds()}.png";
             var url = await _fileSharingService.CreateFileAsync(pngBytes, fileName,
                 description: $"Usage history for {displayName} in {format}",
-                mimeType: "image/png",
+                mimeType: "image/jpeg",
                 cancellationToken: cancellationToken);
 
             if (url == null)

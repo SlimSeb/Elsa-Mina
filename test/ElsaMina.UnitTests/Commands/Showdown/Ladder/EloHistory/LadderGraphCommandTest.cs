@@ -172,7 +172,7 @@ public class LadderGraphCommandTest
             Arg.Is<byte[]>(b => b.Length > 0),
             Arg.Is<string>(name => name.StartsWith("elographs/elograph-alice-gen9ou-")),
             description: "ELO history for alice in gen9ou",
-            mimeType: "image/png",
+            mimeType: "image/jpeg",
             cancellationToken: Arg.Any<CancellationToken>());
     }
 

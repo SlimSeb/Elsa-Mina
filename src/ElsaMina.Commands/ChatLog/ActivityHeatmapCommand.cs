@@ -72,7 +72,7 @@ public class ActivityHeatmapCommand : Command
             var fileName = $"heatmaps/heatmap-{userId}-{roomId}-{year:D4}{month:D2}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.png";
             var url = await _fileSharingService.CreateFileAsync(pngBytes, fileName,
                 description: $"Activity heatmap for {parts[0]} in {roomId}",
-                mimeType: "image/png",
+                mimeType: "image/jpeg",
                 cancellationToken: cancellationToken);
 
             if (url == null)

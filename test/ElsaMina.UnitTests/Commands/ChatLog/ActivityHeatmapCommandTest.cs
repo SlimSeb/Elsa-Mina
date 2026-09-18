@@ -182,7 +182,7 @@ public class ActivityHeatmapCommandTest
             Arg.Is<byte[]>(bytes => bytes.Length > 0),
             Arg.Is<string>(name => name.StartsWith("heatmaps/heatmap-alice-testroom-")),
             description: "Activity heatmap for alice in testroom",
-            mimeType: "image/png",
+            mimeType: "image/jpeg",
             cancellationToken: Arg.Any<CancellationToken>());
         _context.Received(1).ReplyHtml(
             Arg.Is<string>(html => html.Contains("https://cdn.example.com/heatmap.png") && html.Contains("<img")),
