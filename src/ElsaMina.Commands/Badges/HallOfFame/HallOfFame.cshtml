@@ -4,12 +4,13 @@
 
 @{
     const int boldUsernameThreshold = 10;
-    const string headerStyle = $"border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; padding: 4px";
+    const string headerStyle = $"border-bottom:1px solid {StyleConstants.PRIMARY_BORDER_COLOR};padding:4px";
 }
 
-<div style="max-height: 240px; overflow-y: auto">
+@* text-align is inherited, so centering once on the table keeps every cell centered without a per-cell style attribute. *@
+<div style="max-height:240px;overflow-y:auto">
     <table
-        style="margin: auto; border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; border-radius: 12px; padding: 4px">
+        style="margin:auto;border:1px solid @StyleConstants.PRIMARY_BORDER_COLOR;border-radius:12px;padding:4px;text-align:center">
         <thead>
         <tr>
             <th scope="col" style="@headerStyle">@GetString("hall_of_fame_rank")</th>
@@ -32,30 +33,31 @@
             }
 
             <tr>
-                <td style="text-align: center">@rank</td>
-                <td style="text-align: center">
+                <td>@rank</td>
+                <td>
                     @{
-                        var userNameStyle = rank <= boldUsernameThreshold
-                            ? $"color: {entry.UserId.ToColorHexCodeWithCustoms()}; font-weight: bold"
-                            : $"color: {entry.UserId.ToColorHexCodeWithCustoms()}";
+                        var userNameColor = entry.UserId.ToColorHexCodeWithCustoms();
                     }
-                    <span
-                        class="username"
-                        data-name="@entry.UserId"
-                        style="@userNameStyle">
-                        @entry.UserName
-                    </span>
+                    <b style="color:@userNameColor">
+                        @if (rank <= boldUsernameThreshold)
+                        {
+                            <b>@entry.UserName</b>
+                        }
+                        else
+                        {
+                            @entry.UserName
+                        }
+                    </b>
                 </td>
-                <td style="text-align: center">
+                <td>
                     @entry.Total @GetString(entry.Total == 1 ? "hall_of_fame_trophy" : "hall_of_fame_trophies") (@entry.Solo @GetString("hall_of_fame_solo"), @entry.Team @GetString("hall_of_fame_team"))
                 </td>
-                <td style="text-align: center">
+                <td>
                     @foreach (var badge in entry.Badges)
                     {
                         await IncludeAsync("Badges/Badge", badge);
                     }
                 </td>
-
             </tr>
             prevCounts = (entry.Total, entry.Solo);
             innerRank++;
