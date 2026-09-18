@@ -200,7 +200,7 @@ public class ActivityHeatmapCommand : Command
             plot.Title(title);
             plot.XLabel(xLabel);
 
-            return plot.GetImage(CHART_WIDTH, CHART_HEIGHT).GetImageBytes(ImageFormat.Png);
+            return plot.GetImage(CHART_WIDTH, CHART_HEIGHT).GetImageBytes(ImageFormat.Jpeg);
         }
         finally
         {
