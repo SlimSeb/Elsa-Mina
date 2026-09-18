@@ -75,6 +75,14 @@
                     name="trophy"
                     @(badge.IsTrophy ? "checked" : string.Empty) />
             </div>
+            <div>
+                <label style="@labelStyle" for="tt-@badge.Id">@GetString("badge_edit_panel_is_team_tournament")</label>
+                <input
+                    type="checkbox"
+                    id="tt-@badge.Id"
+                    name="teamtournament"
+                    @(badge.IsTeamTournament ? "checked" : string.Empty) />
+            </div>
             <div style="margin-top: .5rem;">
                 <button class="button" type="submit">@GetString("submit")</button>
             </div>

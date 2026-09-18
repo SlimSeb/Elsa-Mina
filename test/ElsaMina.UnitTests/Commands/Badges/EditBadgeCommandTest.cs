@@ -223,6 +223,124 @@ public class EditBadgeCommandTest
     }
 
     [Test]
+    public async Task Test_RunAsync_ShouldSetIsTrophyAndIsTeamTournament_WhenSixPartsProvided()
+    {
+        var options = CreateOptions();
+        await using (var setup = new BotDbContext(options))
+        {
+            await setup.Database.EnsureCreatedAsync();
+            setup.Badges.Add(new Badge
+            {
+                Id = "badge1",
+                RoomId = "room1",
+                Name = "Old Name",
+                Image = "old.png",
+                IsTrophy = false,
+                IsTeamTournament = false
+            });
+            await setup.SaveChangesAsync();
+        }
+
+        await using var execCtx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(execCtx);
+        var context = Substitute.For<IContext>();
+        context.Target.Returns("badge1, New Name, https://img.test/new.png, on, on, room1");
+        context.RoomId.Returns("room1");
+        context.IsPrivateMessage.Returns(false);
+
+        var command = new EditBadgeCommand(factory);
+        await command.RunAsync(context);
+
+        await using var assertCtx = new BotDbContext(options);
+        var badge = await assertCtx.Badges.FindAsync("badge1", "room1");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(badge.Name, Is.EqualTo("New Name"));
+            Assert.That(badge.Image, Is.EqualTo("https://img.test/new.png"));
+            Assert.That(badge.IsTrophy, Is.True);
+            Assert.That(badge.IsTeamTournament, Is.True);
+        }
+        context.Received().ReplyLocalizedMessage("badge_edit_success", "badge1");
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldUnsetIsTeamTournament_WhenSixPartsProvidedWithEmptyValue()
+    {
+        var options = CreateOptions();
+        await using (var setup = new BotDbContext(options))
+        {
+            await setup.Database.EnsureCreatedAsync();
+            setup.Badges.Add(new Badge
+            {
+                Id = "badge1",
+                RoomId = "room1",
+                Name = "Old Name",
+                Image = "old.png",
+                IsTrophy = true,
+                IsTeamTournament = true
+            });
+            await setup.SaveChangesAsync();
+        }
+
+        await using var execCtx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(execCtx);
+        var context = Substitute.For<IContext>();
+        // trophy checked, team tournament unchecked
+        context.Target.Returns("badge1, New Name, https://img.test/new.png, on, , room1");
+        context.RoomId.Returns("room1");
+        context.IsPrivateMessage.Returns(false);
+
+        var command = new EditBadgeCommand(factory);
+        await command.RunAsync(context);
+
+        await using var assertCtx = new BotDbContext(options);
+        var badge = await assertCtx.Badges.FindAsync("badge1", "room1");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(badge.IsTrophy, Is.True);
+            Assert.That(badge.IsTeamTournament, Is.False);
+        }
+    }
+
+    [Test]
+    public async Task Test_RunAsync_ShouldNotUpdateIsTeamTournament_WhenFivePartsProvided()
+    {
+        var options = CreateOptions();
+        await using (var setup = new BotDbContext(options))
+        {
+            await setup.Database.EnsureCreatedAsync();
+            setup.Badges.Add(new Badge
+            {
+                Id = "badge1",
+                RoomId = "room1",
+                Name = "Old Name",
+                Image = "old.png",
+                IsTrophy = false,
+                IsTeamTournament = true
+            });
+            await setup.SaveChangesAsync();
+        }
+
+        await using var execCtx = new BotDbContext(options);
+        var factory = CreateFactoryReturning(execCtx);
+        var context = Substitute.For<IContext>();
+        context.Target.Returns("badge1, New Name, https://img.test/new.png, true, room1");
+        context.RoomId.Returns("room1");
+        context.IsPrivateMessage.Returns(false);
+
+        var command = new EditBadgeCommand(factory);
+        await command.RunAsync(context);
+
+        await using var assertCtx = new BotDbContext(options);
+        var badge = await assertCtx.Badges.FindAsync("badge1", "room1");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(badge.IsTrophy, Is.True);
+            Assert.That(badge.IsTeamTournament, Is.True); // unchanged
+        }
+    }
+
+    [Test]
     public async Task Test_RunAsync_ShouldReturnEarly_WhenCalledFromPmWithoutSufficientRank()
     {
         var options = CreateOptions();

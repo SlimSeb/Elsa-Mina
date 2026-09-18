@@ -54,6 +54,9 @@
     <data name="badge_edit_panel_is_trophy" xml:space="preserve">
         <value>Trophy</value>
     </data>
+    <data name="badge_edit_panel_is_team_tournament" xml:space="preserve">
+        <value>Team tournament</value>
+    </data>
     <data name="badge_edit_panel_prev" xml:space="preserve">
         <value>Previous</value>
     </data>

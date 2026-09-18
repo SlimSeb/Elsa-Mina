@@ -35,7 +35,15 @@ public class EditBadgeCommand : Command
         var roomId = context.RoomId;
         string newImage;
         bool? newIsTrophy = null;
-        if (parts.Length >= 5)
+        bool? newIsTeamTournament = null;
+        if (parts.Length >= 6)
+        {
+            roomId = parts[^1].Trim().ToLowerAlphaNum();
+            newIsTeamTournament = parts[^2].Trim().ToBoolean();
+            newIsTrophy = parts[^3].Trim().ToBoolean();
+            newImage = string.Join(",", parts[2..^3]).Trim();
+        }
+        else if (parts.Length == 5)
         {
             roomId = parts[^1].Trim().ToLowerAlphaNum();
             newIsTrophy = parts[^2].Trim().ToBoolean();
@@ -69,6 +77,11 @@ public class EditBadgeCommand : Command
         if (newIsTrophy.HasValue)
         {
             badge.IsTrophy = newIsTrophy.Value;
+        }
+
+        if (newIsTeamTournament.HasValue)
+        {
+            badge.IsTeamTournament = newIsTeamTournament.Value;
         }
 
         try

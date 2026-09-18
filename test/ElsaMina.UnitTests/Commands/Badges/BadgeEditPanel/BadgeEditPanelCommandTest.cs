@@ -117,7 +117,7 @@ public class BadgeEditPanelCommandTest
                 vm.RoomName == "Cool Room" &&
                 vm.BotName == "Elsa" &&
                 vm.Trigger == "!" &&
-                vm.EditCommand == "/w Elsa,!editbadge {badgeId}, {name}, {image}, {trophy}, room1" &&
+                vm.EditCommand == "/w Elsa,!editbadge {badgeId}, {name}, {image}, {trophy}, {teamtournament}, room1" &&
                 vm.Badges.Count == 2 &&
                 vm.Page == 1 &&
                 vm.TotalPages == 1

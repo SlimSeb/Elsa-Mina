@@ -77,7 +77,7 @@ public class BadgeEditPanelCommand : Command
             RoomName = room?.Name ?? roomId,
             BotName = _configuration.Name,
             Trigger = _configuration.Trigger,
-            EditCommand = $"/w {_configuration.Name},{_configuration.Trigger}editbadge {{badgeId}}, {{name}}, {{image}}, {{trophy}}, {roomId}",
+            EditCommand = $"/w {_configuration.Name},{_configuration.Trigger}editbadge {{badgeId}}, {{name}}, {{image}}, {{trophy}}, {{teamtournament}}, {roomId}",
             Badges = badges,
             Page = page,
             TotalPages = totalPages
