@@ -80,7 +80,7 @@ public class UsageHistoryCommand : Command
             var pngBytes = GenerateChart(context, displayName, format, dataPoints);
 
             var fileName = $"usagegraphs/usagegraph-{displayName.ToLowerAlphaNum()}-{format}-" +
-                           $"{_clockService.CurrentUtcDateTimeOffset.ToUnixTimeSeconds()}.png";
+                           $"{_clockService.CurrentUtcDateTimeOffset.ToUnixTimeSeconds()}.jpeg";
             var url = await _fileSharingService.CreateFileAsync(pngBytes, fileName,
                 description: $"Usage history for {displayName} in {format}",
                 mimeType: "image/jpeg",

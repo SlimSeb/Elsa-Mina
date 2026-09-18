@@ -70,7 +70,7 @@ public class UsageHistoryCommandTest
         // Arrange
         _context.Target.Returns("Great Tusk, gen9ou");
         MockRanking();
-        MockUpload("https://cdn.example.com/usagegraph.png");
+        MockUpload("https://cdn.example.com/usagegraph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
@@ -90,7 +90,7 @@ public class UsageHistoryCommandTest
         // Arrange
         _context.Target.Returns("Great Tusk, gen9ou, 3");
         MockRanking();
-        MockUpload("https://cdn.example.com/usagegraph.png");
+        MockUpload("https://cdn.example.com/usagegraph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
@@ -106,7 +106,7 @@ public class UsageHistoryCommandTest
         // Arrange
         _context.Target.Returns("Great Tusk, gen9ou, 500");
         MockRanking();
-        MockUpload("https://cdn.example.com/usagegraph.png");
+        MockUpload("https://cdn.example.com/usagegraph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
@@ -122,7 +122,7 @@ public class UsageHistoryCommandTest
         // Arrange
         _context.Target.Returns("Great Tusk, gen9ou, 3, Low");
         MockRanking();
-        MockUpload("https://cdn.example.com/usagegraph.png");
+        MockUpload("https://cdn.example.com/usagegraph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
@@ -176,14 +176,14 @@ public class UsageHistoryCommandTest
             .Returns(callInfo => callInfo.ArgAt<string>(0) is "2025-04" or "2025-05"
                 ? RankingWithGreatTusk(30)
                 : throw new HttpRequestException("404"));
-        MockUpload("https://cdn.example.com/usagegraph.png");
+        MockUpload("https://cdn.example.com/usagegraph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
 
         // Assert
         _context.Received(1).ReplyHtml(
-            Arg.Is<string>(html => html.Contains("https://cdn.example.com/usagegraph.png") && html.Contains("<img")),
+            Arg.Is<string>(html => html.Contains("https://cdn.example.com/usagegraph.jpeg") && html.Contains("<img")),
             rankAware: true);
     }
 
@@ -196,7 +196,7 @@ public class UsageHistoryCommandTest
                 Arg.Any<CancellationToken>())
             .Returns<IReadOnlyList<SmogonUsageRankingEntryDto>>(_ =>
                 [new SmogonUsageRankingEntryDto(1, "Ogerpon-Wellspring", 23.9, 417331)]);
-        MockUpload("https://cdn.example.com/usagegraph.png");
+        MockUpload("https://cdn.example.com/usagegraph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
@@ -204,7 +204,7 @@ public class UsageHistoryCommandTest
         // Assert
         await _fileSharingService.Received(1).CreateFileAsync(
             Arg.Any<byte[]>(),
-            Arg.Is<string>(name => name.StartsWith("usagegraphs/usagegraph-ogerponwellspring-gen9ou-")),
+            Arg.Is<string>(name => name.StartsWith("usagegraphs/usagegraph-ogerponwellspring-gen9ou-") && name.EndsWith(".jpeg")),
             description: "Usage history for Ogerpon-Wellspring in gen9ou",
             mimeType: "image/jpeg",
             cancellationToken: Arg.Any<CancellationToken>());
@@ -232,14 +232,14 @@ public class UsageHistoryCommandTest
         // Arrange
         _context.Target.Returns("Great Tusk, gen9ou");
         MockRanking();
-        MockUpload("https://cdn.example.com/usagegraph.png");
+        MockUpload("https://cdn.example.com/usagegraph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
 
         // Assert
         _context.Received(1).ReplyHtml(
-            Arg.Is<string>(html => html.Contains("https://cdn.example.com/usagegraph.png") && html.Contains("<img")),
+            Arg.Is<string>(html => html.Contains("https://cdn.example.com/usagegraph.jpeg") && html.Contains("<img")),
             rankAware: true);
     }
 
@@ -249,7 +249,7 @@ public class UsageHistoryCommandTest
         // Arrange
         _context.Target.Returns("Great Tusk, gen9ou");
         MockRanking();
-        MockUpload("https://cdn.example.com/usagegraph.png");
+        MockUpload("https://cdn.example.com/usagegraph.jpeg");
 
         // Act
         await _command.RunAsync(_context);

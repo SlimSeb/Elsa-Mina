@@ -173,19 +173,19 @@ public class ActivityHeatmapCommandTest
             .Returns(ToStream(content));
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("https://cdn.example.com/heatmap.png");
+            .Returns("https://cdn.example.com/heatmap.jpeg");
 
         await _command.RunAsync(_context);
 
-        // Real ScottPlot rendering produces a non-empty PNG uploaded with the expected metadata.
+        // Real ScottPlot rendering produces a non-empty JPEG uploaded with the expected metadata.
         await _fileSharingService.Received(1).CreateFileAsync(
             Arg.Is<byte[]>(bytes => bytes.Length > 0),
-            Arg.Is<string>(name => name.StartsWith("heatmaps/heatmap-alice-testroom-")),
+            Arg.Is<string>(name => name.StartsWith("heatmaps/heatmap-alice-testroom-") && name.EndsWith(".jpeg")),
             description: "Activity heatmap for alice in testroom",
             mimeType: "image/jpeg",
             cancellationToken: Arg.Any<CancellationToken>());
         _context.Received(1).ReplyHtml(
-            Arg.Is<string>(html => html.Contains("https://cdn.example.com/heatmap.png") && html.Contains("<img")),
+            Arg.Is<string>(html => html.Contains("https://cdn.example.com/heatmap.jpeg") && html.Contains("<img")),
             rankAware: true);
     }
 
@@ -199,7 +199,7 @@ public class ActivityHeatmapCommandTest
             .Returns(ToStream("[12:00:00 UTC] alice: hello\n"));
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("https://cdn.example.com/heatmap.png");
+            .Returns("https://cdn.example.com/heatmap.jpeg");
 
         await _command.RunAsync(_context);
 
@@ -222,7 +222,7 @@ public class ActivityHeatmapCommandTest
             .Returns(ToStream("[12:00:00 UTC] alice: hello\n"));
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("https://cdn.example.com/heatmap.png");
+            .Returns("https://cdn.example.com/heatmap.jpeg");
 
         await _command.RunAsync(_context);
 
@@ -240,7 +240,7 @@ public class ActivityHeatmapCommandTest
             .Returns(ToStream("[12:00:00 UTC] alicetest: hi\n"));
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("https://cdn.example.com/heatmap.png");
+            .Returns("https://cdn.example.com/heatmap.jpeg");
 
         await _command.RunAsync(_context);
 

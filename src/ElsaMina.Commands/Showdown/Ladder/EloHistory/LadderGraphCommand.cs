@@ -64,7 +64,7 @@ public class LadderGraphCommand : Command
 
             var pngBytes = GenerateChart(context, chartTitle, xs, ys, context.Culture, showTrend);
 
-            var fileName = $"elographs/elograph-{userId}-{format}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.png";
+            var fileName = $"elographs/elograph-{userId}-{format}-{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.jpeg";
             var url = await _fileSharingService.CreateFileAsync(pngBytes, fileName,
                 description: $"ELO history for {parts[1]} in {format}",
                 mimeType: "image/jpeg",

@@ -125,14 +125,14 @@ public class LadderGraphCommandTest
         await SeedSnapshotsAsync("gen9ou", "alice", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("https://cdn.example.com/elograph.png");
+            .Returns("https://cdn.example.com/elograph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
 
         // Assert
         _context.Received(1).ReplyHtml(
-            Arg.Is<string>(html => html.Contains("https://cdn.example.com/elograph.png")
+            Arg.Is<string>(html => html.Contains("https://cdn.example.com/elograph.jpeg")
                                    && html.Contains("<img")),
             rankAware: true);
     }
@@ -145,7 +145,7 @@ public class LadderGraphCommandTest
         await SeedSnapshotsAsync("gen9ou", "alicetest", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("https://cdn.example.com/elograph.png");
+            .Returns("https://cdn.example.com/elograph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
@@ -162,7 +162,7 @@ public class LadderGraphCommandTest
         await SeedSnapshotsAsync("gen9ou", "alice", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("https://cdn.example.com/elograph.png");
+            .Returns("https://cdn.example.com/elograph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
@@ -170,7 +170,7 @@ public class LadderGraphCommandTest
         // Assert
         await _fileSharingService.Received(1).CreateFileAsync(
             Arg.Is<byte[]>(b => b.Length > 0),
-            Arg.Is<string>(name => name.StartsWith("elographs/elograph-alice-gen9ou-")),
+            Arg.Is<string>(name => name.StartsWith("elographs/elograph-alice-gen9ou-") && name.EndsWith(".jpeg")),
             description: "ELO history for alice in gen9ou",
             mimeType: "image/jpeg",
             cancellationToken: Arg.Any<CancellationToken>());
@@ -184,7 +184,7 @@ public class LadderGraphCommandTest
         await SeedSnapshotsAsync("gen9ou", "alice", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("https://cdn.example.com/elograph.png");
+            .Returns("https://cdn.example.com/elograph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
@@ -206,14 +206,14 @@ public class LadderGraphCommandTest
         await SeedSnapshotsAsync("gen9ou", "alice", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("https://cdn.example.com/elograph.png");
+            .Returns("https://cdn.example.com/elograph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
 
         // Assert
         _context.Received(1).ReplyHtml(
-            Arg.Is<string>(html => html.Contains("https://cdn.example.com/elograph.png") && html.Contains("<img")),
+            Arg.Is<string>(html => html.Contains("https://cdn.example.com/elograph.jpeg") && html.Contains("<img")),
             rankAware: true);
     }
 
@@ -226,14 +226,14 @@ public class LadderGraphCommandTest
         await SeedSnapshotsAsync("gen9ou", "alice", 3);
         _fileSharingService.CreateFileAsync(Arg.Any<byte[]>(), Arg.Any<string>(), Arg.Any<string>(),
                 Arg.Any<string>(), Arg.Any<CancellationToken>())
-            .Returns("https://cdn.example.com/elograph.png");
+            .Returns("https://cdn.example.com/elograph.jpeg");
 
         // Act
         await _command.RunAsync(_context);
 
         // Assert
         _context.Received(1).ReplyHtml(
-            Arg.Is<string>(html => html.Contains("https://cdn.example.com/elograph.png") && html.Contains("<img")),
+            Arg.Is<string>(html => html.Contains("https://cdn.example.com/elograph.jpeg") && html.Contains("<img")),
             rankAware: true);
     }
 
