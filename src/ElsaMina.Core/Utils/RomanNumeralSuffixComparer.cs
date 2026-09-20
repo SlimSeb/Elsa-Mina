@@ -30,14 +30,14 @@ public class RomanNumeralSuffixComparer : IComparer<string>
         var (firstPrefix, firstNumeral) = SplitOnRomanNumeralSuffix(first);
         var (secondPrefix, secondNumeral) = SplitOnRomanNumeralSuffix(second);
 
-        if (firstNumeral != secondNumeral)
+        var prefixComparison = string.Compare(firstPrefix, secondPrefix, StringComparison.InvariantCultureIgnoreCase);
+        if (prefixComparison != 0)
         {
-            return firstNumeral.CompareTo(secondNumeral);
+            return prefixComparison;
         }
 
-        var prefixComparison = string.Compare(firstPrefix, secondPrefix, StringComparison.InvariantCultureIgnoreCase);
-        return prefixComparison != 0
-            ? prefixComparison
+        return firstNumeral != secondNumeral
+            ? firstNumeral.CompareTo(secondNumeral)
             : string.Compare(first, second, StringComparison.InvariantCulture);
     }
 

@@ -18,7 +18,7 @@ public class RomanNumeralSuffixComparerTest
     [TestCase("Cup IX", "Cup V", ExpectedResult = 1)]
     [TestCase("Cup X", "Cup IX", ExpectedResult = 1)]
     [TestCase("Cup XL", "Cup L", ExpectedResult = -1)]
-    public int Test_Compare_ShouldCompareNumerically_WhenPrefixesAreEqual(string first, string second)
+    public int Test_Compare_ShouldFallBackToNumeral_WhenPrefixesAreEqual(string first, string second)
     {
         // Act
         var result = _comparer.Compare(first, second);
@@ -28,9 +28,9 @@ public class RomanNumeralSuffixComparerTest
     }
 
     [Test]
-    public void Test_Compare_ShouldPrioritizeNumeral_WhenPrefixesDiffer()
+    public void Test_Compare_ShouldPrioritizePrefix_WhenPrefixesDiffer()
     {
-        // Arrange
+        // Arrange, the whole series is kept together even though its first edition comes later
         const string firstEditionOfLaterSeries = "Vainqueur DPP Cup I";
         const string secondEditionOfEarlierSeries = "Vainqueur ADV Cup II";
 
@@ -38,11 +38,11 @@ public class RomanNumeralSuffixComparerTest
         var result = _comparer.Compare(firstEditionOfLaterSeries, secondEditionOfEarlierSeries);
 
         // Assert
-        Assert.That(result, Is.LessThan(0));
+        Assert.That(result, Is.GreaterThan(0));
     }
 
     [Test]
-    public void Test_Compare_ShouldFallBackToPrefix_WhenNumeralsAreEqual()
+    public void Test_Compare_ShouldOrderByPrefix_WhenNumeralsAreEqual()
     {
         // Arrange
         const string first = "Vainqueur ADV Cup II";
@@ -164,10 +164,10 @@ public class RomanNumeralSuffixComparerTest
         Assert.That(result, Is.EqualTo([
             "French Frontier",
             "Vainqueur ADV Cup I",
-            "Vainqueur BW Cup I",
             "Vainqueur ADV Cup II",
-            "Vainqueur BW Cup II",
-            "Vainqueur ADV Cup X"
+            "Vainqueur ADV Cup X",
+            "Vainqueur BW Cup I",
+            "Vainqueur BW Cup II"
         ]));
     }
 }
