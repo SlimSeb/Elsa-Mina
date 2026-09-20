@@ -72,10 +72,11 @@ public class UserBadgePanelCommand : Command
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-        var allBadges = await dbContext.Badges
-            .Where(badge => badge.RoomId == roomId)
-            .OrderBy(badge => badge.Name)
-            .ToListAsync(cancellationToken);
+        var allBadges = (await dbContext.Badges
+                .Where(badge => badge.RoomId == roomId)
+                .ToListAsync(cancellationToken))
+            .OrderBy(badge => badge.Name, RomanNumeralSuffixComparer.INSTANCE)
+            .ToList();
 
         var ownedBadgeIds = await dbContext.BadgeHoldings
             .Where(holding => holding.UserId == targetUserId && holding.RoomId == roomId)

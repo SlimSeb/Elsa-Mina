@@ -40,10 +40,11 @@ public class BadgeListCommand : Command
         }
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var badges = await dbContext.Badges
-            .Where(badge => badge.RoomId == roomId)
-            .OrderBy(badge => badge.Name)
-            .ToArrayAsync(cancellationToken);
+        var badges = (await dbContext.Badges
+                .Where(badge => badge.RoomId == roomId)
+                .ToArrayAsync(cancellationToken))
+            .OrderBy(badge => badge.Name, RomanNumeralSuffixComparer.INSTANCE)
+            .ToArray();
 
         var viewModel = new BadgeListViewModel
         {

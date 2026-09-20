@@ -52,23 +52,25 @@ public class BadgeEditPanelCommand : Command
         }
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var totalBadges = await dbContext.Badges.CountAsync(badge => badge.RoomId == roomId, cancellationToken);
+        var roomBadges = (await dbContext.Badges
+                .Where(badge => badge.RoomId == roomId)
+                .ToListAsync(cancellationToken))
+            .OrderBy(badge => badge.Name, RomanNumeralSuffixComparer.INSTANCE)
+            .ToList();
 
-        if (totalBadges == 0)
+        if (roomBadges.Count == 0)
         {
             context.ReplyLocalizedMessage("badge_edit_panel_no_badges", room?.Name ?? roomId);
             return;
         }
 
-        var totalPages = (int)Math.Ceiling(totalBadges / (double)PAGE_SIZE);
+        var totalPages = (int)Math.Ceiling(roomBadges.Count / (double)PAGE_SIZE);
         page = Math.Clamp(page, 1, totalPages);
 
-        var badges = await dbContext.Badges
-            .Where(badge => badge.RoomId == roomId)
-            .OrderBy(badge => badge.Name)
+        var badges = roomBadges
             .Skip((page - 1) * PAGE_SIZE)
             .Take(PAGE_SIZE)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         var viewModel = new BadgeEditPanelViewModel
         {

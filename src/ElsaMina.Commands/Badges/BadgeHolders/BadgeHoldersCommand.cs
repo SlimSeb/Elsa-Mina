@@ -28,13 +28,14 @@ public class BadgeHoldersCommand : Command
     {
         var roomId = string.IsNullOrWhiteSpace(context.Target) ? context.RoomId : context.Target;
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var badges = await dbContext.Badges
-            .Include(badge => badge.BadgeHolders)
-            .ThenInclude(badgeHolding => badgeHolding.RoomUser.User)
-            .Where(badge => badge.RoomId == roomId)
-            .OrderBy(badge => badge.Name)
-            .AsNoTracking()
-            .ToArrayAsync(cancellationToken);
+        var badges = (await dbContext.Badges
+                .Include(badge => badge.BadgeHolders)
+                .ThenInclude(badgeHolding => badgeHolding.RoomUser.User)
+                .Where(badge => badge.RoomId == roomId)
+                .AsNoTracking()
+                .ToArrayAsync(cancellationToken))
+            .OrderBy(badge => badge.Name, RomanNumeralSuffixComparer.INSTANCE)
+            .ToArray();
 
         var viewModel = new BadgeHoldersViewModel
         {

@@ -123,7 +123,9 @@ public class ProfileService : IProfileService
             UserName = userName,
             UserRoomRank = userRoomRank,
             Status = GetStatus(showdownUserDetails),
-            Badges = storedUserData?.Badges.Select(holding => holding.Badge),
+            Badges = storedUserData?.Badges
+                .Select(holding => holding.Badge)
+                .OrderBy(badge => badge.Name, RomanNumeralSuffixComparer.INSTANCE),
             Dolls = dolls,
             Title = storedUserData?.Title,
             ProfileEmoji = storedUserData?.ProfileEmoji,
