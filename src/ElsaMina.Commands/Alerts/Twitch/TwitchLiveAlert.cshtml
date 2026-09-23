@@ -1,0 +1,21 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Alerts.Twitch.TwitchLiveAlertViewModel>
+
+<table style="padding: 0.25em;">
+    <tr>
+        @if (!string.IsNullOrEmpty(Model.ThumbnailUrl))
+        {
+            <td>
+                <a href="https://www.twitch.tv/@Model.ChannelLogin"><img src="@Model.ThumbnailUrl" width="160" height="90" alt="Stream preview"/></a>
+            </td>
+        }
+        <td style="padding: 0.5em; text-align: left;">
+            <b style="color: #9146FF;">@GetString("alerts_twitch_live", Model.ChannelDisplayName)</b><br/>
+            <span>@Model.Title</span><br/>
+            @if (!string.IsNullOrEmpty(Model.GameName))
+            {
+                <small style="font-style: italic;">@GetString("alerts_twitch_playing", Model.GameName)</small><br/>
+            }
+            <a href="https://www.twitch.tv/@Model.ChannelLogin">@GetString("alerts_watch_stream")</a>
+        </td>
+    </tr>
+</table>

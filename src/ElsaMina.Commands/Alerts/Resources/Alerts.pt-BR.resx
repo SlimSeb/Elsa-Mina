@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="alerts_add_help" xml:space="preserve">
+        <value>Adiciona um alerta nesta sala quando um canal entra ao vivo ou publica. Sintaxe: -addalert &lt;plataforma&gt; &lt;canal&gt;. Plataformas: twitch (lives), youtube (novos vídeos), youtubelive (lives do YouTube), twitter (tweets).</value>
+    </data>
+    <data name="alerts_remove_help" xml:space="preserve">
+        <value>Remove um alerta desta sala. Sintaxe: -removealert &lt;plataforma&gt; &lt;canal&gt;</value>
+    </data>
+    <data name="alerts_list_help" xml:space="preserve">
+        <value>Lista os alertas configurados nesta sala. Sintaxe: -alerts</value>
+    </data>
+    <data name="alerts_unsupported_platform" xml:space="preserve">
+        <value>Plataforma desconhecida: {0}. Plataformas disponíveis: {1}.</value>
+    </data>
+    <data name="alerts_platform_not_configured" xml:space="preserve">
+        <value>Os alertas de {0} não estão configurados neste bot.</value>
+    </data>
+    <data name="alerts_platform_error" xml:space="preserve">
+        <value>Ocorreu um erro ao contatar {0}. Tente novamente mais tarde.</value>
+    </data>
+    <data name="alerts_channel_not_found" xml:space="preserve">
+        <value>Não foi possível encontrar o canal {0} em {1}.</value>
+    </data>
+    <data name="alerts_added" xml:space="preserve">
+        <value>Alerta adicionado: esta sala será notificada para {0} ({1}).</value>
+    </data>
+    <data name="alerts_already_exists" xml:space="preserve">
+        <value>Já existe um alerta para {0} ({1}) nesta sala.</value>
+    </data>
+    <data name="alerts_removed" xml:space="preserve">
+        <value>Alerta para {0} ({1}) removido.</value>
+    </data>
+    <data name="alerts_not_found" xml:space="preserve">
+        <value>Não há alerta para {0} ({1}) nesta sala.</value>
+    </data>
+    <data name="alerts_list_empty" xml:space="preserve">
+        <value>Não há alertas nesta sala.</value>
+    </data>
+    <data name="alerts_list" xml:space="preserve">
+        <value>Alertas desta sala: {0}</value>
+    </data>
+    <data name="alerts_twitch_live" xml:space="preserve">
+        <value>{0} está ao vivo na Twitch!</value>
+    </data>
+    <data name="alerts_twitch_playing" xml:space="preserve">
+        <value>Jogando {0}</value>
+    </data>
+    <data name="alerts_youtube_live" xml:space="preserve">
+        <value>{0} está ao vivo no YouTube!</value>
+    </data>
+    <data name="alerts_youtube_video" xml:space="preserve">
+        <value>{0} publicou um novo vídeo!</value>
+    </data>
+    <data name="alerts_tweet" xml:space="preserve">
+        <value>@{0} publicou um novo tweet!</value>
+    </data>
+    <data name="alerts_watch_stream" xml:space="preserve">
+        <value>Assistir à live</value>
+    </data>
+    <data name="alerts_watch_video" xml:space="preserve">
+        <value>Assistir ao vídeo</value>
+    </data>
+    <data name="alerts_see_tweet" xml:space="preserve">
+        <value>Ver o tweet</value>
+    </data>
+</root>

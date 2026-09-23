@@ -64,6 +64,7 @@ public partial class CommandModule : Module
         builder.RegisterModule<GamesModule>();
         builder.RegisterModule<MiscModule>();
         builder.RegisterModule<ShowdownModule>();
+        builder.RegisterModule<AlertsModule>();
         builder.RegisterModule<TeamsModule>();
         builder.RegisterModule<TournamentsModule>();
         builder.RegisterModule<UsersModule>();

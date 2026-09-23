@@ -1,0 +1,7 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Alerts.Twitter.TweetAlertViewModel>
+
+<div style="padding: 0.25em 0.5em;">
+    <b style="color: #1D9BF0;">@GetString("alerts_tweet", Model.Username)</b><br/>
+    <span>@Model.Text</span><br/>
+    <a href="https://x.com/@Model.Username/status/@Model.TweetId">@GetString("alerts_see_tweet")</a>
+</div>

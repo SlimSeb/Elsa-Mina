@@ -36,6 +36,9 @@ public class Configuration : IConfiguration
     public string KlipyApiKey { get; set; }
     public string UnsplashApiKey { get; set; }
     public string SpoonacularApiKey { get; set; }
+    public string TwitchClientId { get; set; } = string.Empty;
+    public string TwitchClientSecret { get; set; } = string.Empty;
+    public string TwitterBearerToken { get; set; } = string.Empty;
     public TimeSpan PlayTimeUpdatesInterval { get; set; }
     public TimeSpan LoginRetryDelay { get; set; }
     public string ArcadeSpreadsheetName { get; set; }

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="alerts_add_help" xml:space="preserve">
+        <value>Adds an alert in this room when a channel goes live or posts. Syntax: -addalert &lt;platform&gt; &lt;channel&gt;. Platforms: twitch (lives), youtube (new videos), youtubelive (YouTube lives), twitter (tweets).</value>
+    </data>
+    <data name="alerts_remove_help" xml:space="preserve">
+        <value>Removes an alert from this room. Syntax: -removealert &lt;platform&gt; &lt;channel&gt;</value>
+    </data>
+    <data name="alerts_list_help" xml:space="preserve">
+        <value>Lists the alerts configured in this room. Syntax: -alerts</value>
+    </data>
+    <data name="alerts_unsupported_platform" xml:space="preserve">
+        <value>Unknown platform: {0}. Available platforms: {1}.</value>
+    </data>
+    <data name="alerts_platform_not_configured" xml:space="preserve">
+        <value>Alerts for {0} are not configured on this bot.</value>
+    </data>
+    <data name="alerts_platform_error" xml:space="preserve">
+        <value>An error occurred while contacting {0}. Please try again later.</value>
+    </data>
+    <data name="alerts_channel_not_found" xml:space="preserve">
+        <value>Could not find channel {0} on {1}.</value>
+    </data>
+    <data name="alerts_added" xml:space="preserve">
+        <value>Alert added: this room will be notified for {0} ({1}).</value>
+    </data>
+    <data name="alerts_already_exists" xml:space="preserve">
+        <value>There is already an alert for {0} ({1}) in this room.</value>
+    </data>
+    <data name="alerts_removed" xml:space="preserve">
+        <value>Alert for {0} ({1}) removed.</value>
+    </data>
+    <data name="alerts_not_found" xml:space="preserve">
+        <value>There is no alert for {0} ({1}) in this room.</value>
+    </data>
+    <data name="alerts_list_empty" xml:space="preserve">
+        <value>There are no alerts in this room.</value>
+    </data>
+    <data name="alerts_list" xml:space="preserve">
+        <value>Alerts in this room: {0}</value>
+    </data>
+    <data name="alerts_twitch_live" xml:space="preserve">
+        <value>{0} is live on Twitch!</value>
+    </data>
+    <data name="alerts_twitch_playing" xml:space="preserve">
+        <value>Playing {0}</value>
+    </data>
+    <data name="alerts_youtube_live" xml:space="preserve">
+        <value>{0} is live on YouTube!</value>
+    </data>
+    <data name="alerts_youtube_video" xml:space="preserve">
+        <value>{0} posted a new video!</value>
+    </data>
+    <data name="alerts_tweet" xml:space="preserve">
+        <value>@{0} posted a new tweet!</value>
+    </data>
+    <data name="alerts_watch_stream" xml:space="preserve">
+        <value>Watch the stream</value>
+    </data>
+    <data name="alerts_watch_video" xml:space="preserve">
+        <value>Watch the video</value>
+    </data>
+    <data name="alerts_see_tweet" xml:space="preserve">
+        <value>See the tweet</value>
+    </data>
+</root>

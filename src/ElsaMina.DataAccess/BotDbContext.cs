@@ -48,6 +48,7 @@ public class BotDbContext : DbContext
     public DbSet<WordEmbedding> WordEmbeddings { get; set; }
     public DbSet<SemantixScore> SemantixScores { get; set; }
     public DbSet<SavedRepeat> Repeats { get; set; }
+    public DbSet<ChannelAlert> ChannelAlerts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
