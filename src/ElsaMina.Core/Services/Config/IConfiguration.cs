@@ -34,6 +34,9 @@ public interface IConfiguration : IS3CredentialsProvider, ILoggingConfiguration
     string KlipyApiKey { get; }
     string UnsplashApiKey { get; }
     string SpoonacularApiKey { get; }
+    string TwitchClientId { get; }
+    string TwitchClientSecret { get; }
+    string TwitterBearerToken { get; }
     TimeSpan PlayTimeUpdatesInterval { get; }
     TimeSpan LoginRetryDelay { get; }
     string ArcadeSpreadsheetName { get; }

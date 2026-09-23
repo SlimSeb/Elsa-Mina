@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="alerts_add_help" xml:space="preserve">
+        <value>Aggiunge un avviso in questa stanza quando un canale va in diretta o pubblica. Sintassi: -addalert &lt;piattaforma&gt; &lt;canale&gt;. Piattaforme: twitch (dirette), youtube (nuovi video), youtubelive (dirette YouTube), twitter (tweet).</value>
+    </data>
+    <data name="alerts_remove_help" xml:space="preserve">
+        <value>Rimuove un avviso da questa stanza. Sintassi: -removealert &lt;piattaforma&gt; &lt;canale&gt;</value>
+    </data>
+    <data name="alerts_list_help" xml:space="preserve">
+        <value>Elenca gli avvisi configurati in questa stanza. Sintassi: -alerts</value>
+    </data>
+    <data name="alerts_unsupported_platform" xml:space="preserve">
+        <value>Piattaforma sconosciuta: {0}. Piattaforme disponibili: {1}.</value>
+    </data>
+    <data name="alerts_platform_not_configured" xml:space="preserve">
+        <value>Gli avvisi {0} non sono configurati su questo bot.</value>
+    </data>
+    <data name="alerts_platform_error" xml:space="preserve">
+        <value>Si è verificato un errore contattando {0}. Riprova più tardi.</value>
+    </data>
+    <data name="alerts_channel_not_found" xml:space="preserve">
+        <value>Impossibile trovare il canale {0} su {1}.</value>
+    </data>
+    <data name="alerts_added" xml:space="preserve">
+        <value>Avviso aggiunto: questa stanza riceverà le notifiche per {0} ({1}).</value>
+    </data>
+    <data name="alerts_already_exists" xml:space="preserve">
+        <value>Esiste già un avviso per {0} ({1}) in questa stanza.</value>
+    </data>
+    <data name="alerts_removed" xml:space="preserve">
+        <value>Avviso per {0} ({1}) rimosso.</value>
+    </data>
+    <data name="alerts_not_found" xml:space="preserve">
+        <value>Non c'è nessun avviso per {0} ({1}) in questa stanza.</value>
+    </data>
+    <data name="alerts_list_empty" xml:space="preserve">
+        <value>Non ci sono avvisi in questa stanza.</value>
+    </data>
+    <data name="alerts_list" xml:space="preserve">
+        <value>Avvisi di questa stanza: {0}</value>
+    </data>
+    <data name="alerts_twitch_live" xml:space="preserve">
+        <value>{0} è in diretta su Twitch!</value>
+    </data>
+    <data name="alerts_twitch_playing" xml:space="preserve">
+        <value>Sta giocando a {0}</value>
+    </data>
+    <data name="alerts_youtube_live" xml:space="preserve">
+        <value>{0} è in diretta su YouTube!</value>
+    </data>
+    <data name="alerts_youtube_video" xml:space="preserve">
+        <value>{0} ha pubblicato un nuovo video!</value>
+    </data>
+    <data name="alerts_tweet" xml:space="preserve">
+        <value>@{0} ha pubblicato un nuovo tweet!</value>
+    </data>
+    <data name="alerts_watch_stream" xml:space="preserve">
+        <value>Guarda la diretta</value>
+    </data>
+    <data name="alerts_watch_video" xml:space="preserve">
+        <value>Guarda il video</value>
+    </data>
+    <data name="alerts_see_tweet" xml:space="preserve">
+        <value>Vedi il tweet</value>
+    </data>
+</root>
