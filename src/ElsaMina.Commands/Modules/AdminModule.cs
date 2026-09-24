@@ -15,9 +15,6 @@ public class AdminModule : Module
     {
         base.Load(builder);
 
-#if DEBUG
-        builder.RegisterCommand<ScriptCommand>();
-#endif
         builder.RegisterCommand<Ping>();
         builder.RegisterCommand<LagTestCommand>();
         builder.RegisterCommand<SetLocaleCommand>();

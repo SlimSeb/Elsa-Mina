@@ -66,7 +66,6 @@ WebSocket → IClient.MessageReceived
 - Key overridable properties: `RequiredRank`, `IsAllowedInPrivateMessage`, `IsWhitelistOnly`, `IsPrivateMessageOnly`, `HelpMessageKey`, `RoomRestriction`.
 - `context.Target` holds the argument string (everything after the command trigger + name).
 - Commands are registered with `builder.RegisterCommand<T>()` in `CommandModule.cs`.
-- The `ScriptCommand` is only registered in `#if DEBUG`.
 
 ### Context System
 

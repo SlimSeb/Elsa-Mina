@@ -22,7 +22,6 @@
         <PackageReference Include="Lusamine.Markovify" />
         <PackageReference Include="Serilog.Sinks.File" />
         <PackageReference Include="Lusamine.GTranslate" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" />
         <PackageReference Include="ScottPlot" />
     </ItemGroup>
 
