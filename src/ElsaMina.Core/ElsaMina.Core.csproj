@@ -11,6 +11,7 @@
         <PackageReference Include="Autofac"/>
         <PackageReference Include="Lusamine.ImageIdentifier" />
         <PackageReference Include="Lusamine.WebSocketClient"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
         <PackageReference Include="NCalcSync"/>
         <PackageReference Include="RazorLight"/>
     </ItemGroup>
