@@ -38,8 +38,8 @@ public class StartManager : IStartManager
     public async Task LoadStaticDataAsync(CancellationToken cancellationToken = default)
     {
         _playTimeUpdateService.Initialize();
+        _templatesManager.LoadTemplates();
         await Task.WhenAll(
-            _templatesManager.CompileTemplatesAsync(),
             _customColorsManager.FetchCustomColorsAsync(cancellationToken),
             _roomColorsCache.LoadAsync(cancellationToken),
             _roomUserDataService.InitializeJoinPhrasesAsync(cancellationToken),

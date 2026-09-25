@@ -56,7 +56,7 @@
         <div style="@sectionStyle">
             <div style="@sectionTitleStyle">@GetString("edit_profile_panel_preview_section")</div>
             <div>
-                @{ await IncludeAsync("Profile/Profile", Model.ProfilePreview); }
+                @{<ElsaMina.Templates.Profile.Profile Model="@(Model.ProfilePreview)" />}
             </div>
         </div>
     }
@@ -164,7 +164,7 @@
                         @foreach (var doll in Model.Dolls)
                         {
                             <td style="@dollCellStyle vertical-align: bottom;">
-                                @{ await IncludeAsync("Dolls/Doll", doll); }
+                                @{<ElsaMina.Templates.Dolls.Doll Model="@(doll)" />}
                             </td>
                         }
                     </tr>

@@ -31,7 +31,7 @@
                                 <span style="display:block;height:@(size)px;line-height:@(size)px;font-size:0;">
                                     @if (doll != null)
                                     {
-                                        await IncludeAsync("Dolls/Doll", doll);
+                                        <text><ElsaMina.Templates.Dolls.Doll Model="@(doll)" /></text>
                                     }
                                 </span>
                                 <span style="display:block;width:@(size * 3 / 4)px;height:3px;margin:0 auto;border-radius:50%;background:@(doll != null ? "rgba(0,0,0,0.4)" : "transparent");"></span>

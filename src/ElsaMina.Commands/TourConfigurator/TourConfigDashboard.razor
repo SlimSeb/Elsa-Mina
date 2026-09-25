@@ -51,13 +51,14 @@
     <hr/>
     <h3>@GetString("tourconfig_create_new")</h3>
     @{
-        await IncludeAsync("TourConfigurator/TourConfigForm", new ElsaMina.Commands.TourConfigurator.TourConfigFormViewModel
+        var newTourFormModel = new ElsaMina.Commands.TourConfigurator.TourConfigFormViewModel
         {
             Culture = Model.Culture,
             BotName = Model.BotName,
             Trigger = Model.Trigger,
             RoomId = Model.RoomId,
             ExistingConfig = null
-        });
+        };
+        <text><ElsaMina.Templates.TourConfigurator.TourConfigForm Model="@(newTourFormModel)" /></text>
     }
 </div>

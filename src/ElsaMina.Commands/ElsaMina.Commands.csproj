@@ -1,10 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <PreserveCompilationContext>true</PreserveCompilationContext>
-        <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
     </PropertyGroup>
 
     <ItemGroup>
@@ -26,14 +24,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="**\*.cshtml">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>Templates\%(RecursiveDir)%(Filename)%(Extension)</Link>
-        </Content>
-        <Content Remove="bin\**" />
-    </ItemGroup>
-
-    <ItemGroup>
+        <!-- The Razor SDK already adds the JSON files as Content, remove them so this include does not duplicate them -->
+        <Content Remove="Data\**" />
         <Content Include="Data\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>

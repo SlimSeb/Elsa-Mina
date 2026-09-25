@@ -173,7 +173,7 @@
                         {
                             <text>
                                 @{
-                                    await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
+                                    <text><ElsaMina.Templates.RoomDashboard.RoomParameterLine Model="@(parameterModel)" /></text>
                                 }
                             </text>
                         }
@@ -195,7 +195,7 @@
                     {
                         <text>
                             @{
-                                await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
+                                <text><ElsaMina.Templates.RoomDashboard.RoomParameterLine Model="@(parameterModel)" /></text>
                             }
                         </text>
                     }
@@ -238,7 +238,7 @@
                                     <button
                                         class="button"
                                         name="send"
-                                        value="/msgroom @Model.RoomId, @(Model.Trigger)@game.Command"
+                                        value="/msgroom @Model.RoomId, @(Model.Trigger + game.Command)"
                                         style="@playBtnStyle">
                                         @GetString("dashboard_btn_start_game")
                                     </button>

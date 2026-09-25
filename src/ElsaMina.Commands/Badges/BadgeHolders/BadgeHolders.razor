@@ -5,14 +5,15 @@
 
     @foreach (var badge in Model.Badges)
     {
-        await IncludeAsync("Badges/BadgeDisplay/BadgeDisplay", new BadgeDisplayViewModel
+        var badgeDisplayModel = new BadgeDisplayViewModel
         {
             Culture = Model.Culture,
             DisplayedBadge = badge,
             BadgeHolders = badge.BadgeHolders
                 .Select(holding => holding.RoomUser?.User?.UserName ?? holding.UserId)
                 .ToArray()
-        });
+        };
+        <text><ElsaMina.Templates.Badges.BadgeDisplay.BadgeDisplay Model="@(badgeDisplayModel)" /></text>
         <br/>
         <br/>
     }

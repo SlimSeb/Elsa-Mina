@@ -103,7 +103,7 @@ Supported locales: `en-US`, `fr-FR`, `es-ES`, `it-IT`, `pt-BR`, `de-DE`.
 
 ### HTML Templates
 
-Rich HTML responses use RazorLight (`.cshtml` files). Templates live next to the command files in `ElsaMina.Commands/`. `ITemplatesManager.GetTemplateAsync(key, model)` renders them. Template keys correspond to the relative path under a `Templates/` directory.
+Rich HTML responses use Razor components (`.razor` files) compiled at build time (no runtime compilation) and rendered to strings with `HtmlRenderer`. Templates live next to the command files in `ElsaMina.Commands/` and inherit `LocalizableTemplatePage<TViewModel>` (or `TemplatePage<TModel>` for models without a culture). `_Imports.razor` puts them under the `ElsaMina.Templates` namespace, and the template key is the folder path plus file name (e.g. `Games/Wordle/WordleBoard`). `ITemplatesManager.GetTemplateAsync(key, model)` renders them. Use `@Raw(html)` for unencoded HTML and `<ElsaMina.Templates.Badges.Badge Model="@(badge)" />` to render one template inside another (inside a code block such as `@foreach`, wrap it in `<text>...</text>` so the line indentation is not rendered). Inside an attribute, combine values into a single expression (`style="@(a + b)"`), the component compiler rejects adjacent ones like `@a@b`.
 
 ### Room Parameters
 

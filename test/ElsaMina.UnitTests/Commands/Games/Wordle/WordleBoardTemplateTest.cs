@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
 using NSubstitute;
-using RazorLight;
+using ElsaMina.Core.Services.Templates;
 
 namespace ElsaMina.UnitTests.Commands.Games.Wordle;
 
@@ -15,7 +15,7 @@ namespace ElsaMina.UnitTests.Commands.Games.Wordle;
 [TestFixture]
 public class WordleBoardTemplateTest
 {
-    private RazorLightEngine _engine;
+    private TemplatesManager _templatesManager;
     private IWordleGame _game;
 
     [OneTimeSetUp]
@@ -28,11 +28,8 @@ public class WordleBoardTemplateTest
         containerService.Resolve<IResourcesService>().Returns(resourcesService);
         DependencyContainerService.Current = containerService;
 
-        _engine = new RazorLightEngineBuilder()
-            .UseFileSystemProject(Path.Join(Environment.CurrentDirectory, "Templates"))
-            .SetOperatingAssembly(typeof(WordleModel).Assembly)
-            .UseMemoryCachingProvider()
-            .Build();
+        _templatesManager = new TemplatesManager();
+        _templatesManager.LoadTemplates();
     }
 
     [SetUp]
@@ -52,8 +49,8 @@ public class WordleBoardTemplateTest
         _game.IsRoundActive.Returns(true);
     }
 
-    private Task<string> RenderAsync(bool isPrivateMode) => _engine.CompileRenderAsync(
-        "Games/Wordle/WordleBoard.cshtml",
+    private Task<string> RenderAsync(bool isPrivateMode) => _templatesManager.GetTemplateAsync(
+        "Games/Wordle/WordleBoard",
         new WordleModel
         {
             Culture = new CultureInfo("en-US"),

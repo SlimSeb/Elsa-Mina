@@ -3,7 +3,7 @@
 <div style="overflow-y: auto; max-height: 100px;">
     @foreach (var badge in Model.Badges)
     {
-        await IncludeAsync("Badges/Badge", badge);
+        <text><ElsaMina.Templates.Badges.Badge Model="@(badge)" /></text>
         <b title="@badge.Id">@badge.Name</b>
         <br/>
     }

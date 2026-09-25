@@ -176,7 +176,7 @@ The following scripts are available:
 
 ### Resilience & Templating
 - **WebSocket auto-reconnect**: automatic reconnection with configurable error and lost-connection timeouts
-- **RazorLight HTML templates**: `.cshtml` templates pre-compiled at startup and cached in memory for rich HTML responses
+- **Razor component HTML templates**: `.razor` templates compiled at build time and rendered with `HtmlRenderer` for rich HTML responses
 
 ### Per-room Configuration
 - **Configurable settings**: each room independently controls locale, timezone, command autocorrect, error message visibility, team link previews, and replay previews

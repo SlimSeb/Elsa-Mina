@@ -3,14 +3,14 @@ using ElsaMina.Commands.Misc.Help;
 using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Resources;
 using NSubstitute;
-using RazorLight;
+using ElsaMina.Core.Services.Templates;
 
 namespace ElsaMina.UnitTests.Commands.Misc.Help;
 
 [TestFixture]
 public class HelpTemplateTest
 {
-    private RazorLightEngine _engine;
+    private TemplatesManager _templatesManager;
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
@@ -26,11 +26,8 @@ public class HelpTemplateTest
         containerService.Resolve<IResourcesService>().Returns(resourcesService);
         DependencyContainerService.Current = containerService;
 
-        _engine = new RazorLightEngineBuilder()
-            .UseFileSystemProject(Path.Join(Environment.CurrentDirectory, "Templates"))
-            .SetOperatingAssembly(typeof(HelpViewModel).Assembly)
-            .UseMemoryCachingProvider()
-            .Build();
+        _templatesManager = new TemplatesManager();
+        _templatesManager.LoadTemplates();
     }
 
     [Test]
@@ -45,7 +42,7 @@ public class HelpTemplateTest
             RepositoryLink = "https://github.com/SlimSeb/Elsa-Mina"
         };
 
-        var html = await _engine.CompileRenderAsync("Misc/Help/Help.cshtml", model);
+        var html = await _templatesManager.GetTemplateAsync("Misc/Help/Help", model);
 
         Assert.That(html, Does.Contain("<button name=\"send\" value=\"/w TestBot,-bugreport\">help_report_bug</button>"));
         Assert.That(html, Does.Contain("<button name=\"send\" value=\"/w TestBot,-allcommands\">help_commands_list</button>"));

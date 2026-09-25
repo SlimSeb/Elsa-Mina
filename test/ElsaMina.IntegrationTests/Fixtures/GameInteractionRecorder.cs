@@ -34,7 +34,7 @@ public sealed class GameInteractionRecorder
 
     /// <summary>
     /// The <see cref="ITemplatesManager"/> to hand to the game under test. It renders every template
-    /// as the empty string, so the trace stays independent of the .cshtml files.
+    /// as the empty string, so the trace stays independent of the .razor templates.
     /// </summary>
     public ITemplatesManager TemplatesManager { get; }
 
@@ -299,7 +299,9 @@ public sealed class GameInteractionRecorder
             _recorder = recorder;
         }
 
-        public Task CompileTemplatesAsync() => Task.CompletedTask;
+        public void LoadTemplates()
+        {
+        }
 
         public Task<string> GetTemplateAsync(string templateKey, object model)
         {

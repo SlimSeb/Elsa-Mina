@@ -4,12 +4,13 @@
 <div style="margin:auto;overflow-y:auto;max-height:230px;background:#1a1a2e;border-radius:6px;padding:4px;">
     @foreach (var team in Model.Teams)
     {
-        await IncludeAsync("Teams/SampleTeam", new SampleTeamViewModel
+        var sampleTeamModel = new SampleTeamViewModel
         {
             Culture = Model.Culture,
             Team = team,
             TimeZone = Model.TimeZone
-        });
+        };
+        <text><ElsaMina.Templates.Teams.SampleTeam Model="@(sampleTeamModel)" /></text>
     }
     <div style="clear:both;"></div>
 </div>

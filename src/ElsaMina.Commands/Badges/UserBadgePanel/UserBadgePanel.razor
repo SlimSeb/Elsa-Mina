@@ -28,7 +28,7 @@
             <div style="@rowStyle @(owned ? ownedStyle : notOwnedStyle)">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     @{
-                        await IncludeAsync("Badges/Badge", badge);
+                        <text><ElsaMina.Templates.Badges.Badge Model="@(badge)" /></text>
                     }
                     <span style="font-weight: bold;">@badge.Name</span>
                     @if (owned)

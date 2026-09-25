@@ -59,11 +59,11 @@
                         var isLast = ownBoard.LastShot.Row == row && ownBoard.LastShot.Column == column;
                         if (shot == CellShotState.Hit)
                         {
-                            <td style="@hitStyle@(isLast ? lastShotStyle : "")">✸</td>
+                            <td style="@(hitStyle + (isLast ? lastShotStyle : ""))">✸</td>
                         }
                         else if (shot == CellShotState.Miss)
                         {
-                            <td style="@missStyle@(isLast ? lastShotStyle : "")">•</td>
+                            <td style="@(missStyle + (isLast ? lastShotStyle : ""))">•</td>
                         }
                         else if (hasShip)
                         {
@@ -100,11 +100,11 @@
                         var isLast = enemyBoard.LastShot.Row == row && enemyBoard.LastShot.Column == column;
                         if (shot == CellShotState.Hit)
                         {
-                            <td style="@hitStyle@(isLast ? lastShotStyle : "")">✸</td>
+                            <td style="@(hitStyle + (isLast ? lastShotStyle : ""))">✸</td>
                         }
                         else if (shot == CellShotState.Miss)
                         {
-                            <td style="@missStyle@(isLast ? lastShotStyle : "")">•</td>
+                            <td style="@(missStyle + (isLast ? lastShotStyle : ""))">•</td>
                         }
                         else if (ended && hasShip)
                         {

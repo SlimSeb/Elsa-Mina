@@ -69,7 +69,7 @@
                         {
                             <text>
                                 @{
-                                    await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
+                                    <text><ElsaMina.Templates.RoomDashboard.RoomParameterLine Model="@(parameterModel)" /></text>
                                 }
                             </text>
                         }
@@ -91,7 +91,7 @@
                     {
                         <text>
                             @{
-                                await IncludeAsync("RoomDashboard/RoomParameterLine", parameterModel);
+                                <text><ElsaMina.Templates.RoomDashboard.RoomParameterLine Model="@(parameterModel)" /></text>
                             }
                         </text>
                     }

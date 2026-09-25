@@ -12,7 +12,7 @@
                     <img src="@gif.PreviewUrl" width="@gif.ThumbWidth" height="@gif.ThumbHeight"
                          style="transform:rotate(0deg);display:block;" alt="Gif thumbnail"/>
                     <button class="button" name="send"
-                            value="@Model.Trigger@("klipygif") @gif.FullUrl|@gif.FullWidth|@gif.FullHeight">@GetString("klipysearch_send")
+                            value="@($"{Model.Trigger}klipygif {gif.FullUrl}|{gif.FullWidth}|{gif.FullHeight}")">@GetString("klipysearch_send")
                     </button>
                 </td>
             }

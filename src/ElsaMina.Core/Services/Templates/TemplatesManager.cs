@@ -1,56 +1,109 @@
 using System.Collections.Concurrent;
+using System.Reflection;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
-using RazorLight;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ElsaMina.Core.Services.Templates;
 
 public class TemplatesManager : ITemplatesManager
 {
-    private const string TEMPLATES_DIRECTORY_NAME = "Templates";
+    private const string TEMPLATES_NAMESPACE = "ElsaMina.Templates";
 
-    private static readonly string TEMPLATES_DIRECTORY_PATH =
-        Path.Join(Environment.CurrentDirectory, TEMPLATES_DIRECTORY_NAME);
+    private const string ASSEMBLY_NAME_PREFIX = "ElsaMina.";
+    private const string MODEL_PARAMETER_NAME = nameof(TemplatePage<object>.Model);
 
-    private static readonly RazorLightEngine RAZOR_ENGINE = new RazorLightEngineBuilder()
-        .UseFileSystemProject(TEMPLATES_DIRECTORY_PATH)
-        .UseMemoryCachingProvider()
-        .Build();
+    private static readonly IServiceProvider SERVICE_PROVIDER = new ServiceCollection().BuildServiceProvider();
 
-    private readonly ConcurrentDictionary<string, ITemplatePage> _compilationResults = new();
+    private readonly ConcurrentDictionary<string, Type> _templateTypes = new();
+
+    public void LoadTemplates()
+    {
+        var templateTypes = GetElsaMinaAssemblies()
+            .SelectMany(assembly => assembly.GetTypes())
+            .Where(IsTemplateType);
+
+        foreach (var templateType in templateTypes)
+        {
+            _templateTypes[GetTemplateKey(templateType)] = templateType;
+        }
+
+        Log.Information("Loaded {0} templates", _templateTypes.Count);
+    }
+
+    /// <summary>
+    /// Returns the loaded ElsaMina assemblies plus the ElsaMina assemblies they reference, so templates are
+    /// found even when their assembly has not been loaded yet.
+    /// </summary>
+    private static IEnumerable<Assembly> GetElsaMinaAssemblies()
+    {
+        var assembliesByName = new Dictionary<string, Assembly>();
+        var pendingAssemblies = new Queue<Assembly>(AppDomain.CurrentDomain
+            .GetAssemblies()
+            .Where(assembly => IsElsaMinaAssembly(assembly.GetName())));
+
+        while (pendingAssemblies.TryDequeue(out var assembly))
+        {
+            if (!assembliesByName.TryAdd(assembly.GetName().Name!, assembly))
+            {
+                continue;
+            }
+
+            foreach (var referencedName in assembly.GetReferencedAssemblies().Where(IsElsaMinaAssembly))
+            {
+                if (!assembliesByName.ContainsKey(referencedName.Name!))
+                {
+                    pendingAssemblies.Enqueue(Assembly.Load(referencedName));
+                }
+            }
+        }
+
+        return assembliesByName.Values;
+    }
+
+    private static bool IsElsaMinaAssembly(AssemblyName assemblyName)
+    {
+        return assemblyName.Name?.StartsWith(ASSEMBLY_NAME_PREFIX) == true;
+    }
 
     public async Task<string> GetTemplateAsync(string templateKey, object model)
     {
-        if (!_compilationResults.TryGetValue(templateKey, out var compiledTemplatePage))
+        if (!_templateTypes.TryGetValue(templateKey, out var templateType))
         {
             return null;
         }
 
-        var template = await RAZOR_ENGINE.RenderTemplateAsync(compiledTemplatePage, model);
-        return template.RemoveNewlines();
+        // A renderer keeps every component it renders alive until it is disposed, so each render gets its own
+        await using var htmlRenderer = new HtmlRenderer(SERVICE_PROVIDER, NullLoggerFactory.Instance);
+        var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                [MODEL_PARAMETER_NAME] = model
+            });
+            var output = await htmlRenderer.RenderComponentAsync(templateType, parameters);
+            return output.ToHtmlString();
+        });
+
+        return html.RemoveNewlines();
     }
 
-    public async Task CompileTemplatesAsync()
+    private static bool IsTemplateType(Type type)
     {
-        var compilationTasks = FileSystem
-            .GetFilesFromDirectoryRecursively(TEMPLATES_DIRECTORY_PATH)
-            .Where(templatePath => Path.GetExtension(templatePath) == ".cshtml")
-            .Select(CompileTemplateAsync);
-        await Task.WhenAll(compilationTasks);
-        Log.Information("Done compiling templates");
+        return !type.IsAbstract
+               && typeof(IComponent).IsAssignableFrom(type)
+               && type.Namespace != null
+               && (type.Namespace == TEMPLATES_NAMESPACE || type.Namespace.StartsWith(TEMPLATES_NAMESPACE + "."));
     }
 
-    private async Task CompileTemplateAsync(string templatePath)
+    private static string GetTemplateKey(Type templateType)
     {
-        var templateKey = GetTemplateKeyFromPath(templatePath);
-        _compilationResults[templateKey] = await RAZOR_ENGINE.CompileTemplateAsync(templatePath);
-    }
-
-    private static string GetTemplateKeyFromPath(string templatePath)
-    {
-        return FileSystem
-            .MakeRelativePath(templatePath, TEMPLATES_DIRECTORY_PATH)
-            .Substring(TEMPLATES_DIRECTORY_NAME.Length + 1)
-            .RemoveExtension();
+        var relativeNamespace = templateType.Namespace!.Substring(TEMPLATES_NAMESPACE.Length).TrimStart('.');
+        return relativeNamespace.Length == 0
+            ? templateType.Name
+            : $"{relativeNamespace.Replace('.', '/')}/{templateType.Name}";
     }
 }

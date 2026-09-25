@@ -5,6 +5,6 @@
     <h2 style="text-align:center;color:#6688AA">@GetString("tourconfig_edit_title", Model.ExistingConfig.TourName ?? Model.ExistingConfig.Id)</h2>
     <hr/>
     @{
-        await IncludeAsync("TourConfigurator/TourConfigForm", Model);
+        <text><ElsaMina.Templates.TourConfigurator.TourConfigForm Model="@(Model)" /></text>
     }
 </div>

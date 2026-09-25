@@ -27,7 +27,7 @@
     <tbody>
     <tr>
         <td style="@cellStyle">
-            @{ await IncludeAsync("Games/Chess/ChessGrid", Model); }
+            @{<ElsaMina.Templates.Games.Chess.ChessGrid Model="@(Model)" />}
         </td>
         <td style="padding: 20px; @cellStyle">
             <span style="font-weight: bold;">@GetString("chess_game_name")</span><br/>

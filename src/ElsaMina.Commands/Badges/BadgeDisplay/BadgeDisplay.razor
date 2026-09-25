@@ -1,7 +1,7 @@
 @inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Badges.BadgeDisplay.BadgeDisplayViewModel>
 
 @{
-    await IncludeAsync("Badges/Badge", Model.DisplayedBadge);
+    <text><ElsaMina.Templates.Badges.Badge Model="@(Model.DisplayedBadge)" /></text>
 }
 &nbsp;
 <b>@Model.DisplayedBadge.Name</b>

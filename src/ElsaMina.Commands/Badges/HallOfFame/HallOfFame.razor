@@ -55,7 +55,7 @@
                 <td>
                     @foreach (var badge in entry.Badges)
                     {
-                        await IncludeAsync("Badges/Badge", badge);
+                        <text><ElsaMina.Templates.Badges.Badge Model="@(badge)" /></text>
                     }
                 </td>
             </tr>

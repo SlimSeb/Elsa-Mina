@@ -1,13 +1,45 @@
 using ElsaMina.Core.Services.Templates;
+using ElsaMina.DataAccess.Models;
 
 namespace ElsaMina.IntegrationTests.Core.Services.Templates;
 
 public class TemplatesTest
 {
-    [Test]
-    public void Test_TemplatesManager_ShouldCompileTemplatesWithoutErrors()
+    private TemplatesManager _templatesManager;
+
+    [SetUp]
+    public void SetUp()
     {
-        var templateService = new TemplatesManager();
-        Assert.DoesNotThrowAsync(async () => await templateService.CompileTemplatesAsync());
+        _templatesManager = new TemplatesManager();
+        _templatesManager.LoadTemplates();
+    }
+
+    [Test]
+    public async Task Test_GetTemplateAsync_ShouldRenderTemplate_WhenKeyMatchesTemplatePath()
+    {
+        var badge = new Badge { Name = "Champion", Image = " https://example.com/badge.png " };
+
+        var html = await _templatesManager.GetTemplateAsync("Badges/Badge", badge);
+
+        Assert.That(html, Does.Contain("src=\"https://example.com/badge.png\""));
+        Assert.That(html, Does.Contain("title=\"Champion\""));
+    }
+
+    [Test]
+    public async Task Test_GetTemplateAsync_ShouldEncodeModelValues()
+    {
+        var badge = new Badge { Name = "<script>", Image = "https://example.com/badge.png" };
+
+        var html = await _templatesManager.GetTemplateAsync("Badges/Badge", badge);
+
+        Assert.That(html, Does.Not.Contain("<script>"));
+    }
+
+    [Test]
+    public async Task Test_GetTemplateAsync_ShouldReturnNull_WhenTemplateDoesNotExist()
+    {
+        var html = await _templatesManager.GetTemplateAsync("Unknown/Template", new object());
+
+        Assert.That(html, Is.Null);
     }
 }

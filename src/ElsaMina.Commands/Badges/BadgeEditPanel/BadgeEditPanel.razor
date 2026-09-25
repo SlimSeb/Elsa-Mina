@@ -33,7 +33,7 @@
         <form data-submitsend="@Model.EditCommand" style="@rowStyle">
             <div style="margin-bottom: .35rem;">
                 @{
-                    await IncludeAsync("Badges/Badge", badge);
+                    <text><ElsaMina.Templates.Badges.Badge Model="@(badge)" /></text>
                 }
                 <strong>@badge.Name</strong>
             </div>
