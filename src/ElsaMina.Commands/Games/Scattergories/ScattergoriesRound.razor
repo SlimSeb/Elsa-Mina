@@ -28,7 +28,7 @@
         <div style="text-align: center; margin: 10px 0;">
             @foreach (var entry in Model.Found)
             {
-                var color = entry.FinderName.ToColorHexCodeWithCustoms();
+                var color = GetUserColor(entry.FinderName);
                 <div style="display: inline-block; vertical-align: top; width: 92px; margin: 4px; padding: 4px; background: #3b374a; border-radius: 6px;">
                     @if (!string.IsNullOrEmpty(entry.SpriteUrl))
                     {
@@ -51,7 +51,7 @@
                 }
                 @foreach (var (name, points) in Model.Scores)
                 {
-                    var color = name.ToColorHexCodeWithCustoms();
+                    var color = GetUserColor(name);
                     <tr>
                         <td style="padding: 1px 6px; text-align: right; color: #8f86a8;">@rank.</td>
                         <td style="padding: 1px 6px; text-align: left;"><b style="color: @color;">@name</b></td>

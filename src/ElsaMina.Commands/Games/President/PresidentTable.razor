@@ -58,7 +58,7 @@
             var isCurrent = game.CurrentPlayer == player;
             <tr style="@(isCurrent ? "font-weight:bold;background:#2c4152" : "")">
                 <td style="padding:2px 10px">
-                    <span style="color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</span>
+                    <span style="color:@GetUserColor(player.Name)">@player.Name</span>
                     @if (player.Role != PresidentRole.None && player.Role != PresidentRole.Neutral)
                     {
                         <span title="@GetString($"president_role_{player.Role.ToString().ToLowerInvariant()}")">@RoleIcon(player.Role)</span>
@@ -122,7 +122,7 @@
         {
             <p style="text-align:center;margin:6px 0 0 0">
                 @GetString("president_waiting_for")
-                <b style="color:@game.CurrentPlayer.Name.ToColorHexCodeWithCustoms()">@game.CurrentPlayer.Name</b>
+                <b style="color:@GetUserColor(game.CurrentPlayer.Name)">@game.CurrentPlayer.Name</b>
             </p>
         }
     }

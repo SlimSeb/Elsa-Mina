@@ -41,7 +41,7 @@
                     &nbsp;@rating.Index<span style="color:@TrendColor(rating.IndexDifference);font-weight:bold"
                                              title="@TrendTitle(rating.IndexDifference)">@Raw(TrendArrowOrNbsp(rating.IndexDifference))</span>
                 </td>
-                <td style="color: @rating.UserId.ToColorHexCodeWithCustoms()">
+                <td style="color: @GetUserColor(rating.UserId)">
                     @rating.Username
                 </td>
                 <td style="text-align:center">

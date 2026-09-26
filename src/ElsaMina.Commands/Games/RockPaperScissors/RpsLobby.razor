@@ -9,7 +9,7 @@
         <p><b>@GetString("rps_players_label")</b>
             @foreach (var name in Model.Players)
             {
-                <b style="color:@name.ToColorHexCodeWithCustoms()">@name</b>
+                <b style="color:@GetUserColor(name)">@name</b>
                 <text> </text>
             }
         </p>

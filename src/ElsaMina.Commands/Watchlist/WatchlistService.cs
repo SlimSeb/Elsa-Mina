@@ -3,6 +3,7 @@ using System.Web;
 using ElsaMina.Core;
 using ElsaMina.Core.Services;
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Utils;
@@ -30,15 +31,17 @@ public class WatchlistService : IWatchlistService
     private readonly IBot _bot;
     private readonly IHttpService _httpService;
     private readonly IConfiguration _configuration;
+    private readonly IUserColorsService _userColorsService;
     private readonly PendingQueryRequestsManager<string, string> _pendingStaffIntroRequests;
 
     public WatchlistService(IBotDbContextFactory dbContextFactory, IBot bot, IHttpService httpService,
-        ISystemService systemService, IConfiguration configuration)
+        ISystemService systemService, IConfiguration configuration, IUserColorsService userColorsService)
     {
         _dbContextFactory = dbContextFactory;
         _bot = bot;
         _httpService = httpService;
         _configuration = configuration;
+        _userColorsService = userColorsService;
         _pendingStaffIntroRequests = new PendingQueryRequestsManager<string, string>(
             systemService,
             STAFF_INTRO_FETCH_TIMEOUT,
@@ -140,11 +143,11 @@ public class WatchlistService : IWatchlistService
         }
     }
 
-    private static string GenerateWatchlistHtml(Dictionary<string, string> watchlist)
+    private string GenerateWatchlistHtml(Dictionary<string, string> watchlist)
     {
         var parts = watchlist.Select(kvp =>
         {
-            var color = kvp.Key.ToColorHexCodeWithCustoms();
+            var color = _userColorsService.GetUserColor(kvp.Key);
             var escapedUser = HttpUtility.HtmlEncode(kvp.Key);
             return
                 $"""<strong class="username {escapedUser}" style="color: {color};">{kvp.Value}{escapedUser}</strong>""";

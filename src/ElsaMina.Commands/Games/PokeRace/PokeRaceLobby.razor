@@ -44,7 +44,7 @@
         <div style="display: flex; flex-wrap: wrap; justify-content: center;">
             @foreach (var (_, (name, pokemon)) in Model.Players)
             {
-                var color = name.ToColorHexCodeWithCustoms();
+                var color = GetUserColor(name);
                 <div style="text-align: center; padding: 5px; margin: 0 8px;">
                     <img src="@PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite" width="40" height="40" alt="@pokemon"><br>
                     <b style="color: @color">@name</b><br>

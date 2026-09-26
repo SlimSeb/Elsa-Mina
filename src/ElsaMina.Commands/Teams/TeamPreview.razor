@@ -9,7 +9,7 @@
 <div style="display:inline-block;background:#1a1a2e;border-radius:6px;padding:1px;">
 <div style="background:#1a1a2e;border-radius:6px;padding:8px 12px;font-size:11px;color:#e0e0e0;font-family:monospace;">
     <div style="margin-bottom:2px;">
-        <span style="font-weight:bold;font-size:12px;color:@Model.Sender.ToColorHexCodeWithCustoms();">
+        <span style="font-weight:bold;font-size:12px;color:@GetUserColor(Model.Sender);">
             @GetString("team_preview_title", Model.Sender)
         </span>
         @if (!string.IsNullOrEmpty(Model.Author))

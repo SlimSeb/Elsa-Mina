@@ -1,5 +1,8 @@
+using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.DataAccess.Models;
+using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 
 namespace ElsaMina.IntegrationTests.Core.Services.Templates;
 
@@ -10,7 +13,13 @@ public class TemplatesTest
     [SetUp]
     public void SetUp()
     {
-        _templatesManager = new TemplatesManager();
+        var userColorsService = Substitute.For<IUserColorsService>();
+        userColorsService.GetUserColor(Arg.Any<string>()).Returns("#000000");
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(userColorsService)
+            .BuildServiceProvider();
+
+        _templatesManager = new TemplatesManager(serviceProvider);
         _templatesManager.LoadTemplates();
     }
 

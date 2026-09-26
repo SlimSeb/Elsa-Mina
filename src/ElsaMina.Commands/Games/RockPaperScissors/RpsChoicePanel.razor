@@ -4,9 +4,9 @@
 <div style="background:#333;color:white;padding:10px;border-radius:5px;text-align:center">
     <h3 style="margin:0">✊📄✂️ Rock Paper Scissors ✊📄✂️</h3>
     <p>
-        <b style="color:@Model.Players[0].ToColorHexCodeWithCustoms()">@Model.Players[0]</b>
+        <b style="color:@GetUserColor(Model.Players[0])">@Model.Players[0]</b>
         <b> VS </b>
-        <b style="color:@Model.Players[1].ToColorHexCodeWithCustoms()">@Model.Players[1]</b>
+        <b style="color:@GetUserColor(Model.Players[1])">@Model.Players[1]</b>
     </p>
     <p style="margin:5px 0">@GetString("rps_choose_prompt")</p>
     <button name="send" style="font-size:15px;padding:8px 18px;margin:4px;cursor:pointer"

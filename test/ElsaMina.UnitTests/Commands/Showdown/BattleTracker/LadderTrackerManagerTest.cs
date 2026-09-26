@@ -3,7 +3,6 @@ using ElsaMina.Commands.Showdown.BattleTracker;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.BattleTracker;
 using ElsaMina.Core.Services.CustomColors;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Formats;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
@@ -18,7 +17,7 @@ public class LadderTrackerManagerTest
     private IRoomsManager _roomsManager;
     private IResourcesService _resourcesService;
     private IFormatsManager _formatsManager;
-    private IDependencyContainerService _previousDependencyContainerService;
+    private IUserColorsService _userColorsService;
     private LadderTrackerManager _manager;
 
     [SetUp]
@@ -37,22 +36,17 @@ public class LadderTrackerManagerTest
             .Returns("{0} {1} {2} {3}");
         _formatsManager.GetCleanFormat(Arg.Any<string>()).Returns(callInfo => callInfo.Arg<string>());
 
-        _previousDependencyContainerService = DependencyContainerService.Current;
-        var dependencyContainerService = Substitute.For<IDependencyContainerService>();
-        var customColorsManager = Substitute.For<ICustomColorsManager>();
-        customColorsManager.CustomColorsMapping.Returns(new Dictionary<string, string>());
-        dependencyContainerService.Resolve<ICustomColorsManager>().Returns(customColorsManager);
-        DependencyContainerService.Current = dependencyContainerService;
+        _userColorsService = Substitute.For<IUserColorsService>();
+        _userColorsService.GetUserColor(Arg.Any<string>()).Returns("#000000");
 
         _manager = new LadderTrackerManager(_activeBattlesManager, _bot,
-            _roomsManager, _resourcesService, _formatsManager, TimeSpan.FromMilliseconds(25));
+            _roomsManager, _resourcesService, _formatsManager, _userColorsService, TimeSpan.FromMilliseconds(25));
     }
 
     [TearDown]
     public void TearDown()
     {
         _manager.Dispose();
-        DependencyContainerService.Current = _previousDependencyContainerService;
     }
 
     [Test]

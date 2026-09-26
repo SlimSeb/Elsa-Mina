@@ -1,35 +1,10 @@
 using System.Drawing;
-using ElsaMina.Core.Services.CustomColors;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Utils;
-using NSubstitute;
 
 namespace ElsaMina.UnitTests.Core.Utils;
 
 public class ShowdownColorsTests
 {
-    private ICustomColorsManager _customColorsManager;
-    private IRoomColorsCache _roomColorsCache;
-
-    [SetUp]
-    public void SetUp()
-    {
-        _customColorsManager = Substitute.For<ICustomColorsManager>();
-        _roomColorsCache = Substitute.For<IRoomColorsCache>();
-        _roomColorsCache.GetColor(Arg.Any<string>()).Returns((string)null);
-
-        var containerService = Substitute.For<IDependencyContainerService>();
-        containerService.Resolve<ICustomColorsManager>().Returns(_customColorsManager);
-        containerService.Resolve<IRoomColorsCache>().Returns(_roomColorsCache);
-        DependencyContainerService.Current = containerService;
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        DependencyContainerService.Current = null;
-    }
-
     [Test]
     public void Test_ToColor_ShouldGenerateConsistentColor_ForSameString()
     {
@@ -81,46 +56,5 @@ public class ShowdownColorsTests
 
         // Assert
         Assert.That(rgbString, Is.EqualTo("RGB(255, 128, 64)"));
-    }
-
-    [Test]
-    public void Test_ToColorHexCodeWithCustoms_ShouldUseNameColor_WhenNameColorCacheHasEntry()
-    {
-        _roomColorsCache.GetColor("customuser").Returns("#abcdef");
-
-        var result = "customUser".ToColorHexCodeWithCustoms();
-
-        Assert.That(result, Is.EqualTo("#abcdef"));
-    }
-
-    [Test]
-    public void Test_ToColorHexCodeWithCustoms_ShouldUseCustomColor_WhenCustomColorExists()
-    {
-        // Arrange
-        var userName = "customUser";
-        var customColorUsername = "speks";
-        _customColorsManager.CustomColorsMapping
-            .Returns(new Dictionary<string, string> { { userName.ToLowerAlphaNum(), customColorUsername } });
-
-        // Act
-        var result = userName.ToColorHexCodeWithCustoms();
-
-        // Assert
-        Assert.That(result, Is.EqualTo(customColorUsername.ToColor().ToHexString()));
-    }
-
-    [Test]
-    public void Test_ToColorHexCodeWithCustoms_ShouldFallbackToGeneratedColor_WhenNoCustomColorExists()
-    {
-        // Arrange
-        var userName = "fallbackUser";
-        _customColorsManager.CustomColorsMapping
-            .Returns(new Dictionary<string, string>()); // No custom mapping
-
-        // Act
-        var result = userName.ToColorHexCodeWithCustoms();
-
-        // Assert
-        Assert.That(result, Does.StartWith("#"));
     }
 }

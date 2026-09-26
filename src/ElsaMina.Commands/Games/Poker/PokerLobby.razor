@@ -18,7 +18,7 @@
         {
             foreach (var player in Model.Game.Players)
             {
-                <b style="color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</b>
+                <b style="color:@GetUserColor(player.Name)">@player.Name</b>
                 <text>&nbsp;&nbsp;</text>
             }
         }

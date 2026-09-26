@@ -20,7 +20,7 @@
             {
                 var pokemon = Model.Finished[pos];
                 var playerName = Model.Players.Values.FirstOrDefault(p => p.Pokemon == pokemon).Name ?? "???";
-                var nameColor = playerName.ToColorHexCodeWithCustoms();
+                var nameColor = GetUserColor(playerName);
                 var rank = pos + 1;
                 <div style="text-align: center; margin: 0 15px; position: relative;">
                     <div style="position: absolute; top: -45px; left: 50%; transform: translateX(-50%);">
@@ -52,7 +52,7 @@
         {
             var pokemon = Model.Finished[i];
             var playerName = Model.Players.Values.FirstOrDefault(p => p.Pokemon == pokemon).Name ?? "???";
-            var nameColor = playerName.ToColorHexCodeWithCustoms();
+            var nameColor = GetUserColor(playerName);
             <div style="margin: 3px 0; text-align: center;">
                 <b>#@(i + 1)</b> - <b style="color: @nameColor">@playerName</b> avec @pokemon (@PokeRaceConstants.RACE_POKEMON[pokemon].Type)
             </div>

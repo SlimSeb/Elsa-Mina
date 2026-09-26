@@ -4,7 +4,6 @@ using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ElsaMina.Core.Services.Templates;
@@ -14,11 +13,15 @@ public class TemplatesManager : ITemplatesManager
     private const string TEMPLATES_NAMESPACE = "ElsaMina.Templates";
 
     private const string ASSEMBLY_NAME_PREFIX = "ElsaMina.";
-    private const string MODEL_PARAMETER_NAME = nameof(TemplatePage<object>.Model);
+    private const string MODEL_PARAMETER_NAME = nameof(TemplatePage<>.Model);
 
-    private static readonly IServiceProvider SERVICE_PROVIDER = new ServiceCollection().BuildServiceProvider();
-
+    private readonly IServiceProvider _serviceProvider;
     private readonly ConcurrentDictionary<string, Type> _templateTypes = new();
+
+    public TemplatesManager(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
 
     public void LoadTemplates()
     {
@@ -77,7 +80,7 @@ public class TemplatesManager : ITemplatesManager
         }
 
         // A renderer keeps every component it renders alive until it is disposed, so each render gets its own
-        await using var htmlRenderer = new HtmlRenderer(SERVICE_PROVIDER, NullLoggerFactory.Instance);
+        await using var htmlRenderer = new HtmlRenderer(_serviceProvider, NullLoggerFactory.Instance);
         var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
             var parameters = ParameterView.FromDictionary(new Dictionary<string, object>

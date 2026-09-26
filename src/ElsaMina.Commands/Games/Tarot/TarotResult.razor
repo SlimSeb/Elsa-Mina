@@ -36,11 +36,11 @@
     else
     {
         <p style="text-align:center;margin:4px 0">
-            <b style="color:@game.Taker?.Name.ToColorHexCodeWithCustoms()">@game.Taker?.Name</b>
+            <b style="color:@GetUserColor(game.Taker?.Name)">@game.Taker?.Name</b>
             (@GetString($"tarot_bid_{game.HighestBid.ToString().ToLowerInvariant()}"))
             @if (game.Partner != null)
             {
-                <text>&amp; <b style="color:@game.Partner.Name.ToColorHexCodeWithCustoms()">@game.Partner.Name</b></text>
+                <text>&amp; <b style="color:@GetUserColor(game.Partner.Name)">@game.Partner.Name</b></text>
             }
         </p>
 
@@ -125,7 +125,7 @@
                 var delta = i < result.Deltas.Length ? result.Deltas[i] / 2.0 : 0;
                 var color = delta >= 0 ? "#6ddf9a" : "#ff7b7b";
                 <tr>
-                    <td style="padding:2px 12px;color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</td>
+                    <td style="padding:2px 12px;color:@GetUserColor(player.Name)">@player.Name</td>
                     <td style="padding:2px 12px;text-align:center;font-weight:bold;color:@color">
                         @(delta >= 0 ? "+" : "")@delta.ToString("0.#", Model.Culture)
                     </td>
@@ -144,7 +144,7 @@
                     .ThenBy(card => card.Rank)
                     .ToList();
                 <div style="margin:6px 0;padding:5px 8px;background:#241d2d;border-radius:5px">
-                    <span style="color:@player.Name.ToColorHexCodeWithCustoms();font-weight:bold">@player.Name</span>
+                    <span style="color:@GetUserColor(player.Name);font-weight:bold">@player.Name</span>
                     <span style="color:#b9a9c9">(@GetString("tarot_cards_won_points", capturedPoints.ToString("0.#", Model.Culture)))</span>
                     <div style="margin-top:3px;line-height:1.9em">
                         @if (orderedCards.Count == 0)

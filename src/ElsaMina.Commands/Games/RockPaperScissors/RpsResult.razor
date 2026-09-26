@@ -9,8 +9,8 @@
     var choice2 = Model.Choices[name2.ToLowerAlphaNum()];
     var emoji1 = RpsGame.ChoiceEmoji(choice1);
     var emoji2 = RpsGame.ChoiceEmoji(choice2);
-    var color1 = name1.ToColorHexCodeWithCustoms();
-    var color2 = name2.ToColorHexCodeWithCustoms();
+    var color1 = GetUserColor(name1);
+    var color2 = GetUserColor(name2);
     var isTie = choice1 == choice2;
     var player1Wins = !isTie && RpsGame.Beats(choice1, choice2);
     var winnerName = player1Wins ? name1 : name2;

@@ -11,6 +11,6 @@
     <img style="padding: 3px; border: 1px inset gold; border-radius: 5px; box-shadow: inset 1px 1px 5px white;"
          src="@Model.SlotImageThree" width="80" height="80" alt="Sprite">
     <span style="color: white;"><br/>
-        <b><span style="color: @Model.UserName.ToColorHexCodeWithCustoms()">@Model.UserName</span></b> @Model.OutcomeMessage
+        <b><span style="color: @GetUserColor(Model.UserName)">@Model.UserName</span></b> @Model.OutcomeMessage
 </span>
 </div>

@@ -13,7 +13,7 @@
         foreach (var (player, score) in Model.Scores.OrderByDescending(kvp => kvp.Value))
         {
             <span>
-                @(i++). <span class="username" data-name="@player.UserId" style="color: @player.UserId.ToColorHexCodeWithCustoms()">@player.UserName</span> (@score @GetString("guessing_game_point")@(score == 1 ? string.Empty : "s"))
+                @(i++). <span class="username" data-name="@player.UserId" style="color: @GetUserColor(player.UserId)">@player.UserName</span> (@score @GetString("guessing_game_point")@(score == 1 ? string.Empty : "s"))
             </span>
             <br/>
         }

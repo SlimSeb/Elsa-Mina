@@ -22,7 +22,7 @@
                     if (idx < playersList.Count)
                     {
                         var (name, pokemon) = playersList[idx];
-                        var color = name.ToColorHexCodeWithCustoms();
+                        var color = GetUserColor(name);
                         <td style="text-align: center; padding: 5px; width: 100px;">
                             <img src="@PokeRaceConstants.RACE_POKEMON[pokemon].MiniSprite" width="40" height="40" alt="@pokemon"><br>
                             <b style="color: @color">@name</b><br>

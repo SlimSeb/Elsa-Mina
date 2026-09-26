@@ -1,10 +1,8 @@
 using System.Globalization;
 using System.Text;
-using Autofac;
 using ElsaMina.Commands.ChatLog;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.CustomColors;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Cloud;
@@ -16,34 +14,19 @@ public class DayLineCountCommandTest
 {
     private IFileSharingService _fileSharingService;
     private ITemplatesManager _templatesManager;
+    private IUserColorsService _userColorsService;
     private DayLineCountCommand _command;
 
     [SetUp]
     public void SetUp()
     {
-        var mockRoomColorsCache = Substitute.For<IRoomColorsCache>();
-        mockRoomColorsCache.GetColor(Arg.Any<string>()).Returns((string)null);
-        var mockCustomColorsManager = Substitute.For<ICustomColorsManager>();
-        mockCustomColorsManager.CustomColorsMapping.Returns(new Dictionary<string, string>());
-
-        var containerBuilder = new ContainerBuilder();
-        containerBuilder.RegisterInstance(mockRoomColorsCache).As<IRoomColorsCache>();
-        containerBuilder.RegisterInstance(mockCustomColorsManager).As<ICustomColorsManager>();
-        var containerService = new DependencyContainerService();
-        containerService.SetContainer(containerBuilder.Build());
-        DependencyContainerService.Current = containerService;
-
+        _userColorsService = Substitute.For<IUserColorsService>();
+        _userColorsService.GetUserColor(Arg.Any<string>()).Returns("#000000");
         _fileSharingService = Substitute.For<IFileSharingService>();
         _templatesManager = Substitute.For<ITemplatesManager>();
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>())
             .Returns("<div></div>");
-        _command = new DayLineCountCommand(_fileSharingService, _templatesManager);
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        DependencyContainerService.Current = null;
+        _command = new DayLineCountCommand(_fileSharingService, _templatesManager, _userColorsService);
     }
 
     [Test]

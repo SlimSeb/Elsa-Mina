@@ -1,5 +1,6 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
@@ -12,11 +13,14 @@ public class DayLineCountCommand : Command
 {
     private readonly IFileSharingService _fileSharingService;
     private readonly ITemplatesManager _templatesManager;
+    private readonly IUserColorsService _userColorsService;
 
-    public DayLineCountCommand(IFileSharingService fileSharingService, ITemplatesManager templatesManager)
+    public DayLineCountCommand(IFileSharingService fileSharingService, ITemplatesManager templatesManager,
+        IUserColorsService userColorsService)
     {
         _fileSharingService = fileSharingService;
         _templatesManager = templatesManager;
+        _userColorsService = userColorsService;
     }
 
     public override Rank RequiredRank => Rank.Driver;
@@ -80,7 +84,7 @@ public class DayLineCountCommand : Command
             .Select(kv => new DayLineCountRow
             {
                 UserId = kv.Key,
-                Color = kv.Key.ToColorHexCodeWithCustoms(),
+                Color = _userColorsService.GetUserColor(kv.Key),
                 Messages = kv.Value.Messages,
                 Words = kv.Value.Words,
                 Chars = kv.Value.Chars

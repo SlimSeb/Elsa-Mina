@@ -57,7 +57,7 @@
             var tag = PositionTag(player);
             <tr style="@(isCurrent ? "background:#27562f;font-weight:bold" : "")">
                 <td style="padding:3px 8px;text-align:right;color:#cfe">@(isCurrent ? "▶" : "")</td>
-                <td style="padding:3px 8px;color:@player.Name.ToColorHexCodeWithCustoms()">
+                <td style="padding:3px 8px;color:@GetUserColor(player.Name)">
                     @player.Name
                     @if (!string.IsNullOrEmpty(tag))
                     {
@@ -89,7 +89,7 @@
     {
         <p style="text-align:center;margin:8px 0 0 0">
             @GetString("poker_waiting_for")
-            <b style="color:@game.CurrentPlayer.Name.ToColorHexCodeWithCustoms()">@game.CurrentPlayer.Name</b>
+            <b style="color:@GetUserColor(game.CurrentPlayer.Name)">@game.CurrentPlayer.Name</b>
         </p>
     }
 </div>

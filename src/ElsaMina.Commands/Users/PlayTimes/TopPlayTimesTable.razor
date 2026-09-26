@@ -25,7 +25,7 @@
         {
             <tr>
                 <td style="text-align:center">@entry.Rank</td>
-                <td style="text-align: center; color: @entry.UserId.ToColorHexCodeWithCustoms()">@entry.UserName</td>
+                <td style="text-align: center; color: @GetUserColor(entry.UserId)">@entry.UserName</td>
                 <td style="text-align:center">@entry.PlayTime.ToString(GetString("play_time_format"))</td>
             </tr>
         }

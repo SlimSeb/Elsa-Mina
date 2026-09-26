@@ -67,7 +67,7 @@
                 <span
                     class="username"
                     data-name="@Model.UserId"
-                    style="font-weight:bold;font-size:12px;color:@Model.UserId.ToColorHexCodeWithCustoms();">
+                    style="font-weight:bold;font-size:12px;color:@GetUserColor(Model.UserId);">
                     @Model.UserName
                 </span>
                 @if (!string.IsNullOrEmpty(Model.ProfileEmoji))

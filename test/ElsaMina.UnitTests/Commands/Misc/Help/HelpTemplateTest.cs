@@ -1,7 +1,8 @@
 using System.Globalization;
 using ElsaMina.Commands.Misc.Help;
-using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Resources;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using ElsaMina.Core.Services.Templates;
 
@@ -22,11 +23,14 @@ public class HelpTemplateTest
                 var key = callInfo.ArgAt<string>(0);
                 return key == "help_bot_description" ? "description {0}" : key;
             });
-        var containerService = Substitute.For<IDependencyContainerService>();
-        containerService.Resolve<IResourcesService>().Returns(resourcesService);
-        DependencyContainerService.Current = containerService;
+        var userColorsService = Substitute.For<IUserColorsService>();
+        userColorsService.GetUserColor(Arg.Any<string>()).Returns("#000000");
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(resourcesService)
+            .AddSingleton(userColorsService)
+            .BuildServiceProvider();
 
-        _templatesManager = new TemplatesManager();
+        _templatesManager = new TemplatesManager(serviceProvider);
         _templatesManager.LoadTemplates();
     }
 

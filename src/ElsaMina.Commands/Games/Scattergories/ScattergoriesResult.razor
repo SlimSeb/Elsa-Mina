@@ -17,7 +17,7 @@
             }
             @foreach (var (name, points) in Model.Scores)
             {
-                var color = name.ToColorHexCodeWithCustoms();
+                var color = GetUserColor(name);
                 var medal = index < medals.Length ? medals[index] : $"{index + 1}.";
                 <tr>
                     <td style="padding: 3px 8px; text-align: right; font-size: 16px;">@medal</td>

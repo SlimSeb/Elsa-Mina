@@ -36,7 +36,7 @@
                 <td>@rank</td>
                 <td>
                     @{
-                        var userNameColor = entry.UserId.ToColorHexCodeWithCustoms();
+                        var userNameColor = GetUserColor(entry.UserId);
                     }
                     <b style="color:@userNameColor">
                         @if (rank <= boldUsernameThreshold)

@@ -34,7 +34,7 @@
         @foreach (var player in standings)
         {
             <tr>
-                <td style="padding:2px 12px;color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</td>
+                <td style="padding:2px 12px;color:@GetUserColor(player.Name)">@player.Name</td>
                 <td style="padding:2px 12px;text-align:center">
                     @if (player.Role != PresidentRole.None)
                     {

@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Globalization;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.BattleTracker;
+using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Formats;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
@@ -20,6 +21,7 @@ public sealed class LadderTrackerManager : ILadderTrackerManager
     private readonly IRoomsManager _roomsManager;
     private readonly IResourcesService _resourcesService;
     private readonly IFormatsManager _formatsManager;
+    private readonly IUserColorsService _userColorsService;
     private readonly TimeSpan _pollInterval;
     private readonly Lock _lock = new();
     private readonly Dictionary<LadderTracking, TrackingState> _trackedBattles = [];
@@ -28,20 +30,23 @@ public sealed class LadderTrackerManager : ILadderTrackerManager
     private bool _disposed;
 
     public LadderTrackerManager(IActiveBattlesManager activeBattlesManager, IBot bot,
-        IRoomsManager roomsManager, IResourcesService resourcesService, IFormatsManager formatsManager)
-        : this(activeBattlesManager, bot, roomsManager, resourcesService, formatsManager, DEFAULT_POLL_INTERVAL)
+        IRoomsManager roomsManager, IResourcesService resourcesService, IFormatsManager formatsManager,
+        IUserColorsService userColorsService)
+        : this(activeBattlesManager, bot, roomsManager, resourcesService, formatsManager, userColorsService,
+            DEFAULT_POLL_INTERVAL)
     {
     }
 
     public LadderTrackerManager(IActiveBattlesManager activeBattlesManager, IBot bot,
         IRoomsManager roomsManager, IResourcesService resourcesService, IFormatsManager formatsManager,
-        TimeSpan pollInterval)
+        IUserColorsService userColorsService, TimeSpan pollInterval)
     {
         _activeBattlesManager = activeBattlesManager;
         _bot = bot;
         _roomsManager = roomsManager;
         _resourcesService = resourcesService;
         _formatsManager = formatsManager;
+        _userColorsService = userColorsService;
         _pollInterval = pollInterval;
     }
 
@@ -279,9 +284,9 @@ public sealed class LadderTrackerManager : ILadderTrackerManager
         }
     }
 
-    private static string FormatUsernameWithColor(string username)
+    private string FormatUsernameWithColor(string username)
     {
-        return $"""<strong style="color: {username.ToColorHexCodeWithCustoms()}">{username}</strong>""";
+        return $"""<strong style="color: {_userColorsService.GetUserColor(username)}">{username}</strong>""";
     }
 
     private string BuildBattleStartMessage(CultureInfo cultureInfo, string format, ActiveBattleDto battle,

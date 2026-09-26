@@ -1,7 +1,5 @@
 ﻿using System.Drawing;
 using System.Globalization;
-using ElsaMina.Core.Services.CustomColors;
-using ElsaMina.Core.Services.DependencyInjection;
 
 namespace ElsaMina.Core.Utils;
 
@@ -72,26 +70,6 @@ public static class ShowdownColors
     public static string ToRgbString(this Color color)
     {
         return $"RGB({color.R}, {color.G}, {color.B})";
-    }
-
-    public static string ToColorHexCodeWithCustoms(this string userName)
-    {
-        var userId = userName.ToLowerAlphaNum();
-
-        var roomColorsCache = DependencyContainerService.Current.Resolve<IRoomColorsCache>();
-        var nameColor = roomColorsCache.GetColor(userId);
-        if (nameColor != null)
-        {
-            return nameColor;
-        }
-
-        var customColorsManager = DependencyContainerService.Current.Resolve<ICustomColorsManager>();
-        if (customColorsManager.CustomColorsMapping.TryGetValue(userId, out var userCustomColor))
-        {
-            userId = userCustomColor;
-        }
-
-        return userId.ToColor().ToHexString();
     }
 
     private static (double, double, double) HslToRgb(double h, double s, double l)

@@ -25,7 +25,7 @@
     {
         var trumpSuit = trump.Value;
         <p style="text-align:center;margin:4px 0">
-            <b style="color:@game.Taker?.Name.ToColorHexCodeWithCustoms()">@game.Taker?.Name</b>
+            <b style="color:@GetUserColor(game.Taker?.Name)">@game.Taker?.Name</b>
             (@TeamName(result.TakerTeam))
             &nbsp;|&nbsp; <b>@GetString("belote_trump_label"):</b>
             <span style="font-weight:bold">@CardToken.SuitSymbol(trumpSuit) @GetString($"belote_suit_{trumpSuit.ToString().ToLowerInvariant()}")</span>
@@ -90,7 +90,7 @@
                     .ThenBy(card => card.Rank)
                     .ToList();
                 <div style="margin:6px 0;padding:5px 8px;background:#18271e;border-radius:5px">
-                    <span style="color:@player.Name.ToColorHexCodeWithCustoms();font-weight:bold">@player.Name</span>
+                    <span style="color:@GetUserColor(player.Name);font-weight:bold">@player.Name</span>
                     <span style="color:#9fc4ad">(@GetString("belote_cards_won_points", capturedPoints))</span>
                     <div style="margin-top:3px;line-height:1.9em">
                         @if (orderedCards.Count == 0)

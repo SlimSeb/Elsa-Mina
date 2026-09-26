@@ -41,7 +41,7 @@
             var deltaColor = delta > 0 ? "#6ddf9a" : delta < 0 ? "#ff8a8a" : "#cfe";
             var reveal = game.WentToShowdown && !player.HasFolded;
             <tr style="border-bottom:1px solid #2f7a4a">
-                <td style="padding:4px 10px;color:@player.Name.ToColorHexCodeWithCustoms();font-weight:bold">
+                <td style="padding:4px 10px;color:@GetUserColor(player.Name);font-weight:bold">
                     @player.Name
                     @if (player.Winnings > 0)
                     {

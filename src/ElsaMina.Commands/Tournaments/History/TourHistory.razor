@@ -32,7 +32,7 @@
                     <td style="@cellStyle">
                         @if (!string.IsNullOrEmpty(entry.Winner))
                         {
-                            <span class="username" data-name="@entry.Winner" style="color: @entry.Winner.ToColorHexCodeWithCustoms()">@entry.Winner</span>
+                            <span class="username" data-name="@entry.Winner" style="color: @GetUserColor(entry.Winner)">@entry.Winner</span>
                         }
                         else
                         {
@@ -42,7 +42,7 @@
                     <td style="@cellStyle">
                         @if (!string.IsNullOrEmpty(entry.RunnerUp))
                         {
-                            <span class="username" data-name="@entry.RunnerUp" style="color: @entry.RunnerUp.ToColorHexCodeWithCustoms()">@entry.RunnerUp</span>
+                            <span class="username" data-name="@entry.RunnerUp" style="color: @GetUserColor(entry.RunnerUp)">@entry.RunnerUp</span>
                         }
                         else
                         {

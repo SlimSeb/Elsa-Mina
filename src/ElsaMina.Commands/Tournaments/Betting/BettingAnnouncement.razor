@@ -46,7 +46,7 @@
                         <span
                             class="username"
                             data-name="@player.UserId"
-                            style="color: @player.UserId.ToColorHexCodeWithCustoms(); display: inline-block; width: 110px; margin-right: 8px; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
+                            style="color: @GetUserColor(player.UserId); display: inline-block; width: 110px; margin-right: 8px; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
                             @player.UserName
                         </span>
                         @if (Model.IsBettingOpen)

@@ -24,7 +24,7 @@
                         if (i > 0) { <text>, </text> }
                         <span class="username"
                               data-name="@player.UserId"
-                              style="font-weight: bold; font-style: italic; color: @player.UserId.ToColorHexCodeWithCustoms();">@player.UserName</span>
+                              style="font-weight: bold; font-style: italic; color: @GetUserColor(player.UserId);">@player.UserName</span>
                     }
                 </td>
             </tr>

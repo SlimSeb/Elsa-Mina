@@ -36,7 +36,7 @@
             {
                 var isCurrent = game.CurrentPlayer == player;
                 <tr style="@(isCurrent ? "font-weight:bold;background:#2c4a38" : "")">
-                    <td style="padding:2px 10px;color:@player.Name.ToColorHexCodeWithCustoms()">@player.Name</td>
+                    <td style="padding:2px 10px;color:@GetUserColor(player.Name)">@player.Name</td>
                     <td style="padding:2px 10px;color:#9fc4ad;font-size:0.85em">@TeamName(player.Team)</td>
                     <td style="padding:2px 10px">
                         @if (player.HasBid)
@@ -61,7 +61,7 @@
         var trump = game.Trump.Value;
         <p style="text-align:center;margin:4px 0">
             <b>@GetString("belote_taker_label"):</b>
-            <span style="color:@game.Taker?.Name.ToColorHexCodeWithCustoms()">@game.Taker?.Name</span>
+            <span style="color:@GetUserColor(game.Taker?.Name)">@game.Taker?.Name</span>
             &nbsp;|&nbsp; <b>@GetString("belote_trump_label"):</b>
             <span style="color:@SuitColor(trump);font-weight:bold;font-size:1.2em">@CardToken.SuitSymbol(trump)</span>
             @GetString($"belote_suit_{trump.ToString().ToLowerInvariant()}")
@@ -111,7 +111,7 @@
         {
             <p style="text-align:center;margin:6px 0 0 0">
                 @GetString("belote_waiting_for")
-                <b style="color:@game.CurrentPlayer.Name.ToColorHexCodeWithCustoms()">@game.CurrentPlayer.Name</b>
+                <b style="color:@GetUserColor(game.CurrentPlayer.Name)">@game.CurrentPlayer.Name</b>
             </p>
         }
     }

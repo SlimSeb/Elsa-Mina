@@ -1,5 +1,6 @@
 using System.Resources;
 using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Assembly = System.Reflection.Assembly;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
@@ -74,6 +75,8 @@ public class CoreModule : Module
         builder.RegisterType<PmSendersManager>().As<IPmSendersManager>().SingleInstance();
         builder.RegisterType<HandlerManager>().As<IHandlerManager>().SingleInstance();
         builder.RegisterType<AddedCommandsManager>().As<IAddedCommandsManager>().SingleInstance();
+        builder.Register(componentContext => new AutofacServiceProvider(componentContext.Resolve<ILifetimeScope>()))
+            .As<IServiceProvider>().SingleInstance();
         builder.RegisterType<TemplatesManager>().As<ITemplatesManager>().SingleInstance();
         builder.RegisterType<RoomUserDataService>().As<IRoomUserDataService>().SingleInstance();
         builder.RegisterType<UserDetailsManager>().As<IUserDetailsManager>().SingleInstance();
@@ -86,6 +89,7 @@ public class CoreModule : Module
         builder.RegisterType<ParametersDefinitionFactory>().As<IParametersDefinitionFactory>()
             .SingleInstance();
         builder.RegisterType<CustomColorsManager>().As<ICustomColorsManager>().SingleInstance();
+        builder.RegisterType<UserColorsService>().As<IUserColorsService>().SingleInstance();
         builder.RegisterType<DexManager>().As<IDexManager>().SingleInstance();
         builder.RegisterType<StartManager>().As<IStartManager>().SingleInstance();
         builder.RegisterType<BotLifecycleService>().As<IBotLifecycleService>().SingleInstance();
