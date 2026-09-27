@@ -14,7 +14,7 @@
     const string unlitStyle = "background: linear-gradient(135deg, #3a3a4a, #1e1e2e); border: 2px solid #111;";
     const string gridBg = "background-color: #1a1a2e; padding: 8px; border-radius: 8px;";
 
-    var cellSize = size <= 5 ? 48 : size <= 6 ? 40 : size <= 7 ? 34 : 30;
+    var cellSize = size switch { <= 5 => 48, <= 6 => 40, <= 7 => 34, _ => 30 };
 }
 
 <table style="border-collapse: collapse; width: 100%;">

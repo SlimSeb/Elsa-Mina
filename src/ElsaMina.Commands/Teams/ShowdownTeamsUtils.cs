@@ -14,6 +14,7 @@ public static class ShowdownTeamsUtils
 
     // Showdown exports always use LF, regardless of the platform the bot runs on
     private const string NEW_LINE = "\n";
+    private const char NEW_LINE_CHARACTER = '\n';
 
     private static readonly Dictionary<string, string> BATTLE_STAT_IDS = new()
     {
@@ -332,9 +333,6 @@ public static class ShowdownTeamsUtils
         }
 
         set.Moves ??= new List<string>();
-
-        // TODO: hidden power
-
         set.Moves.Add(move);
     }
 
@@ -394,49 +392,49 @@ public static class ShowdownTeamsUtils
             builder.Append($" @ {set.Item}");
         }
 
-        builder.Append(NEW_LINE);
+        builder.Append(NEW_LINE_CHARACTER);
     }
 
     private static void AppendExportedAttributes(StringBuilder builder, PokemonSet set)
     {
         if (set.Ability != null)
         {
-            builder.Append($"Ability: {set.Ability} ").Append(NEW_LINE);
+            builder.Append($"Ability: {set.Ability} ").Append(NEW_LINE_CHARACTER);
         }
 
         if (set.Level != 0 && set.Level != 100)
         {
-            builder.Append($"Level: {set.Level} ").Append(NEW_LINE);
+            builder.Append($"Level: {set.Level} ").Append(NEW_LINE_CHARACTER);
         }
 
         if (set.IsShiny)
         {
-            builder.Append("Shiny: Yes ").Append(NEW_LINE);
+            builder.Append("Shiny: Yes ").Append(NEW_LINE_CHARACTER);
         }
 
         if (set.Happiness >= 0 && set.Happiness != 255)
         {
-            builder.Append($"Happiness: {set.Happiness} ").Append(NEW_LINE);
+            builder.Append($"Happiness: {set.Happiness} ").Append(NEW_LINE_CHARACTER);
         }
 
         if (set.Pokeball != null)
         {
-            builder.Append($"Pokeball: {set.Pokeball} ").Append(NEW_LINE);
+            builder.Append($"Pokeball: {set.Pokeball} ").Append(NEW_LINE_CHARACTER);
         }
 
         if (set.HiddenPowerType != null)
         {
-            builder.Append($"Hidden Power: {set.HiddenPowerType} ").Append(NEW_LINE);
+            builder.Append($"Hidden Power: {set.HiddenPowerType} ").Append(NEW_LINE_CHARACTER);
         }
 
         if (set.DynamaxLevel >= 0)
         {
-            builder.Append($"Dynamax Level: {set.DynamaxLevel} ").Append(NEW_LINE);
+            builder.Append($"Dynamax Level: {set.DynamaxLevel} ").Append(NEW_LINE_CHARACTER);
         }
 
         if (set.IsGigantamax)
         {
-            builder.Append("Gigantamax: Yes ").Append(NEW_LINE);
+            builder.Append("Gigantamax: Yes ").Append(NEW_LINE_CHARACTER);
         }
     }
 
@@ -462,7 +460,7 @@ public static class ShowdownTeamsUtils
 
         if (!isFirstEffortValue)
         {
-            builder.Append(NEW_LINE);
+            builder.Append(NEW_LINE_CHARACTER);
         }
     }
 
@@ -470,7 +468,7 @@ public static class ShowdownTeamsUtils
     {
         if (set.Nature != null)
         {
-            builder.Append($"{set.Nature} Nature ").Append(NEW_LINE);
+            builder.Append($"{set.Nature} Nature ").Append(NEW_LINE_CHARACTER);
         }
     }
 
@@ -497,7 +495,7 @@ public static class ShowdownTeamsUtils
 
         if (!isFirstIndividualValue)
         {
-            builder.Append(NEW_LINE);
+            builder.Append(NEW_LINE_CHARACTER);
         }
     }
 
@@ -513,11 +511,11 @@ public static class ShowdownTeamsUtils
             var move = FormatExportedMove(setMove);
             if (!string.IsNullOrEmpty(move))
             {
-                builder.Append($"- {move}").Append(NEW_LINE);
+                builder.Append($"- {move}").Append(NEW_LINE_CHARACTER);
             }
         }
 
-        builder.Append(NEW_LINE);
+        builder.Append(NEW_LINE_CHARACTER);
     }
 
     private static string FormatExportedMove(string move)
@@ -739,7 +737,7 @@ public static class ShowdownTeamsUtils
     {
         var separatorIndex = buf.IndexOf(']', index);
         var misc = ReadPackedMiscFields(buf, index, separatorIndex);
-        if (misc != null)
+        if (misc.Length > 0)
         {
             ApplyPackedMiscFields(set, misc);
         }
@@ -752,10 +750,10 @@ public static class ShowdownTeamsUtils
     {
         if (separatorIndex < 0)
         {
-            return index < buf.Length ? buf.Substring(index).Split(',', 6) : null;
+            return index < buf.Length ? buf.Substring(index).Split(',', 6) : [];
         }
 
-        return index != separatorIndex ? buf.Substring(index, separatorIndex - index).Split(',', 6) : null;
+        return index != separatorIndex ? buf.Substring(index, separatorIndex - index).Split(',', 6) : [];
     }
 
     private static void ApplyPackedMiscFields(PokemonSet set, string[] misc)

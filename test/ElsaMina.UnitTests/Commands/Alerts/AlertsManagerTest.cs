@@ -8,6 +8,8 @@ namespace ElsaMina.UnitTests.Commands.Alerts;
 
 public class AlertsManagerTest
 {
+    private static readonly string[] ExpectedYoutubePlatforms = ["youtube", "youtubelive"];
+
     private DbContextOptions<BotDbContext> _options;
     private IBotDbContextFactory _dbContextFactory;
     private AlertsManager _alertsManager;
@@ -74,8 +76,11 @@ public class AlertsManagerTest
         var isAdded = await _alertsManager.AddAlertAsync("room", "twitch", new AlertChannel("1", "streamer"));
 
         // Assert
-        Assert.That(isAdded, Is.False);
-        Assert.That(await ReadAllFromDbAsync(), Has.Count.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(isAdded, Is.False);
+            Assert.That(await ReadAllFromDbAsync(), Has.Count.EqualTo(1));
+        }
     }
 
     [Test]
@@ -91,7 +96,7 @@ public class AlertsManagerTest
 
         // Assert
         Assert.That(youtubeAlerts.Select(alert => alert.Platform),
-            Is.EquivalentTo(new[] { "youtube", "youtubelive" }));
+            Is.EquivalentTo(ExpectedYoutubePlatforms));
     }
 
     [TestCase("streamer")]
@@ -106,9 +111,12 @@ public class AlertsManagerTest
         var removedAlert = await _alertsManager.RemoveAlertAsync("room", "twitch", channel);
 
         // Assert
-        Assert.That(removedAlert, Is.EqualTo(new AlertSubscription("room", "twitch", "1", "streamer")));
-        Assert.That(_alertsManager.GetRoomAlerts("room"), Is.Empty);
-        Assert.That(await ReadAllFromDbAsync(), Is.Empty);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(removedAlert, Is.EqualTo(new AlertSubscription("room", "twitch", "1", "streamer")));
+            Assert.That(_alertsManager.GetRoomAlerts("room"), Is.Empty);
+            Assert.That(await ReadAllFromDbAsync(), Is.Empty);
+        }
     }
 
     [Test]
@@ -121,7 +129,10 @@ public class AlertsManagerTest
         var removedAlert = await _alertsManager.RemoveAlertAsync("otherroom", "twitch", "streamer");
 
         // Assert
-        Assert.That(removedAlert, Is.Null);
-        Assert.That(await ReadAllFromDbAsync(), Has.Count.EqualTo(1));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(removedAlert, Is.Null);
+            Assert.That(await ReadAllFromDbAsync(), Has.Count.EqualTo(1));
+        }
     }
 }

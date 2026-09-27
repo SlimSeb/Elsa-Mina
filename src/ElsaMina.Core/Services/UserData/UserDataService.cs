@@ -43,7 +43,7 @@ public class UserDataService : IUserDataService
     public async Task<DateTimeOffset> GetRegisterDateAsync(string userName,
         CancellationToken cancellationToken = default)
     {
-        var userData = await GetUserData(userName, cancellationToken); // todo : cache validity
+        var userData = await GetUserData(userName, cancellationToken);
         return userData == null
             ? DateTimeOffset.MinValue
             : DateTimeOffset.FromUnixTimeSeconds(userData.RegisterTime);

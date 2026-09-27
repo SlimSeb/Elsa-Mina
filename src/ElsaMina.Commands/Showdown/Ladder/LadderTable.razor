@@ -4,9 +4,9 @@
 
 @{
     const string headerStyle = $"border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; padding: 4px";
-    static string TrendArrowOrNbsp(int? diff) => diff > 0 ? "▲" : diff < 0 ? "▼" : "&nbsp;";
-    static string TrendColor(int? diff) => diff > 0 ? "#2e8b57" : diff < 0 ? "#d9534f" : "inherit";
-    static string TrendTitle(int? diff) => diff > 0 ? $"+{diff}" : diff < 0 ? diff.ToString() : string.Empty;
+    static string TrendArrowOrNbsp(int? diff) => diff switch { > 0 => "▲", < 0 => "▼", _ => "&nbsp;" };
+    static string TrendColor(int? diff) => diff switch { > 0 => "#2e8b57", < 0 => "#d9534f", _ => "inherit" };
+    static string TrendTitle(int? diff) => diff switch { > 0 => $"+{diff}", < 0 => diff.ToString(), _ => string.Empty };
 }
 <div style="max-height: 200px; overflow-y: auto">
     <table style="margin: auto; border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; border-radius: 12px; padding: 4px">

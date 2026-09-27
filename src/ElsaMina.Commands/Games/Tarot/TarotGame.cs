@@ -700,8 +700,9 @@ public class TarotGame : SubstitutableCardGame<TarotPlayer>, ITarotGame
     private async Task FinishAsync()
     {
         var takerSide = Seats.Where(player => player.IsTaker || player.IsPartner).ToList();
-        var takerHalfPoints =
-            takerSide.Sum((TarotPlayer player) => player.CapturedPile.Sum((TarotCard card) => card.HalfPoints));
+        var takerHalfPoints = takerSide
+            .SelectMany(player => player.CapturedPile)
+            .Sum(card => card.HalfPoints);
         var oudlerCount = takerSide.Sum(player => player.CapturedPile.Count(card => card.IsOudler));
 
         var petitAuBoutSide = TarotRules.ComputePetitAuBoutSide(LastTrick, LastTrickWinner);

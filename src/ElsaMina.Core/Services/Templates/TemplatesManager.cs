@@ -41,7 +41,7 @@ public class TemplatesManager : ITemplatesManager
     /// Returns the loaded ElsaMina assemblies plus the ElsaMina assemblies they reference, so templates are
     /// found even when their assembly has not been loaded yet.
     /// </summary>
-    private static IEnumerable<Assembly> GetElsaMinaAssemblies()
+    private static Dictionary<string, Assembly>.ValueCollection GetElsaMinaAssemblies()
     {
         var assembliesByName = new Dictionary<string, Assembly>();
         var pendingAssemblies = new Queue<Assembly>(AppDomain.CurrentDomain
@@ -50,17 +50,17 @@ public class TemplatesManager : ITemplatesManager
 
         while (pendingAssemblies.TryDequeue(out var assembly))
         {
-            if (!assembliesByName.TryAdd(assembly.GetName().Name!, assembly))
+            if (!assembliesByName.TryAdd(assembly.GetName().Name, assembly))
             {
                 continue;
             }
 
-            foreach (var referencedName in assembly.GetReferencedAssemblies().Where(IsElsaMinaAssembly))
+            var missingReferencedNames = assembly.GetReferencedAssemblies()
+                .Where(referencedName => IsElsaMinaAssembly(referencedName)
+                                         && !assembliesByName.ContainsKey(referencedName.Name));
+            foreach (var referencedName in missingReferencedNames)
             {
-                if (!assembliesByName.ContainsKey(referencedName.Name!))
-                {
-                    pendingAssemblies.Enqueue(Assembly.Load(referencedName));
-                }
+                pendingAssemblies.Enqueue(Assembly.Load(referencedName));
             }
         }
 
@@ -104,7 +104,7 @@ public class TemplatesManager : ITemplatesManager
 
     private static string GetTemplateKey(Type templateType)
     {
-        var relativeNamespace = templateType.Namespace!.Substring(TEMPLATES_NAMESPACE.Length).TrimStart('.');
+        var relativeNamespace = templateType.Namespace.Substring(TEMPLATES_NAMESPACE.Length).TrimStart('.');
         return relativeNamespace.Length == 0
             ? templateType.Name
             : $"{relativeNamespace.Replace('.', '/')}/{templateType.Name}";

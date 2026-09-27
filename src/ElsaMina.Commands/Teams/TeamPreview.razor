@@ -25,7 +25,7 @@
         <summary style="cursor:pointer;border-top:1px solid #2e2e4e;padding-top:4px;">
             @for (var i = 0; i < teamMembersCount; i++)
             {
-                var set = Model.Team.ElementAt(i);
+                var set = Model.Team[i];
                 <psicon pokemon="@set.Species" />
             }
         </summary>

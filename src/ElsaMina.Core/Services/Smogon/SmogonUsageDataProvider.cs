@@ -48,7 +48,7 @@ public class SmogonUsageDataProvider : ISmogonUsageDataProvider
     /// Parse le tableau ASCII publié par Smogon. Les lignes de séparation commencent par '+' et
     /// l'en-tête a "Rank" en première colonne : les deux sont ignorées faute de rang numérique.
     /// </summary>
-    private static IReadOnlyList<SmogonUsageRankingEntryDto> ParseUsageRanking(string content)
+    private static List<SmogonUsageRankingEntryDto> ParseUsageRanking(string content)
     {
         if (string.IsNullOrWhiteSpace(content))
         {

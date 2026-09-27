@@ -17,6 +17,8 @@ public class YoutubeAlertsApiClientTest
                                 </feed>
                                 """;
 
+    private static readonly string[] ExpectedVideoIds = ["abc", "def"];
+
     private IHttpService _httpService;
     private IConfiguration _configuration;
     private YoutubeAlertsApiClient _client;
@@ -43,7 +45,7 @@ public class YoutubeAlertsApiClientTest
         var videoIds = await _client.GetRecentVideoIdsAsync("UCaaaaaaaaaaaaaaaaaaaaaa");
 
         // Assert
-        Assert.That(videoIds, Is.EqualTo(new[] { "abc", "def" }));
+        Assert.That(videoIds, Is.EqualTo(ExpectedVideoIds));
     }
 
     [TestCase("@SomeHandle", "forHandle", "@SomeHandle")]
@@ -67,8 +69,11 @@ public class YoutubeAlertsApiClientTest
         var channel = await _client.ResolveChannelAsync(input);
 
         // Assert
-        Assert.That(channel.ChannelId, Is.EqualTo("UCx"));
-        Assert.That(channel.ChannelName, Is.EqualTo("somehandle"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(channel.ChannelId, Is.EqualTo("UCx"));
+            Assert.That(channel.ChannelName, Is.EqualTo("somehandle"));
+        }
         await _httpService.Received(1).SendAsync<YoutubeChannelsResponse>(
             Arg.Is<HttpRequest>(request => request.QueryParameters[expectedParameter] == expectedValue),
             Arg.Any<CancellationToken>());

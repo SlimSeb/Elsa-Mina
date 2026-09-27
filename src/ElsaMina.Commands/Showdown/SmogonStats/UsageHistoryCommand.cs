@@ -150,10 +150,10 @@ public class UsageHistoryCommand : Command
     /// Les mois en ordre croissant, le dernier etant le mois precedent : Smogon publie les
     /// statistiques d'un mois une fois celui-ci termine.
     /// </summary>
-    private IReadOnlyList<DateTime> GetMonths(int monthsCount)
+    private List<DateTime> GetMonths(int monthsCount)
     {
         var currentDate = _clockService.CurrentUtcDateTime;
-        var lastPublishedMonth = new DateTime(currentDate.Year, currentDate.Month, 1).AddMonths(-1);
+        var lastPublishedMonth = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-1);
 
         return Enumerable.Range(0, monthsCount)
             .Select(offset => lastPublishedMonth.AddMonths(offset - monthsCount + 1))

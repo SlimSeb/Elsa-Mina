@@ -12,7 +12,7 @@
     const string cellStyle = $"border: 1px solid {borderColor};";
     const string cellStyleWithBg = $"border: 1px solid {borderColor}; background-color: {bgColor};";
 
-    var cellSize = size <= 8 ? 34 : size <= 10 ? 28 : size <= 12 ? 24 : 20;
+    var cellSize = size switch { <= 8 => 34, <= 10 => 28, <= 12 => 24, _ => 20 };
 }
 
 <table style="border-collapse: collapse; width: 100%;">

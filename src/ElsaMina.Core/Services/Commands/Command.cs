@@ -17,7 +17,7 @@ public abstract class Command : ICommand
     public virtual bool IsAllowedInPrivateMessage => false;
     public virtual bool IsWhitelistOnly => false;
     public virtual bool IsPrivateMessageOnly => false;
-    public virtual Rank RequiredRank => Rank.Admin; // todo remplacer ça par une méthode virtual "CanRun" avec contexte
+    public virtual Rank RequiredRank => Rank.Admin;
     public virtual string HelpMessageKey => string.Empty;
     public virtual bool IsHidden => false;
     public virtual IEnumerable<string> RoomRestriction => [];

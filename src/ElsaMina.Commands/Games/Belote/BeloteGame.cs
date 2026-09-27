@@ -379,10 +379,12 @@ public class BeloteGame : SubstitutableCardGame<BelotePlayer>, IBeloteGame
         var trump = Trump.Value;
         var team0CardPoints = Seats
             .Where(player => player.Team == 0)
-            .Sum((BelotePlayer player) => player.CapturedPile.Sum((BeloteCard card) => card.GetPoints(trump)));
+            .SelectMany(player => player.CapturedPile)
+            .Sum(card => card.GetPoints(trump));
         var team1CardPoints = Seats
             .Where(player => player.Team == 1)
-            .Sum((BelotePlayer player) => player.CapturedPile.Sum((BeloteCard card) => card.GetPoints(trump)));
+            .SelectMany(player => player.CapturedPile)
+            .Sum(card => card.GetPoints(trump));
         var beloteTeam = Seats.FirstOrDefault(player => player.HasBelote)?.Team ?? -1;
 
         ScoreResult = BeloteScorer.Compute(new BeloteScoreInput

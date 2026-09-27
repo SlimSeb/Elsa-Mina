@@ -16,9 +16,9 @@
         }
         else
         {
-            foreach (var player in Model.Game.Players)
+            foreach (var playerName in Model.Game.Players.Select(player => player.Name))
             {
-                <b style="color:@GetUserColor(player.Name)">@player.Name</b>
+                <b style="color:@GetUserColor(playerName)">@playerName</b>
                 <text>&nbsp;&nbsp;</text>
             }
         }

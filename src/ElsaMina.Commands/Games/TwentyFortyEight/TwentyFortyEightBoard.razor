@@ -31,7 +31,7 @@
                                 {
                                     var value = game.Grid[row, col];
                                     var (tileBg, tileText) = TwentyFortyEightConstants.GetTileStyle(value);
-                                    var fontSize = value >= 1024 ? "0.8em" : value >= 128 ? "1em" : "1.2em";
+                                    var fontSize = value switch { >= 1024 => "0.8em", >= 128 => "1em", _ => "1.2em" };
                                     <td style="width: @(cellSize)px; height: @(cellSize)px; background-color: @tileBg; border-radius: 4px; text-align: center; vertical-align: middle; font-weight: bold; font-size: @fontSize; color: @tileText; box-sizing: border-box;">
                                         @(value == 0 ? "" : value.ToString())
                                     </td>

@@ -17,7 +17,6 @@ public class ContextFactory : IContextFactory
     private readonly IPmSendersManager _pmSendersManager;
     private readonly ContextDependencies _contextDependencies;
 
-    // todo : refactor this shit~
     public ContextFactory(IConfiguration configuration,
         IResourcesService resourcesService,
         IRoomsManager roomsManager,

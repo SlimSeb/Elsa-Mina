@@ -17,7 +17,6 @@ public class DexManager : IDexManager
 
     public Pokemon[] Pokedex { get; private set; } = [];
     public IReadOnlyDictionary<string, MoveData> Moves { get; private set; } = new Dictionary<string, MoveData>();
-    // todo : abilities & items
 
     public async Task LoadDexAsync(CancellationToken cancellationToken = default)
     {

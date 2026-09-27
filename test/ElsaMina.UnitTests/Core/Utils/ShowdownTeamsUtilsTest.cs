@@ -9,6 +9,9 @@ public class ShowdownTeamsUtilsTest
     private static readonly string[] ExpectedBlisseyMoves = ["Soft-Boiled", "Seismic Toss"];
     private static readonly string[] ExpectedPikachuMoves = ["volttackle", "irontail"];
     private static readonly string[] ExpectedGreatTuskMoves = ["headlongrush", "closecombat"];
+    private static readonly string[] ExpectedVoltTackleMoves = ["Volt Tackle"];
+    private static readonly string[] ExpectedFlareBlitzMoves = ["Flare Blitz"];
+    private static readonly string[] ExpectedExportedPikachuMoves = ["Volt Tackle", "Iron Tail"];
 
     [Test]
     public void Test_DeserializeTeamExport_ShouldReturnEmptyTeam_WhenExportIsEmpty()
@@ -170,11 +173,11 @@ public class ShowdownTeamsUtilsTest
             Assert.That(result[0].Species, Is.EqualTo("Pikachu"));
             Assert.That(result[0].Item, Is.EqualTo("Light Ball"));
             Assert.That(result[0].Ability, Is.EqualTo("Static"));
-            Assert.That(result[0].Moves, Is.EquivalentTo(new[] { "Volt Tackle" }));
+            Assert.That(result[0].Moves, Is.EquivalentTo(ExpectedVoltTackleMoves));
             Assert.That(result[1].Species, Is.EqualTo("Charizard"));
             Assert.That(result[1].Item, Is.EqualTo("Charizardite X"));
             Assert.That(result[1].Ability, Is.EqualTo("Blaze"));
-            Assert.That(result[1].Moves, Is.EquivalentTo(new[] { "Flare Blitz" }));
+            Assert.That(result[1].Moves, Is.EquivalentTo(ExpectedFlareBlitzMoves));
         }
     }
 
@@ -497,9 +500,9 @@ public class ShowdownTeamsUtilsTest
             Assert.That(result[0].Species, Is.EqualTo("Pikachu"));
             Assert.That(result[0].Ability, Is.EqualTo("Static"));
             Assert.That(result[0].Nature, Is.EqualTo("Jolly"));
-            Assert.That(result[0].Moves, Is.EquivalentTo(new[] { "Volt Tackle", "Iron Tail" }));
+            Assert.That(result[0].Moves, Is.EquivalentTo(ExpectedExportedPikachuMoves));
             Assert.That(result[1].Species, Is.EqualTo("Charizard"));
-            Assert.That(result[1].Moves, Is.EquivalentTo(new[] { "Flare Blitz" }));
+            Assert.That(result[1].Moves, Is.EquivalentTo(ExpectedFlareBlitzMoves));
         }
     }
 }

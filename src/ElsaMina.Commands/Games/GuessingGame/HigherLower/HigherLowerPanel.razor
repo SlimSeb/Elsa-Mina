@@ -15,7 +15,11 @@
     const string greenBackground = "background-color: #55BB8873;";
     const string redBackground = "background-color: #BB555573;";
 
-    var revealStyle = Model.IsRevealed ? (Model.IsHigher ? greenBackground : redBackground) : string.Empty;
+    var revealStyle = string.Empty;
+    if (Model.IsRevealed)
+    {
+        revealStyle = Model.IsHigher ? greenBackground : redBackground;
+    }
 }
 <table role="presentation" style="border-collapse: collapse; max-width: 540px;">
     <tbody>

@@ -16,7 +16,7 @@
     {
         // Bigger dolls get fewer, wider columns. The table is what keeps every row the full width,
         // so the plank pieces of a row join into one continuous board, last row included.
-        var dollsPerRow = size <= 16 ? 8 : size <= 24 ? 7 : 6;
+        var dollsPerRow = size switch { <= 16 => 8, <= 24 => 7, _ => 6 };
         <div style="margin-bottom:9px;">
             <div style="@captionStyle">@GetString("doll_list_size_header", size, size, dolls.Count)</div>
             <table role="presentation" style="width:100%;border-collapse:collapse;table-layout:fixed;">

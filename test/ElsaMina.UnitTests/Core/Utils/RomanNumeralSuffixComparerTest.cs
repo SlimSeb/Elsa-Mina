@@ -125,8 +125,11 @@ public class RomanNumeralSuffixComparerTest
         var result = _comparer.Compare(lowerCase, upperCase);
 
         // Assert
-        Assert.That(result, Is.Not.Zero);
-        Assert.That(Math.Sign(result), Is.EqualTo(-Math.Sign(_comparer.Compare(upperCase, lowerCase))));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.Not.Zero);
+            Assert.That(Math.Sign(result), Is.EqualTo(-Math.Sign(_comparer.Compare(upperCase, lowerCase))));
+        }
     }
 
     [Test]

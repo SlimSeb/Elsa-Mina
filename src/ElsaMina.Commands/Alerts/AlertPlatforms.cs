@@ -9,7 +9,7 @@ public static class AlertPlatforms
 
     public static readonly IReadOnlyList<string> ALL_PLATFORMS = [TWITCH, YOUTUBE, YOUTUBE_LIVE, TWITTER];
 
-    private static readonly IReadOnlyDictionary<string, string> PLATFORMS_BY_NAME = new Dictionary<string, string>
+    private static readonly Dictionary<string, string> PLATFORMS_BY_NAME = new Dictionary<string, string>
     {
         [TWITCH] = TWITCH,
         [YOUTUBE] = YOUTUBE,

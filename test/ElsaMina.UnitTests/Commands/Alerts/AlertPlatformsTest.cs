@@ -18,8 +18,11 @@ public class AlertPlatformsTest
         var isResolved = AlertPlatforms.TryResolve(input, out var platform);
 
         // Assert
-        Assert.That(isResolved, Is.True);
-        Assert.That(platform, Is.EqualTo(expectedPlatform));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(isResolved, Is.True);
+            Assert.That(platform, Is.EqualTo(expectedPlatform));
+        }
     }
 
     [TestCase("tiktok")]

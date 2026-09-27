@@ -4,5 +4,5 @@ public interface IFormatsManager
 {
     IEnumerable<string> Formats { get; }
     void ParseFormats(string[] formats);
-    string GetCleanFormat(string formatId); // TODO -> rework formats!!
+    string GetCleanFormat(string formatId);
 }

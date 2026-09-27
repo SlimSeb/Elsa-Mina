@@ -50,7 +50,6 @@ public class DisplayTeamsOnTourHandler : Handler
 
         format = format switch
         {
-            // TODO : chercher à mieux gérer des aliases de format ?
             "nationaldex" => "natdex",
             "almostanyability" => "aaa",
             "anythinggoes" => "ag",

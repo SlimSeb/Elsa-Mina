@@ -14,9 +14,12 @@ public class AlertArgumentsTest
         var isParsed = AlertArguments.TryParse(target, out var platform, out var channel);
 
         // Assert
-        Assert.That(isParsed, Is.True);
-        Assert.That(platform, Is.EqualTo(expectedPlatform));
-        Assert.That(channel, Is.EqualTo(expectedChannel));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(isParsed, Is.True);
+            Assert.That(platform, Is.EqualTo(expectedPlatform));
+            Assert.That(channel, Is.EqualTo(expectedChannel));
+        }
     }
 
     [TestCase("twitch")]
