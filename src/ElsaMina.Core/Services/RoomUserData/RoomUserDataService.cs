@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using ElsaMina.Core.Handlers.DefaultHandlers.Rooms;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Core.Services.RoomUserData;
 
-public class RoomUserDataService : IRoomUserDataService
+public class RoomUserDataService : IRoomUserDataService, IBotLifecycleParticipant
 {
     private const int TITLE_MAX_LENGTH = 450;
     private const int JOIN_PHRASE_MAX_LENGTH = 300;
@@ -303,4 +304,6 @@ public class RoomUserDataService : IRoomUserDataService
         dbContext.RoomUsers.Update(user);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
+
+    public Task OnStartingAsync(CancellationToken cancellationToken) => InitializeJoinPhrasesAsync(cancellationToken);
 }

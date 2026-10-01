@@ -2,7 +2,6 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.FloodIt;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
@@ -16,7 +15,7 @@ namespace ElsaMina.UnitTests.Commands.Games.FloodIt;
 
 public class StartFloodItCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<FloodItGame> _gameFactory;
     private IRoomsManager _roomsManager;
     private IFloodItGameManager _gameManager;
     private IArcadeEventsService _arcadeEventsService;
@@ -31,13 +30,13 @@ public class StartFloodItCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<FloodItGame>>();
         _roomsManager = Substitute.For<IRoomsManager>();
         _gameManager = Substitute.For<IFloodItGameManager>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _configuration = Substitute.For<IConfiguration>();
         _templatesManager = Substitute.For<ITemplatesManager>();
-        _command = new StartFloodItCommand(_dependencyContainerService, _roomsManager, _gameManager, _arcadeEventsService);
+        _command = new StartFloodItCommand(_gameFactory, _roomsManager, _gameManager, _arcadeEventsService);
 
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
@@ -66,7 +65,7 @@ public class StartFloodItCommandTest
         _configuration.Name.Returns("Bot");
         _configuration.Trigger.Returns("-");
         _game = new FloodItGame(randomService, _templatesManager, _configuration, dbContextFactory);
-        _dependencyContainerService.Resolve<FloodItGame>().Returns(_game);
+        _gameFactory().Returns(_game);
         _gameManager.GetGame(Arg.Any<string>(), Arg.Any<string>()).ReturnsNull();
     }
 
@@ -91,7 +90,7 @@ public class StartFloodItCommandTest
 
         await _command.RunAsync(_context);
 
-        _dependencyContainerService.Received(1).Resolve<FloodItGame>();
+        _gameFactory.Received(1)();
         _context.Received(1).SendUpdatableHtml(Arg.Any<string>(), Arg.Any<string>(), false);
     }
 
@@ -123,7 +122,7 @@ public class StartFloodItCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("fi_game_already_running");
-        _dependencyContainerService.DidNotReceive().Resolve<FloodItGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -136,7 +135,7 @@ public class StartFloodItCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("fi_game_waiting");
-        _dependencyContainerService.DidNotReceive().Resolve<FloodItGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -150,7 +149,7 @@ public class StartFloodItCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("fi_game_round_active");
-        _dependencyContainerService.DidNotReceive().Resolve<FloodItGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -164,7 +163,7 @@ public class StartFloodItCommandTest
         await _command.RunAsync(_context);
 
         await existingGame.Received(1).StartNewRound();
-        _dependencyContainerService.DidNotReceive().Resolve<FloodItGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -191,7 +190,7 @@ public class StartFloodItCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("games_muted_event");
-        _dependencyContainerService.DidNotReceive().Resolve<FloodItGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -241,7 +240,7 @@ public class StartFloodItCommandTest
 
         await _command.RunAsync(_context);
 
-        _dependencyContainerService.Received(1).Resolve<FloodItGame>();
+        _gameFactory.Received(1)();
         Assert.That(_game.IsPrivateMode, Is.True);
     }
 

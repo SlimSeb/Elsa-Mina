@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.RockPaperScissors;
 
 [NamedCommand("rpsjoin", Aliases = ["rpsj"])]
-public class JoinRpsCommand : Command
+public class JoinRpsCommand : GameCommand
 {
     public override Rank RequiredRank => Rank.Regular;
 

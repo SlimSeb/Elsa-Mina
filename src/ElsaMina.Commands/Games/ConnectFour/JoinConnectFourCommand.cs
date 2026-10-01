@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.ConnectFour;
 
 [NamedCommand("c4join", Aliases = ["c4j"])]
-public class JoinConnectFourCommand : Command
+public class JoinConnectFourCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

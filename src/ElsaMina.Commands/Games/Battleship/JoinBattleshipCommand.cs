@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Battleship;
 
 [NamedCommand("bsjoin", Aliases = ["bsj"])]
-public class JoinBattleshipCommand : Command
+public class JoinBattleshipCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

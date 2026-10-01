@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.VoltorbFlip;
 
 [NamedCommand("vfjoin")]
-public class JoinVoltorbFlipCommand : Command
+public class JoinVoltorbFlipCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

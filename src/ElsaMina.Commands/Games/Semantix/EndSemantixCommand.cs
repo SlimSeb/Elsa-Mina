@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Semantix;
 
 [NamedCommand("sxend", Aliases = ["end-semantix"])]
-public class EndSemantixCommand : Command
+public class EndSemantixCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly ISemantixGameManager _gameManager;

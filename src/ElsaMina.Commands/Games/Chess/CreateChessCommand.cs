@@ -1,24 +1,23 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Chess;
 
 [NamedCommand("chess", Aliases = ["echecs"])]
-public class CreateChessCommand : Command
+public class CreateChessCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<ChessGame> _gameFactory;
     private readonly IArcadeEventsService _arcadeEventsService;
     private readonly IEventAnnouncer _eventAnnouncer;
 
-    public CreateChessCommand(IDependencyContainerService dependencyContainerService,
+    public CreateChessCommand(Func<ChessGame> gameFactory,
         IArcadeEventsService arcadeEventsService,
         IEventAnnouncer eventAnnouncer)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _arcadeEventsService = arcadeEventsService;
         _eventAnnouncer = eventAnnouncer;
     }
@@ -45,7 +44,7 @@ public class CreateChessCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<ChessGame>();
+        var game = _gameFactory();
         game.Context = context;
         room.Game = game;
 

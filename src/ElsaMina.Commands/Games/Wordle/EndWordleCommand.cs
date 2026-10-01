@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Wordle;
 
 [NamedCommand("wlend", Aliases = ["end-wordle"])]
-public class EndWordleCommand : Command
+public class EndWordleCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly IWordleGameManager _gameManager;

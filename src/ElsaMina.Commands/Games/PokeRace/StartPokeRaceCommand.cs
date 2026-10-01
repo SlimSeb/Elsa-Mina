@@ -1,18 +1,17 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.PokeRace;
 
 [NamedCommand("pokerace", Aliases = ["coursepokerace"])]
-public class StartPokeRaceCommand : Command
+public class StartPokeRaceCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<PokeRaceGame> _gameFactory;
 
-    public StartPokeRaceCommand(IDependencyContainerService dependencyContainerService)
+    public StartPokeRaceCommand(Func<PokeRaceGame> gameFactory)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
     }
 
     public override Rank RequiredRank => Rank.Driver;
@@ -31,7 +30,7 @@ public class StartPokeRaceCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<PokeRaceGame>();
+        var game = _gameFactory();
         game.Context = context;
         context.Room.Game = game;
         await game.BeginJoinPhaseAsync();

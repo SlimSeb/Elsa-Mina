@@ -1,10 +1,11 @@
 using System.Text.RegularExpressions;
 using ElsaMina.Core.Services.Http;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Services.CustomColors;
 
-public partial class CustomColorsManager : ICustomColorsManager
+public partial class CustomColorsManager : ICustomColorsManager, IBotLifecycleParticipant
 {
     public const string CUSTOM_COLORS_JSON_URL = "https://play.pokemonshowdown.com/config/colors.json";
     public const string CUSTOM_COLORS_JS_URL = "https://play.pokemonshowdown.com/config/config.js";
@@ -87,4 +88,6 @@ public partial class CustomColorsManager : ICustomColorsManager
     private static partial Regex EntryRegex();
     [GeneratedRegex(@"Config\.customcolors\s*=\s*\{(.+?)\};", RegexOptions.Compiled | RegexOptions.Singleline)]
     private static partial Regex BlockRegex();
+
+    public Task OnStartingAsync(CancellationToken cancellationToken) => FetchCustomColorsAsync(cancellationToken);
 }

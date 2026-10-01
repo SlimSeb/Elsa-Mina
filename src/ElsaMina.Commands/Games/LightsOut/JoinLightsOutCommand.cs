@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.LightsOut;
 
 [NamedCommand("lojoin")]
-public class JoinLightsOutCommand : Command
+public class JoinLightsOutCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

@@ -1,34 +1,25 @@
-using ElsaMina.Commands.Games.GuessingGame.Capitals;
-using ElsaMina.Commands.Games.GuessingGame.Countries;
-using ElsaMina.Commands.Games.GuessingGame.Gatekeepers;
-using ElsaMina.Commands.Games.GuessingGame.HigherLower;
-using ElsaMina.Commands.Games.GuessingGame.PokeCries;
-using ElsaMina.Commands.Games.GuessingGame.PokeDesc;
-using ElsaMina.Commands.Games.GuessingGame.Trivia;
-using ElsaMina.Commands.Games.GuessingGame.WhosThatPokemon;
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.GuessingGame;
 
 [NamedCommand("guessinggame", Aliases = ["countriesgame", "pokedesc", "pokecries", "gatekeepers", "capitalcities", "higherlower", "whosthatpokemon", "trivia"])]
-public class GuessingGameCommand : Command
+public class GuessingGameCommand : GameCommand
 {
     private const int MAX_TURNS_COUNT = 20;
 
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly IGuessingGameFactory _guessingGameFactory;
     private readonly IArcadeEventsService _arcadeEventsService;
     private readonly IEventAnnouncer _eventAnnouncer;
 
-    public GuessingGameCommand(IDependencyContainerService dependencyContainerService,
+    public GuessingGameCommand(IGuessingGameFactory guessingGameFactory,
         IArcadeEventsService arcadeEventsService,
         IEventAnnouncer eventAnnouncer)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _guessingGameFactory = guessingGameFactory;
         _arcadeEventsService = arcadeEventsService;
         _eventAnnouncer = eventAnnouncer;
     }
@@ -62,18 +53,7 @@ public class GuessingGameCommand : Command
             return;
         }
 
-        GuessingGame game = context.Command switch
-        {
-            "countriesgame" => _dependencyContainerService.Resolve<CountriesGame>(),
-            "pokedesc" => _dependencyContainerService.Resolve<PokeDescGame>(),
-            "pokecries" => _dependencyContainerService.Resolve<PokeCriesGame>(),
-            "gatekeepers" => _dependencyContainerService.Resolve<GatekeepersGame>(),
-            "capitalcities" => _dependencyContainerService.Resolve<CapitalCitiesGame>(),
-            "higherlower" => _dependencyContainerService.Resolve<HigherLowerGame>(),
-            "whosthatpokemon" => _dependencyContainerService.Resolve<WhosThatPokemonGame>(),
-            "trivia" => _dependencyContainerService.Resolve<TriviaGame>(),
-            _ => null
-        };
+        var game = _guessingGameFactory.Create(context.Command);
         if (game == null)
         {
             context.ReplyLocalizedMessage("guessing_game_invalid_command");

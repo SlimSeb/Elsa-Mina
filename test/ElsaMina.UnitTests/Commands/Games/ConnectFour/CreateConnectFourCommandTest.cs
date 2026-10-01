@@ -1,7 +1,6 @@
 using ElsaMina.Commands.Games.ConnectFour;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
@@ -12,7 +11,7 @@ namespace ElsaMina.UnitTests.Commands.Games.ConnectFour;
 
 public class CreateConnectFourCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<ConnectFourGame> _gameFactory;
     private IConfiguration _configuration;
     private IEventAnnouncer _eventAnnouncer;
     private CreateConnectFourCommand _command;
@@ -24,11 +23,11 @@ public class CreateConnectFourCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<ConnectFourGame>>();
         _configuration = Substitute.For<IConfiguration>();
         _eventAnnouncer = Substitute.For<IEventAnnouncer>();
         _templatesManager = Substitute.For<ITemplatesManager>();
-        _command = new CreateConnectFourCommand(_dependencyContainerService, _eventAnnouncer);
+        _command = new CreateConnectFourCommand(_gameFactory, _eventAnnouncer);
 
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
@@ -40,7 +39,7 @@ public class CreateConnectFourCommandTest
 
         _context.RoomId.Returns("room-id");
         _context.Room.Returns(_room);
-        _dependencyContainerService.Resolve<ConnectFourGame>().Returns(_game);
+        _gameFactory().Returns(_game);
     }
 
     [Test]
@@ -54,7 +53,7 @@ public class CreateConnectFourCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        _dependencyContainerService.Received(1).Resolve<ConnectFourGame>();
+        _gameFactory.Received(1)();
         await _templatesManager.GetTemplateAsync("Games/ConnectFour/ConnectFourGamePanel", Arg.Any<object>());
         Assert.That(_room.Game, Is.SameAs(_game));
     }
@@ -84,7 +83,7 @@ public class CreateConnectFourCommandTest
 
         // Assert
         _context.Received(1).ReplyLocalizedMessage("c4_game_start_already_exist");
-        _dependencyContainerService.DidNotReceive().Resolve<ConnectFourGame>();
+        _gameFactory.DidNotReceive()();
         await _eventAnnouncer.DidNotReceiveWithAnyArgs()
             .AnnounceToLinkedRoomsAsync(default, default, default, default);
     }

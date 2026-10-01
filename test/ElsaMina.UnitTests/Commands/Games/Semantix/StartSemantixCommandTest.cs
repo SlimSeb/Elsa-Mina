@@ -1,7 +1,6 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.Semantix;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
@@ -11,7 +10,7 @@ namespace ElsaMina.UnitTests.Commands.Games.Semantix;
 [TestFixture]
 public class StartSemantixCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<SemantixGame> _gameFactory;
     private IRoomsManager _roomsManager;
     private ISemantixGameManager _gameManager;
     private ISemantixDailyService _dailyService;
@@ -22,7 +21,7 @@ public class StartSemantixCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<SemantixGame>>();
         _roomsManager = Substitute.For<IRoomsManager>();
         _gameManager = Substitute.For<ISemantixGameManager>();
         _dailyService = Substitute.For<ISemantixDailyService>();
@@ -31,7 +30,7 @@ public class StartSemantixCommandTest
 
         _gameManager.GetGame(Arg.Any<string>(), Arg.Any<string>()).ReturnsNull();
 
-        _sut = new StartSemantixCommand(_dependencyContainerService, _roomsManager, _gameManager,
+        _sut = new StartSemantixCommand(_gameFactory, _roomsManager, _gameManager,
             _dailyService, _arcadeEventsService);
     }
 
@@ -82,7 +81,7 @@ public class StartSemantixCommandTest
         await _sut.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("sx_already_won_today");
-        _dependencyContainerService.DidNotReceive().Resolve<SemantixGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -101,7 +100,7 @@ public class StartSemantixCommandTest
         await _sut.RunAsync(_context);
 
         await existingGame.Received(1).ResumeAsync();
-        _dependencyContainerService.DidNotReceive().Resolve<SemantixGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]

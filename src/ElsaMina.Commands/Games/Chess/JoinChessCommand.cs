@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Chess;
 
 [NamedCommand("chessjoin", Aliases = ["chessj"])]
-public class JoinChessCommand : Command
+public class JoinChessCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

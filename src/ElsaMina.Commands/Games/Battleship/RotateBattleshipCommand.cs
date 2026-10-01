@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Battleship;
 
 [NamedCommand("bsrotate", Aliases = ["bsr"])]
-public class RotateBattleshipCommand : Command
+public class RotateBattleshipCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

@@ -1,9 +1,9 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.AddedCommands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.FeatureSwitches;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Core.Utils;
@@ -11,9 +11,9 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Services.Commands;
 
-public class CommandExecutor : ICommandExecutor
+public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly ICommandRegistry _commandRegistry;
     private readonly IAddedCommandsManager _addedCommandsManager;
     private readonly IEnumerable<IDynamicCommandProvider> _dynamicCommandProviders;
     private readonly ITelemetryService _telemetryService;
@@ -22,13 +22,13 @@ public class CommandExecutor : ICommandExecutor
     private readonly ConcurrentDictionary<Guid, RunningCommand> _runningCommands = new();
 
     public CommandExecutor(
-        IDependencyContainerService dependencyContainerService,
+        ICommandRegistry commandRegistry,
         IAddedCommandsManager addedCommandsManager,
         IEnumerable<IDynamicCommandProvider> dynamicCommandProviders,
         ITelemetryService telemetryService,
         IFeatureSwitchService featureSwitchService)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _commandRegistry = commandRegistry;
         _addedCommandsManager = addedCommandsManager;
         _dynamicCommandProviders = dynamicCommandProviders;
         _telemetryService = telemetryService;
@@ -39,9 +39,7 @@ public class CommandExecutor : ICommandExecutor
 
     public IEnumerable<ICommand> GetAllCommands()
     {
-        return _dependencyContainerService
-            .GetAllNamedRegistrations<ICommand>()
-            .DistinctBy(command => command.Name);
+        return _commandRegistry.Commands.DistinctBy(command => command.Name);
     }
 
     public async Task TryExecuteCommandAsync(
@@ -54,20 +52,139 @@ public class CommandExecutor : ICommandExecutor
             return;
         }
 
-        if (_dependencyContainerService.IsRegisteredWithName<ICommand>(commandName))
+        var command = _commandRegistry.Find(commandName);
+        if (command == null)
         {
-            Log.Information("Executing {0} as a normal command", commandName);
-            var command = _dependencyContainerService.ResolveNamed<ICommand>(commandName);
-
-            if (!CanCommandBeRan(context, command))
-            {
-                return;
-            }
-
-            await RegisterAndRun(command, context, cancellationToken);
+            Track(commandName, context, cancellationToken,
+                token => TryExecuteFallbackAsync(commandName, context, token));
             return;
         }
 
+        if (!CanCommandBeRan(context, command))
+        {
+            return;
+        }
+
+        Log.Information("Executing {0} as a normal command", commandName);
+        var execution = Track(command.Name, context, cancellationToken,
+            token => RunCommandAsync(command, context, token));
+
+        if (command.RunsInMessageOrder)
+        {
+            await execution;
+        }
+    }
+
+    public Task WhenAllCommandsCompletedAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.WhenAll(_runningCommands.Values.Select(running => running.Task)).WaitAsync(cancellationToken);
+    }
+
+    public Task OnExitingAsync(CancellationToken cancellationToken)
+    {
+        return WhenAllCommandsCompletedAsync(cancellationToken);
+    }
+
+    #endregion
+
+    #region Execution tracking
+
+    private Task Track(string commandName, IContext context, CancellationToken externalToken,
+        Func<CancellationToken, Task> run)
+    {
+        var executionId = Guid.NewGuid();
+        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(externalToken);
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var task = Task.Run(async () =>
+        {
+            // Wait for the registration below, so the command is always removed after it was added.
+            await started.Task;
+            try
+            {
+                await run(linkedCts.Token);
+            }
+            catch (Exception exception)
+            {
+                Log.Error(exception, "Command {0} ({1}) crashed with context : {2}", commandName, executionId,
+                    context);
+                await ReportErrorAsync(context, exception);
+            }
+            finally
+            {
+                _runningCommands.TryRemove(executionId, out _);
+                linkedCts.Dispose();
+            }
+        }, CancellationToken.None);
+
+        _runningCommands[executionId] = new RunningCommand(executionId, commandName, context, linkedCts, task);
+        started.SetResult();
+        return task;
+    }
+
+    private async Task RunCommandAsync(ICommand command, IContext context, CancellationToken cancellationToken)
+    {
+        using var activity = _telemetryService.StartActivity("command.execute");
+        activity?.SetTag("command.name", command.Name);
+        activity?.SetTag("room", context.RoomId);
+        activity?.SetTag("sender", context.Sender?.UserId);
+
+        var stopwatch = Stopwatch.StartNew();
+        try
+        {
+            await command.RunAsync(context, cancellationToken);
+            _telemetryService.RecordCommandExecuted(command.Name, "ok");
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            _telemetryService.RecordCommandExecuted(command.Name, "cancelled");
+            Log.Information("Command {0} was cancelled", command.Name);
+        }
+        catch (Exception exception)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            activity?.AddException(exception);
+            _telemetryService.RecordCommandError(command.Name);
+            throw;
+        }
+        finally
+        {
+            _telemetryService.RecordCommandDuration(stopwatch.Elapsed.TotalMilliseconds, command.Name);
+        }
+    }
+
+    private static async Task ReportErrorAsync(IContext context, Exception exception)
+    {
+        try
+        {
+            await context.HandleErrorAsync(exception);
+        }
+        catch (Exception reportException)
+        {
+            Log.Error(reportException, "Could not report command error to the user");
+        }
+    }
+
+    public bool TryCancel(Guid executionId)
+    {
+        if (!_runningCommands.TryGetValue(executionId, out var running))
+        {
+            return false;
+        }
+
+        running.CancellationTokenSource.Cancel();
+        return true;
+    }
+
+    public IEnumerable<RunningCommand> RunningCommands => _runningCommands.Values;
+
+    #endregion
+
+    #region Custom commands, auto-correct & guards
+
+    private async Task TryExecuteFallbackAsync(string commandName, IContext context,
+        CancellationToken cancellationToken)
+    {
         if (!context.IsPrivateMessage)
         {
             Log.Information("Trying command {0} as a custom command", commandName);
@@ -98,91 +215,6 @@ public class CommandExecutor : ICommandExecutor
             ReplyWithAutoCorrect(commandName, context);
         }
     }
-
-    #endregion
-
-    #region Execution tracking
-
-    private async Task RegisterAndRun(ICommand command, IContext context, CancellationToken externalToken)
-    {
-        var executionId = Guid.NewGuid();
-
-        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(externalToken);
-        var token = linkedCts.Token;
-
-        var task = Task.Run(async () =>
-        {
-            using var activity = _telemetryService.StartActivity("command.execute");
-            activity?.SetTag("command.name", command.Name);
-            activity?.SetTag("room", context.RoomId);
-            activity?.SetTag("sender", context.Sender?.UserId);
-
-            var stopwatch = Stopwatch.StartNew();
-            try
-            {
-                await command.RunAsync(context, token);
-                _telemetryService.RecordCommandExecuted(command.Name, "ok");
-            }
-            catch (OperationCanceledException)
-            {
-                _telemetryService.RecordCommandExecuted(command.Name, "cancelled");
-                Log.Information(
-                    "Command {0} ({1}) was cancelled",
-                    command.Name,
-                    executionId);
-            }
-            catch (Exception ex)
-            {
-                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                activity?.AddException(ex);
-                _telemetryService.RecordCommandError(command.Name);
-                Log.Error(
-                    ex,
-                    "Command {0} ({1}) crashed",
-                    command.Name,
-                    executionId);
-                throw;
-            }
-            finally
-            {
-                _telemetryService.RecordCommandDuration(stopwatch.Elapsed.TotalMilliseconds, command.Name);
-            }
-        }, CancellationToken.None);
-
-        _runningCommands[executionId] = new RunningCommand(
-            executionId,
-            command.Name,
-            context,
-            linkedCts,
-            task);
-
-        try
-        {
-            await task;
-        }
-        finally
-        {
-            _runningCommands.TryRemove(executionId, out _);
-            linkedCts.Dispose();
-        }
-    }
-
-    public bool TryCancel(Guid executionId)
-    {
-        if (!_runningCommands.TryGetValue(executionId, out var running))
-        {
-            return false;
-        }
-
-        running.CancellationTokenSource.Cancel();
-        return true;
-    }
-
-    public IEnumerable<RunningCommand> RunningCommands => _runningCommands.Values;
-
-    #endregion
-
-    #region Auto-correct & guards
 
     private void ReplyWithAutoCorrect(string commandName, IContext context)
     {

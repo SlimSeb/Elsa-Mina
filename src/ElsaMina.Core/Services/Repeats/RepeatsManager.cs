@@ -1,10 +1,11 @@
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Core.Services.Repeats;
 
-public class RepeatsManager : IRepeatsManager
+public class RepeatsManager : IRepeatsManager, IBotLifecycleParticipant
 {
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly Lazy<IBot> _bot;
@@ -78,4 +79,6 @@ public class RepeatsManager : IRepeatsManager
         _repeats[repeatId] = repeat;
         repeat.Start();
     }
+
+    public Task OnStartingAsync(CancellationToken cancellationToken) => InitializeAsync(cancellationToken);
 }

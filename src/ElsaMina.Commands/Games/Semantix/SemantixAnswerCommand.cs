@@ -7,7 +7,7 @@ namespace ElsaMina.Commands.Games.Semantix;
 /// Debug command for developers: shows today's Semantix answer.
 /// </summary>
 [NamedCommand("sxanswer", Aliases = ["sxword"])]
-public class SemantixAnswerCommand : Command
+public class SemantixAnswerCommand : GameCommand
 {
     private readonly ISemantixDailyService _dailyService;
 

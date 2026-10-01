@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Battleship;
 
 [NamedCommand("bsrandom", Aliases = ["bsrand"])]
-public class RandomBattleshipCommand : Command
+public class RandomBattleshipCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

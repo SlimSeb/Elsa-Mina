@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ElsaMina.Commands.Games.Tarot;
 
 [NamedCommand("tarotstats", Aliases = ["tarotscore"])]
-public class TarotStatsCommand : Command
+public class TarotStatsCommand : GameCommand
 {
     private readonly IBotDbContextFactory _dbContextFactory;
 

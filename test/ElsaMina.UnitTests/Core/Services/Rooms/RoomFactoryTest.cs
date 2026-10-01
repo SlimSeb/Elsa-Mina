@@ -1,5 +1,4 @@
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.DataAccess;
@@ -14,7 +13,6 @@ public class RoomFactoryTest
     private RoomFactory _sut;
     private IConfiguration _configuration;
     private IBotDbContextFactory _dbContextFactory;
-    private IDependencyContainerService _dependencyContainerService;
     private IRoomParameterStore _roomParameterStore;
     private DbContextOptions<BotDbContext> _dbContextOptions;
 
@@ -44,10 +42,8 @@ public class RoomFactoryTest
         _roomParameterStore.GetValueAsync(Parameter.TimeZone, Arg.Any<CancellationToken>())
             .Returns(string.Empty);
 
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
-        _dependencyContainerService.Resolve<IRoomParameterStore>().Returns(_roomParameterStore);
 
-        _sut = new RoomFactory(_configuration, _dbContextFactory, _dependencyContainerService);
+        _sut = new RoomFactory(_configuration, _dbContextFactory, () => _roomParameterStore);
     }
 
     [Test]

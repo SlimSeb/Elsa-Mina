@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.TwentyFortyEight;
 
 [NamedCommand("2048move")]
-public class MoveTwentyFortyEightCommand : Command
+public class MoveTwentyFortyEightCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly ITwentyFortyEightGameManager _gameManager;

@@ -2,12 +2,11 @@ using Autofac;
 using ElsaMina.Core;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Services.Clock;
+using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.Dispatch;
 using ElsaMina.Core.Services.Lifecycle;
-using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.Start;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
 using NSubstitute;
@@ -28,10 +27,7 @@ public class BotRoomInitializationIntegrationTest
         var clockService = Substitute.For<IClockService>();
         _roomsManager = Substitute.For<IRoomsManager>();
         var systemService = Substitute.For<ISystemService>();
-        var startManager = Substitute.For<IStartManager>();
         var configuration = Substitute.For<IConfiguration>();
-        var playTimeUpdateService = Substitute.For<IPlayTimeUpdateService>();
-        var dependencyContainerService = new DependencyContainerService();
 
         clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
         configuration.Trigger.Returns("!");
@@ -39,14 +35,21 @@ public class BotRoomInitializationIntegrationTest
         configuration.DefaultLocaleCode.Returns("");
 
         var telemetry = Substitute.For<ITelemetryService>();
-        var handlerManager = new HandlerManager(dependencyContainerService, telemetry);
-        _bot = new Bot(client, clockService, _roomsManager, handlerManager,
-            systemService, new BotLifecycleService(startManager, playTimeUpdateService), telemetry);
 
         var builder = new ContainerBuilder();
-        builder.RegisterInstance(dependencyContainerService).As<IDependencyContainerService>();
+        builder.RegisterInstance(client).As<IClient>();
+        builder.RegisterInstance(clockService).As<IClockService>();
+        builder.RegisterInstance(systemService).As<ISystemService>();
+        builder.RegisterInstance(Substitute.For<IBotLifecycleService>()).As<IBotLifecycleService>();
+        builder.RegisterType<OutgoingMessageQueue>().As<IOutgoingMessageQueue>().SingleInstance();
+        builder.RegisterType<HandlerManager>().As<IHandlerManager>().SingleInstance();
+        builder.RegisterType<CommandRegistry>().As<ICommandRegistry>().SingleInstance();
+        builder.RegisterType<Bot>().As<IBot>().AsSelf().SingleInstance();
+        builder.RegisterInstance(_roomsManager).As<IRoomsManager>();
+        builder.RegisterInstance(telemetry).As<ITelemetryService>();
         _container = builder.Build();
-        dependencyContainerService.SetContainer(_container);
+        _bot = _container.Resolve<Bot>();
+        _container.Resolve<IHandlerManager>().Initialize();
     }
 
     [TearDown]

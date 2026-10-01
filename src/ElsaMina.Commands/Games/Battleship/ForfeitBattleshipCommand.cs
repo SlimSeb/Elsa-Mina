@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Battleship;
 
 [NamedCommand("bsforfeit", "bsff")]
-public class ForfeitBattleshipCommand : Command
+public class ForfeitBattleshipCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

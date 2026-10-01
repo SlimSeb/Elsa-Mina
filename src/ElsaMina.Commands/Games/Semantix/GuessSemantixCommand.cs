@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Semantix;
 
 [NamedCommand("sxguess", Aliases = ["sxg"])]
-public class GuessSemantixCommand : Command
+public class GuessSemantixCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly ISemantixGameManager _gameManager;

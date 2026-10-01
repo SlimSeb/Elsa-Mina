@@ -1,5 +1,4 @@
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.LanguageModel.Google;
 using ElsaMina.Core.Services.LanguageModel.Mistral;
@@ -13,7 +12,6 @@ namespace ElsaMina.UnitTests.Core.Services.LanguageModel;
 public class LanguageModelResolverTest
 {
     private IConfiguration _configuration;
-    private IDependencyContainerService _dependencyContainer;
     private GptMiniProvider _gptProvider;
     private GeminiFlashProvider _geminiProvider;
     private MistralSmallProvider _mistralProvider;
@@ -23,17 +21,16 @@ public class LanguageModelResolverTest
     public void SetUp()
     {
         _configuration = Substitute.For<IConfiguration>();
-        _dependencyContainer = Substitute.For<IDependencyContainerService>();
 
         _gptProvider = Substitute.ForPartsOf<GptMiniProvider>(null, _configuration);
         _geminiProvider = Substitute.ForPartsOf<GeminiFlashProvider>(_configuration, null);
         _mistralProvider = Substitute.ForPartsOf<MistralSmallProvider>(null, _configuration);
 
-        _dependencyContainer.Resolve<GptMiniProvider>().Returns(_gptProvider);
-        _dependencyContainer.Resolve<GeminiFlashProvider>().Returns(_geminiProvider);
-        _dependencyContainer.Resolve<MistralSmallProvider>().Returns(_mistralProvider);
 
-        _resolver = new LanguageModelResolver(_configuration, _dependencyContainer);
+        _resolver = new LanguageModelResolver(_configuration,
+            new Lazy<GeminiFlashProvider>(() => _geminiProvider),
+            new Lazy<MistralSmallProvider>(() => _mistralProvider),
+            new Lazy<GptMiniProvider>(() => _gptProvider));
     }
 
     [Test]
