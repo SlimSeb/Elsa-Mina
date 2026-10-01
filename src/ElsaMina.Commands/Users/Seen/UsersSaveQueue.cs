@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore;
 namespace ElsaMina.Commands.Users.Seen;
 
 /// <summary>
-/// Bufferise les màj de "dernière activité" des utilisateurs, puis les enregistre par lots.
-/// Plusieurs màj pour un même utilisateur sont fusionnées : seule la plus récente est sauvegardée
+/// Buffers users' "last seen" updates, then saves them in batches.
+/// Several updates for the same user are merged: only the most recent one is saved
 /// </summary>
 public sealed class UserSaveQueue : IUserSaveQueue, IBotLifecycleParticipant
 {
@@ -22,7 +22,7 @@ public sealed class UserSaveQueue : IUserSaveQueue, IBotLifecycleParticipant
         UserAction Action,
         DateTimeOffset LastSeenTime);
 
-    // userId -> dernière màj en attente pour cet user
+    // userId -> latest pending update for that user
     private readonly ConcurrentDictionary<string, PendingUserSave> _pendingUsers = new();
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly IClockService _clockService;
@@ -30,7 +30,7 @@ public sealed class UserSaveQueue : IUserSaveQueue, IBotLifecycleParticipant
     private readonly int _batchSize;
 
     private readonly SemaphoreSlim _flushLock = new(1, 1);
-    // Protège l'accès à _currentFlushTask pour partager un flush déjà en cours
+    // Guards _currentFlushTask so a flush already running is shared
     private readonly Lock _flushTaskLock = new();
 
     private Task _currentFlushTask;
@@ -84,7 +84,7 @@ public sealed class UserSaveQueue : IUserSaveQueue, IBotLifecycleParticipant
     {
         lock (_flushTaskLock)
         {
-            // Réutilise la tâche de flush en cours au lieu d'en démarrer plusieurs en parallèle
+            // Reuse the running flush instead of starting several in parallel
             if (_currentFlushTask?.IsCompleted == false)
             {
                 return _currentFlushTask;
@@ -110,7 +110,7 @@ public sealed class UserSaveQueue : IUserSaveQueue, IBotLifecycleParticipant
         await _flushLock.WaitAsync(cancellationToken);
         try
         {
-            // Boucle pour capter les nouvelles mises à jour arrivées pendant l'enregistrement du lot courant.
+            // Loop to pick up updates that arrived while the current batch was being saved.
             while (!_pendingUsers.IsEmpty)
             {
                 var batch = _pendingUsers.ToArray();
@@ -195,7 +195,7 @@ public sealed class UserSaveQueue : IUserSaveQueue, IBotLifecycleParticipant
 
     public async Task AcquireLockAsync(CancellationToken cancellationToken = default)
     {
-        // Permet à des services externes de suspendre les flushs pendant leurs propres écritures liées
+        // Lets other services suspend flushes during their own related writes
         await _flushLock.WaitAsync(cancellationToken);
     }
 

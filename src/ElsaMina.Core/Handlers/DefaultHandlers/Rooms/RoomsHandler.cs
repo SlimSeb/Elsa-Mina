@@ -19,7 +19,7 @@ public sealed class RoomsHandler : Handler
         _roomsManager = roomsManager;
     }
 
-    public override IReadOnlySet<string> HandledMessageTypes => (HashSet<string>)
+    public override IReadOnlySet<string> HandledMessageTypes { get; } = (HashSet<string>)
     [
         CHAT_MESSAGE_MARKER, DE_INIT_MARKER, JOIN_MARKER, LEAVE_MARKER, RENAME_MARKER, NO_INIT_MARKER
     ];

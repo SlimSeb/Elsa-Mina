@@ -71,7 +71,7 @@ public partial class YoutubeAlertsApiClient : IYoutubeAlertsApiClient
     public async Task<IReadOnlyList<string>> GetRecentVideoIdsAsync(string channelId,
         CancellationToken cancellationToken = default)
     {
-        // Le flux RSS de la chaîne ne consomme pas de quota de l'API YouTube
+        // The channel's RSS feed does not use any YouTube API quota
         var response = await _httpService.SendForStringAsync(
             HttpRequest.Get(FEED_URL).WithQueryParameter("channel_id", channelId), cancellationToken);
         var document = XDocument.Parse(response.Data ?? string.Empty);
