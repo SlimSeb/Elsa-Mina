@@ -1,7 +1,7 @@
 namespace ElsaMina.Core.Services.Http;
 
 /// <summary>
-/// Transforme le corps d'une requête en <see cref="HttpContent"/> à envoyer
+/// Turns a request body into the <see cref="HttpContent"/> to send
 /// </summary>
 public interface IHttpRequestBody
 {

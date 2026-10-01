@@ -18,8 +18,8 @@ public sealed class HttpRequest
     public IHttpRequestBody Body { get; private set; }
 
     /// <remarks>
-    /// Enlève le premier caractère du contenu de la réponse avant déserialiser. Certains
-    /// endpoints (comme ceux de PS) ajoutent un caractère inutile devant
+    /// Removes the first character of the response content before deserializing. Some
+    /// endpoints (such as PS's) add a useless leading character
     /// </remarks>
     public bool SkipFirstResponseCharacter { get; private set; }
 

@@ -10,5 +10,5 @@ public abstract class ChatMessageHandler : MessageHandler
 
     protected override ContextType HandledContextType => ContextType.Room;
 
-    public override IReadOnlySet<string> HandledMessageTypes => new HashSet<string>() { "c:" };
+    public override IReadOnlySet<string> HandledMessageTypes { get; } = new HashSet<string>() { "c:" };
 }

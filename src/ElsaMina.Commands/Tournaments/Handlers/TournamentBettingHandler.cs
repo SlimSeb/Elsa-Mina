@@ -21,7 +21,7 @@ public class TournamentBettingHandler : Handler
         _roomsManager = roomsManager;
     }
 
-    public override IReadOnlySet<string> HandledMessageTypes => (HashSet<string>)["tournament"];
+    public override IReadOnlySet<string> HandledMessageTypes { get; } = (HashSet<string>)["tournament"];
 
     private static readonly JsonSerializerOptions JSON_OPTIONS = new()
     {

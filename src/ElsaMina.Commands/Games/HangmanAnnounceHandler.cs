@@ -11,7 +11,7 @@ public partial class HangmanAnnounceHandler : Handler
 
     private readonly IEventAnnouncer _eventAnnouncer;
 
-    public override IReadOnlySet<string> HandledMessageTypes => (HashSet<string>)["uhtml"];
+    public override IReadOnlySet<string> HandledMessageTypes { get; } = (HashSet<string>)["uhtml"];
 
     private uint _lastId;
 

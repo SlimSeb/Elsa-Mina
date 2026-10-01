@@ -135,7 +135,7 @@ public abstract class GuessingGame : Game, IGuessingGame
                 validAnswer.ToLowerAlphaNum().LevenshteinDistance(answer.ToLowerAlphaNum()) <=
                 maxLevenshteinDistance))
         {
-            // Aucune réponse n'est suffisamment proche
+            // No answer is close enough
             return;
         }
 

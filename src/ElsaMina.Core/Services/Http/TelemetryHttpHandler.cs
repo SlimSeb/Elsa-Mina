@@ -4,7 +4,7 @@ using ElsaMina.Core.Services.Telemetry;
 namespace ElsaMina.Core.Services.Http;
 
 /// <summary>
-/// Étape du pipeline qui ajoute les métriques à chaque requête sortante
+/// Pipeline step that records metrics for every outgoing request
 /// </summary>
 public sealed class TelemetryHttpHandler : DelegatingHandler
 {

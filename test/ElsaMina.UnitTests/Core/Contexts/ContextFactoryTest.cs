@@ -330,4 +330,52 @@ public class ContextFactoryTest
             Assert.That(pm.Target, Is.EqualTo("    arg1   "));
         }
     }
+
+    [Test]
+    public void Test_TryBuildContextFromReceivedMessage_ShouldReturnSameContext_WhenSameLineIsHandledTwice()
+    {
+        // Arrange
+        var room = Substitute.For<IRoom>();
+        var user = Substitute.For<IUser>();
+        room.Users.Returns(new Dictionary<string, IUser> { ["user1"] = user });
+        _roomsManager.GetRoom("room1").Returns(room);
+        _configuration.Trigger.Returns("!");
+        string[] parts = ["", "c:", "123", "user1", "!test"];
+
+        // Act
+        var first = _contextFactory.TryBuildContextFromReceivedMessage(parts, "room1");
+        var second = _contextFactory.TryBuildContextFromReceivedMessage(parts, "room1");
+
+        // Assert
+        Assert.That(first, Is.Not.Null);
+        Assert.That(second, Is.SameAs(first));
+        _roomsManager.Received(1).GetRoom("room1");
+    }
+
+    [Test]
+    public void Test_TryBuildContextFromReceivedMessage_ShouldReturnNull_WhenChatTimestampIsNotANumber()
+    {
+        // Arrange
+        _roomsManager.GetRoom("room1").Returns(Substitute.For<IRoom>());
+        string[] parts = ["", "c:", "not-a-timestamp", "user1", "!test"];
+
+        // Act
+        var result = _contextFactory.TryBuildContextFromReceivedMessage(parts, "room1");
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public void Test_TryBuildContextFromReceivedMessage_ShouldReturnNull_WhenPrivateMessageIsTruncated()
+    {
+        // Arrange
+        string[] parts = ["", "pm", " Sender"];
+
+        // Act
+        var result = _contextFactory.TryBuildContextFromReceivedMessage(parts);
+
+        // Assert
+        Assert.That(result, Is.Null);
+    }
 }
