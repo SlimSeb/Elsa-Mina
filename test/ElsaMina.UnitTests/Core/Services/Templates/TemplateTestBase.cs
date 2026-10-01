@@ -1,5 +1,5 @@
 using System.Globalization;
-using ElsaMina.Core.Services.CustomColors;
+using ElsaMina.Commands.Users.Colors;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Templates;
 using Microsoft.Extensions.DependencyInjection;

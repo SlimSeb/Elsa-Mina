@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Core.Handlers;
-using ElsaMina.Core.Services.EventAnnounces;
 
 namespace ElsaMina.Commands.Games;
 

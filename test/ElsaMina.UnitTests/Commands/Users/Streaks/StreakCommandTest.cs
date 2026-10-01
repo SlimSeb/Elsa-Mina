@@ -27,7 +27,7 @@ public class StreakCommandTest
         _context.Sender.Returns(_sender);
         _context.RoomId.Returns("testroom");
         _context.Room.Returns(_room);
-        _room.GetParameterValueAsync(Parameter.StreaksEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(StreaksRoomParameters.StreaksEnabled, Arg.Any<CancellationToken>())
             .Returns(true.ToString());
 
         _command = new StreakCommand(_streakService);
@@ -108,7 +108,7 @@ public class StreakCommandTest
     public async Task Test_RunAsync_ShouldReplyDisabled_WhenStreaksAreDisabled()
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.StreaksEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(StreaksRoomParameters.StreaksEnabled, Arg.Any<CancellationToken>())
             .Returns(false.ToString());
 
         // Act

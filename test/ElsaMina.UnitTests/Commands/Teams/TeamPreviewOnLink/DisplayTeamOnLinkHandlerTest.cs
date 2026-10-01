@@ -36,7 +36,7 @@ public class DisplayTeamOnLinkHandlerTest
             .Returns(_context);
 
         // Room mock
-        _context.Room.GetParameterValueAsync(Parameter.ShowTeamLinksPreview, Arg.Any<CancellationToken>())
+        _context.Room.GetParameterValueAsync(TeamPreviewRoomParameters.ShowTeamLinksPreview, Arg.Any<CancellationToken>())
             .Returns("true"); // default behavior
 
         _handler = new DisplayTeamOnLinkHandler(
@@ -81,7 +81,7 @@ public class DisplayTeamOnLinkHandlerTest
     public async Task Test_HandleReceivedMessageAsync_ShouldNotProceed_WhenTeamLinksPreviewDisabled()
     {
         // Arrange
-        _context.Room.GetParameterValueAsync(Parameter.ShowTeamLinksPreview, Arg.Any<CancellationToken>())
+        _context.Room.GetParameterValueAsync(TeamPreviewRoomParameters.ShowTeamLinksPreview, Arg.Any<CancellationToken>())
             .Returns("false");
 
         // Act
@@ -137,7 +137,7 @@ public class DisplayTeamOnLinkHandlerTest
         _context.Culture.Returns(new CultureInfo("en-US"));
         _context.Sender.UserId.Returns("userId");
         _context.Sender.Name.Returns("User");
-        _context.Room.GetParameterValueAsync(Parameter.ShowTeamLinksPreview, Arg.Any<CancellationToken>())
+        _context.Room.GetParameterValueAsync(TeamPreviewRoomParameters.ShowTeamLinksPreview, Arg.Any<CancellationToken>())
             .Returns("true");
 
         var teamLinkMatch = Substitute.For<ITeamLinkMatch>();

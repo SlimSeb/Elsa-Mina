@@ -51,9 +51,6 @@
     <data name="parameter_name_is_showing_error_messages" xml:space="preserve">
         <value>Befehlsfehlermeldungen</value>
     </data>
-    <data name="parameter_name_is_showing_team_links_preview" xml:space="preserve">
-        <value>Team-Link-Vorschau</value>
-    </data>
     <data name="parameter_name_locale" xml:space="preserve">
         <value>Sprache</value>
     </data>
@@ -63,44 +60,11 @@
     <data name="parameter_description_is_showing_error_messages" xml:space="preserve">
         <value>Zeigt die Fehlermeldung und den Ausnahme-Stack-Trace an, wenn die Ausführung eines Befehls fehlschlägt</value>
     </data>
-    <data name="parameter_description_is_showing_team_links_preview" xml:space="preserve">
-        <value>Zeigt eine Vorschau eines Pokémon-Teams an, wenn ein Pokepaste- oder CoupCritique-Link im Chat geteilt wird</value>
-    </data>
     <data name="parameter_description_locale" xml:space="preserve">
         <value>Die für Befehle verwendete Sprache</value>
     </data>
-    <data name="parameter_name_is_showing_replays_preview" xml:space="preserve">
-        <value>Replay-Vorschau</value>
-    </data>
-    <data name="parameter_description_is_showing_replays_preview" xml:space="preserve">
-        <value>Zeigt die Spieler und Teams eines Replays an</value>
-    </data>
-    <data name="parameter_name_is_showing_youtube_link_preview" xml:space="preserve">
-        <value>YouTube-Link-Vorschau</value>
-    </data>
-    <data name="parameter_description_is_showing_youtube_link_preview" xml:space="preserve">
-        <value>Zeigt den Titel und Informationen eines YouTube-Videos an, wenn ein Link gepostet wird</value>
-    </data>
-    <data name="parameter_name_is_showing_url_preview" xml:space="preserve">
-        <value>URL-Vorschau</value>
-    </data>
-    <data name="parameter_description_is_showing_url_preview" xml:space="preserve">
-        <value>Zeigt eine Vorschaukarte mit Titel und Beschreibung an, wenn eine URL gepostet wird</value>
-    </data>
-    <data name="parameter_name_bucks_enabled" xml:space="preserve">
-        <value>Bucks</value>
-    </data>
-    <data name="parameter_description_bucks_enabled" xml:space="preserve">
-        <value>Die Bucks-Wirtschaft (Guthaben, Überweisungen, Preise) für diesen Raum aktivieren oder deaktivieren.</value>
-    </data>
     <data name="bucks_disabled" xml:space="preserve">
         <value>Die Bucks-Wirtschaft ist in diesem Raum deaktiviert.</value>
-    </data>
-    <data name="parameter_name_klipy_gif_enabled" xml:space="preserve">
-        <value>KLIPY-GIFs</value>
-    </data>
-    <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
-        <value>Aktiviert die Befehle klipygif und klipysearch im Raum</value>
     </data>
     <data name="command_execution_error" xml:space="preserve">
         <value>Bei der Befehlsausführung ist ein Fehler aufgetreten.</value>
@@ -122,35 +86,5 @@
     </data>
     <data name="rank_former_staff" xml:space="preserve">
         <value>Ehemaliges Team</value>
-    </data>
-    <data name="parameter_name_tournament_betting_enabled" xml:space="preserve">
-        <value>Turnierwetten</value>
-    </data>
-    <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
-        <value>Turnierwetten für diesen Raum aktivieren oder deaktivieren.</value>
-    </data>
-    <data name="parameter_name_event_announces_type" xml:space="preserve">
-        <value>Raumübergreifende Ankündigungen</value>
-    </data>
-    <data name="parameter_description_event_announces_type" xml:space="preserve">
-        <value>Wähle, welche Ereignisse aus verknüpften Räumen in diesem Raum angekündigt werden.</value>
-    </data>
-    <data name="parameter_value_event_announces_all" xml:space="preserve">
-        <value>Turniere &amp; Spiele</value>
-    </data>
-    <data name="parameter_value_event_announces_tournaments" xml:space="preserve">
-        <value>Nur Turniere</value>
-    </data>
-    <data name="parameter_value_event_announces_games" xml:space="preserve">
-        <value>Nur Spiele</value>
-    </data>
-    <data name="parameter_value_event_announces_none" xml:space="preserve">
-        <value>Keine</value>
-    </data>
-    <data name="parameter_name_streaks_enabled" xml:space="preserve">
-        <value>Serien</value>
-    </data>
-    <data name="parameter_description_streaks_enabled" xml:space="preserve">
-        <value>Serien und Serien-Ranglisten für diesen Raum aktivieren oder deaktivieren.</value>
     </data>
 </root>

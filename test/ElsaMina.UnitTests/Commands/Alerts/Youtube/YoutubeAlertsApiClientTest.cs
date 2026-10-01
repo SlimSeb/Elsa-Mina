@@ -1,4 +1,5 @@
 using System.Net;
+using ElsaMina.Commands;
 using ElsaMina.Commands.Alerts.Youtube;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
@@ -20,14 +21,14 @@ public class YoutubeAlertsApiClientTest
     private static readonly string[] ExpectedVideoIds = ["abc", "def"];
 
     private IHttpService _httpService;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private YoutubeAlertsApiClient _client;
 
     [SetUp]
     public void SetUp()
     {
         _httpService = Substitute.For<IHttpService>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _configuration.YoutubeApiKey.Returns("key");
         _client = new YoutubeAlertsApiClient(_httpService, _configuration);
     }

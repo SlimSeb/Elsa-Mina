@@ -21,12 +21,12 @@ public partial class YoutubeVideoOnLinkHandler : ChatMessageHandler
     private const int THUMBNAIL_HEIGHT = 90;
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly ITemplatesManager _templatesManager;
 
     public YoutubeVideoOnLinkHandler(IContextFactory contextFactory,
         IHttpService httpService,
-        IConfiguration configuration,
+        ICommandsConfiguration configuration,
         ITemplatesManager templatesManager) : base(contextFactory)
     {
         _httpService = httpService;
@@ -36,7 +36,7 @@ public partial class YoutubeVideoOnLinkHandler : ChatMessageHandler
 
     public override async Task HandleMessageAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var isPreviewEnabled = (await context.Room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview,
+        var isPreviewEnabled = (await context.Room.GetParameterValueAsync(YoutubeRoomParameters.ShowYoutubeLinkPreview,
             cancellationToken)).ToBoolean();
         if (!isPreviewEnabled)
         {

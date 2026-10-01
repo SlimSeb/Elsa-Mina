@@ -1,8 +1,8 @@
 using ElsaMina.Commands.Arcade.Events;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Commands.Games.Battleship;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;

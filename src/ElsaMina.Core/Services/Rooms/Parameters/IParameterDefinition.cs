@@ -3,6 +3,7 @@
 public interface IParameterDefinition
 {
     string Identifier { get; }
+    string Name { get; }
     string NameKey { get; }
     string DescriptionKey { get; }
     RoomBotConfigurationType Type { get; }

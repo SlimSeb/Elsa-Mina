@@ -151,7 +151,7 @@ public class VoltorbFlipGameTest
         // Arrange - seed saved level 5
         await using (var db = new BotDbContext(_dbOptions))
         {
-            db.VoltorbFlipLevels.Add(new DataAccess.Models.VoltorbFlipLevel
+            db.VoltorbFlipLevels.Add(new ElsaMina.DataAccess.Models.VoltorbFlipLevel
             {
                 UserId = "testplayer",
                 Level = 5,

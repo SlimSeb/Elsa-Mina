@@ -1,10 +1,10 @@
+using ElsaMina.Cloud.Sheets;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
-using ElsaMina.Cloud.Sheets;
 
 namespace ElsaMina.Commands.Arcade.Sheets;
 
@@ -13,10 +13,10 @@ public class ArcadeHallOfFameCommand : Command
 {
     private readonly ISheetProvider _sheetProvider;
     private readonly ITemplatesManager _templatesManager;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
 
     public ArcadeHallOfFameCommand(ISheetProvider sheetProvider, ITemplatesManager templatesManager,
-        IConfiguration configuration)
+        ICommandsConfiguration configuration)
     {
         _sheetProvider = sheetProvider;
         _templatesManager = templatesManager;

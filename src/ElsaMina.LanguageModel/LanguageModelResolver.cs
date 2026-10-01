@@ -1,0 +1,112 @@
+using ElsaMina.LanguageModel.Google;
+using ElsaMina.LanguageModel.Mistral;
+using ElsaMina.LanguageModel.OpenAi;
+using ElsaMina.Logging;
+
+namespace ElsaMina.LanguageModel;
+
+/// <summary>
+/// Attempts multiple language model providers in a fixed order until one succeeds.
+/// </summary>
+public class LanguageModelResolver : ILanguageModelProvider
+{
+    private readonly ILanguageModelConfiguration _configuration;
+    private readonly Lazy<GeminiFlashProvider> _geminiProvider;
+    private readonly Lazy<MistralSmallProvider> _mistralProvider;
+    private readonly Lazy<GptMiniProvider> _gptProvider;
+    private List<ILanguageModelProvider> _cachedProviders;
+
+    // Lazy: a provider is only built when its API key is configured.
+    public LanguageModelResolver(ILanguageModelConfiguration configuration,
+        Lazy<GeminiFlashProvider> geminiProvider,
+        Lazy<MistralSmallProvider> mistralProvider,
+        Lazy<GptMiniProvider> gptProvider)
+    {
+        _configuration = configuration;
+        _geminiProvider = geminiProvider;
+        _mistralProvider = mistralProvider;
+        _gptProvider = gptProvider;
+    }
+
+    /// <summary>
+    /// Sends a single prompt and falls back to other providers if the call fails.
+    /// </summary>
+    public Task<string> AskLanguageModelAsync(string prompt, CancellationToken cancellationToken = default)
+    {
+        return ExecuteWithFallbackAsync(provider =>
+        {
+            Log.Information("Sending prompt to language model provider {Prompt}", prompt);
+            return provider.AskLanguageModelAsync(prompt, cancellationToken);
+        });
+    }
+
+    /// <summary>
+    /// Sends a full conversation request and falls back to other providers if the call fails.
+    /// </summary>
+    public Task<string> AskLanguageModelAsync(LanguageModelRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        return ExecuteWithFallbackAsync(provider =>
+        {
+            Log.Information("Sending request to language model provider {Request}", request);
+            return provider.AskLanguageModelAsync(request, cancellationToken);
+        });
+    }
+
+    /// <summary>
+    /// Tries each resolved provider in order, returning the first non-empty response.
+    /// </summary>
+    private async Task<string> ExecuteWithFallbackAsync(Func<ILanguageModelProvider, Task<string>> action)
+    {
+        var providers = _cachedProviders ??= GetProviders();
+
+        if (providers.Count == 0)
+        {
+            Log.Error("No language model providers are configured with API keys.");
+            return null;
+        }
+
+        foreach (var provider in providers)
+        {
+            try
+            {
+                var response = await action(provider);
+                if (!string.IsNullOrWhiteSpace(response))
+                {
+                    return response;
+                }
+
+                Log.Warning("Language model provider {0} returned an empty response.", provider.GetType().Name);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Language model provider {0} failed.", provider.GetType().Name);
+            }
+        }
+
+        return null;
+    }
+
+    private List<ILanguageModelProvider> GetProviders()
+    {
+        var providers = new List<ILanguageModelProvider>();
+
+        // In order of priority
+        if (!string.IsNullOrWhiteSpace(_configuration.GeminiApiKey))
+        {
+            providers.Add(_geminiProvider.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(_configuration.MistralApiKey))
+        {
+            providers.Add(_mistralProvider.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(_configuration.ChatGptApiKey))
+        {
+            providers.Add(_gptProvider.Value);
+        }
+
+        return providers;
+    }
+}

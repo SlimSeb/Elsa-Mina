@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.AddedCommands;
 using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.Rooms.Parameters;
@@ -14,7 +13,6 @@ namespace ElsaMina.Core.Services.Commands;
 public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
 {
     private readonly ICommandRegistry _commandRegistry;
-    private readonly IAddedCommandsManager _addedCommandsManager;
     private readonly IEnumerable<IDynamicCommandProvider> _dynamicCommandProviders;
     private readonly ITelemetryService _telemetryService;
     private readonly IFeatureSwitchService _featureSwitchService;
@@ -23,13 +21,11 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
 
     public CommandExecutor(
         ICommandRegistry commandRegistry,
-        IAddedCommandsManager addedCommandsManager,
         IEnumerable<IDynamicCommandProvider> dynamicCommandProviders,
         ITelemetryService telemetryService,
         IFeatureSwitchService featureSwitchService)
     {
         _commandRegistry = commandRegistry;
-        _addedCommandsManager = addedCommandsManager;
         _dynamicCommandProviders = dynamicCommandProviders;
         _telemetryService = telemetryService;
         _featureSwitchService = featureSwitchService;
@@ -55,7 +51,8 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
         var command = _commandRegistry.Find(commandName);
         if (command == null)
         {
-            Track(commandName, context, cancellationToken,
+            // Custom commands and suggestions may hit the database: run them in the background like commands.
+            _ = Track(commandName, context, cancellationToken,
                 token => TryExecuteFallbackAsync(commandName, context, token));
             return;
         }
@@ -180,23 +177,14 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
 
     #endregion
 
-    #region Custom commands, auto-correct & guards
+    #region Dynamic commands, auto-correct & guards
 
     private async Task TryExecuteFallbackAsync(string commandName, IContext context,
         CancellationToken cancellationToken)
     {
-        if (!context.IsPrivateMessage)
-        {
-            Log.Information("Trying command {0} as a custom command", commandName);
-            if (await _addedCommandsManager.TryExecuteAddedCommand(commandName, context, cancellationToken))
-            {
-                return;
-            }
-        }
-
         foreach (var provider in _dynamicCommandProviders)
         {
-            if (await provider.TryExecuteAsync(commandName, context))
+            if (await provider.TryExecuteAsync(commandName, context, cancellationToken))
             {
                 return;
             }

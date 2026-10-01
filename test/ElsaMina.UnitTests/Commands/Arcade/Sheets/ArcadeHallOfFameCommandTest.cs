@@ -1,9 +1,10 @@
+using ElsaMina.Cloud.Sheets;
+using ElsaMina.Commands;
 using ElsaMina.Commands.Arcade.Sheets;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
-using ElsaMina.Cloud.Sheets;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Arcade.Sheets;
@@ -13,7 +14,7 @@ public class ArcadeHallOfFameCommandTest
 {
     private ISheetProvider _sheetProvider;
     private ITemplatesManager _templatesManager;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private ISheet _sheet;
     private IContext _context;
     private ArcadeHallOfFameCommand _command;
@@ -23,7 +24,7 @@ public class ArcadeHallOfFameCommandTest
     {
         _sheetProvider = Substitute.For<ISheetProvider>();
         _templatesManager = Substitute.For<ITemplatesManager>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _sheet = Substitute.For<ISheet>();
         _context = Substitute.For<IContext>();
 

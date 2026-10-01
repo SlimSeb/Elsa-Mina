@@ -1,8 +1,8 @@
 using ElsaMina.Commands.Economy;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Commands.Games.Poker;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
@@ -40,7 +40,7 @@ public class StartPokerCommandTest
         _context.RoomId.Returns("poker-room");
         _context.Sender.Returns(sender);
         _room.Game.ReturnsNull();
-        _room.GetParameterValueAsync(Parameter.BucksEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(EconomyRoomParameters.BucksEnabled, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult("false"));
 
         _game = new PokerGame(Substitute.For<IRandomService>(), _templatesManager,

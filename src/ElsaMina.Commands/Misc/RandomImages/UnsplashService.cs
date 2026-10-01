@@ -9,9 +9,9 @@ public class UnsplashService : IUnsplashService
     private const string UNSPLASH_RANDOM_URL = "https://api.unsplash.com/photos/random";
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
 
-    public UnsplashService(IHttpService httpService, IConfiguration configuration)
+    public UnsplashService(IHttpService httpService, ICommandsConfiguration configuration)
     {
         _httpService = httpService;
         _configuration = configuration;

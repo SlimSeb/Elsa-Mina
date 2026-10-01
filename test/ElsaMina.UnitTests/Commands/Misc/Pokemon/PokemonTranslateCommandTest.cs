@@ -1,6 +1,6 @@
 using ElsaMina.Commands.Misc.Pokemon;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.Dex;
+using ElsaMina.Showdown.Dex;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Misc.Pokemon;
@@ -12,7 +12,7 @@ public class PokemonTranslateCommandTest
     private IContext _context;
     private PokemonTranslateCommand _command;
 
-    private static readonly ElsaMina.Core.Services.Dex.Pokemon[] TEST_POKEDEX =
+    private static readonly ElsaMina.Showdown.Dex.Pokemon[] TEST_POKEDEX =
     [
         new()
         {

@@ -1,11 +1,11 @@
 using System.Globalization;
 using System.Text;
+using ElsaMina.Cloud;
 using ElsaMina.Commands.ChatLog;
+using ElsaMina.Commands.Users.Colors;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
-using ElsaMina.Cloud;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.ChatLog;

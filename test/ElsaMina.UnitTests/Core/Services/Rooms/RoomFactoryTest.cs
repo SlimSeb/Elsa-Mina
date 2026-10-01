@@ -42,8 +42,8 @@ public class RoomFactoryTest
         _roomParameterStore.GetValueAsync(Parameter.TimeZone, Arg.Any<CancellationToken>())
             .Returns(string.Empty);
 
-
-        _sut = new RoomFactory(_configuration, _dbContextFactory, () => _roomParameterStore);
+        _sut = new RoomFactory(_configuration, new EfRoomParameterRepository(_dbContextFactory),
+            () => _roomParameterStore);
     }
 
     [Test]
@@ -129,7 +129,7 @@ public class RoomFactoryTest
     }
 
     [Test]
-    public async Task Test_CreateRoomAsync_ShouldInitializeParameterStoreFromDbEntity()
+    public async Task Test_CreateRoomAsync_ShouldInitializeParameterStoreWithStoredValues()
     {
         // Arrange
         const string roomId = "testroom";
@@ -139,7 +139,7 @@ public class RoomFactoryTest
         await _sut.CreateRoomAsync(roomId, lines);
 
         // Assert
-        _roomParameterStore.Received(1).InitializeFromRoomEntity(Arg.Is<SavedRoom>(r => r.Id == roomId));
+        _roomParameterStore.Received(1).Initialize(roomId, Arg.Any<IReadOnlyDictionary<string, string>>());
     }
 
     [Test]

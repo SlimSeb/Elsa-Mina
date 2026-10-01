@@ -315,4 +315,10 @@
   <data name="tournament_winner_prize" xml:space="preserve">
     <value>¡{0} ganó {1} bucks por ganar el torneo!</value>
   </data>
+    <data name="parameter_name_tournament_betting_enabled" xml:space="preserve">
+        <value>Apuestas de torneo</value>
+    </data>
+    <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
+        <value>Activar o desactivar las apuestas de torneo para esta sala.</value>
+    </data>
 </root>

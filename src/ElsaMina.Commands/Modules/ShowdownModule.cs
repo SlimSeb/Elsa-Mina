@@ -6,6 +6,8 @@ using ElsaMina.Commands.Showdown.Ladder;
 using ElsaMina.Commands.Showdown.Ladder.EloHistory;
 using ElsaMina.Commands.Showdown.Ranking;
 using ElsaMina.Commands.Showdown.SmogonStats;
+using ElsaMina.Core.Services.Lifecycle;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Modules;
@@ -15,6 +17,8 @@ public class ShowdownModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
+
+        builder.RegisterType<ReplaysRoomParameters>().As<IRoomParameterProvider>().SingleInstance();
 
         builder.RegisterCommand<RankingCommand>();
         builder.RegisterCommand<SmogonStatsCommand>();
@@ -34,13 +38,9 @@ public class ShowdownModule : Module
         builder.RegisterType<BestRankingProvider>().As<IBestRankingProvider>().SingleInstance();
         builder.RegisterType<LadderHistoryManager>().As<ILadderHistoryManager>().SingleInstance();
         builder.RegisterType<LadderTrackerManager>().As<ILadderTrackerManager>().SingleInstance();
-        builder.RegisterType<EloProgressionManager>().As<IEloProgressionManager>().SingleInstance().OnActivating(e =>
-        {
-            e.Instance.InitializeAsync().Wait();
-        }).AutoActivate();
-        builder.RegisterType<EloHistoryService>().As<IEloHistoryService>().SingleInstance().OnActivating(e =>
-        {
-            e.Instance.Start();
-        }).AutoActivate();
+        builder.RegisterType<EloProgressionManager>().As<IEloProgressionManager>().As<IBotLifecycleParticipant>()
+            .SingleInstance();
+        builder.RegisterType<EloHistoryService>().As<IEloHistoryService>().As<IBotLifecycleParticipant>()
+            .SingleInstance();
     }
 }

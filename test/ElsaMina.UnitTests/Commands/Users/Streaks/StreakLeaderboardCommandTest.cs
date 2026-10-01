@@ -33,7 +33,7 @@ public class StreakLeaderboardCommandTest
         _context.Target.Returns(string.Empty);
         _context.Room.Returns(_room);
         _room.Name.Returns("Test Room");
-        _room.GetParameterValueAsync(Parameter.StreaksEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(StreaksRoomParameters.StreaksEnabled, Arg.Any<CancellationToken>())
             .Returns(true.ToString());
         _roomsManager.GetRoom("testroom").Returns(_room);
 
@@ -176,7 +176,7 @@ public class StreakLeaderboardCommandTest
     public async Task Test_RunAsync_ShouldReplyDisabled_WhenStreaksAreDisabled()
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.StreaksEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(StreaksRoomParameters.StreaksEnabled, Arg.Any<CancellationToken>())
             .Returns(false.ToString());
 
         // Act

@@ -14,7 +14,8 @@ public class BotLifecycleServiceTest
     {
         _firstParticipant = Substitute.For<IBotLifecycleParticipant>();
         _secondParticipant = Substitute.For<IBotLifecycleParticipant>();
-        _service = new BotLifecycleService([_firstParticipant, _secondParticipant]);
+        _service = new BotLifecycleService(
+            new Lazy<IEnumerable<IBotLifecycleParticipant>>(() => [_firstParticipant, _secondParticipant]));
     }
 
     [Test]

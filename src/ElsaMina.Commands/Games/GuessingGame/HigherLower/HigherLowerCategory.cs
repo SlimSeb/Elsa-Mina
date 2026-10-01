@@ -1,4 +1,4 @@
-using ElsaMina.Core.Services.Dex;
+using ElsaMina.Showdown.Dex;
 
 namespace ElsaMina.Commands.Games.GuessingGame.HigherLower;
 

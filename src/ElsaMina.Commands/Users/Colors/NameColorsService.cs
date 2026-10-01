@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;

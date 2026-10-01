@@ -1,6 +1,15 @@
 using System.Text;
 using ElsaMina.Commands.Arcade.Events;
+using ElsaMina.Commands.Economy;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Commands.Games.Catalog;
+using ElsaMina.Commands.Misc.RandomImages;
+using ElsaMina.Commands.Misc.UrlPreview;
+using ElsaMina.Commands.Misc.Youtube;
+using ElsaMina.Commands.Replays;
+using ElsaMina.Commands.Teams.TeamPreviewOnLink;
+using ElsaMina.Commands.Tournaments.Betting;
+using ElsaMina.Commands.Users.Streaks;
 using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
@@ -185,19 +194,19 @@ public class RoomDashboardService : IRoomDashboardService
 
         var previewParameters = new HashSet<Parameter>
         {
-            Parameter.ShowTeamLinksPreview,
-            Parameter.ShowReplaysPreview,
-            Parameter.ShowYoutubeLinkPreview,
-            Parameter.ShowUrlPreview,
-            Parameter.KlipyGifEnabled
+            TeamPreviewRoomParameters.ShowTeamLinksPreview,
+            ReplaysRoomParameters.ShowReplaysPreview,
+            YoutubeRoomParameters.ShowYoutubeLinkPreview,
+            UrlPreviewRoomParameters.ShowUrlPreview,
+            KlipyRoomParameters.KlipyGifEnabled
         };
 
         var arcadeParameters = new HashSet<Parameter>
         {
-            Parameter.EventAnnouncesType,
-            Parameter.BucksEnabled,
-            Parameter.StreaksEnabled,
-            Parameter.TournamentBettingEnabled
+            EventAnnouncesRoomParameters.EventAnnouncesType,
+            EconomyRoomParameters.BucksEnabled,
+            StreaksRoomParameters.StreaksEnabled,
+            TournamentBettingRoomParameters.TournamentBettingEnabled
         };
 
         var generalList = lineModels.Where(line => generalParameters.Contains(line.ParameterKey)).ToList();

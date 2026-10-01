@@ -1,5 +1,5 @@
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Core.Handlers;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Formats;
 
 namespace ElsaMina.Commands.Tournaments.Handlers;

@@ -1,6 +1,8 @@
 using System.Globalization;
 using ElsaMina.Commands.Arcade.Events;
+using ElsaMina.Commands.Economy;
 using ElsaMina.Commands.RoomDashboard;
+using ElsaMina.Commands.Teams.TeamPreviewOnLink;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Games;
@@ -104,8 +106,8 @@ public class RoomDashboardServiceTest
         _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
         {
             { Parameter.Locale, localeDef },
-            { Parameter.ShowTeamLinksPreview, teamLinksDef },
-            { Parameter.BucksEnabled, bucksDef }
+            { TeamPreviewRoomParameters.ShowTeamLinksPreview, teamLinksDef },
+            { EconomyRoomParameters.BucksEnabled, bucksDef }
         });
         room.GetParameterValueAsync(Arg.Any<Parameter>(), Arg.Any<CancellationToken>()).Returns("true");
 
@@ -122,10 +124,10 @@ public class RoomDashboardServiceTest
             Assert.That(generalCategory.Parameters.Any(p => p.ParameterKey == Parameter.Locale), Is.True);
 
             Assert.That(previewCategory, Is.Not.Null);
-            Assert.That(previewCategory.Parameters.Any(p => p.ParameterKey == Parameter.ShowTeamLinksPreview), Is.True);
+            Assert.That(previewCategory.Parameters.Any(p => p.ParameterKey == TeamPreviewRoomParameters.ShowTeamLinksPreview), Is.True);
 
             Assert.That(arcadeCategory, Is.Not.Null);
-            Assert.That(arcadeCategory.Parameters.Any(p => p.ParameterKey == Parameter.BucksEnabled), Is.True);
+            Assert.That(arcadeCategory.Parameters.Any(p => p.ParameterKey == EconomyRoomParameters.BucksEnabled), Is.True);
         }
     }
 

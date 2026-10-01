@@ -36,30 +36,26 @@ public abstract class Command : ICommand
         var commandAttribute = type.GetCommandAttribute();
         Name = commandAttribute?.Name ?? string.Empty;
         Aliases = commandAttribute?.Aliases ?? [];
-        Category = DeriveCategoryFromNamespace(type.Namespace);
+        Category = commandAttribute?.Category ?? DeriveCategoryFromNamespace(type.Namespace);
     }
 
     private static string DeriveCategoryFromNamespace(string namespaceName)
     {
-        // Beaucoup de hardcoding => dégueu
-        if (namespaceName == null)
+        const string rootNamespace = "ElsaMina";
+        const string commandsProject = "Commands";
+        const string coreProject = "Core";
+
+        var segments = namespaceName?.Split('.') ?? [];
+        if (segments.Length < 2 || segments[0] != rootNamespace)
         {
             return string.Empty;
         }
 
-        if (namespaceName.StartsWith("ElsaMina.Battles"))
+        if (segments[1] == commandsProject)
         {
-            return "Battles";
+            return segments.Length > 2 ? segments[2] : string.Empty;
         }
 
-        const string commandProjectPrefix = "ElsaMina.Commands.";
-        if (!namespaceName.StartsWith(commandProjectPrefix))
-        {
-            return string.Empty;
-        }
-
-        var remainder = namespaceName[commandProjectPrefix.Length..];
-        var dotIndex = remainder.IndexOf('.');
-        return dotIndex >= 0 ? remainder[..dotIndex] : remainder;
+        return segments[1] == coreProject ? string.Empty : segments[1];
     }
 }

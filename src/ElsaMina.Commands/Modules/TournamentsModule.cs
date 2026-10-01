@@ -9,6 +9,7 @@ using ElsaMina.Commands.Tournaments.History;
 using ElsaMina.Commands.Tournaments.Leaderboard;
 using ElsaMina.Commands.Tournaments.Trade;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Modules;
@@ -18,6 +19,8 @@ public class TournamentsModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
+
+        builder.RegisterType<TournamentBettingRoomParameters>().As<IRoomParameterProvider>().SingleInstance();
 
         builder.RegisterCommand<TopTournamentPlayersCommand>();
         builder.RegisterCommand<TourHistoryCommand>();

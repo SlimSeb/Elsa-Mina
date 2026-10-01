@@ -4,22 +4,24 @@ namespace ElsaMina.Core.Services.Lifecycle;
 
 public class BotLifecycleService : IBotLifecycleService
 {
-    private readonly IEnumerable<IBotLifecycleParticipant> _participants;
+    private readonly Lazy<IEnumerable<IBotLifecycleParticipant>> _participants;
 
-    public BotLifecycleService(IEnumerable<IBotLifecycleParticipant> participants)
+    // Lazy: many participants depend on the bot, which depends on this service, so they are only built when the
+    // bot starts, once it exists.
+    public BotLifecycleService(Lazy<IEnumerable<IBotLifecycleParticipant>> participants)
     {
         _participants = participants;
     }
 
     public Task OnStartingAsync(CancellationToken cancellationToken = default)
     {
-        return Task.WhenAll(_participants.Select(participant => participant.OnStartingAsync(cancellationToken)));
+        return Task.WhenAll(_participants.Value.Select(participant => participant.OnStartingAsync(cancellationToken)));
     }
 
     public Task OnExitingAsync(CancellationToken cancellationToken = default)
     {
         // A participant failing to flush must not stop the others from flushing.
-        return Task.WhenAll(_participants.Select(participant => ExitSafelyAsync(participant, cancellationToken)));
+        return Task.WhenAll(_participants.Value.Select(participant => ExitSafelyAsync(participant, cancellationToken)));
     }
 
     private static async Task ExitSafelyAsync(IBotLifecycleParticipant participant, CancellationToken cancellationToken)

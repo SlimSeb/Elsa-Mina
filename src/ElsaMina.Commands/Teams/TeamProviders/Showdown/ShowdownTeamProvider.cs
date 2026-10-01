@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Logging;
+using ElsaMina.Showdown.Teams;
 
 namespace ElsaMina.Commands.Teams.TeamProviders.Showdown;
 

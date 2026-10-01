@@ -3,12 +3,12 @@ using System.Text;
 using System.Threading;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.Dex;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
+using ElsaMina.Showdown.Dex;
 using JetBrains.Annotations;
 
 namespace ElsaMina.Commands.Games.Scattergories;

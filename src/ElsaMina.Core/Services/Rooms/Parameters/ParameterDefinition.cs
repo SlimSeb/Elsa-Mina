@@ -3,6 +3,7 @@
 public class ParameterDefinition : IParameterDefinition
 {
     public required string Identifier { get; set; }
+    public string Name { get; set; }
     public required string NameKey { get; set; }
     public required string DescriptionKey { get; set; }
     public required RoomBotConfigurationType Type { get; set; }

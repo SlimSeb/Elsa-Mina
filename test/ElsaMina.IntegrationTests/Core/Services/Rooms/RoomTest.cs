@@ -1,7 +1,8 @@
 using System.Globalization;
-using ElsaMina.Core.Handlers.DefaultHandlers.Rooms;
+using ElsaMina.Commands;
+using ElsaMina.Commands.Users.PlayTimes;
+using ElsaMina.Commands.Users.Seen;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
@@ -30,7 +31,7 @@ public class RoomTest
 
         _dbContextFactory = new BotDbContextFactory(new PooledDbContextFactory<BotDbContext>(dbOptions));
 
-        var configuration = Substitute.For<IConfiguration>();
+        var configuration = Substitute.For<ICommandsConfiguration>();
         configuration.DefaultLocaleCode.Returns("fr-FR");
         configuration.PlayTimeUpdatesInterval.Returns(TimeSpan.FromDays(1));
 
@@ -40,13 +41,15 @@ public class RoomTest
             new CultureInfo("en-US")
         ]);
 
-        var parametersFactory = new ParametersDefinitionFactory(configuration, resourcesService);
+        var parametersFactory =
+            new ParametersDefinitionFactory([new CoreRoomParameters(configuration, resourcesService)]);
+        var roomParameterRepository = new EfRoomParameterRepository(_dbContextFactory);
 
         _userSaveQueue = Substitute.For<IUserSaveQueue>();
         _userSaveQueue.AcquireLockAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
 
-        var roomFactory = new RoomFactory(configuration, _dbContextFactory,
-            () => new EfRoomParameterStore(_dbContextFactory, parametersFactory));
+        var roomFactory = new RoomFactory(configuration, roomParameterRepository,
+            () => new RoomParameterStore(roomParameterRepository, parametersFactory));
 
         _roomsManager = new RoomsManager(roomFactory);
 

@@ -1,8 +1,8 @@
 using ElsaMina.Battles;
 using ElsaMina.Battles.Strategies.Llm;
 using ElsaMina.Battles.Strategies.Prediction;
-using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.Probabilities;
+using ElsaMina.LanguageModel;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 

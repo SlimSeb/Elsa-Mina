@@ -315,4 +315,10 @@
   <data name="tournament_winner_prize" xml:space="preserve">
     <value>{0} hat {1} Bucks für den Turniersieg gewonnen!</value>
   </data>
+    <data name="parameter_name_tournament_betting_enabled" xml:space="preserve">
+        <value>Turnierwetten</value>
+    </data>
+    <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
+        <value>Turnierwetten für diesen Raum aktivieren oder deaktivieren.</value>
+    </data>
 </root>

@@ -10,9 +10,9 @@ public class SpoonacularService : ISpoonacularService
     private const string SEARCH_RECIPE_URL = "https://api.spoonacular.com/recipes/complexSearch";
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
 
-    public SpoonacularService(IHttpService httpService, IConfiguration configuration)
+    public SpoonacularService(IHttpService httpService, ICommandsConfiguration configuration)
     {
         _httpService = httpService;
         _configuration = configuration;

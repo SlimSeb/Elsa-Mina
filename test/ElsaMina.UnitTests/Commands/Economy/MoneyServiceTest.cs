@@ -1,5 +1,5 @@
 using ElsaMina.Commands.Economy;
-using ElsaMina.Core.Services.RoomUserData;
+using ElsaMina.Commands.Users.RoomUserData;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;

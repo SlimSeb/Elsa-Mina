@@ -114,4 +114,10 @@
     <data name="removecolor_not_found" xml:space="preserve">
         <value>Keine benutzerdefinierte Farbe für {0} gefunden.</value>
     </data>
+    <data name="parameter_name_streaks_enabled" xml:space="preserve">
+        <value>Serien</value>
+    </data>
+    <data name="parameter_description_streaks_enabled" xml:space="preserve">
+        <value>Serien und Serien-Ranglisten für diesen Raum aktivieren oder deaktivieren.</value>
+    </data>
 </root>

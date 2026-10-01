@@ -114,4 +114,10 @@
     <data name="deleteallteams_error" xml:space="preserve">
         <value>Une erreur s'est produite lors de la suppression des équipes : {0}</value>
     </data>
+    <data name="parameter_name_is_showing_team_links_preview" xml:space="preserve">
+        <value>Affichage des équipes à partir des liens</value>
+    </data>
+    <data name="parameter_description_is_showing_team_links_preview" xml:space="preserve">
+        <value>Affiche un aperçu d'une équipe lorsqu'un lien Pokepaste ou CoupCritique est partagé dans le chat</value>
+    </data>
 </root>

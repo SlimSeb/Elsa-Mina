@@ -138,7 +138,7 @@ public class FloodItGameTest
     {
         await using (var db = new BotDbContext(_dbOptions))
         {
-            db.FloodItScores.Add(new DataAccess.Models.FloodItScore
+            db.FloodItScores.Add(new ElsaMina.DataAccess.Models.FloodItScore
             {
                 UserId = "testplayer",
                 Level = 4,
@@ -297,7 +297,7 @@ public class FloodItGameTest
         // Seed level at max in DB
         await using (var db = new BotDbContext(_dbOptions))
         {
-            db.FloodItScores.Add(new DataAccess.Models.FloodItScore
+            db.FloodItScores.Add(new ElsaMina.DataAccess.Models.FloodItScore
             {
                 UserId = "testplayer",
                 Level = FloodItConstants.MAX_LEVEL,
@@ -364,7 +364,7 @@ public class FloodItGameTest
         // Seed level 3 so drop is visible
         await using (var db = new BotDbContext(_dbOptions))
         {
-            db.FloodItScores.Add(new DataAccess.Models.FloodItScore
+            db.FloodItScores.Add(new ElsaMina.DataAccess.Models.FloodItScore
             {
                 UserId = "testplayer",
                 Level = 3,
@@ -444,7 +444,7 @@ public class FloodItGameTest
     {
         await using (var seedDb = new BotDbContext(_dbOptions))
         {
-            seedDb.FloodItScores.Add(new DataAccess.Models.FloodItScore
+            seedDb.FloodItScores.Add(new ElsaMina.DataAccess.Models.FloodItScore
             {
                 UserId = "testplayer",
                 Level = 2,
@@ -520,7 +520,7 @@ public class FloodItGameTest
     {
         await using (var db = new BotDbContext(_dbOptions))
         {
-            db.FloodItScores.Add(new DataAccess.Models.FloodItScore
+            db.FloodItScores.Add(new ElsaMina.DataAccess.Models.FloodItScore
             {
                 UserId = "testplayer",
                 Level = 3,
@@ -553,7 +553,7 @@ public class FloodItGameTest
     {
         await using (var seedDb = new BotDbContext(_dbOptions))
         {
-            seedDb.FloodItScores.Add(new DataAccess.Models.FloodItScore
+            seedDb.FloodItScores.Add(new ElsaMina.DataAccess.Models.FloodItScore
             {
                 UserId = "testplayer",
                 Level = 2,

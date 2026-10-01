@@ -2,10 +2,10 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.Smogon;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
+using ElsaMina.Showdown.Smogon;
 
 namespace ElsaMina.Commands.Showdown.SmogonStats;
 

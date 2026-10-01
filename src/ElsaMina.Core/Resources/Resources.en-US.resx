@@ -56,9 +56,6 @@
     <data name="parameter_name_is_showing_error_messages" xml:space="preserve">
         <value>Command error messages</value>
     </data>
-    <data name="parameter_name_is_showing_team_links_preview" xml:space="preserve">
-        <value>Team links previews</value>
-    </data>
     <data name="parameter_name_locale" xml:space="preserve">
         <value>Locale</value>
     </data>
@@ -68,44 +65,11 @@
     <data name="parameter_description_is_showing_error_messages" xml:space="preserve">
         <value>Shows the error message and the exception stack trace if a command execution fails</value>
     </data>
-    <data name="parameter_description_is_showing_team_links_preview" xml:space="preserve">
-        <value>Shows a preview of a Pokémon team when a Pokepaste or CoupCritique link is shared in chat</value>
-    </data>
     <data name="parameter_description_locale" xml:space="preserve">
         <value>The language used for commands</value>
     </data>
-    <data name="parameter_name_is_showing_replays_preview" xml:space="preserve">
-        <value>Replay previews</value>
-    </data>
-    <data name="parameter_description_is_showing_replays_preview" xml:space="preserve">
-        <value>Shows the players and teams of a replay</value>
-    </data>
-    <data name="parameter_name_is_showing_youtube_link_preview" xml:space="preserve">
-        <value>YouTube link preview</value>
-    </data>
-    <data name="parameter_description_is_showing_youtube_link_preview" xml:space="preserve">
-        <value>Shows the title and info of a YouTube video when a link is posted</value>
-    </data>
-    <data name="parameter_name_is_showing_url_preview" xml:space="preserve">
-        <value>URL preview</value>
-    </data>
-    <data name="parameter_description_is_showing_url_preview" xml:space="preserve">
-        <value>Shows a preview card with title and description when a URL is posted</value>
-    </data>
-    <data name="parameter_name_bucks_enabled" xml:space="preserve">
-        <value>Bucks</value>
-    </data>
-    <data name="parameter_description_bucks_enabled" xml:space="preserve">
-        <value>Enable or disable the bucks economy (balances, transfers, prizes) for this room.</value>
-    </data>
     <data name="bucks_disabled" xml:space="preserve">
         <value>The bucks economy is disabled in this room.</value>
-    </data>
-    <data name="parameter_name_klipy_gif_enabled" xml:space="preserve">
-        <value>KLIPY GIFs</value>
-    </data>
-    <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
-        <value>Enables the klipygif and klipysearch commands in the room</value>
     </data>
     <data name="command_execution_error" xml:space="preserve">
         <value>Command execution threw an error.</value>
@@ -127,35 +91,5 @@
     </data>
     <data name="rank_former_staff" xml:space="preserve">
         <value>Former staff</value>
-    </data>
-    <data name="parameter_name_tournament_betting_enabled" xml:space="preserve">
-        <value>Tournament Betting</value>
-    </data>
-    <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
-        <value>Enable or disable tournament betting for this room.</value>
-    </data>
-    <data name="parameter_name_event_announces_type" xml:space="preserve">
-        <value>Cross-room announcements</value>
-    </data>
-    <data name="parameter_description_event_announces_type" xml:space="preserve">
-        <value>Choose which events from linked rooms are announced in this room.</value>
-    </data>
-    <data name="parameter_value_event_announces_all" xml:space="preserve">
-        <value>Tournaments &amp; Games</value>
-    </data>
-    <data name="parameter_value_event_announces_tournaments" xml:space="preserve">
-        <value>Tournaments only</value>
-    </data>
-    <data name="parameter_value_event_announces_games" xml:space="preserve">
-        <value>Games only</value>
-    </data>
-    <data name="parameter_value_event_announces_none" xml:space="preserve">
-        <value>None</value>
-    </data>
-    <data name="parameter_name_streaks_enabled" xml:space="preserve">
-        <value>Streaks</value>
-    </data>
-    <data name="parameter_description_streaks_enabled" xml:space="preserve">
-        <value>Enable or disable streaks and streak leaderboards for this room.</value>
     </data>
 </root>

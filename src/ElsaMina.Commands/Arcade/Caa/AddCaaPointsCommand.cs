@@ -1,9 +1,9 @@
+using ElsaMina.Cloud.Sheets;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
-using ElsaMina.Cloud.Sheets;
 
 namespace ElsaMina.Commands.Arcade.Caa;
 
@@ -14,9 +14,9 @@ public class AddCaaPointsCommand : Command
     private const int POINTS_COLUMN = 2;
 
     private readonly ISheetProvider _sheetProvider;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
 
-    public AddCaaPointsCommand(ISheetProvider sheetProvider, IConfiguration configuration)
+    public AddCaaPointsCommand(ISheetProvider sheetProvider, ICommandsConfiguration configuration)
     {
         _sheetProvider = sheetProvider;
         _configuration = configuration;
