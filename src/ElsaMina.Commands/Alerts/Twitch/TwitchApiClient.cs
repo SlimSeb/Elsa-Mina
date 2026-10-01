@@ -19,14 +19,14 @@ public class TwitchApiClient : ITwitchApiClient
         RegexOptions.Compiled | RegexOptions.IgnoreCase, Constants.REGEX_MATCH_TIMEOUT);
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly IClockService _clockService;
     private readonly SemaphoreSlim _tokenSemaphore = new(1, 1);
 
     private string _accessToken;
     private DateTimeOffset _accessTokenExpiry;
 
-    public TwitchApiClient(IHttpService httpService, IConfiguration configuration, IClockService clockService)
+    public TwitchApiClient(IHttpService httpService, ICommandsConfiguration configuration, IClockService clockService)
     {
         _httpService = httpService;
         _configuration = configuration;

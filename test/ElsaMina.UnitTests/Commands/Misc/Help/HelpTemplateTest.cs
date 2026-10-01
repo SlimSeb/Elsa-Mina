@@ -1,10 +1,10 @@
 using System.Globalization;
 using ElsaMina.Commands.Misc.Help;
-using ElsaMina.Core.Services.CustomColors;
+using ElsaMina.Commands.Users.Colors;
 using ElsaMina.Core.Services.Resources;
+using ElsaMina.Core.Services.Templates;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using ElsaMina.Core.Services.Templates;
 
 namespace ElsaMina.UnitTests.Commands.Misc.Help;
 

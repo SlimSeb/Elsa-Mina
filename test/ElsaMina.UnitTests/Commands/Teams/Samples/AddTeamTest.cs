@@ -5,6 +5,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
+using ElsaMina.Showdown.Teams;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 

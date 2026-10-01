@@ -20,11 +20,11 @@ public class YoutubeCommand : Command
     public const int DESCRIPTION_MAX_LENGTH = 100;
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly ITemplatesManager _templatesManager;
 
     public YoutubeCommand(IHttpService httpService,
-        IConfiguration configuration,
+        ICommandsConfiguration configuration,
         ITemplatesManager templatesManager)
     {
         _httpService = httpService;

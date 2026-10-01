@@ -1,7 +1,7 @@
 ﻿using ElsaMina.Commands.Badges;
+using ElsaMina.Commands.Users.RoomUserData;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;

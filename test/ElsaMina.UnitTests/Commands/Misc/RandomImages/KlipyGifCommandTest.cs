@@ -33,7 +33,7 @@ public class KlipyGifCommandTest
         _room = Substitute.For<IRoom>();
 
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("<img/>");
-        _room.GetParameterValueAsync(Parameter.KlipyGifEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(KlipyRoomParameters.KlipyGifEnabled, Arg.Any<CancellationToken>())
             .Returns("true");
         _clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
         _arcadeEventsService.AreGamesMuted(Arg.Any<string>()).Returns(false);
@@ -68,7 +68,7 @@ public class KlipyGifCommandTest
     [Test]
     public async Task Test_RunAsync_ShouldDoNothing_WhenKlipyGifIsDisabled()
     {
-        _room.GetParameterValueAsync(Parameter.KlipyGifEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(KlipyRoomParameters.KlipyGifEnabled, Arg.Any<CancellationToken>())
             .Returns("false");
         var context = MakeContext("https://static.klipy.com/a.gif|200|100");
 

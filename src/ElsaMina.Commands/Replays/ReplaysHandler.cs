@@ -31,7 +31,7 @@ public class ReplaysHandler : ChatMessageHandler
 
     public override async Task HandleMessageAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var isReplayPreviewEnabled = (await context.Room.GetParameterValueAsync(Parameter.ShowReplaysPreview,
+        var isReplayPreviewEnabled = (await context.Room.GetParameterValueAsync(ReplaysRoomParameters.ShowReplaysPreview,
             cancellationToken)).ToBoolean();
         if (!isReplayPreviewEnabled)
         {

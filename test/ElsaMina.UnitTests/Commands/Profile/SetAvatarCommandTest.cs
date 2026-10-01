@@ -1,7 +1,7 @@
 using ElsaMina.Commands.Profile;
+using ElsaMina.Commands.Users.RoomUserData;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.RoomUserData;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 

@@ -1,4 +1,5 @@
 using ElsaMina.Core;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
@@ -6,7 +7,7 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Alerts;
 
-public abstract class PollingAlertsService : IPollingAlertsService
+public abstract class PollingAlertsService : IPollingAlertsService, IBotLifecycleParticipant
 {
     private readonly IRoomsManager _roomsManager;
     private readonly ITemplatesManager _templatesManager;
@@ -112,5 +113,11 @@ public abstract class PollingAlertsService : IPollingAlertsService
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _disposed = true;
+    }
+
+    public Task OnStartingAsync(CancellationToken cancellationToken)
+    {
+        Start();
+        return Task.CompletedTask;
     }
 }

@@ -1,7 +1,7 @@
 using ElsaMina.Commands.Arcade.Events;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.President;

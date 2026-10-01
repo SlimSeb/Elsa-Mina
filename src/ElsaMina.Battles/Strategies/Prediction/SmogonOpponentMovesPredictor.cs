@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using ElsaMina.Core.Services.Clock;
-using ElsaMina.Core.Services.Smogon;
 using ElsaMina.Logging;
+using ElsaMina.Showdown.Smogon;
 
 namespace ElsaMina.Battles.Strategies.Prediction;
 

@@ -15,9 +15,9 @@ public class DictionaryCommand : Command
         "https://dictionaryapi.com/api/v3/references/sd4/json/{0}";
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
 
-    public DictionaryCommand(IHttpService httpService, IConfiguration configuration)
+    public DictionaryCommand(IHttpService httpService, ICommandsConfiguration configuration)
     {
         _httpService = httpService;
         _configuration = configuration;

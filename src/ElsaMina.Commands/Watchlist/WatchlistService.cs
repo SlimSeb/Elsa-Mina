@@ -1,11 +1,12 @@
 using System.Text.RegularExpressions;
 using System.Web;
+using ElsaMina.Commands.Users.Colors;
 using ElsaMina.Core;
 using ElsaMina.Core.Services;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.System;
+using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
@@ -30,12 +31,12 @@ public class WatchlistService : IWatchlistService
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly IBot _bot;
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly IUserColorsService _userColorsService;
     private readonly PendingQueryRequestsManager<string, string> _pendingStaffIntroRequests;
 
     public WatchlistService(IBotDbContextFactory dbContextFactory, IBot bot, IHttpService httpService,
-        ISystemService systemService, IConfiguration configuration, IUserColorsService userColorsService)
+        ISystemService systemService, ICommandsConfiguration configuration, IUserColorsService userColorsService)
     {
         _dbContextFactory = dbContextFactory;
         _bot = bot;

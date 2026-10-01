@@ -417,4 +417,22 @@
     <data name="command_info_no" xml:space="preserve">
         <value>No</value>
     </data>
+    <data name="parameter_name_is_showing_youtube_link_preview" xml:space="preserve">
+        <value>Vista previa de enlaces YouTube</value>
+    </data>
+    <data name="parameter_description_is_showing_youtube_link_preview" xml:space="preserve">
+        <value>Muestra el título e información de un video YouTube cuando se publica un enlace</value>
+    </data>
+    <data name="parameter_name_is_showing_url_preview" xml:space="preserve">
+        <value>Vista previa de URL</value>
+    </data>
+    <data name="parameter_description_is_showing_url_preview" xml:space="preserve">
+        <value>Muestra una tarjeta de vista previa con título y descripción cuando se publica una URL</value>
+    </data>
+    <data name="parameter_name_klipy_gif_enabled" xml:space="preserve">
+        <value>GIFs de KLIPY</value>
+    </data>
+    <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
+        <value>Habilita los comandos klipygif y klipysearch en la sala</value>
+    </data>
 </root>

@@ -1,5 +1,4 @@
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.AddedCommands;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Rooms;
@@ -13,7 +12,7 @@ namespace ElsaMina.UnitTests.Core.Services.Commands;
 public class CommandExecutorTest
 {
     private ICommandRegistry _commandRegistry;
-    private IAddedCommandsManager _addedCommandsManager;
+    private IDynamicCommandProvider _dynamicCommandProvider;
     private ITelemetryService _telemetryService;
     private IFeatureSwitchService _featureSwitchService;
     private CommandExecutor _commandExecutor;
@@ -25,13 +24,13 @@ public class CommandExecutorTest
         _commandRegistry = Substitute.For<ICommandRegistry>();
         _commandRegistry.Find(Arg.Any<string>()).ReturnsNull();
         _commandRegistry.Commands.Returns([]);
-        _addedCommandsManager = Substitute.For<IAddedCommandsManager>();
+        _dynamicCommandProvider = Substitute.For<IDynamicCommandProvider>();
         _telemetryService = Substitute.For<ITelemetryService>();
         _featureSwitchService = Substitute.For<IFeatureSwitchService>();
         _featureSwitchService.IsFeatureEnabled(Arg.Any<string>()).Returns(true);
         _context = Substitute.For<IContext>();
-        _commandExecutor = new CommandExecutor(_commandRegistry, _addedCommandsManager,
-            [], _telemetryService, _featureSwitchService);
+        _commandExecutor = new CommandExecutor(_commandRegistry,
+            [_dynamicCommandProvider], _telemetryService, _featureSwitchService);
     }
 
     [Test]
@@ -304,7 +303,7 @@ public class CommandExecutorTest
     }
 
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldTryAddedCommand_WhenNotRegisteredAndNotPrivateMessage()
+    public async Task Test_TryExecuteCommandAsync_ShouldTryDynamicProvider_WhenNotRegisteredAndNotPrivateMessage()
     {
         // Arrange
         var commandName = "customCommand";
@@ -316,11 +315,11 @@ public class CommandExecutorTest
         await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
-        await _addedCommandsManager.Received(1).TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>());
+        await _dynamicCommandProvider.Received(1).TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>());
     }
 
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldLogError_WhenCommandNotFoundAndIsPrivateMessage()
+    public async Task Test_TryExecuteCommandAsync_ShouldAskDynamicProviders_WhenCommandNotFoundAndIsPrivateMessage()
     {
         // Arrange
         var commandName = "missingCommand";
@@ -332,12 +331,11 @@ public class CommandExecutorTest
         await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>());
+        await _dynamicCommandProvider.Received(1).TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>());
     }
 
-
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldExecuteAddedCommand_WhenCommandNotRegisteredAndNotPrivateMessage()
+    public async Task Test_TryExecuteCommandAsync_ShouldAskDynamicProvider_WhenCommandNotRegisteredAndNotPrivateMessage()
     {
         // Arrange
         var commandName = "customCommand";
@@ -350,7 +348,7 @@ public class CommandExecutorTest
         await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
-        await _addedCommandsManager.Received().TryExecuteAddedCommand(commandName, context, Arg.Any<CancellationToken>());
+        await _dynamicCommandProvider.Received().TryExecuteAsync(commandName, context, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -364,7 +362,7 @@ public class CommandExecutorTest
         command.Aliases.Returns(Array.Empty<string>());
         _commandRegistry.Find(commandName).ReturnsNull();
         _commandRegistry.Commands.Returns([command]);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
+        _dynamicCommandProvider.TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
         room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
@@ -400,7 +398,7 @@ public class CommandExecutorTest
         // Assert
         _context.Received(1)
             .ReplyLocalizedMessage("command_autocorrect_suggestion", commandName, "help");
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>());
+        await _dynamicCommandProvider.Received(1).TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>());
         await room.DidNotReceive()
             .GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>());
     }
@@ -412,7 +410,7 @@ public class CommandExecutorTest
         var commandName = "hep";
         var room = Substitute.For<IRoom>();
         _commandRegistry.Find(commandName).ReturnsNull();
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
+        _dynamicCommandProvider.TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
         room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
@@ -428,13 +426,13 @@ public class CommandExecutorTest
     }
 
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldNotReplyAutoCorrect_WhenAddedCommandHandled()
+    public async Task Test_TryExecuteCommandAsync_ShouldNotReplyAutoCorrect_WhenDynamicProviderHandledCommand()
     {
         // Arrange
         var commandName = "customCommand";
         var room = Substitute.For<IRoom>();
         _commandRegistry.Find(commandName).ReturnsNull();
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(true);
+        _dynamicCommandProvider.TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>()).Returns(true);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
 
@@ -505,7 +503,7 @@ public class CommandExecutorTest
     }
 
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldDoNothing_WhenCommandNotFoundAndIsPrivateMessage()
+    public async Task Test_TryExecuteCommandAsync_ShouldOnlyAskDynamicProviders_WhenCommandNotFoundAndIsPrivateMessage()
     {
         // Arrange
         var commandName = "nonExistentCommand";
@@ -518,7 +516,7 @@ public class CommandExecutorTest
         await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, context, Arg.Any<CancellationToken>());
+        await _dynamicCommandProvider.Received(1).TryExecuteAsync(commandName, context, Arg.Any<CancellationToken>());
         _commandRegistry.Received(1).Find(commandName);
     }
 
@@ -536,7 +534,7 @@ public class CommandExecutorTest
 
         // Assert
         _commandRegistry.DidNotReceive().Find(Arg.Any<string>());
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(Arg.Any<string>(), Arg.Any<IContext>(), Arg.Any<CancellationToken>());
+        await _dynamicCommandProvider.DidNotReceive().TryExecuteAsync(Arg.Any<string>(), Arg.Any<IContext>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -645,7 +643,7 @@ public class CommandExecutorTest
         hiddenCommand.IsHidden.Returns(true);
         _commandRegistry.Find(commandName).ReturnsNull();
         _commandRegistry.Commands.Returns([hiddenCommand]);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
+        _dynamicCommandProvider.TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
         room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
@@ -676,7 +674,7 @@ public class CommandExecutorTest
         hiddenCommand.IsHidden.Returns(true);
         _commandRegistry.Find(commandName).ReturnsNull();
         _commandRegistry.Commands.Returns([visibleCommand, hiddenCommand]);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
+        _dynamicCommandProvider.TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
         room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())

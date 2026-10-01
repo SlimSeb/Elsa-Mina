@@ -37,7 +37,7 @@ public class TournamentBettingHandlerTest
         _roomsManager = Substitute.For<IRoomsManager>();
         _room = Substitute.For<IRoom>();
 
-        _room.GetParameterValueAsync(Parameter.TournamentBettingEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(TournamentBettingRoomParameters.TournamentBettingEnabled, Arg.Any<CancellationToken>())
             .Returns(true.ToString());
         _roomsManager.GetRoom(Arg.Any<string>()).Returns(_room);
 
@@ -156,7 +156,7 @@ public class TournamentBettingHandlerTest
     [Test]
     public async Task Test_HandleReceivedMessageAsync_ShouldNotAnnounce_WhenBettingDisabled()
     {
-        _room.GetParameterValueAsync(Parameter.TournamentBettingEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(TournamentBettingRoomParameters.TournamentBettingEnabled, Arg.Any<CancellationToken>())
             .Returns(false.ToString());
 
         await _handler.HandleReceivedMessageAsync(["", "tournament", "update", USERS_JSON], "room1");

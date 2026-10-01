@@ -22,7 +22,7 @@ public class GiveMoneyCommandTest
 
         _context.Room.Returns(_room);
         _context.RoomId.Returns("room");
-        _room.GetParameterValueAsync(Parameter.BucksEnabled, Arg.Any<CancellationToken>()).Returns("true");
+        _room.GetParameterValueAsync(EconomyRoomParameters.BucksEnabled, Arg.Any<CancellationToken>()).Returns("true");
 
         _command = new GiveMoneyCommand(_moneyService);
     }
@@ -36,7 +36,7 @@ public class GiveMoneyCommandTest
     [Test]
     public async Task Test_RunAsync_ShouldReplyBucksDisabled_WhenBucksAreDisabled()
     {
-        _room.GetParameterValueAsync(Parameter.BucksEnabled, Arg.Any<CancellationToken>()).Returns("false");
+        _room.GetParameterValueAsync(EconomyRoomParameters.BucksEnabled, Arg.Any<CancellationToken>()).Returns("false");
         _context.Target.Returns("bob, 10");
 
         await _command.RunAsync(_context);

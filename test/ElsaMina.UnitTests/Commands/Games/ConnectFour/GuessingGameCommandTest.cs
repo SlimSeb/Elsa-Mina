@@ -1,10 +1,10 @@
 using ElsaMina.Commands.Arcade.Events;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Commands.Games.GuessingGame;
 using ElsaMina.Commands.Games.GuessingGame.Trivia;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;

@@ -1,3 +1,4 @@
+using ElsaMina.Commands;
 using ElsaMina.Commands.Misc.Dictionary;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
@@ -10,7 +11,7 @@ namespace ElsaMina.UnitTests.Commands.Misc.Dictionary;
 public class DictionaryCommandTest
 {
     private IHttpService _httpService;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private IContext _context;
     private DictionaryCommand _command;
 
@@ -18,7 +19,7 @@ public class DictionaryCommandTest
     public void SetUp()
     {
         _httpService = Substitute.For<IHttpService>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _context = Substitute.For<IContext>();
         _command = new DictionaryCommand(_httpService, _configuration);
     }

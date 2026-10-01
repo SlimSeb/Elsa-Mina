@@ -114,4 +114,10 @@
     <data name="removecolor_not_found" xml:space="preserve">
         <value>Nenhuma cor personalizada encontrada para {0}.</value>
     </data>
+    <data name="parameter_name_streaks_enabled" xml:space="preserve">
+        <value>Sequências</value>
+    </data>
+    <data name="parameter_description_streaks_enabled" xml:space="preserve">
+        <value>Ativar ou desativar sequências e tabelas de classificação de sequências para esta sala.</value>
+    </data>
 </root>

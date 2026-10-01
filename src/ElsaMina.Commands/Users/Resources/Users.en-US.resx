@@ -114,4 +114,10 @@
     <data name="removecolor_not_found" xml:space="preserve">
         <value>No custom color found for {0}.</value>
     </data>
+    <data name="parameter_name_streaks_enabled" xml:space="preserve">
+        <value>Streaks</value>
+    </data>
+    <data name="parameter_description_streaks_enabled" xml:space="preserve">
+        <value>Enable or disable streaks and streak leaderboards for this room.</value>
+    </data>
 </root>

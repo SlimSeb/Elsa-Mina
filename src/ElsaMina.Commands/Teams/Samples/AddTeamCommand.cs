@@ -9,6 +9,7 @@ using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using ElsaMina.Logging;
+using ElsaMina.Showdown.Teams;
 
 namespace ElsaMina.Commands.Teams.Samples;
 

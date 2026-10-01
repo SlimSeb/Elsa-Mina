@@ -1,4 +1,4 @@
-using ElsaMina.Core.Services.RoomUserData;
+using ElsaMina.Commands.Users.RoomUserData;
 using ElsaMina.DataAccess;
 
 namespace ElsaMina.Commands.Economy;

@@ -13,7 +13,8 @@ public class TourConfigLauncher : IDynamicCommandProvider
         _tourConfigService = tourConfigService;
     }
 
-    public async Task<bool> TryExecuteAsync(string commandName, IContext context)
+    public async Task<bool> TryExecuteAsync(string commandName, IContext context,
+        CancellationToken cancellationToken = default)
     {
         if (context.IsPrivateMessage)
         {

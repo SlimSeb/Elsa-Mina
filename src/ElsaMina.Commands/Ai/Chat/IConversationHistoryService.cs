@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.LanguageModel;
 
 namespace ElsaMina.Commands.Ai.Chat;
 

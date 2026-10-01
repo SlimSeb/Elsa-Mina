@@ -1,40 +1,27 @@
 using System.Resources;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using ElsaMina.Cloud;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Handlers.DefaultHandlers;
 using ElsaMina.Core.Handlers.DefaultHandlers.Rooms;
-using ElsaMina.Core.Services.AddedCommands;
 using ElsaMina.Core.Services.BattleTracker;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.CustomColors;
-using ElsaMina.Core.Services.Dex;
 using ElsaMina.Core.Services.Dispatch;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Formats;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Images;
-using ElsaMina.Core.Services.LanguageModel;
-using ElsaMina.Core.Services.LanguageModel.Google;
-using ElsaMina.Core.Services.LanguageModel.Mistral;
-using ElsaMina.Core.Services.LanguageModel.OpenAi;
 using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.Login;
-using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Probabilities;
-using ElsaMina.Core.Services.Repeats;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.RoomInfo;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
-using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.Scheduling;
-using ElsaMina.Core.Services.Smogon;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Core.Services.Templates;
@@ -51,9 +38,6 @@ public class CoreModule : Module
     {
         base.Load(builder);
 
-        builder.RegisterModule<DataAccessModule>();
-        builder.RegisterModule<CloudModule>();
-
         builder.RegisterInstance(
                 new ResourceManager("ElsaMina.Core.Resources.Resources", Assembly.GetExecutingAssembly()))
             .As<ResourceManager>().SingleInstance();
@@ -62,44 +46,31 @@ public class CoreModule : Module
         builder.RegisterType<TelemetryService>().As<ITelemetryService>().SingleInstance();
         builder.RegisterType<HttpService>().As<IHttpService>().SingleInstance();
         builder.RegisterType<ClockService>().As<IClockService>().SingleInstance();
-        builder.RegisterType<SmogonUsageDataProvider>().As<ISmogonUsageDataProvider>().SingleInstance();
         builder.RegisterType<ContextFactory>().As<IContextFactory>().SingleInstance();
         builder.RegisterType<CommandRegistry>().As<ICommandRegistry>().SingleInstance();
         builder.RegisterType<CommandExecutor>().As<ICommandExecutor>().As<IBotLifecycleParticipant>().SingleInstance();
         builder.RegisterType<RoomsManager>().As<IRoomsManager>().SingleInstance();
         builder.RegisterType<RoomFactory>().As<IRoomFactory>().SingleInstance();
-        builder.RegisterType<PlayTimeUpdateService>().As<IPlayTimeUpdateService>().As<IBotLifecycleParticipant>().SingleInstance();
         builder.RegisterType<FormatsManager>().As<IFormatsManager>().SingleInstance();
         builder.RegisterType<LoginService>().As<ILoginService>().SingleInstance();
         builder.RegisterType<ResourcesService>().As<IResourcesService>().SingleInstance();
         builder.RegisterType<PmSendersManager>().As<IPmSendersManager>().SingleInstance();
         builder.RegisterType<HandlerManager>().As<IHandlerManager>().SingleInstance();
-        builder.RegisterType<AddedCommandsManager>().As<IAddedCommandsManager>().SingleInstance();
         builder.Register(componentContext => new AutofacServiceProvider(componentContext.Resolve<ILifetimeScope>()))
             .As<IServiceProvider>().SingleInstance();
         builder.RegisterType<TemplatesManager>().As<ITemplatesManager>().As<IBotLifecycleParticipant>().SingleInstance();
-        builder.RegisterType<RoomUserDataService>().As<IRoomUserDataService>().As<IBotLifecycleParticipant>().SingleInstance();
         builder.RegisterType<UserDetailsManager>().As<IUserDetailsManager>().SingleInstance();
         builder.RegisterType<ActiveBattlesManager>().As<IActiveBattlesManager>().SingleInstance();
         builder.RegisterType<RoomInfoManager>().As<IRoomInfoManager>().SingleInstance();
         builder.RegisterType<UserDataService>().As<IUserDataService>().SingleInstance();
         builder.RegisterType<RandomService>().As<IRandomService>().SingleInstance();
-        builder.RegisterType<RepeatsManager>().As<IRepeatsManager>().As<IBotLifecycleParticipant>().SingleInstance();
         builder.RegisterType<SystemService>().As<ISystemService>().SingleInstance();
+        builder.RegisterType<CoreRoomParameters>().As<IRoomParameterProvider>().SingleInstance();
         builder.RegisterType<ParametersDefinitionFactory>().As<IParametersDefinitionFactory>()
             .SingleInstance();
-        builder.RegisterType<CustomColorsManager>().As<ICustomColorsManager>().As<IBotLifecycleParticipant>().SingleInstance();
-        builder.RegisterType<UserColorsService>().As<IUserColorsService>().SingleInstance();
-        builder.RegisterType<DexManager>().As<IDexManager>().As<IBotLifecycleParticipant>().SingleInstance();
         builder.RegisterType<BotLifecycleService>().As<IBotLifecycleService>().SingleInstance();
         builder.RegisterType<ImageService>().As<IImageService>().SingleInstance();
-        builder.RegisterType<GeminiFlashProvider>().AsSelf().SingleInstance();
-        builder.RegisterType<MistralSmallProvider>().AsSelf().SingleInstance();
-        builder.RegisterType<GptMiniProvider>().AsSelf().SingleInstance();
-        builder.RegisterType<LanguageModelResolver>().As<ILanguageModelProvider>().SingleInstance();
-        builder.RegisterType<EfRoomParameterStore>().As<IRoomParameterStore>();
-        builder.RegisterType<UserSaveQueue>().As<IUserSaveQueue>().As<IBotLifecycleParticipant>().SingleInstance();
-        builder.RegisterType<EventAnnouncer>().As<IEventAnnouncer>().SingleInstance();
+        builder.RegisterType<RoomParameterStore>().As<IRoomParameterStore>();
 
         builder.RegisterType<KeyedTaskQueue>().As<IKeyedTaskQueue>();
         builder.RegisterType<IncomingMessageDispatcher>().As<IIncomingMessageDispatcher>().SingleInstance();

@@ -18,12 +18,12 @@ public class GeniusSearchCommand : Command
     private const int MAX_THUMBNAIL_WIDTH = 115;
     private const int MAX_THUMBNAIL_HEIGHT = 115;
 
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly IHttpService _httpService;
     private readonly ITemplatesManager _templatesManager;
     private readonly IImageService _imageService;
 
-    public GeniusSearchCommand(IConfiguration configuration, IHttpService httpService,
+    public GeniusSearchCommand(ICommandsConfiguration configuration, IHttpService httpService,
         ITemplatesManager templatesManager, IImageService imageService)
     {
         _configuration = configuration;

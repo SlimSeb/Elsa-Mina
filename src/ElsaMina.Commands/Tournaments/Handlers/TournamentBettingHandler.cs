@@ -1,11 +1,11 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 using ElsaMina.Commands.Tournaments.Betting;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
-using System.Text.Json;
 
 namespace ElsaMina.Commands.Tournaments.Handlers;
 
@@ -78,7 +78,7 @@ public class TournamentBettingHandler : Handler
     {
         var room = _roomsManager.GetRoom(roomId);
         var isBettingEnabled = room == null ||
-                               (await room.GetParameterValueAsync(Parameter.TournamentBettingEnabled,
+                               (await room.GetParameterValueAsync(TournamentBettingRoomParameters.TournamentBettingEnabled,
                                    cancellationToken)).ToBoolean();
         if (!isBettingEnabled)
         {

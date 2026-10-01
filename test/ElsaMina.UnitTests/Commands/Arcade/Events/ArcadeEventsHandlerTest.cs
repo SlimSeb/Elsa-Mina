@@ -1,9 +1,10 @@
 using System.Net;
+using System.Text.Json;
+using ElsaMina.Commands;
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
-using System.Text.Json;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -23,7 +24,7 @@ public class ArcadeEventsHandlerTests
 
     private ArcadeEventsHandler _handler;
     private IHttpService _httpService;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private IBot _bot;
     private IArcadeEventsService _arcadeEventsService;
 
@@ -31,7 +32,7 @@ public class ArcadeEventsHandlerTests
     public void SetUp()
     {
         _httpService = Substitute.For<IHttpService>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _bot = Substitute.For<IBot>();
 
         var httpResponse = Substitute.For<IHttpResponse<object>>();

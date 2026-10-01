@@ -114,4 +114,10 @@
     <data name="deleteallteams_error" xml:space="preserve">
         <value>Se produjo un error al eliminar los equipos: {0}</value>
     </data>
+    <data name="parameter_name_is_showing_team_links_preview" xml:space="preserve">
+        <value>Mostrar equipos desde enlaces</value>
+    </data>
+    <data name="parameter_description_is_showing_team_links_preview" xml:space="preserve">
+        <value>Muestra una vista previa de un equipo cuando se comparte un enlace Pokepaste o CoupCritique</value>
+    </data>
 </root>

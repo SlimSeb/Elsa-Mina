@@ -1,6 +1,8 @@
 using ElsaMina.Commands.Arcade.Events;
+using ElsaMina.Commands.Economy;
 using ElsaMina.Commands.Games.GuessingGame;
 using ElsaMina.Commands.Games.Wordle;
+using ElsaMina.Commands.Replays;
 using ElsaMina.Commands.RoomDashboard;
 using ElsaMina.Commands.Tournaments.Betting;
 using ElsaMina.Core.Contexts;
@@ -396,13 +398,13 @@ public class RoomConfigCommandTest
         _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
         {
             { Parameter.Locale, localeDef },
-            { Parameter.BucksEnabled, bucksDef }
+            { EconomyRoomParameters.BucksEnabled, bucksDef }
         });
 
         await _command.RunAsync(_context);
 
         await room.Received(1).SetParameterValueAsync(Parameter.Locale, "en-US", Arg.Any<CancellationToken>());
-        await room.Received(1).SetParameterValueAsync(Parameter.BucksEnabled, "true", Arg.Any<CancellationToken>());
+        await room.Received(1).SetParameterValueAsync(EconomyRoomParameters.BucksEnabled, "true", Arg.Any<CancellationToken>());
         _context.Received(1).ReplyLocalizedMessage("room_config_success", "testroom");
         await _roomDashboardService.Received(1).SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
     }
@@ -466,16 +468,16 @@ public class RoomConfigCommandTest
         paramDef.Type.Returns(RoomBotConfigurationType.Boolean);
         _parametersDefinitionFactory.GetParametersDefinitions().Returns(new Dictionary<Parameter, IParameterDefinition>
         {
-            { Parameter.ShowReplaysPreview, paramDef }
+            { ReplaysRoomParameters.ShowReplaysPreview, paramDef }
         });
-        room.GetParameterValueAsync(Parameter.ShowReplaysPreview, Arg.Any<CancellationToken>())
+        room.GetParameterValueAsync(ReplaysRoomParameters.ShowReplaysPreview, Arg.Any<CancellationToken>())
             .Returns("false");
-        room.SetParameterValueAsync(Parameter.ShowReplaysPreview, "true", Arg.Any<CancellationToken>())
+        room.SetParameterValueAsync(ReplaysRoomParameters.ShowReplaysPreview, "true", Arg.Any<CancellationToken>())
             .Returns(true);
 
         await _command.RunAsync(_context);
 
-        await room.Received(1).SetParameterValueAsync(Parameter.ShowReplaysPreview, "true", Arg.Any<CancellationToken>());
+        await room.Received(1).SetParameterValueAsync(ReplaysRoomParameters.ShowReplaysPreview, "true", Arg.Any<CancellationToken>());
         _context.Received(1).ReplyLocalizedMessage("room_config_success", "testroom");
         await _roomDashboardService.Received(1).SendDashboardPageAsync(_context, "testroom", Arg.Any<CancellationToken>());
     }

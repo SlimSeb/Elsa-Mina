@@ -8,6 +8,7 @@ using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
+using ElsaMina.Showdown.Teams;
 
 namespace ElsaMina.Commands.Teams.TeamPreviewOnLink;
 
@@ -46,7 +47,7 @@ public class DisplayTeamOnLinkHandler : ChatMessageHandler
         }
 
         var isShowingTeamLinksPreviewEnabled =
-            (await context.Room.GetParameterValueAsync(Parameter.ShowTeamLinksPreview, cancellationToken)).ToBoolean();
+            (await context.Room.GetParameterValueAsync(TeamPreviewRoomParameters.ShowTeamLinksPreview, cancellationToken)).ToBoolean();
         if (!isShowingTeamLinksPreviewEnabled)
         {
             return;

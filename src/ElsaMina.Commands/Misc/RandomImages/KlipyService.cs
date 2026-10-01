@@ -39,10 +39,10 @@ public class KlipyService : IKlipyService
     private const KlipyMediaSize FULL_SIZE = KlipyMediaSize.Sm;
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly IRandomService _randomService;
 
-    public KlipyService(IHttpService httpService, IConfiguration configuration, IRandomService randomService)
+    public KlipyService(IHttpService httpService, ICommandsConfiguration configuration, IRandomService randomService)
     {
         _httpService = httpService;
         _configuration = configuration;

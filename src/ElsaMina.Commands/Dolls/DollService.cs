@@ -1,10 +1,10 @@
 using System.Text.RegularExpressions;
+using ElsaMina.Cloud.GoogleDrive;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using ElsaMina.Logging;
-using ElsaMina.Cloud.GoogleDrive;
 using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Commands.Dolls;
@@ -29,7 +29,7 @@ public partial class DollService : IDollService
 
     private readonly IDriveProvider _driveProvider;
     private readonly IBotDbContextFactory _dbContextFactory;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly IClockService _clockService;
 
     private readonly SemaphoreSlim _catalogueLock = new(1, 1);
@@ -38,7 +38,7 @@ public partial class DollService : IDollService
 
     public DollService(IDriveProvider driveProvider,
         IBotDbContextFactory dbContextFactory,
-        IConfiguration configuration,
+        ICommandsConfiguration configuration,
         IClockService clockService)
     {
         _driveProvider = driveProvider;
@@ -183,7 +183,7 @@ public partial class DollService : IDollService
     }
 
     /// <summary>
-    /// Resolves what <see cref="IConfiguration.DollsDriveName"/> points at, cheapest and most reliable first.
+    /// Resolves what <see cref="ICommandsConfiguration.DollsDriveName"/> points at, cheapest and most reliable first.
     /// </summary>
     private async Task<string> ResolveContainerIdAsync(string driveName, CancellationToken cancellationToken)
     {

@@ -1,11 +1,12 @@
 using ElsaMina.Commands.Showdown.Ranking;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Showdown.Ladder.EloHistory;
 
-public class EloHistoryService : IEloHistoryService
+public class EloHistoryService : IEloHistoryService, IBotLifecycleParticipant
 {
     private static readonly TimeSpan POLL_INTERVAL = TimeSpan.FromHours(1);
 
@@ -145,5 +146,11 @@ public class EloHistoryService : IEloHistoryService
         _cts?.Cancel();
         _cts?.Dispose();
         _disposed = true;
+    }
+
+    public Task OnStartingAsync(CancellationToken cancellationToken)
+    {
+        Start();
+        return Task.CompletedTask;
     }
 }

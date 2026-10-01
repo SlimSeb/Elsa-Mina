@@ -1,11 +1,12 @@
 using System.Collections.Immutable;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Commands.Alerts;
 
-public class AlertsManager : IAlertsManager
+public class AlertsManager : IAlertsManager, IBotLifecycleParticipant
 {
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly Lock _lock = new();
@@ -105,4 +106,6 @@ public class AlertsManager : IAlertsManager
 
         return removedAlert;
     }
+
+    public Task OnStartingAsync(CancellationToken cancellationToken) => InitializeAsync(cancellationToken);
 }

@@ -1,6 +1,6 @@
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Core.Services.Clock;
-using ElsaMina.Core.Services.Smogon;
+using ElsaMina.Showdown.Smogon;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
