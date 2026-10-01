@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
@@ -13,7 +14,7 @@ namespace ElsaMina.Core.Handlers.DefaultHandlers.Rooms;
 /// Bufferise les màj de "dernière activité" des utilisateurs, puis les enregistre par lots.
 /// Plusieurs màj pour un même utilisateur sont fusionnées : seule la plus récente est sauvegardée
 /// </summary>
-public sealed class UserSaveQueue : IUserSaveQueue
+public sealed class UserSaveQueue : IUserSaveQueue, IBotLifecycleParticipant
 {
     private sealed record PendingUserSave(
         string RawUserName,
@@ -76,6 +77,8 @@ public sealed class UserSaveQueue : IUserSaveQueue
             Log.Error(ex, "Error while flushing user updates (timer based)");
         }
     }
+
+    public Task OnExitingAsync(CancellationToken cancellationToken) => FlushAsync(cancellationToken);
 
     public Task FlushAsync(CancellationToken cancellationToken)
     {

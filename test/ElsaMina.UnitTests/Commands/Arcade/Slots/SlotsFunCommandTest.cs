@@ -3,8 +3,6 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Arcade.Slots;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Clock;
-using ElsaMina.Core.Services.CustomColors;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
@@ -32,12 +30,6 @@ public class SlotsFunCommandTest
         _context = Substitute.For<IContext>();
         _sender = Substitute.For<IUser>();
 
-        var customColorsManager = Substitute.For<ICustomColorsManager>();
-        customColorsManager.CustomColorsMapping.Returns(new Dictionary<string, string>());
-        var containerService = Substitute.For<IDependencyContainerService>();
-        containerService.Resolve<ICustomColorsManager>().Returns(customColorsManager);
-        DependencyContainerService.Current = containerService;
-
         _sender.Name.Returns("TestUser");
         _sender.UserId.Returns("testuser");
         _context.Sender.Returns(_sender);
@@ -62,7 +54,6 @@ public class SlotsFunCommandTest
     [TearDown]
     public void TearDown()
     {
-        DependencyContainerService.Current = null;
     }
 
     [Test]

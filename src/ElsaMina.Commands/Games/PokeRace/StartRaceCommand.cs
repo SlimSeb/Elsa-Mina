@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.PokeRace;
 
 [NamedCommand("racestart", Aliases = ["startrace"])]
-public class StartRaceCommand : Command
+public class StartRaceCommand : GameCommand
 {
     public override Rank RequiredRank => Rank.Voiced;
 

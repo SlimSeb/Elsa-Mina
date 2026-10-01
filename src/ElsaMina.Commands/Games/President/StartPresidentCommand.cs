@@ -1,24 +1,23 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.President;
 
 [NamedCommand("president", Aliases = ["trouducul", "presidentgame"])]
-public class StartPresidentCommand : Command
+public class StartPresidentCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<PresidentGame> _gameFactory;
     private readonly IArcadeEventsService _arcadeEventsService;
     private readonly IEventAnnouncer _eventAnnouncer;
 
-    public StartPresidentCommand(IDependencyContainerService dependencyContainerService,
+    public StartPresidentCommand(Func<PresidentGame> gameFactory,
         IArcadeEventsService arcadeEventsService,
         IEventAnnouncer eventAnnouncer)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _arcadeEventsService = arcadeEventsService;
         _eventAnnouncer = eventAnnouncer;
     }
@@ -60,7 +59,7 @@ public class StartPresidentCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<PresidentGame>();
+        var game = _gameFactory();
         game.Context = context;
         game.TotalRounds = rounds;
         context.Room.Game = game;

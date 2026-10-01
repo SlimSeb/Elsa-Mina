@@ -10,7 +10,7 @@ namespace ElsaMina.Commands.Games.Cards;
 /// pending request. Works both in the room and from a panel button, which sends a private message
 /// whose target is the room id.
 /// </summary>
-public abstract class RequestSubGameCommand<TGame> : Command where TGame : class, ISubstitutableCardGame
+public abstract class RequestSubGameCommand<TGame> : GameCommand where TGame : class, ISubstitutableCardGame
 {
     private readonly IRoomsManager _roomsManager;
 

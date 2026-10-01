@@ -2,7 +2,6 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.Battleship;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
@@ -13,7 +12,7 @@ namespace ElsaMina.UnitTests.Commands.Games.Battleship;
 
 public class CreateBattleshipCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<BattleshipGame> _gameFactory;
     private IArcadeEventsService _arcadeEventsService;
     private IEventAnnouncer _eventAnnouncer;
     private ITemplatesManager _templatesManager;
@@ -25,7 +24,7 @@ public class CreateBattleshipCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<BattleshipGame>>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _eventAnnouncer = Substitute.For<IEventAnnouncer>();
         _templatesManager = Substitute.For<ITemplatesManager>();
@@ -41,9 +40,9 @@ public class CreateBattleshipCommandTest
         _game = new BattleshipGame(Substitute.For<IRandomService>(), _templatesManager,
             Substitute.For<IConfiguration>(), Substitute.For<IBattleshipRatingService>());
         _game.Context = _context;
-        _dependencyContainerService.Resolve<BattleshipGame>().Returns(_game);
+        _gameFactory().Returns(_game);
 
-        _command = new CreateBattleshipCommand(_dependencyContainerService, _arcadeEventsService, _eventAnnouncer);
+        _command = new CreateBattleshipCommand(_gameFactory, _arcadeEventsService, _eventAnnouncer);
     }
 
     [Test]

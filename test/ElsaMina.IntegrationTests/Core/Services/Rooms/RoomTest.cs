@@ -1,7 +1,6 @@
 using System.Globalization;
 using ElsaMina.Core.Handlers.DefaultHandlers.Rooms;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
@@ -46,11 +45,8 @@ public class RoomTest
         _userSaveQueue = Substitute.For<IUserSaveQueue>();
         _userSaveQueue.AcquireLockAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
 
-        var dependencyContainerService = Substitute.For<IDependencyContainerService>();
-        dependencyContainerService.Resolve<IRoomParameterStore>()
-            .Returns(_ => new EfRoomParameterStore(_dbContextFactory, parametersFactory));
-
-        var roomFactory = new RoomFactory(configuration, _dbContextFactory, dependencyContainerService);
+        var roomFactory = new RoomFactory(configuration, _dbContextFactory,
+            () => new EfRoomParameterStore(_dbContextFactory, parametersFactory));
 
         _roomsManager = new RoomsManager(roomFactory);
 

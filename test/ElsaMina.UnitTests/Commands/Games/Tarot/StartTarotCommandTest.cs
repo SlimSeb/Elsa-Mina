@@ -3,7 +3,6 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.Tarot;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
@@ -17,7 +16,7 @@ namespace ElsaMina.UnitTests.Commands.Games.Tarot;
 [TestFixture]
 public class StartTarotCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<TarotGame> _gameFactory;
     private IArcadeEventsService _arcadeEventsService;
     private IEventAnnouncer _eventAnnouncer;
     private StartTarotCommand _command;
@@ -28,7 +27,7 @@ public class StartTarotCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<TarotGame>>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _eventAnnouncer = Substitute.For<IEventAnnouncer>();
         _context = Substitute.For<IContext>();
@@ -50,9 +49,9 @@ public class StartTarotCommandTest
         _game = new TarotGame(Substitute.For<IRandomService>(), templates, configuration,
             Substitute.For<ITarotStatsService>());
         _game.Context = _context;
-        _dependencyContainerService.Resolve<TarotGame>().Returns(_game);
+        _gameFactory().Returns(_game);
 
-        _command = new StartTarotCommand(_dependencyContainerService, _arcadeEventsService, _eventAnnouncer);
+        _command = new StartTarotCommand(_gameFactory, _arcadeEventsService, _eventAnnouncer);
     }
 
     private static IUser MakeUser(string id)
@@ -79,7 +78,7 @@ public class StartTarotCommandTest
         using (Assert.EnterMultipleScope())
         {
             _context.Received(1).ReplyLocalizedMessage("games_muted_event");
-            _dependencyContainerService.DidNotReceive().Resolve<TarotGame>();
+            _gameFactory.DidNotReceive()();
             _room.DidNotReceive().Game = Arg.Any<TarotGame>();
         }
     }
@@ -92,7 +91,7 @@ public class StartTarotCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("tarot_already_running");
-        _dependencyContainerService.DidNotReceive().Resolve<TarotGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -103,7 +102,7 @@ public class StartTarotCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("tarot_other_game_running");
-        _dependencyContainerService.DidNotReceive().Resolve<TarotGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]

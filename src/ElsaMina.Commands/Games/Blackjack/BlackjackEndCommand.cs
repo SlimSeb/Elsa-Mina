@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Blackjack;
 
 [NamedCommand("bjend", Aliases = ["end-bj"])]
-public class BlackjackEndCommand : Command
+public class BlackjackEndCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly IBlackjackGameManager _gameManager;

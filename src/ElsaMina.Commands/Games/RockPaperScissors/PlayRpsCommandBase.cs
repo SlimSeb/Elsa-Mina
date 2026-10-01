@@ -5,7 +5,7 @@ using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Games.RockPaperScissors;
 
-public abstract class PlayRpsCommandBase : Command
+public abstract class PlayRpsCommandBase : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

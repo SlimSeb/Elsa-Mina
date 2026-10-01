@@ -1,24 +1,23 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Belote;
 
 [NamedCommand("belote")]
-public class StartBeloteCommand : Command
+public class StartBeloteCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<BeloteGame> _gameFactory;
     private readonly IArcadeEventsService _arcadeEventsService;
     private readonly IEventAnnouncer _eventAnnouncer;
 
-    public StartBeloteCommand(IDependencyContainerService dependencyContainerService,
+    public StartBeloteCommand(Func<BeloteGame> gameFactory,
         IArcadeEventsService arcadeEventsService,
         IEventAnnouncer eventAnnouncer)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _arcadeEventsService = arcadeEventsService;
         _eventAnnouncer = eventAnnouncer;
     }
@@ -51,7 +50,7 @@ public class StartBeloteCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<BeloteGame>();
+        var game = _gameFactory();
         game.Context = context;
         context.Room.Game = game;
 

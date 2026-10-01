@@ -1,27 +1,26 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Semantix;
 
 [NamedCommand("semantix", Aliases = ["sx"])]
-public class StartSemantixCommand : Command
+public class StartSemantixCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<SemantixGame> _gameFactory;
     private readonly IRoomsManager _roomsManager;
     private readonly ISemantixGameManager _gameManager;
     private readonly ISemantixDailyService _dailyService;
     private readonly IArcadeEventsService _arcadeEventsService;
 
-    public StartSemantixCommand(IDependencyContainerService dependencyContainerService,
+    public StartSemantixCommand(Func<SemantixGame> gameFactory,
         IRoomsManager roomsManager,
         ISemantixGameManager gameManager,
         ISemantixDailyService dailyService,
         IArcadeEventsService arcadeEventsService)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _roomsManager = roomsManager;
         _gameManager = gameManager;
         _dailyService = dailyService;
@@ -84,7 +83,7 @@ public class StartSemantixCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<SemantixGame>();
+        var game = _gameFactory();
         game.Context = context;
         game.Owner = context.Sender;
         game.IsPrivateMode = isPrivateMode;

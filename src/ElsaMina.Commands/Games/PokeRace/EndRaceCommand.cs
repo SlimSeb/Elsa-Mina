@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.PokeRace;
 
 [NamedCommand("raceend", Aliases = ["endrace"])]
-public class EndRaceCommand : Command
+public class EndRaceCommand : GameCommand
 {
     public override Rank RequiredRank => Rank.Driver;
 

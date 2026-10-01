@@ -1,26 +1,25 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Blackjack;
 
 [NamedCommand("blackjack")]
-public class BlackjackCommand : Command
+public class BlackjackCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<BlackjackGame> _gameFactory;
     private readonly IRoomsManager _roomsManager;
     private readonly IBlackjackGameManager _gameManager;
     private readonly IArcadeEventsService _arcadeEventsService;
 
     public BlackjackCommand(
-        IDependencyContainerService dependencyContainerService,
+        Func<BlackjackGame> gameFactory,
         IRoomsManager roomsManager,
         IBlackjackGameManager gameManager,
         IArcadeEventsService arcadeEventsService)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _roomsManager = roomsManager;
         _gameManager = gameManager;
         _arcadeEventsService = arcadeEventsService;
@@ -65,7 +64,7 @@ public class BlackjackCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<BlackjackGame>();
+        var game = _gameFactory();
         game.Context = context;
         game.Owner = context.Sender;
         game.IsPrivateMode = true;
@@ -97,7 +96,7 @@ public class BlackjackCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<BlackjackGame>();
+        var game = _gameFactory();
         game.Context = context;
         room.Game = game;
         await game.DisplayAnnounce();

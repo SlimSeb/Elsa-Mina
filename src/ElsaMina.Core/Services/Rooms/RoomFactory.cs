@@ -1,6 +1,5 @@
 using System.Globalization;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
@@ -13,16 +12,16 @@ public class RoomFactory : IRoomFactory
 {
     private readonly IConfiguration _configuration;
     private readonly IBotDbContextFactory _dbContextFactory;
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<IRoomParameterStore> _parameterStoreFactory;
 
     public RoomFactory(
         IConfiguration configuration,
         IBotDbContextFactory dbContextFactory,
-        IDependencyContainerService dependencyContainerService)
+        Func<IRoomParameterStore> parameterStoreFactory)
     {
         _configuration = configuration;
         _dbContextFactory = dbContextFactory;
-        _dependencyContainerService = dependencyContainerService;
+        _parameterStoreFactory = parameterStoreFactory;
     }
 
     public async Task<IRoom> CreateRoomAsync(string roomId, string[] lines,
@@ -41,7 +40,7 @@ public class RoomFactory : IRoomFactory
 
         var dbRoomEntity = await InitializeOrUpdateRoomEntity(roomId, roomTitle, cancellationToken);
 
-        var parameterStore = _dependencyContainerService.Resolve<IRoomParameterStore>();
+        var parameterStore = _parameterStoreFactory();
         parameterStore.InitializeFromRoomEntity(dbRoomEntity);
         var localeCode = await parameterStore.GetValueAsync(Parameter.Locale, cancellationToken);
         var timeZoneId = await parameterStore.GetValueAsync(Parameter.TimeZone, cancellationToken);

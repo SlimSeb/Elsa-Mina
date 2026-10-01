@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.VoltorbFlip;
 
 [NamedCommand("vftogglemark")]
-public class ToggleMarkVoltorbFlipCommand : Command
+public class ToggleMarkVoltorbFlipCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly IVoltorbFlipGameManager _gameManager;

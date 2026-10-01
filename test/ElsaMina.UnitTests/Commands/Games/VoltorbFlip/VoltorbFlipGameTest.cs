@@ -1,7 +1,6 @@
 using ElsaMina.Commands.Games.VoltorbFlip;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
@@ -17,7 +16,6 @@ public class VoltorbFlipGameTest
     private IRandomService _mockRandomService;
     private ITemplatesManager _mockTemplatesManager;
     private IConfiguration _mockConfiguration;
-    private IDependencyContainerService _mockDependencyContainerService;
     private IContext _mockContext;
     private IUser _mockUser;
     private IBotDbContextFactory _dbContextFactory;
@@ -46,9 +44,6 @@ public class VoltorbFlipGameTest
         _mockTemplatesManager = Substitute.For<ITemplatesManager>();
         _mockConfiguration = Substitute.For<IConfiguration>();
         _mockContext = Substitute.For<IContext>();
-        _mockDependencyContainerService = Substitute.For<IDependencyContainerService>();
-
-        DependencyContainerService.Current = _mockDependencyContainerService;
 
         _mockConfiguration.Name.Returns("Bot");
         _mockConfiguration.Trigger.Returns("-");
@@ -70,7 +65,6 @@ public class VoltorbFlipGameTest
     [TearDown]
     public void TearDown()
     {
-        DependencyContainerService.Current = null;
     }
 
     #region StartNewRound

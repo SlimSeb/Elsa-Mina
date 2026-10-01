@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.ConnectFour;
 
 [NamedCommand("end-connect-four", Aliases = ["c4end", "c4-end"])]
-public class EndConnectFourCommand : Command
+public class EndConnectFourCommand : GameCommand
 {
     public override Rank RequiredRank => Rank.Voiced;
 

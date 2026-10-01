@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.FloodIt;
 
 [NamedCommand("fijoin")]
-public class JoinFloodItCommand : Command
+public class JoinFloodItCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

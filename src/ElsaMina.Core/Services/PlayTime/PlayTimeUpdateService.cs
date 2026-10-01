@@ -1,5 +1,6 @@
 using ElsaMina.Core.Handlers.DefaultHandlers.Rooms;
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
@@ -9,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Core.Services.PlayTime;
 
-public sealed class PlayTimeUpdateService : IPlayTimeUpdateService
+public sealed class PlayTimeUpdateService : IPlayTimeUpdateService, IBotLifecycleParticipant
 {
     private readonly IConfiguration _configuration;
     private readonly IBotDbContextFactory _dbContextFactory;
@@ -36,6 +37,17 @@ public sealed class PlayTimeUpdateService : IPlayTimeUpdateService
         _timerRunner = new PeriodicTimerRunner(_configuration.PlayTimeUpdatesInterval,
             ProcessPendingPlayTimeUpdatesAsync);
         _timerRunner.Start();
+    }
+
+    public Task OnStartingAsync(CancellationToken cancellationToken)
+    {
+        Initialize();
+        return Task.CompletedTask;
+    }
+
+    public Task OnExitingAsync(CancellationToken cancellationToken)
+    {
+        return ProcessPendingPlayTimeUpdatesAsync().WaitAsync(cancellationToken);
     }
 
     public async Task ProcessPendingPlayTimeUpdatesAsync()

@@ -1,7 +1,6 @@
 using ElsaMina.Commands.Games.ConnectFour;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
@@ -15,7 +14,6 @@ public class ConnectFourGameTest
     private IRandomService _mockRandomService;
     private ITemplatesManager _mockTemplatesManager;
     private IConfiguration _configuration;
-    private IDependencyContainerService _dependencyContainerService;
     private IConnectFourRatingService _mockRatingService;
     private IContext _context;
     private IUser _mockUser1;
@@ -28,10 +26,7 @@ public class ConnectFourGameTest
         _mockTemplatesManager = Substitute.For<ITemplatesManager>();
         _configuration = Substitute.For<IConfiguration>();
         _context = Substitute.For<IContext>();
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
         _mockRatingService = Substitute.For<IConnectFourRatingService>();
-
-        DependencyContainerService.Current = _dependencyContainerService;
 
         _configuration.Name.Returns("Bot");
         _configuration.Trigger.Returns("!");
@@ -57,7 +52,6 @@ public class ConnectFourGameTest
     [TearDown]
     public void TearDown()
     {
-        DependencyContainerService.Current = null;
     }
 
     [Test]

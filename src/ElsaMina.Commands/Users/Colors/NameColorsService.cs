@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
 using ElsaMina.Core.Services.CustomColors;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Commands.Users.Colors;
 
-public class NameColorsService : INameColorsService, IRoomColorsCache
+public class NameColorsService : INameColorsService, IRoomColorsCache, IBotLifecycleParticipant
 {
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly ConcurrentDictionary<string, string> _cache = new();
@@ -60,4 +61,6 @@ public class NameColorsService : INameColorsService, IRoomColorsCache
         _cache.TryRemove(userId, out _);
         return true;
     }
+
+    public Task OnStartingAsync(CancellationToken cancellationToken) => LoadAsync(cancellationToken);
 }

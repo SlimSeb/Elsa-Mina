@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Wordle;
 
 [NamedCommand("wlkey")]
-public class WordleKeyCommand : Command
+public class WordleKeyCommand : GameCommand
 {
     private const string BACKSPACE_ACTION = "back";
     private const string ENTER_ACTION = "enter";

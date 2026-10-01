@@ -2,7 +2,6 @@ using System.Globalization;
 using ElsaMina.Commands.Games.RockPaperScissors;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.System;
@@ -15,7 +14,7 @@ namespace ElsaMina.UnitTests.Commands.Games.RockPaperScissors;
 [TestFixture]
 public class StartRpsCommandTest
 {
-    private IDependencyContainerService _mockDependencyContainerService;
+    private Func<RpsGame> _gameFactory;
     private StartRpsCommand _command;
     private IContext _mockContext;
     private IRoom _mockRoom;
@@ -24,7 +23,7 @@ public class StartRpsCommandTest
     [SetUp]
     public void SetUp()
     {
-        _mockDependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<RpsGame>>();
         _mockContext = Substitute.For<IContext>();
         _mockRoom = Substitute.For<IRoom>();
 
@@ -41,9 +40,9 @@ public class StartRpsCommandTest
 
         _game = new RpsGame(mockConfig, Substitute.For<ISystemService>(), mockTemplates);
         _game.Context = _mockContext;
-        _mockDependencyContainerService.Resolve<RpsGame>().Returns(_game);
+        _gameFactory().Returns(_game);
 
-        _command = new StartRpsCommand(_mockDependencyContainerService);
+        _command = new StartRpsCommand(_gameFactory);
     }
 
     [Test]
@@ -60,7 +59,7 @@ public class StartRpsCommandTest
         await _command.RunAsync(_mockContext);
 
         _mockContext.Received(1).ReplyLocalizedMessage("rps_already_running");
-        _mockDependencyContainerService.DidNotReceive().Resolve<RpsGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -71,7 +70,7 @@ public class StartRpsCommandTest
         await _command.RunAsync(_mockContext);
 
         _mockContext.Received(1).ReplyLocalizedMessage("rps_other_game_running");
-        _mockDependencyContainerService.DidNotReceive().Resolve<RpsGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]

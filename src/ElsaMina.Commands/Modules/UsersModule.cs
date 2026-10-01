@@ -5,6 +5,7 @@ using ElsaMina.Commands.Users.PlayTimes;
 using ElsaMina.Commands.Users.Streaks;
 using ElsaMina.Commands.Watchlist;
 using ElsaMina.Core.Services.CustomColors;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Modules;
@@ -31,7 +32,7 @@ public class UsersModule : Module
         builder.RegisterHandler<StaffIntroChangeHandler>();
         builder.RegisterHandler<StaffIntroContentHandler>();
 
-        builder.RegisterType<NameColorsService>().As<INameColorsService>().As<IRoomColorsCache>().SingleInstance();
+        builder.RegisterType<NameColorsService>().As<INameColorsService>().As<IRoomColorsCache>().As<IBotLifecycleParticipant>().SingleInstance();
         builder.RegisterType<StreakService>().As<IStreakService>().SingleInstance();
         builder.RegisterType<WatchlistService>().As<IWatchlistService>().SingleInstance();
     }

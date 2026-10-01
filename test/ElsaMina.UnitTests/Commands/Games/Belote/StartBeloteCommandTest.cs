@@ -3,7 +3,6 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.Belote;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
@@ -17,7 +16,7 @@ namespace ElsaMina.UnitTests.Commands.Games.Belote;
 [TestFixture]
 public class StartBeloteCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<BeloteGame> _gameFactory;
     private IArcadeEventsService _arcadeEventsService;
     private IEventAnnouncer _eventAnnouncer;
     private StartBeloteCommand _command;
@@ -28,7 +27,7 @@ public class StartBeloteCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<BeloteGame>>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _eventAnnouncer = Substitute.For<IEventAnnouncer>();
         _context = Substitute.For<IContext>();
@@ -50,9 +49,9 @@ public class StartBeloteCommandTest
         _game = new BeloteGame(Substitute.For<IRandomService>(), templates, configuration,
             Substitute.For<IBeloteStatsService>());
         _game.Context = _context;
-        _dependencyContainerService.Resolve<BeloteGame>().Returns(_game);
+        _gameFactory().Returns(_game);
 
-        _command = new StartBeloteCommand(_dependencyContainerService, _arcadeEventsService, _eventAnnouncer);
+        _command = new StartBeloteCommand(_gameFactory, _arcadeEventsService, _eventAnnouncer);
     }
 
     private static IUser MakeUser(string id)
@@ -79,7 +78,7 @@ public class StartBeloteCommandTest
         using (Assert.EnterMultipleScope())
         {
             _context.Received(1).ReplyLocalizedMessage("games_muted_event");
-            _dependencyContainerService.DidNotReceive().Resolve<BeloteGame>();
+            _gameFactory.DidNotReceive()();
             _room.DidNotReceive().Game = Arg.Any<BeloteGame>();
         }
     }
@@ -92,7 +91,7 @@ public class StartBeloteCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("belote_already_running");
-        _dependencyContainerService.DidNotReceive().Resolve<BeloteGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -103,7 +102,7 @@ public class StartBeloteCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("belote_other_game_running");
-        _dependencyContainerService.DidNotReceive().Resolve<BeloteGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]

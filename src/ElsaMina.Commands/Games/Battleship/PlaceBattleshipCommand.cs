@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Battleship;
 
 [NamedCommand("bsplace", Aliases = ["bsp"])]
-public class PlaceBattleshipCommand : Command
+public class PlaceBattleshipCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

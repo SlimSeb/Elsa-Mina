@@ -1,11 +1,11 @@
 namespace ElsaMina.Core.Services.Lifecycle;
 
 /// <summary>
-/// Regroupe le travail à effectuer autour du cycle de vie du bot : ce qu'il faut préparer
-/// avant la connexion, et ce qu'il faut vider avant l'arrêt.
+/// Runs the registered <see cref="IBotLifecycleParticipant"/>s: what to prepare before connecting,
+/// and what to flush before stopping.
 /// </summary>
 public interface IBotLifecycleService
 {
     Task OnStartingAsync(CancellationToken cancellationToken = default);
-    Task OnExitingAsync();
+    Task OnExitingAsync(CancellationToken cancellationToken = default);
 }
