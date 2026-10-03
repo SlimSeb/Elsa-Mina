@@ -4,7 +4,7 @@ namespace ElsaMina.Core.Services.Config;
 
 /// <summary>
 /// Settings the bot runtime needs: connection, identity, rooms and access. Other projects define their own
-/// settings interfaces (database, cloud, language models, features), all implemented by the configuration
+/// settings interfaces (database, cloud, features), all implemented by the configuration
 /// loaded from config.json.
 /// </summary>
 public interface IConfiguration : ILoggingConfiguration
@@ -23,5 +23,8 @@ public interface IConfiguration : ILoggingConfiguration
     string GithubToken { get; }
     string GithubRepository { get; }
     string DefaultLocaleCode { get; }
+    string MistralApiKey { get; }
+    string ChatGptApiKey { get; }
+    string GeminiApiKey { get; }
     TimeSpan LoginRetryDelay { get; }
 }

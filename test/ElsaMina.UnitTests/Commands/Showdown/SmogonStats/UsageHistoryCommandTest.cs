@@ -4,7 +4,7 @@ using ElsaMina.Commands.Showdown.SmogonStats;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Showdown.Smogon;
+using ElsaMina.Core.Services.Smogon;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Showdown.SmogonStats;

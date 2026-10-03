@@ -6,8 +6,6 @@ using ElsaMina.Commands;
 using ElsaMina.Core.Modules;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.DataAccess;
-using ElsaMina.LanguageModel;
-using ElsaMina.Showdown;
 
 namespace ElsaMina.Console.Startup;
 
@@ -24,13 +22,10 @@ public static class ContainerBootstrapper
             .As<IDatabaseConfiguration>()
             .As<IS3CredentialsProvider>()
             .As<IGoogleServiceAccountConfiguration>()
-            .As<ILanguageModelConfiguration>()
             .SingleInstance();
         builder.RegisterModule<DataAccessModule>();
         builder.RegisterModule<CloudModule>();
         builder.RegisterModule<CoreModule>();
-        builder.RegisterModule<LanguageModelModule>();
-        builder.RegisterModule<ShowdownDataModule>();
         builder.RegisterModule<BattlesModule>();
         builder.RegisterModule<CommandModule>();
         builder.RegisterType<VersionProvider>().As<IVersionProvider>();

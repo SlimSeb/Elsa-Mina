@@ -1,7 +1,7 @@
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
+using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.Probabilities;
-using ElsaMina.LanguageModel;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Battles.Strategies.Llm;

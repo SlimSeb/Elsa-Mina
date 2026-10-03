@@ -44,9 +44,7 @@
     <Project Path="src\ElsaMina.Core\ElsaMina.Core.csproj" />
     <Project Path="src\ElsaMina.DataAccess\ElsaMina.DataAccess.csproj" />
     <Project Path="src\ElsaMina.Cloud\ElsaMina.Cloud.csproj" />
-    <Project Path="src\ElsaMina.LanguageModel\ElsaMina.LanguageModel.csproj" />
     <Project Path="src\ElsaMina.Logging\ElsaMina.Logging.csproj" />
-    <Project Path="src\ElsaMina.Showdown\ElsaMina.Showdown.csproj" />
   </Folder>
   <Folder Name="/test/">
     <Project Path="test\ElsaMina.IntegrationTests\ElsaMina.IntegrationTests.csproj" />

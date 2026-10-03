@@ -5,10 +5,10 @@ using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
+using ElsaMina.Core.Services.Teams;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
-using ElsaMina.Showdown.Teams;
 
 namespace ElsaMina.Commands.Teams.TeamPreviewOnLink;
 

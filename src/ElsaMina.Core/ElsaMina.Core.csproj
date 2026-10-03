@@ -22,4 +22,13 @@
         <InternalsVisibleTo Include="ElsaMina.UnitTests"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Update="Services\Dex\moves.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Services\Dex\pokedex.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
 </Project>

@@ -1,0 +1,14 @@
+using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.Http;
+using ElsaMina.Core.Services.LanguageModel;
+
+namespace ElsaMina.Core.Services.LanguageModel.Google;
+
+public class GeminiFlashProvider : GeminiLanguageModelProvider
+{
+    public GeminiFlashProvider(IConfiguration configuration, IHttpService httpService) : base(configuration, httpService)
+    {
+    }
+
+    protected override string Model => "gemini-3.6-flash";
+}
