@@ -1,8 +1,9 @@
+using ElsaMina.Cloud.Sheets;
+using ElsaMina.Commands;
 using ElsaMina.Commands.Arcade.Sheets;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Cloud.Sheets;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Arcade.Sheets;
@@ -11,7 +12,7 @@ namespace ElsaMina.UnitTests.Commands.Arcade.Sheets;
 public class ArcadePointsCommandTest
 {
     private ISheetProvider _sheetProvider;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private ISheet _sheet;
     private IContext _context;
     private ArcadePointsCommand _command;
@@ -20,7 +21,7 @@ public class ArcadePointsCommandTest
     public void SetUp()
     {
         _sheetProvider = Substitute.For<ISheetProvider>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _sheet = Substitute.For<ISheet>();
         _context = Substitute.For<IContext>();
 

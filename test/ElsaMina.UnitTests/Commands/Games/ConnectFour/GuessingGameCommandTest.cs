@@ -1,11 +1,10 @@
 using ElsaMina.Commands.Arcade.Events;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Commands.Games.GuessingGame;
 using ElsaMina.Commands.Games.GuessingGame.Trivia;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
@@ -17,7 +16,7 @@ namespace ElsaMina.UnitTests.Commands.Games.ConnectFour;
 public class GuessingGameCommandTest
 {
     private GuessingGameCommand _command;
-    private IDependencyContainerService _dependencyContainerService;
+    private IGuessingGameFactory _guessingGameFactory;
     private IArcadeEventsService _arcadeEventsService;
     private IEventAnnouncer _eventAnnouncer;
     private IContext _context;
@@ -26,13 +25,13 @@ public class GuessingGameCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _guessingGameFactory = Substitute.For<IGuessingGameFactory>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _eventAnnouncer = Substitute.For<IEventAnnouncer>();
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
 
-        _command = new GuessingGameCommand(_dependencyContainerService, _arcadeEventsService, _eventAnnouncer);
+        _command = new GuessingGameCommand(_guessingGameFactory, _arcadeEventsService, _eventAnnouncer);
     }
 
     [Test]
@@ -94,7 +93,7 @@ public class GuessingGameCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldResolveTriviaGame_WhenCommandIsTrivia()
+    public async Task Test_RunAsync_ShouldCreateTriviaGame_WhenCommandIsTrivia()
     {
         // Arrange
         _context.Target.Returns("5");
@@ -107,13 +106,13 @@ public class GuessingGameCommandTest
             Substitute.For<ITemplatesManager>(),
             Substitute.For<IConfiguration>(),
             Substitute.For<IClockService>());
-        _dependencyContainerService.Resolve<TriviaGame>().Returns(triviaGame);
+        _guessingGameFactory.Create("trivia").Returns(triviaGame);
 
         // Act
         await _command.RunAsync(_context);
 
         // Assert
-        _dependencyContainerService.Received(1).Resolve<TriviaGame>();
+        _guessingGameFactory.Received(1).Create("trivia");
         _room.Received(1).Game = triviaGame;
         using (Assert.EnterMultipleScope())
         {

@@ -1,3 +1,4 @@
+using ElsaMina.Commands;
 using ElsaMina.Commands.Misc.Youtube;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
@@ -14,7 +15,7 @@ public class YoutubeVideoOnLinkHandlerTest
 {
     private YoutubeVideoOnLinkHandler _handler;
     private IHttpService _httpService;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private ITemplatesManager _templatesManager;
     private IContext _context;
     private IRoom _room;
@@ -24,7 +25,7 @@ public class YoutubeVideoOnLinkHandlerTest
     {
         var contextFactory = Substitute.For<IContextFactory>();
         _httpService = Substitute.For<IHttpService>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _templatesManager = Substitute.For<ITemplatesManager>();
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
@@ -38,7 +39,7 @@ public class YoutubeVideoOnLinkHandlerTest
     public async Task Test_HandleMessageAsync_ShouldNotProcess_WhenPreviewDisabled()
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(YoutubeRoomParameters.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
             .Returns("false");
 
         // Act
@@ -55,7 +56,7 @@ public class YoutubeVideoOnLinkHandlerTest
     public async Task Test_HandleMessageAsync_ShouldNotProcess_WhenMessageStartsWithShowCommand(string message)
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(YoutubeRoomParameters.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns(message);
 
@@ -74,7 +75,7 @@ public class YoutubeVideoOnLinkHandlerTest
     public async Task Test_HandleMessageAsync_ShouldNotProcess_WhenNoYoutubeLinkFound(string message)
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(YoutubeRoomParameters.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns(message);
 
@@ -92,7 +93,7 @@ public class YoutubeVideoOnLinkHandlerTest
     public async Task Test_HandleMessageAsync_ShouldNotProcess_WhenApiKeyIsEmpty(string emptyApiKey)
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(YoutubeRoomParameters.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         _configuration.YoutubeApiKey.Returns(emptyApiKey);
@@ -109,7 +110,7 @@ public class YoutubeVideoOnLinkHandlerTest
     public async Task Test_HandleMessageAsync_ShouldNotReply_WhenApiReturnsNoItems()
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(YoutubeRoomParameters.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         _configuration.YoutubeApiKey.Returns("fakeApiKey");
@@ -132,7 +133,7 @@ public class YoutubeVideoOnLinkHandlerTest
         string url, string expectedVideoId)
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(YoutubeRoomParameters.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns(url);
         _configuration.YoutubeApiKey.Returns("fakeApiKey");
@@ -174,7 +175,7 @@ public class YoutubeVideoOnLinkHandlerTest
     public async Task Test_HandleMessageAsync_ShouldSendHtmlResponse_WhenVideoInfoFetchedSuccessfully()
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(YoutubeRoomParameters.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         _configuration.YoutubeApiKey.Returns("fakeApiKey");
@@ -227,7 +228,7 @@ public class YoutubeVideoOnLinkHandlerTest
     public async Task Test_HandleMessageAsync_ShouldFallBackToDefaultThumbnail_WhenMediumThumbnailUnavailable()
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(YoutubeRoomParameters.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         _configuration.YoutubeApiKey.Returns("fakeApiKey");
@@ -273,7 +274,7 @@ public class YoutubeVideoOnLinkHandlerTest
     public async Task Test_HandleMessageAsync_ShouldNotReply_WhenExceptionOccurs()
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(YoutubeRoomParameters.ShowYoutubeLinkPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         _configuration.YoutubeApiKey.Returns("fakeApiKey");

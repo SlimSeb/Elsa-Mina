@@ -42,4 +42,10 @@
     <data name="replay_preview_title" xml:space="preserve">
         <value>Replay von {0}</value>
     </data>
+    <data name="parameter_name_is_showing_replays_preview" xml:space="preserve">
+        <value>Replay-Vorschau</value>
+    </data>
+    <data name="parameter_description_is_showing_replays_preview" xml:space="preserve">
+        <value>Zeigt die Spieler und Teams eines Replays an</value>
+    </data>
 </root>

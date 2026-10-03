@@ -1,9 +1,11 @@
+using ElsaMina.Commands;
+using ElsaMina.Commands.Users.Colors;
 using ElsaMina.Commands.Watchlist;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.System;
+using ElsaMina.Core.Services.Templates;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +21,7 @@ public class WatchlistServiceTest
     private IBot _bot;
     private IHttpService _httpService;
     private ISystemService _systemService;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private IUserColorsService _userColorsService;
     private WatchlistService _sut;
 
@@ -37,7 +39,7 @@ public class WatchlistServiceTest
         _bot = Substitute.For<IBot>();
         _httpService = Substitute.For<IHttpService>();
         _systemService = Substitute.For<ISystemService>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _userColorsService = Substitute.For<IUserColorsService>();
 
         // By default, the staff intro timeout never elapses unless the request gets cancelled.

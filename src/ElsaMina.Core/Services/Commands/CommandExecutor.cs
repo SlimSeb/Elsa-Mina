@@ -1,9 +1,8 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.AddedCommands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.FeatureSwitches;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Core.Utils;
@@ -11,10 +10,9 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Services.Commands;
 
-public class CommandExecutor : ICommandExecutor
+public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
-    private readonly IAddedCommandsManager _addedCommandsManager;
+    private readonly ICommandRegistry _commandRegistry;
     private readonly IEnumerable<IDynamicCommandProvider> _dynamicCommandProviders;
     private readonly ITelemetryService _telemetryService;
     private readonly IFeatureSwitchService _featureSwitchService;
@@ -22,14 +20,12 @@ public class CommandExecutor : ICommandExecutor
     private readonly ConcurrentDictionary<Guid, RunningCommand> _runningCommands = new();
 
     public CommandExecutor(
-        IDependencyContainerService dependencyContainerService,
-        IAddedCommandsManager addedCommandsManager,
+        ICommandRegistry commandRegistry,
         IEnumerable<IDynamicCommandProvider> dynamicCommandProviders,
         ITelemetryService telemetryService,
         IFeatureSwitchService featureSwitchService)
     {
-        _dependencyContainerService = dependencyContainerService;
-        _addedCommandsManager = addedCommandsManager;
+        _commandRegistry = commandRegistry;
         _dynamicCommandProviders = dynamicCommandProviders;
         _telemetryService = telemetryService;
         _featureSwitchService = featureSwitchService;
@@ -39,9 +35,7 @@ public class CommandExecutor : ICommandExecutor
 
     public IEnumerable<ICommand> GetAllCommands()
     {
-        return _dependencyContainerService
-            .GetAllNamedRegistrations<ICommand>()
-            .DistinctBy(command => command.Name);
+        return _commandRegistry.Commands.DistinctBy(command => command.Name);
     }
 
     public async Task TryExecuteCommandAsync(
@@ -54,116 +48,117 @@ public class CommandExecutor : ICommandExecutor
             return;
         }
 
-        if (_dependencyContainerService.IsRegisteredWithName<ICommand>(commandName))
+        var command = _commandRegistry.Find(commandName);
+        if (command == null)
         {
-            Log.Information("Executing {0} as a normal command", commandName);
-            var command = _dependencyContainerService.ResolveNamed<ICommand>(commandName);
-
-            if (!CanCommandBeRan(context, command))
-            {
-                return;
-            }
-
-            await RegisterAndRun(command, context, cancellationToken);
+            // Custom commands and suggestions may hit the database: run them in the background like commands.
+            _ = Track(commandName, context, cancellationToken,
+                token => TryExecuteFallbackAsync(commandName, context, token));
             return;
         }
 
-        if (!context.IsPrivateMessage)
+        if (!CanCommandBeRan(context, command))
         {
-            Log.Information("Trying command {0} as a custom command", commandName);
-            if (await _addedCommandsManager.TryExecuteAddedCommand(commandName, context, cancellationToken))
-            {
-                return;
-            }
+            return;
         }
 
-        foreach (var provider in _dynamicCommandProviders)
+        Log.Information("Executing {0} as a normal command", commandName);
+        var execution = Track(command.Name, context, cancellationToken,
+            token => RunCommandAsync(command, context, token));
+
+        if (command.RunsInMessageOrder)
         {
-            if (await provider.TryExecuteAsync(commandName, context))
-            {
-                return;
-            }
+            await execution;
         }
+    }
 
-        Log.Error("Could not find command {0}", commandName);
+    public Task WhenAllCommandsCompletedAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.WhenAll(_runningCommands.Values.Select(running => running.Task)).WaitAsync(cancellationToken);
+    }
 
-        var canRunAutoCorrect =
-            context.IsPrivateMessage ||
-            (await context.Room
-                .GetParameterValueAsync(Parameter.HasCommandAutoCorrect, cancellationToken))
-            .ToBoolean();
-
-        if (canRunAutoCorrect)
-        {
-            ReplyWithAutoCorrect(commandName, context);
-        }
+    public Task OnExitingAsync(CancellationToken cancellationToken)
+    {
+        return WhenAllCommandsCompletedAsync(cancellationToken);
     }
 
     #endregion
 
     #region Execution tracking
 
-    private async Task RegisterAndRun(ICommand command, IContext context, CancellationToken externalToken)
+    private Task Track(string commandName, IContext context, CancellationToken externalToken,
+        Func<CancellationToken, Task> run)
     {
         var executionId = Guid.NewGuid();
-
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(externalToken);
-        var token = linkedCts.Token;
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var task = Task.Run(async () =>
         {
-            using var activity = _telemetryService.StartActivity("command.execute");
-            activity?.SetTag("command.name", command.Name);
-            activity?.SetTag("room", context.RoomId);
-            activity?.SetTag("sender", context.Sender?.UserId);
-
-            var stopwatch = Stopwatch.StartNew();
+            // Wait for the registration below, so the command is always removed after it was added.
+            await started.Task;
             try
             {
-                await command.RunAsync(context, token);
-                _telemetryService.RecordCommandExecuted(command.Name, "ok");
+                await run(linkedCts.Token);
             }
-            catch (OperationCanceledException)
+            catch (Exception exception)
             {
-                _telemetryService.RecordCommandExecuted(command.Name, "cancelled");
-                Log.Information(
-                    "Command {0} ({1}) was cancelled",
-                    command.Name,
-                    executionId);
-            }
-            catch (Exception ex)
-            {
-                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                activity?.AddException(ex);
-                _telemetryService.RecordCommandError(command.Name);
-                Log.Error(
-                    ex,
-                    "Command {0} ({1}) crashed",
-                    command.Name,
-                    executionId);
-                throw;
+                Log.Error(exception, "Command {0} ({1}) crashed with context : {2}", commandName, executionId,
+                    context);
+                await ReportErrorAsync(context, exception);
             }
             finally
             {
-                _telemetryService.RecordCommandDuration(stopwatch.Elapsed.TotalMilliseconds, command.Name);
+                _runningCommands.TryRemove(executionId, out _);
+                linkedCts.Dispose();
             }
         }, CancellationToken.None);
 
-        _runningCommands[executionId] = new RunningCommand(
-            executionId,
-            command.Name,
-            context,
-            linkedCts,
-            task);
+        _runningCommands[executionId] = new RunningCommand(executionId, commandName, context, linkedCts, task);
+        started.SetResult();
+        return task;
+    }
 
+    private async Task RunCommandAsync(ICommand command, IContext context, CancellationToken cancellationToken)
+    {
+        using var activity = _telemetryService.StartActivity("command.execute");
+        activity?.SetTag("command.name", command.Name);
+        activity?.SetTag("room", context.RoomId);
+        activity?.SetTag("sender", context.Sender?.UserId);
+
+        var stopwatch = Stopwatch.StartNew();
         try
         {
-            await task;
+            await command.RunAsync(context, cancellationToken);
+            _telemetryService.RecordCommandExecuted(command.Name, "ok");
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            _telemetryService.RecordCommandExecuted(command.Name, "cancelled");
+            Log.Information("Command {0} was cancelled", command.Name);
+        }
+        catch (Exception exception)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
+            activity?.AddException(exception);
+            _telemetryService.RecordCommandError(command.Name);
+            throw;
         }
         finally
         {
-            _runningCommands.TryRemove(executionId, out _);
-            linkedCts.Dispose();
+            _telemetryService.RecordCommandDuration(stopwatch.Elapsed.TotalMilliseconds, command.Name);
+        }
+    }
+
+    private static async Task ReportErrorAsync(IContext context, Exception exception)
+    {
+        try
+        {
+            await context.HandleErrorAsync(exception);
+        }
+        catch (Exception reportException)
+        {
+            Log.Error(reportException, "Could not report command error to the user");
         }
     }
 
@@ -182,7 +177,32 @@ public class CommandExecutor : ICommandExecutor
 
     #endregion
 
-    #region Auto-correct & guards
+    #region Dynamic commands, auto-correct & guards
+
+    private async Task TryExecuteFallbackAsync(string commandName, IContext context,
+        CancellationToken cancellationToken)
+    {
+        foreach (var provider in _dynamicCommandProviders)
+        {
+            if (await provider.TryExecuteAsync(commandName, context, cancellationToken))
+            {
+                return;
+            }
+        }
+
+        Log.Error("Could not find command {0}", commandName);
+
+        var canRunAutoCorrect =
+            context.IsPrivateMessage ||
+            (await context.Room
+                .GetParameterValueAsync(Parameter.HasCommandAutoCorrect, cancellationToken))
+            .ToBoolean();
+
+        if (canRunAutoCorrect)
+        {
+            ReplyWithAutoCorrect(commandName, context);
+        }
+    }
 
     private void ReplyWithAutoCorrect(string commandName, IContext context)
     {

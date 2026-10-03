@@ -55,6 +55,9 @@ public partial class CommandModule : Module
             builder.RegisterInstance(resourceManager).As<ResourceManager>().SingleInstance();
         }
 
+        // RoomsModule registers the custom commands provider: it comes first so custom commands keep priority over
+        // the other dynamic command providers, which are tried in registration order.
+        builder.RegisterModule<RoomsModule>();
         builder.RegisterModule<AdminModule>();
         builder.RegisterModule<AiModule>();
         builder.RegisterModule<ArcadeModule>();
@@ -68,7 +71,6 @@ public partial class CommandModule : Module
         builder.RegisterModule<TeamsModule>();
         builder.RegisterModule<TournamentsModule>();
         builder.RegisterModule<UsersModule>();
-        builder.RegisterModule<RoomsModule>();
     }
 
     [GeneratedRegex(@"^(.+\.Resources\.\w+?)\.[\w-]+\.resources$", RegexOptions.Compiled)]

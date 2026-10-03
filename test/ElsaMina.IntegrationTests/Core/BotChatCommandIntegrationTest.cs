@@ -1,20 +1,18 @@
 using Autofac;
+using ElsaMina.Commands.CustomCommands;
 using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Handlers.DefaultHandlers;
-using ElsaMina.Core.Services.AddedCommands;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.Dispatch;
+using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Lifecycle;
-using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.FeatureSwitches;
-using ElsaMina.Core.Services.Start;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Core.Services.UserDetails;
@@ -32,7 +30,6 @@ public class BotChatCommandIntegrationTest
     private IRoom _room;
     private IRoomsManager _roomsManager;
     private IConfiguration _configuration;
-    private DependencyContainerService _dependencyContainerService;
     private IContainer _container;
     private Bot _bot;
 
@@ -43,13 +40,10 @@ public class BotChatCommandIntegrationTest
         var clockService = Substitute.For<IClockService>();
         _roomsManager = Substitute.For<IRoomsManager>();
         var systemService = Substitute.For<ISystemService>();
-        var startManager = Substitute.For<IStartManager>();
         _configuration = Substitute.For<IConfiguration>();
         var resourcesService = Substitute.For<IResourcesService>();
         var userDetailsManager = Substitute.For<IUserDetailsManager>();
         var addedCommandsManager = Substitute.For<IAddedCommandsManager>();
-        var playTimeUpdateService = Substitute.For<IPlayTimeUpdateService>();
-        _dependencyContainerService = new DependencyContainerService();
 
         clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
         _configuration.Trigger.Returns("!");
@@ -80,13 +74,16 @@ public class BotChatCommandIntegrationTest
         _roomsManager.GetRoom(ROOM_ID).Returns(_room);
 
         var telemetry = Substitute.For<ITelemetryService>();
-        var handlerManager = new HandlerManager(_dependencyContainerService, telemetry);
-        _bot = new Bot(_client, clockService, _roomsManager, handlerManager,
-            systemService, new BotLifecycleService(startManager, playTimeUpdateService), telemetry);
 
         var builder = new ContainerBuilder();
-        builder.RegisterInstance(_dependencyContainerService).As<IDependencyContainerService>();
-        builder.RegisterInstance(_bot).As<IBot>();
+        builder.RegisterInstance(_client).As<IClient>();
+        builder.RegisterInstance(clockService).As<IClockService>();
+        builder.RegisterInstance(systemService).As<ISystemService>();
+        builder.RegisterInstance(Substitute.For<IBotLifecycleService>()).As<IBotLifecycleService>();
+        builder.RegisterType<OutgoingMessageQueue>().As<IOutgoingMessageQueue>().SingleInstance();
+        builder.RegisterType<HandlerManager>().As<IHandlerManager>().SingleInstance();
+        builder.RegisterType<CommandRegistry>().As<ICommandRegistry>().SingleInstance();
+        builder.RegisterType<Bot>().As<IBot>().AsSelf().SingleInstance();
         builder.RegisterInstance(_roomsManager).As<IRoomsManager>();
         builder.RegisterInstance(_configuration).As<IConfiguration>();
         builder.RegisterInstance(resourcesService).As<IResourcesService>();
@@ -102,7 +99,8 @@ public class BotChatCommandIntegrationTest
         builder.RegisterCommand<EchoCommand>();
 
         _container = builder.Build();
-        _dependencyContainerService.SetContainer(_container);
+        _bot = _container.Resolve<Bot>();
+        _container.Resolve<IHandlerManager>().Initialize();
     }
 
     [TearDown]

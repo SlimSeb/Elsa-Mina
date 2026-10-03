@@ -35,37 +35,52 @@ dotnet ef migrations remove --project src/ElsaMina.DataAccess
 
 | Project | Role |
 |---|---|
-| `ElsaMina.Console` | Entry point: wires DI, reads `config.json`, starts the bot |
-| `ElsaMina.Core` | Bot runtime, handlers, services, context system |
-| `ElsaMina.Commands` | All command and handler implementations |
-| `ElsaMina.DataAccess` | EF Core DbContext, models, migrations (PostgreSQL) |
+| `ElsaMina.Console` | Composition root: reads `config.json` into `Configuration`, registers every module, runs the message pump and shutdown |
+| `ElsaMina.Core` | Bot runtime: dispatch, handlers, commands, contexts, rooms, lifecycle, templates, plus shared services (dex, Smogon usage, team packing, language models). References only `Logging` |
+| `ElsaMina.Commands` | Every feature: commands, feature handlers and feature services |
 | `ElsaMina.Battles` | Autonomous battle bot: protocol parsing, simulation, and decision strategies |
+| `ElsaMina.DataAccess` | EF Core DbContext, models, migrations (PostgreSQL), and Core's persistence ports (`EfRoomParameterRepository`) |
 | `ElsaMina.Cloud` | S3 file upload, Google Drive, and Google Sheets integration |
 | `ElsaMina.Logging` | Thin logging abstraction over Serilog |
+
+**Dependency rules** (enforced by `test/ElsaMina.UnitTests/Architecture/ProjectDependenciesTest.cs`):
+- Core knows no feature, infrastructure or host project, and no EF/Google/AWS package. When Core needs something a feature or infrastructure provides, it defines an interface (a port) and the other project implements it.
+- Feature projects (`Commands`, `Battles`) never reference each other; code both need goes to Core.
+- Only `Console` references everything.
 
 ### Message Flow
 
 ```
-WebSocket → IClient.MessageReceived
-  → Bot.HandleReceivedMessageAsync (splits lines, tracks current room)
-    → HandlerManager.HandleMessageAsync (runs all IHandler in parallel)
-      → ChatMessageCommandHandler / PrivateMessageCommandHandler
-        → CommandExecutor → ICommand.RunAsync(IContext)
+WebSocket → IClient.Messages
+  → BotHost message pump (reads frames in order)
+    → IncomingMessageDispatcher (one ordered lane per room, rooms run concurrently)
+      → Bot.HandleReceivedMessageAsync (splits lines, room from the >room header, "lobby" when absent)
+        → HandlerManager.HandleMessageAsync (runs the matching IHandler concurrently for that line)
+          → ChatMessageCommandHandler / PrivateMessageCommandHandler
+            → CommandExecutor → ICommand.RunAsync(IContext), in the background
+Replies → Bot.Send → OutgoingMessageQueue (one queue, messages one cooldown apart) → IClient
 ```
+
+- A room's frames are handled one after the other, in arrival order. Never make a handler wait for a message that arrives in the **same** room: it is queued behind the handler and the wait only ends at its timeout. Waiting for a global message (`queryresponse`, `pm`) is fine.
+- Commands run in the background so a slow command never holds up its room. Commands that change in-memory state shared with the room's other messages (games) set `RunsInMessageOrder` and run in order instead.
+- Frames without a `>room` header are the lobby's or global (Showdown only omits the header for those).
 
 ### Handler System
 
 - All handlers implement `IHandler` / extend `Handler`.
-- `HandlerManager` resolves all `IHandler` instances from the DI container and runs them concurrently for every incoming message.
-- Each handler filters on the message parts it cares about (e.g., `parts[1] == "c:"` for chat).
-- Handlers are registered with `builder.RegisterHandler<T>()` in `CoreModule.cs` (core) or `CommandModule.cs` (feature).
+- `HandlerManager` gets every registered `IHandler` once, at startup, and runs the ones whose `HandledMessageTypes` match the line. Build the `HandledMessageTypes` set once (`{ get; } = ...`), not per call.
+- Each handler filters on the message parts it cares about (e.g., `parts[1] == "c:"` for chat). Message handlers built on `MessageHandler` share one `IContext` per line.
+- Register with `builder.RegisterHandler<T>()` in `CoreModule.cs` (runtime) or the feature's module under `ElsaMina.Commands/Modules/`.
 
 ### Command System
 
 - Commands extend `Command` and are decorated with `[NamedCommand("name", Aliases = ["alias"])]`.
-- Key overridable properties: `RequiredRank`, `IsAllowedInPrivateMessage`, `IsWhitelistOnly`, `IsPrivateMessageOnly`, `HelpMessageKey`, `RoomRestriction`.
+- Key overridable properties: `RequiredRank`, `IsAllowedInPrivateMessage`, `IsWhitelistOnly`, `IsPrivateMessageOnly`, `HelpMessageKey`, `RoomRestriction`, `RunsInMessageOrder`.
+- Commands are singletons indexed by `ICommandRegistry` under their name and aliases: never keep per-call state in fields.
+- `Category` (feature switches, command list) comes from the namespace (`ElsaMina.Commands.{Feature}`, or the project name such as `Battles`), or from `[NamedCommand(Category = ...)]`.
+- Failures are reported to the user by `CommandExecutor` (`context.HandleErrorAsync`); commands do not need to catch everything.
+- Names that are not registered commands go to the `IDynamicCommandProvider`s (custom commands, tour configs), tried in registration order.
 - `context.Target` holds the argument string (everything after the command trigger + name).
-- Commands are registered with `builder.RegisterCommand<T>()` in `CommandModule.cs`.
 
 ### Context System
 
@@ -81,12 +96,19 @@ Two concrete implementations: `RoomContext` and `PmContext`.
 
 ### Dependency Injection
 
-Uses Autofac. Three modules, all registered in `Program.cs`:
-- `CoreModule` - all core services (bot, client, rooms, handlers, etc.)
-- `CommandModule` - all commands, feature-level handlers, and feature services
-- `BattlesModule` - battle service, message parser, decision strategies, and the battle commands/handler
+Uses Autofac. `ContainerBootstrapper` (Console) registers the modules: `DataAccessModule`, `CloudModule`, `CoreModule`, `BattlesModule`, `CommandModule` (which registers the feature modules in `ElsaMina.Commands/Modules/`).
 
-`DependencyContainerService` wraps the Autofac container and is used for late-bound resolution (e.g., `HandlerManager` resolves handlers after startup).
+- Inject dependencies through constructors only; there is no service locator. To create objects on demand inject `Func<T>` (games: `Func<WordleGame>`), and to break a construction cycle inject `Lazy<T>`.
+- Register objects created on demand that the container should not keep alive (games) with `.ExternallyOwned()`.
+- `test/ElsaMina.UnitTests/Startup/ContainerBootstrapperTest.cs` builds the real container and resolves every handler, command and lifecycle participant: run it after changing registrations.
+
+### Lifecycle
+
+Services with work to do when the bot starts (load data, start a polling loop) or stops (flush pending writes) implement `IBotLifecycleParticipant` and are registered with `.As<IBotLifecycleParticipant>()`. The bot runs every participant's `OnStartingAsync` before connecting and awaits every `OnExitingAsync` on shutdown (SIGTERM or Ctrl+C), bounded by a timeout. Do not use Autofac `AutoActivate`/`OnActivating` to start work.
+
+### Configuration
+
+`config.json` is read into `Configuration` (Console), which implements each project's settings interface: `IConfiguration` (Core: connection, identity, rooms, language model keys), `ICommandsConfiguration` (feature API keys and timings), `IDatabaseConfiguration`, and `IS3CredentialsProvider` / `IGoogleServiceAccountConfiguration` (Cloud). A new setting goes on the interface of the project that uses it, and on `Configuration`.
 
 ### Localization
 
@@ -94,12 +116,12 @@ String resources are split by feature. `IResourcesService` aggregates all `Resou
 
 | Location | Pattern | Used for |
 |---|---|---|
-| `src/ElsaMina.Core/Resources/Resources.{locale}.resx` | Core infrastructure strings: errors, room params, core handlers |
-| `src/ElsaMina.Commands/{Feature}/Resources/{Feature}.{locale}.resx` | Feature strings for that feature's commands and handlers |
+| `src/ElsaMina.Core/Resources/Resources.{locale}.resx` | Core runtime strings: errors, Core's room parameters, core handlers |
+| `src/ElsaMina.Commands/{Feature}/Resources/{Feature}.{locale}.resx` | Feature strings for that feature's commands, handlers and room parameters |
 
 Supported locales: `en-US`, `fr-FR`, `es-ES`, `it-IT`, `pt-BR`, `de-DE`.
 
-**Rule:** when adding strings for a command, add keys to `src/ElsaMina.Commands/{Feature}/Resources/{Feature}.{locale}.resx` for all 6 locales. Each feature's `ResourceManager` is registered in `CommandModule.cs` via the `FeatureResources` helper. Room locale is a configurable `Parameter`.
+**Rule:** when adding strings for a command, add keys to `src/ElsaMina.Commands/{Feature}/Resources/{Feature}.{locale}.resx` for all 6 locales. `CommandModule` discovers and registers every feature's `ResourceManager`. Room locale is a configurable `Parameter`.
 
 ### HTML Templates
 
@@ -107,23 +129,25 @@ Rich HTML responses use Razor components (`.razor` files) compiled at build time
 
 ### Room Parameters
 
-Rooms have configurable parameters (defined in the `Parameter` enum: `Locale`, `TimeZone`, `HasCommandAutoCorrect`, `ShowErrorMessages`, `ShowTeamLinksPreview`, `ShowReplaysPreview`). Values are stored via `IRoomParameterStore` / `EfRoomParameterStore`.
+Rooms have configurable parameters. A `Parameter` is identified by the short key its value is stored under (`"loc"`, `"bck"`...) and has a readable name staff can type in the room configuration command. Core defines `Parameter.Locale`, `TimeZone`, `HasCommandAutoCorrect` and `ShowErrorMessages`; each feature defines its own in a `{Feature}RoomParameters` class implementing `IRoomParameterProvider` (e.g. `EconomyRoomParameters.BucksEnabled`), registered with `.As<IRoomParameterProvider>()`. Never change an existing identifier: stored values would be orphaned. Values go through `IRoomParameterStore` (`RoomParameterStore`), persisted by `IRoomParameterRepository` (`EfRoomParameterRepository` in DataAccess).
 
 ### Async Query Pattern
 
-`PendingQueryRequestsManager<TKey, TResult>` is used when the bot needs to send a query and await a server response asynchronously (fire-and-wait pattern with timeout).
+`PendingQueryRequestsManager<TKey, TResult>` is used when the bot needs to send a query and await a server response asynchronously (fire-and-wait pattern with timeout). Await it from a command or from a handler waiting on a global response, never from a handler waiting on a message of its own room (see Message Flow).
 
 ## Adding a New Command
 
 1. Create a class in the relevant subdirectory of `src/ElsaMina.Commands/`.
 2. Decorate with `[NamedCommand("commandname")]` (add aliases as needed).
-3. Extend `Command`, override `RequiredRank` (default is `Admin`), and implement `RunAsync`.
-4. Register in `CommandModule.cs`: `builder.RegisterCommand<MyCommand>();`
+3. Extend `Command` (or `GameCommand` for a command that changes a game's state), override `RequiredRank` (default is `Admin`), and implement `RunAsync`.
+4. Register in the feature's module under `ElsaMina.Commands/Modules/`: `builder.RegisterCommand<MyCommand>();`
 5. Add localization keys to `src/ElsaMina.Commands/{Feature}/Resources/{Feature}.{locale}.resx` for all 6 locales (`en-US`, `fr-FR`, `es-ES`, `it-IT`, `pt-BR`, `de-DE`).
 
 ## Adding a New Game
 
-When implementing a new game, the command that starts it must check whether games are muted in the room before starting. Inject `IArcadeEventsService` and, for room (non-PM) starts, bail out early when games are muted:
+- Commands that start, play or end the game extend `GameCommand`, so they run in order with the room's other messages. Read-only commands (leaderboards) extend `Command`. A game command must not wait for long inline (a countdown, an animation): start that work without awaiting it.
+- Create the game through an injected `Func<MyGame>` and register it with `builder.RegisterType<MyGame>().AsSelf().ExternallyOwned();`.
+- The command that starts it must check whether games are muted in the room before starting. Inject `IArcadeEventsService` and, for room (non-PM) starts, bail out early when games are muted:
 
 ```csharp
 if (_arcadeEventsService.AreGamesMuted(context.RoomId))
@@ -139,7 +163,7 @@ The `games_muted_event` key already exists in the `Games` feature resx files for
 
 1. Create a class extending `Handler` in `src/ElsaMina.Commands/` or `src/ElsaMina.Core/Handlers/`.
 2. Implement `HandleReceivedMessageAsync(string[] parts, string roomId, CancellationToken)`.
-3. Register with `builder.RegisterHandler<MyHandler>()` in `CommandModule.cs` or `CoreModule.cs`.
+3. Register with `builder.RegisterHandler<MyHandler>()` in the feature's module or `CoreModule.cs`.
 
 ## Code Style Conventions
 

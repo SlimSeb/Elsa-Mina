@@ -15,9 +15,9 @@ public class TwitterApiClient : ITwitterApiClient
             RegexOptions.Compiled | RegexOptions.IgnoreCase, Constants.REGEX_MATCH_TIMEOUT);
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
 
-    public TwitterApiClient(IHttpService httpService, IConfiguration configuration)
+    public TwitterApiClient(IHttpService httpService, ICommandsConfiguration configuration)
     {
         _httpService = httpService;
         _configuration = configuration;

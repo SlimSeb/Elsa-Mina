@@ -42,7 +42,7 @@ public class KlipyGifCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var isEnabled = (await context.Room.GetParameterValueAsync(Parameter.KlipyGifEnabled,
+        var isEnabled = (await context.Room.GetParameterValueAsync(KlipyRoomParameters.KlipyGifEnabled,
             cancellationToken)).ToBoolean();
         if (!isEnabled)
         {

@@ -1,9 +1,10 @@
+using System.Text.Json;
+using ElsaMina.Cloud;
+using ElsaMina.Commands;
 using ElsaMina.Commands.Ai.TextToSpeech;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
-using ElsaMina.Cloud;
-using System.Text.Json;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Ai.TextToSpeech;
@@ -14,7 +15,7 @@ public class ElevenLabsAiTextToSpeechProviderTest
         JsonSerializer.Deserialize<ElevenLabsRequestDto>(
             request.Body.CreateContent().ReadAsStringAsync().GetAwaiter().GetResult());
 
-    private IConfiguration _mockConfiguration;
+    private ICommandsConfiguration _mockConfiguration;
     private IHttpService _mockHttpService;
     private IFileSharingService _mockFileSharingService;
     private IClockService _mockClockService;
@@ -23,7 +24,7 @@ public class ElevenLabsAiTextToSpeechProviderTest
     [SetUp]
     public void SetUp()
     {
-        _mockConfiguration = Substitute.For<IConfiguration>();
+        _mockConfiguration = Substitute.For<ICommandsConfiguration>();
         _mockHttpService = Substitute.For<IHttpService>();
         _mockFileSharingService = Substitute.For<IFileSharingService>();
         _mockClockService = Substitute.For<IClockService>();

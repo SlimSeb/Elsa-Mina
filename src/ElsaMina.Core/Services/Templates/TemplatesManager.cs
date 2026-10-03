@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
 using Microsoft.AspNetCore.Components;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ElsaMina.Core.Services.Templates;
 
-public class TemplatesManager : ITemplatesManager
+public class TemplatesManager : ITemplatesManager, IBotLifecycleParticipant
 {
     private const string TEMPLATES_NAMESPACE = "ElsaMina.Templates";
 
@@ -108,5 +109,11 @@ public class TemplatesManager : ITemplatesManager
         return relativeNamespace.Length == 0
             ? templateType.Name
             : $"{relativeNamespace.Replace('.', '/')}/{templateType.Name}";
+    }
+
+    public Task OnStartingAsync(CancellationToken cancellationToken)
+    {
+        LoadTemplates();
+        return Task.CompletedTask;
     }
 }

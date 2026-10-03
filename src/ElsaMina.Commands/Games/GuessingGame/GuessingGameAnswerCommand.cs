@@ -6,7 +6,7 @@ using ElsaMina.Core.Utils;
 namespace ElsaMina.Commands.Games.GuessingGame;
 
 [NamedCommand("answer", Aliases = ["guess", "guessinggameanswer"])]
-public class GuessingGameAnswerCommand : Command
+public class GuessingGameAnswerCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

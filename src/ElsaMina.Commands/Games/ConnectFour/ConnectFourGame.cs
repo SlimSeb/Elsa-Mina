@@ -146,7 +146,7 @@ public class ConnectFourGame : Game, IConnectFourGame
 
         if (i < 0)
         {
-            return; // La colonne est remplie
+            return; // The column is full
         }
 
         Grid[i, playedColumnIndex] = CurrentPlayerSymbol;

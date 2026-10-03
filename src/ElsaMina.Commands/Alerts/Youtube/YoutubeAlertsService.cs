@@ -71,7 +71,7 @@ public class YoutubeAlertsService : PollingAlertsService, IYoutubeAlertsService
     {
         var recentVideoIds = await _youtubeApiClient.GetRecentVideoIdsAsync(channelId, cancellationToken);
 
-        // Première fois qu'on voit la chaîne : on mémorise les vidéos existantes sans les annoncer
+        // First time this channel is seen: remember its existing videos without announcing them
         var isPriming = !_recentVideoIdsByChannel.TryGetValue(channelId, out var previousVideoIds);
         _recentVideoIdsByChannel[channelId] = recentVideoIds;
         if (previousVideoIds != null)
@@ -93,7 +93,7 @@ public class YoutubeAlertsService : PollingAlertsService, IYoutubeAlertsService
         var videos = await _youtubeApiClient.GetVideosAsync(videoIdsToCheck, cancellationToken);
         foreach (var videoId in videoIdsToCheck.Except(videos.Select(video => video.Id)))
         {
-            // Vidéo privée ou supprimée
+            // Private or deleted video
             _videoStates[videoId] = YoutubeVideoState.Handled;
         }
 

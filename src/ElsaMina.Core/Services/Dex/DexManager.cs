@@ -1,10 +1,11 @@
-using ElsaMina.Core.Services.Http;
-using ElsaMina.Logging;
 using System.Text.Json;
+using ElsaMina.Core.Services.Http;
+using ElsaMina.Core.Services.Lifecycle;
+using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Services.Dex;
 
-public class DexManager : IDexManager
+public class DexManager : IDexManager, IBotLifecycleParticipant
 {
     private const string DEX_URL = "https://tyradex.app/api/v1/pokemon";
     
@@ -40,9 +41,11 @@ public class DexManager : IDexManager
 
     private static async Task<T> ReadJsonFileAsync<T>(string filename, CancellationToken cancellationToken)
     {
-        await using var stream = File.OpenRead(Path.Join("Services", "Dex", filename));
+        await using var stream = File.OpenRead(Path.Join(AppContext.BaseDirectory, "Services", "Dex", filename));
         using var reader = new StreamReader(stream);
         var json = await reader.ReadToEndAsync(cancellationToken);
         return JsonSerializer.Deserialize<T>(json, JSON_OPTIONS);
     }
+
+    public Task OnStartingAsync(CancellationToken cancellationToken) => LoadDexAsync(cancellationToken);
 }

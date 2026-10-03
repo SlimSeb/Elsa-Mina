@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.FloodIt;
 
 [NamedCommand("ficolor")]
-public class FloodItColorCommand : Command
+public class FloodItColorCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly IFloodItGameManager _gameManager;

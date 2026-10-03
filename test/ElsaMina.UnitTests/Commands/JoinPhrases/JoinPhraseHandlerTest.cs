@@ -1,7 +1,7 @@
 using ElsaMina.Commands.JoinPhrases;
+using ElsaMina.Commands.Users.RoomUserData;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Clock;
-using ElsaMina.Core.Services.RoomUserData;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.JoinPhrases;

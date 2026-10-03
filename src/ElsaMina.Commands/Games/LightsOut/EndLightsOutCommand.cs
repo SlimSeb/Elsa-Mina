@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.LightsOut;
 
 [NamedCommand("loend", Aliases = ["end-lightsout"])]
-public class EndLightsOutCommand : Command
+public class EndLightsOutCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly ILightsOutGameManager _gameManager;

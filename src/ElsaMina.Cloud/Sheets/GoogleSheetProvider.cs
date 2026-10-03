@@ -58,7 +58,7 @@ public sealed class GoogleSheetProvider : ISheetProvider
                 if (r < values.Count && c < values[r].Count)
                     row.Add(values[r][c]?.ToString() ?? string.Empty);
                 else
-                    row.Add(string.Empty); // padding des cellules manquantes
+                    row.Add(string.Empty); // pad the missing cells
             }
 
             rows.Add(row);
@@ -81,7 +81,7 @@ public sealed class GoogleSheetProvider : ISheetProvider
     }
 
     /// <summary>
-    /// Récupérer l'ID d'une spreadsheet via son nom Google Drive
+    /// Gets a spreadsheet's ID from its Google Drive name
     /// </summary>
     private async Task<string> FindSpreadsheetIdAsync(string name, CancellationToken cancellationToken = default)
     {

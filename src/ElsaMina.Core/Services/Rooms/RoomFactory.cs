@@ -1,28 +1,24 @@
 using System.Globalization;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms.Parameters;
-using ElsaMina.DataAccess;
-using ElsaMina.DataAccess.Models;
 using ElsaMina.Logging;
-using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Core.Services.Rooms;
 
 public class RoomFactory : IRoomFactory
 {
     private readonly IConfiguration _configuration;
-    private readonly IBotDbContextFactory _dbContextFactory;
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly IRoomParameterRepository _roomParameterRepository;
+    private readonly Func<IRoomParameterStore> _parameterStoreFactory;
 
     public RoomFactory(
         IConfiguration configuration,
-        IBotDbContextFactory dbContextFactory,
-        IDependencyContainerService dependencyContainerService)
+        IRoomParameterRepository roomParameterRepository,
+        Func<IRoomParameterStore> parameterStoreFactory)
     {
         _configuration = configuration;
-        _dbContextFactory = dbContextFactory;
-        _dependencyContainerService = dependencyContainerService;
+        _roomParameterRepository = roomParameterRepository;
+        _parameterStoreFactory = parameterStoreFactory;
     }
 
     public async Task<IRoom> CreateRoomAsync(string roomId, string[] lines,
@@ -39,10 +35,11 @@ public class RoomFactory : IRoomFactory
 
         Log.Information("Initializing {0}...", roomTitle);
 
-        var dbRoomEntity = await InitializeOrUpdateRoomEntity(roomId, roomTitle, cancellationToken);
+        var storedValues =
+            await _roomParameterRepository.LoadOrCreateRoomAsync(roomId, roomTitle, cancellationToken);
 
-        var parameterStore = _dependencyContainerService.Resolve<IRoomParameterStore>();
-        parameterStore.InitializeFromRoomEntity(dbRoomEntity);
+        var parameterStore = _parameterStoreFactory();
+        parameterStore.Initialize(roomId, storedValues);
         var localeCode = await parameterStore.GetValueAsync(Parameter.Locale, cancellationToken);
         var timeZoneId = await parameterStore.GetValueAsync(Parameter.TimeZone, cancellationToken);
         var hasTimeZone = TimeZoneInfo.TryFindSystemTimeZoneById(timeZoneId, out var timeZone);
@@ -59,30 +56,5 @@ public class RoomFactory : IRoomFactory
         Log.Information("Initializing {0} : DONE", roomTitle);
 
         return room;
-    }
-
-    private async Task<SavedRoom> InitializeOrUpdateRoomEntity(string roomId, string roomTitle,
-        CancellationToken cancellationToken)
-    {
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
-        var dbRoom = await dbContext
-            .RoomInfo
-            .Include(savedRoom => savedRoom.ParameterValues)
-            .FirstOrDefaultAsync(savedRoom => savedRoom.Id == roomId, cancellationToken);
-
-        if (dbRoom == null)
-        {
-            Log.Information("Could not find room parameters, inserting...");
-            dbRoom = new SavedRoom { Id = roomId, Title = roomTitle };
-            await dbContext.RoomInfo.AddAsync(dbRoom, cancellationToken);
-            Log.Information("Inserted room parameters for {0}", roomId);
-        }
-        else
-        {
-            dbRoom.Title = roomTitle;
-        }
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-        return dbRoom;
     }
 }

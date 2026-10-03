@@ -1,21 +1,20 @@
-﻿using ElsaMina.Core.Contexts;
+﻿using ElsaMina.Commands.EventAnnounces;
+using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.ConnectFour;
 
 [NamedCommand("connectfour", Aliases = ["connect-four", "c4", "connect4"])]
-public class CreateConnectFourCommand : Command
+public class CreateConnectFourCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<ConnectFourGame> _gameFactory;
     private readonly IEventAnnouncer _eventAnnouncer;
 
-    public CreateConnectFourCommand(IDependencyContainerService dependencyContainerService,
+    public CreateConnectFourCommand(Func<ConnectFourGame> gameFactory,
         IEventAnnouncer eventAnnouncer)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _eventAnnouncer = eventAnnouncer;
     }
 
@@ -30,7 +29,7 @@ public class CreateConnectFourCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<ConnectFourGame>();
+        var game = _gameFactory();
         game.Context = context;
         room.Game = game;
 

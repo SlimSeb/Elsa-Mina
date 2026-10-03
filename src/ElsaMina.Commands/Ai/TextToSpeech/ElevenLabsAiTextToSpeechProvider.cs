@@ -1,8 +1,8 @@
+using ElsaMina.Cloud;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
-using ElsaMina.Cloud;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Ai.TextToSpeech;
@@ -13,12 +13,12 @@ public class ElevenLabsAiTextToSpeechProvider : IAiTextToSpeechProvider
     private const string MALE_VOICE_ID = "Qrl71rx6Yg8RvyPYRGCQ";
     private const string ELEVEN_LABS_TTS_API_URL = "https://api.elevenlabs.io/v1/text-to-speech/{0}";
 
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly IHttpService _httpService;
     private readonly IFileSharingService _fileSharingService;
     private readonly IClockService _clockService;
 
-    public ElevenLabsAiTextToSpeechProvider(IConfiguration configuration,
+    public ElevenLabsAiTextToSpeechProvider(ICommandsConfiguration configuration,
         IHttpService httpService,
         IFileSharingService fileSharingService,
         IClockService clockService)

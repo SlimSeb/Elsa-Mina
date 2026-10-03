@@ -1,27 +1,26 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.Wordle;
 
 [NamedCommand("wordle", Aliases = ["wl"])]
-public class StartWordleCommand : Command
+public class StartWordleCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<WordleGame> _gameFactory;
     private readonly IRoomsManager _roomsManager;
     private readonly IWordleGameManager _gameManager;
     private readonly IWordleDailyService _dailyService;
     private readonly IArcadeEventsService _arcadeEventsService;
 
-    public StartWordleCommand(IDependencyContainerService dependencyContainerService,
+    public StartWordleCommand(Func<WordleGame> gameFactory,
         IRoomsManager roomsManager,
         IWordleGameManager gameManager,
         IWordleDailyService dailyService,
         IArcadeEventsService arcadeEventsService)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _roomsManager = roomsManager;
         _gameManager = gameManager;
         _dailyService = dailyService;
@@ -84,7 +83,7 @@ public class StartWordleCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<WordleGame>();
+        var game = _gameFactory();
         game.Context = context;
         game.Owner = context.Sender;
         game.IsPrivateMode = isPrivateMode;

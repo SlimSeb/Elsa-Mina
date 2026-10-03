@@ -315,4 +315,10 @@
   <data name="tournament_winner_prize" xml:space="preserve">
     <value>{0} a gagné {1} bucks en remportant le tournoi !</value>
   </data>
+    <data name="parameter_name_tournament_betting_enabled" xml:space="preserve">
+        <value>Paris sur les tournois</value>
+    </data>
+    <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
+        <value>Activer ou désactiver les paris sur les tournois pour cette room.</value>
+    </data>
 </root>

@@ -1,18 +1,17 @@
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.RockPaperScissors;
 
 [NamedCommand("rps", Aliases = ["rockpaperscissors"])]
-public class StartRpsCommand : Command
+public class StartRpsCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<RpsGame> _gameFactory;
 
-    public StartRpsCommand(IDependencyContainerService dependencyContainerService)
+    public StartRpsCommand(Func<RpsGame> gameFactory)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
     }
 
     public override Rank RequiredRank => Rank.Voiced;
@@ -32,7 +31,7 @@ public class StartRpsCommand : Command
             return Task.CompletedTask;
         }
 
-        var game = _dependencyContainerService.Resolve<RpsGame>();
+        var game = _gameFactory();
         game.Context = context;
         context.Room.Game = game;
 

@@ -1,5 +1,6 @@
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
+using ElsaMina.Core.Services.LanguageModel;
 
 namespace ElsaMina.Core.Services.LanguageModel.Mistral;
 

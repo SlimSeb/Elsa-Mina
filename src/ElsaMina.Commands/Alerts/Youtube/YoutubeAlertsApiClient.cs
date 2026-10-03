@@ -25,9 +25,9 @@ public class YoutubeAlertsApiClient : IYoutubeAlertsApiClient
             RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
 
-    public YoutubeAlertsApiClient(IHttpService httpService, IConfiguration configuration)
+    public YoutubeAlertsApiClient(IHttpService httpService, ICommandsConfiguration configuration)
     {
         _httpService = httpService;
         _configuration = configuration;
@@ -75,7 +75,7 @@ public class YoutubeAlertsApiClient : IYoutubeAlertsApiClient
     public async Task<IReadOnlyList<string>> GetRecentVideoIdsAsync(string channelId,
         CancellationToken cancellationToken = default)
     {
-        // Le flux RSS de la chaîne ne consomme pas de quota de l'API YouTube
+        // The channel's RSS feed does not use any YouTube API quota
         var response = await _httpService.SendForStringAsync(
             HttpRequest.Get(FEED_URL).WithQueryParameter("channel_id", channelId), cancellationToken);
         var document = XDocument.Parse(response.Data ?? string.Empty);

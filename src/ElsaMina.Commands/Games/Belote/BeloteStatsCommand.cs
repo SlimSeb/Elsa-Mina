@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ElsaMina.Commands.Games.Belote;
 
 [NamedCommand("belotestats", Aliases = ["belotescore"])]
-public class BeloteStatsCommand : Command
+public class BeloteStatsCommand : GameCommand
 {
     private readonly IBotDbContextFactory _dbContextFactory;
 

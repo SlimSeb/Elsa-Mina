@@ -1,10 +1,11 @@
 using System.Globalization;
+using ElsaMina.Commands.Economy;
 using ElsaMina.Commands.Profile;
 using ElsaMina.Commands.Tournaments.Handlers;
+using ElsaMina.Commands.Users.RoomUserData;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Resources;
-using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.DataAccess;
@@ -60,7 +61,7 @@ public class TourEndHandlerTest
             .Returns("{0} won {1} bucks");
         // Bucks economy is required for tournament prizes; enable it for every room by default.
         var room = Substitute.For<IRoom>();
-        room.GetParameterValueAsync(Parameter.BucksEnabled, Arg.Any<CancellationToken>())
+        room.GetParameterValueAsync(EconomyRoomParameters.BucksEnabled, Arg.Any<CancellationToken>())
             .Returns("true");
         _roomsManager.GetRoom(Arg.Any<string>()).Returns(room);
 
@@ -374,7 +375,7 @@ public class TourEndHandlerTest
     public async Task Test_HandleReceivedMessageAsync_ShouldNotAwardPrize_WhenBucksAreDisabled()
     {
         var room = Substitute.For<IRoom>();
-        room.GetParameterValueAsync(Parameter.BucksEnabled, Arg.Any<CancellationToken>())
+        room.GetParameterValueAsync(EconomyRoomParameters.BucksEnabled, Arg.Any<CancellationToken>())
             .Returns("false");
         _roomsManager.GetRoom(Arg.Any<string>()).Returns(room);
 

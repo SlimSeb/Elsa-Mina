@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.TwentyFortyEight;
 
 [NamedCommand("2048end", Aliases = ["end-2048"])]
-public class EndTwentyFortyEightCommand : Command
+public class EndTwentyFortyEightCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly ITwentyFortyEightGameManager _gameManager;

@@ -1,20 +1,18 @@
 using Autofac;
+using ElsaMina.Commands.CustomCommands;
 using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Handlers.DefaultHandlers;
-using ElsaMina.Core.Services.AddedCommands;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.Dispatch;
+using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Lifecycle;
-using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.FeatureSwitches;
-using ElsaMina.Core.Services.Start;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Core.Services.UserDetails;
@@ -30,13 +28,10 @@ public class BotHandleReceivedMessageIntegrationTest
     private IClockService _clockService;
     private IRoomsManager _roomsManager;
     private ISystemService _systemService;
-    private IStartManager _startManager;
-    private IPlayTimeUpdateService _playTimeUpdateService;
     private IConfiguration _configuration;
     private IResourcesService _resourcesService;
     private IUserDetailsManager _userDetailsManager;
     private IAddedCommandsManager _addedCommandsManager;
-    private DependencyContainerService _dependencyContainerService;
     private IContainer _container;
     private Bot _bot;
     
@@ -47,13 +42,10 @@ public class BotHandleReceivedMessageIntegrationTest
         _clockService = Substitute.For<IClockService>();
         _roomsManager = Substitute.For<IRoomsManager>();
         _systemService = Substitute.For<ISystemService>();
-        _startManager = Substitute.For<IStartManager>();
         _configuration = Substitute.For<IConfiguration>();
         _resourcesService = Substitute.For<IResourcesService>();
         _userDetailsManager = Substitute.For<IUserDetailsManager>();
         _addedCommandsManager = Substitute.For<IAddedCommandsManager>();
-        _playTimeUpdateService = Substitute.For<IPlayTimeUpdateService>();
-        _dependencyContainerService = new DependencyContainerService();
 
         _clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
         _roomsManager.HasRoom(Arg.Any<string>()).Returns(true);
@@ -63,19 +55,16 @@ public class BotHandleReceivedMessageIntegrationTest
         _configuration.DefaultLocaleCode.Returns("");
 
         var telemetry = Substitute.For<ITelemetryService>();
-        var handlerManager = new HandlerManager(_dependencyContainerService, telemetry);
-        _bot = new Bot(
-            _client,
-            _clockService,
-            _roomsManager,
-            handlerManager,
-            _systemService,
-            new BotLifecycleService(_startManager, _playTimeUpdateService),
-            telemetry);
 
         var builder = new ContainerBuilder();
-        builder.RegisterInstance(_dependencyContainerService).As<IDependencyContainerService>();
-        builder.RegisterInstance(_bot).As<IBot>();
+        builder.RegisterInstance(_client).As<IClient>();
+        builder.RegisterInstance(_clockService).As<IClockService>();
+        builder.RegisterInstance(_systemService).As<ISystemService>();
+        builder.RegisterInstance(Substitute.For<IBotLifecycleService>()).As<IBotLifecycleService>();
+        builder.RegisterType<OutgoingMessageQueue>().As<IOutgoingMessageQueue>().SingleInstance();
+        builder.RegisterType<HandlerManager>().As<IHandlerManager>().SingleInstance();
+        builder.RegisterType<CommandRegistry>().As<ICommandRegistry>().SingleInstance();
+        builder.RegisterType<Bot>().As<IBot>().AsSelf().SingleInstance();
         builder.RegisterInstance(_roomsManager).As<IRoomsManager>();
         builder.RegisterInstance(_configuration).As<IConfiguration>();
         builder.RegisterInstance(_resourcesService).As<IResourcesService>();
@@ -92,7 +81,8 @@ public class BotHandleReceivedMessageIntegrationTest
         builder.RegisterCommand<EchoCommand>();
 
         _container = builder.Build();
-        _dependencyContainerService.SetContainer(_container);
+        _bot = _container.Resolve<Bot>();
+        _container.Resolve<IHandlerManager>().Initialize();
     }
 
     [TearDown]
@@ -101,7 +91,6 @@ public class BotHandleReceivedMessageIntegrationTest
         _client?.Dispose();
         _container?.Dispose();
         _bot?.Dispose();
-        _playTimeUpdateService?.Dispose();
     }
 
     [Test]

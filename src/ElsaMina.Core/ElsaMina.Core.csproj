@@ -15,8 +15,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ElsaMina.DataAccess\ElsaMina.DataAccess.csproj"/>
-        <ProjectReference Include="..\ElsaMina.Cloud\ElsaMina.Cloud.csproj"/>
         <ProjectReference Include="..\ElsaMina.Logging\ElsaMina.Logging.csproj" />
     </ItemGroup>
 
@@ -25,12 +23,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="Services\Dex\moves.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Services\Dex\pokedex.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Update="Services\Dex\moves.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Services\Dex\pokedex.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

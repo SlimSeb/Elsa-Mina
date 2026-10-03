@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Blackjack;
 
 [NamedCommand("bjjoin")]
-public class BlackjackJoinCommand : Command
+public class BlackjackJoinCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

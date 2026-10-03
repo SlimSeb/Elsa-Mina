@@ -315,4 +315,10 @@
   <data name="tournament_winner_prize" xml:space="preserve">
     <value>{0} won {1} bucks for winning the tournament!</value>
   </data>
+    <data name="parameter_name_tournament_betting_enabled" xml:space="preserve">
+        <value>Tournament Betting</value>
+    </data>
+    <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
+        <value>Enable or disable tournament betting for this room.</value>
+    </data>
 </root>

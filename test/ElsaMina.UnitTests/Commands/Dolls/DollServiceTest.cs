@@ -1,9 +1,10 @@
+using ElsaMina.Cloud.GoogleDrive;
+using ElsaMina.Commands;
 using ElsaMina.Commands.Dolls;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
-using ElsaMina.Cloud.GoogleDrive;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -28,7 +29,7 @@ public class DollServiceTest
     private DbContextOptions<BotDbContext> _options;
     private IBotDbContextFactory _dbContextFactory;
     private IDriveProvider _driveProvider;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private IClockService _clockService;
     private DateTime _now;
     private DollService _sut;
@@ -45,7 +46,7 @@ public class DollServiceTest
             .Returns(_ => Task.FromResult(new BotDbContext(_options)));
 
         _driveProvider = Substitute.For<IDriveProvider>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _configuration.DollsDriveName.Returns("Poupées");
 
         _now = new DateTime(2026, 7, 30, 12, 0, 0, DateTimeKind.Utc);

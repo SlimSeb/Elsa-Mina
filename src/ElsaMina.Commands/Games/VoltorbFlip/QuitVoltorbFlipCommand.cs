@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.VoltorbFlip;
 
 [NamedCommand("vfquit")]
-public class QuitVoltorbFlipCommand : Command
+public class QuitVoltorbFlipCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly IVoltorbFlipGameManager _gameManager;

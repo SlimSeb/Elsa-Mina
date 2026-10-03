@@ -1,9 +1,9 @@
-using ElsaMina.Commands.Teams;
+using System.Text.Json;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.Teams;
 using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
-using System.Text.Json;
 
 namespace ElsaMina.Battles.Commands;
 

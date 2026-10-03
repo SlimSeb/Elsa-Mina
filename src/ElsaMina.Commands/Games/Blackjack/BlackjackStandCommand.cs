@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Blackjack;
 
 [NamedCommand("bjstand")]
-public class BlackjackStandCommand : Command
+public class BlackjackStandCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly IBlackjackGameManager _gameManager;

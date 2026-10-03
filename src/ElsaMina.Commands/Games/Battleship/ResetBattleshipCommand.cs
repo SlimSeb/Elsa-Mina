@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Battleship;
 
 [NamedCommand("bsreset")]
-public class ResetBattleshipCommand : Command
+public class ResetBattleshipCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

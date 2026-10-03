@@ -19,14 +19,14 @@ public class TwitchApiClient : ITwitchApiClient
         RegexOptions.Compiled | RegexOptions.IgnoreCase, Constants.REGEX_MATCH_TIMEOUT);
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly IClockService _clockService;
     private readonly SemaphoreSlim _tokenSemaphore = new(1, 1);
 
     private string _accessToken;
     private DateTimeOffset _accessTokenExpiry;
 
-    public TwitchApiClient(IHttpService httpService, IConfiguration configuration, IClockService clockService)
+    public TwitchApiClient(IHttpService httpService, ICommandsConfiguration configuration, IClockService clockService)
     {
         _httpService = httpService;
         _configuration = configuration;
@@ -59,7 +59,7 @@ public class TwitchApiClient : ITwitchApiClient
         var streams = new List<TwitchStream>();
         foreach (var chunk in userIds.Chunk(MAX_IDS_PER_REQUEST))
         {
-            // Helix attend le paramètre user_id répété, ce que HttpRequest ne sait pas exprimer
+            // Helix expects a repeated user_id parameter, which HttpRequest cannot express
             var query = string.Join("&", chunk.Select(userId => $"user_id={Uri.EscapeDataString(userId)}"));
             var response = await SendAuthorizedAsync<TwitchStreamsResponse>(
                 () => HttpRequest.Get($"{STREAMS_URL}?{query}&first={MAX_IDS_PER_REQUEST}"), cancellationToken);
@@ -81,7 +81,7 @@ public class TwitchApiClient : ITwitchApiClient
         }
         catch (HttpException exception) when (exception.StatusCode == HttpStatusCode.Unauthorized)
         {
-            // Le token a pu être révoqué avant son expiration : on en redemande un et on réessaie une fois
+            // The token may have been revoked before it expired: request a new one and retry once
             _accessToken = null;
             return await SendWithTokenAsync<TResponse>(requestBuilder(), cancellationToken);
         }

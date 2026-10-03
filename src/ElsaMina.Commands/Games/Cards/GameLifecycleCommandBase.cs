@@ -10,7 +10,7 @@ namespace ElsaMina.Commands.Games.Cards;
 /// shared flow can emit that game's own strings.
 /// </summary>
 /// <typeparam name="TGame">The game interface the room's running game must implement.</typeparam>
-public abstract class GameLifecycleCommandBase<TGame> : Command where TGame : class, ICardGame
+public abstract class GameLifecycleCommandBase<TGame> : GameCommand where TGame : class, ICardGame
 {
     /// <summary>
     /// The prefix every resource key of this game starts with, e.g. <c>"tarot"</c>.

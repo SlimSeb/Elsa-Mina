@@ -11,7 +11,7 @@ public class ChatLogHandler : Handler
         _chatLogService = chatLogService;
     }
 
-    public override IReadOnlySet<string> HandledMessageTypes => (HashSet<string>)["c:"];
+    public override IReadOnlySet<string> HandledMessageTypes { get; } = (HashSet<string>)["c:"];
 
     public override Task HandleReceivedMessageAsync(string[] parts, string roomId = null,
         CancellationToken cancellationToken = default)

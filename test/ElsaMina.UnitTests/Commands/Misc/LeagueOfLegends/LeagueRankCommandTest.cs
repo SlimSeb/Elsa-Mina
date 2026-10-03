@@ -1,3 +1,4 @@
+using ElsaMina.Commands;
 using ElsaMina.Commands.Misc.LeagueOfLegends;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
@@ -13,7 +14,7 @@ namespace ElsaMina.UnitTests.Commands.Misc.LeagueOfLegends;
 public class LeagueRankCommandTest
 {
     private IHttpService _httpService;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private ITemplatesManager _templatesManager;
     private LeagueRankCommand _command;
 
@@ -21,7 +22,7 @@ public class LeagueRankCommandTest
     public void SetUp()
     {
         _httpService = Substitute.For<IHttpService>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _templatesManager = Substitute.For<ITemplatesManager>();
         _configuration.RiotApiKey.Returns("test-api-key");
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("<html/>");

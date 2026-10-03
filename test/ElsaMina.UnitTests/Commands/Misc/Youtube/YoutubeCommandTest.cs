@@ -1,3 +1,4 @@
+using ElsaMina.Commands;
 using ElsaMina.Commands.Misc.Youtube;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
@@ -11,7 +12,7 @@ namespace ElsaMina.UnitTests.Commands.Misc.Youtube;
 public class YoutubeCommandTest
 {
     private IHttpService _httpService;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private ITemplatesManager _templatesManager;
     private YoutubeCommand _youtubeCommand;
     private IContext _context;
@@ -20,7 +21,7 @@ public class YoutubeCommandTest
     public void SetUp()
     {
         _httpService = Substitute.For<IHttpService>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _templatesManager = Substitute.For<ITemplatesManager>();
         _context = Substitute.For<IContext>();
 

@@ -8,8 +8,10 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ElsaMina.Battles\ElsaMina.Battles.csproj"/>
+        <ProjectReference Include="..\ElsaMina.Cloud\ElsaMina.Cloud.csproj"/>
         <ProjectReference Include="..\ElsaMina.Commands\ElsaMina.Commands.csproj"/>
         <ProjectReference Include="..\ElsaMina.Core\ElsaMina.Core.csproj"/>
+        <ProjectReference Include="..\ElsaMina.DataAccess\ElsaMina.DataAccess.csproj"/>
         <Content Include="*config.json">
           <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>

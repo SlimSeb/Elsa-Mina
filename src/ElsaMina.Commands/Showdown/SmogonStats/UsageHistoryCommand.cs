@@ -147,8 +147,8 @@ public class UsageHistoryCommand : Command
     }
 
     /// <summary>
-    /// Les mois en ordre croissant, le dernier etant le mois precedent : Smogon publie les
-    /// statistiques d'un mois une fois celui-ci termine.
+    /// The months in ascending order, the last one being the previous month: Smogon publishes a
+    /// month's statistics once it is over.
     /// </summary>
     private List<DateTime> GetMonths(int monthsCount)
     {
@@ -191,11 +191,11 @@ public class UsageHistoryCommand : Command
                 latestPoint.Month.ToString(MONTH_FORMAT, CultureInfo.InvariantCulture));
 
             var annotation = plot.Add.Annotation($"{peakLine}\n{latestLine}");
-            // Le texte se pose du cote oppose a la fin de la courbe pour eviter de la recouvrir.
+            // The text sits on the side opposite the end of the curve so it does not cover it.
             annotation.Alignment = ys[^1] >= ys[0] ? Alignment.UpperLeft : Alignment.UpperRight;
 
             plot.Axes.DateTimeTicksBottom();
-            // Une courbe d'utilisation ne se lit correctement que depuis zero.
+            // A usage curve only reads correctly from zero.
             plot.Axes.SetLimitsY(0, Math.Max(ys.Max() * 1.15, 1));
             plot.Title(title);
             plot.XLabel(xLabel);

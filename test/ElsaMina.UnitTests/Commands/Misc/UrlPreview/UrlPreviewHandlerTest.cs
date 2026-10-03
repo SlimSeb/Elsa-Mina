@@ -37,7 +37,7 @@ public class UrlPreviewHandlerTest
         _configuration.Name.Returns("botname");
         _configuration.Trigger.Returns("-");
 
-        _room.GetParameterValueAsync(Parameter.ShowUrlPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(UrlPreviewRoomParameters.ShowUrlPreview, Arg.Any<CancellationToken>())
             .Returns("true");
 
         _handler = new UrlPreviewHandler(contextFactory, _httpService, _configuration,
@@ -48,7 +48,7 @@ public class UrlPreviewHandlerTest
     public async Task Test_HandleMessageAsync_ShouldNotProcess_WhenPreviewIsDisabled()
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowUrlPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(UrlPreviewRoomParameters.ShowUrlPreview, Arg.Any<CancellationToken>())
             .Returns("false");
 
         // Act

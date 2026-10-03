@@ -2,7 +2,6 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.LightsOut;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
@@ -16,7 +15,7 @@ namespace ElsaMina.UnitTests.Commands.Games.LightsOut;
 [TestFixture]
 public class StartLightsOutCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<LightsOutGame> _gameFactory;
     private IRoomsManager _roomsManager;
     private ILightsOutGameManager _gameManager;
     private IArcadeEventsService _arcadeEventsService;
@@ -28,7 +27,7 @@ public class StartLightsOutCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<LightsOutGame>>();
         _roomsManager = Substitute.For<IRoomsManager>();
         _gameManager = Substitute.For<ILightsOutGameManager>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
@@ -54,9 +53,9 @@ public class StartLightsOutCommandTest
             .Returns(_ => Task.FromResult(new BotDbContext(dbOptions)));
 
         _game = new LightsOutGame(randomService, templatesManager, configuration, dbContextFactory);
-        _dependencyContainerService.Resolve<LightsOutGame>().Returns(_game);
+        _gameFactory().Returns(_game);
 
-        _sut = new StartLightsOutCommand(_dependencyContainerService, _roomsManager, _gameManager, _arcadeEventsService);
+        _sut = new StartLightsOutCommand(_gameFactory, _roomsManager, _gameManager, _arcadeEventsService);
     }
 
     [Test]
@@ -83,7 +82,7 @@ public class StartLightsOutCommandTest
         await _sut.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("games_muted_event");
-        _dependencyContainerService.DidNotReceive().Resolve<LightsOutGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -95,7 +94,7 @@ public class StartLightsOutCommandTest
 
         await _sut.RunAsync(_context);
 
-        _dependencyContainerService.Received(1).Resolve<LightsOutGame>();
+        _gameFactory.Received(1)();
         Assert.That(_room.Game, Is.SameAs(_game));
     }
 
@@ -122,7 +121,7 @@ public class StartLightsOutCommandTest
         await _sut.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("lo_game_already_running");
-        _dependencyContainerService.DidNotReceive().Resolve<LightsOutGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -167,7 +166,7 @@ public class StartLightsOutCommandTest
         await _sut.RunAsync(_context);
 
         await existingGame.Received(1).StartNewRound();
-        _dependencyContainerService.DidNotReceive().Resolve<LightsOutGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -229,7 +228,7 @@ public class StartLightsOutCommandTest
 
         await _sut.RunAsync(_context);
 
-        _dependencyContainerService.Received(1).Resolve<LightsOutGame>();
+        _gameFactory.Received(1)();
         _gameManager.Received(1).RegisterGame("room1", "user1", _game);
         using (Assert.EnterMultipleScope())
         {
@@ -273,6 +272,6 @@ public class StartLightsOutCommandTest
         await _sut.RunAsync(_context);
 
         await existingGame.Received(1).StartNewRound();
-        _dependencyContainerService.DidNotReceive().Resolve<LightsOutGame>();
+        _gameFactory.DidNotReceive()();
     }
 }

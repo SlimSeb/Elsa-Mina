@@ -1,6 +1,5 @@
 using ElsaMina.Commands.Users.Colors;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.CustomColors;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
 using NSubstitute;

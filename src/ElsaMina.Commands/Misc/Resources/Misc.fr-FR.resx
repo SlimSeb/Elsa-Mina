@@ -417,4 +417,22 @@
     <data name="command_info_no" xml:space="preserve">
         <value>Non</value>
     </data>
+    <data name="parameter_name_is_showing_youtube_link_preview" xml:space="preserve">
+        <value>Aperçu des liens YouTube</value>
+    </data>
+    <data name="parameter_description_is_showing_youtube_link_preview" xml:space="preserve">
+        <value>Affiche le titre et les informations d'une vidéo YouTube quand un lien est posté</value>
+    </data>
+    <data name="parameter_name_is_showing_url_preview" xml:space="preserve">
+        <value>Aperçu d'URL</value>
+    </data>
+    <data name="parameter_description_is_showing_url_preview" xml:space="preserve">
+        <value>Affiche une carte d'aperçu avec le titre et la description quand une URL est postée</value>
+    </data>
+    <data name="parameter_name_klipy_gif_enabled" xml:space="preserve">
+        <value>GIFs KLIPY</value>
+    </data>
+    <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
+        <value>Active les commandes klipygif et klipysearch dans le salon</value>
+    </data>
 </root>

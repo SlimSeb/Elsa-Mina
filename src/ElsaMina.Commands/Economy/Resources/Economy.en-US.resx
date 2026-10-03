@@ -79,4 +79,10 @@
     <data name="money_leaderboard_amount" xml:space="preserve">
         <value>Bucks</value>
     </data>
+    <data name="parameter_name_bucks_enabled" xml:space="preserve">
+        <value>Bucks</value>
+    </data>
+    <data name="parameter_description_bucks_enabled" xml:space="preserve">
+        <value>Enable or disable the bucks economy (balances, transfers, prizes) for this room.</value>
+    </data>
 </root>

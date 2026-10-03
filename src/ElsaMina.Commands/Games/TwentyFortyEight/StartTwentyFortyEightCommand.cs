@@ -1,26 +1,25 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.TwentyFortyEight;
 
 [NamedCommand("2048", Aliases = ["twentyfourtyeight"])]
-public class StartTwentyFortyEightCommand : Command
+public class StartTwentyFortyEightCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<TwentyFortyEightGame> _gameFactory;
     private readonly IRoomsManager _roomsManager;
     private readonly ITwentyFortyEightGameManager _gameManager;
     private readonly IArcadeEventsService _arcadeEventsService;
 
     public StartTwentyFortyEightCommand(
-        IDependencyContainerService dependencyContainerService,
+        Func<TwentyFortyEightGame> gameFactory,
         IRoomsManager roomsManager,
         ITwentyFortyEightGameManager gameManager,
         IArcadeEventsService arcadeEventsService)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _roomsManager = roomsManager;
         _gameManager = gameManager;
         _arcadeEventsService = arcadeEventsService;
@@ -73,7 +72,7 @@ public class StartTwentyFortyEightCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<TwentyFortyEightGame>();
+        var game = _gameFactory();
         game.Context = context;
         game.Owner = context.Sender;
         game.IsPrivateMode = true;
@@ -119,7 +118,7 @@ public class StartTwentyFortyEightCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<TwentyFortyEightGame>();
+        var game = _gameFactory();
         game.Context = context;
         room.Game = game;
         await game.DisplayAnnounce();

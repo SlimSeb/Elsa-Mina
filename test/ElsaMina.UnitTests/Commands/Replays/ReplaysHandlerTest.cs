@@ -38,7 +38,7 @@ public class ReplaysHandlerTest
     public async Task Test_HandleMessage_ShouldNotProcess_WhenReplayPreviewDisabled()
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowReplaysPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(ReplaysRoomParameters.ShowReplaysPreview, Arg.Any<CancellationToken>())
             .Returns("false");
 
         // Act
@@ -52,7 +52,7 @@ public class ReplaysHandlerTest
     public async Task Test_HandleMessage_ShouldNotProcess_WhenNoReplayLinkFound()
     {
         // Arrange
-        _room.GetParameterValueAsync(Parameter.ShowReplaysPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(ReplaysRoomParameters.ShowReplaysPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns("This is a message without a replay link.");
 
@@ -68,7 +68,7 @@ public class ReplaysHandlerTest
     {
         // Arrange
         var replayUrl = "https://replay.pokemonshowdown.com/gen8ou-123456789";
-        _room.GetParameterValueAsync(Parameter.ShowReplaysPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(ReplaysRoomParameters.ShowReplaysPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns(replayUrl);
         var replayData = new ReplayDto
@@ -100,7 +100,7 @@ public class ReplaysHandlerTest
     {
         // Arrange
         var replayUrl = "https://replay.pokemonshowdown.com/gen8ou-123456789";
-        _room.GetParameterValueAsync(Parameter.ShowReplaysPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(ReplaysRoomParameters.ShowReplaysPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns(replayUrl);
 
@@ -120,7 +120,7 @@ public class ReplaysHandlerTest
         var replayUrl = "https://replay.pokemonshowdown.com/gen8ou-123456789";
         var customTimeZone = TimeZoneInfo.CreateCustomTimeZone("utc-minus-3", TimeSpan.FromHours(-3), "UTC-3", "UTC-3");
         _room.TimeZone.Returns(customTimeZone);
-        _room.GetParameterValueAsync(Parameter.ShowReplaysPreview, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(ReplaysRoomParameters.ShowReplaysPreview, Arg.Any<CancellationToken>())
             .Returns("true");
         _context.Message.Returns(replayUrl);
 

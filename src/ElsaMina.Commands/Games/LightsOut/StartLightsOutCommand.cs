@@ -1,25 +1,24 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.LightsOut;
 
 [NamedCommand("lightsout", Aliases = ["lo"])]
-public class StartLightsOutCommand : Command
+public class StartLightsOutCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<LightsOutGame> _gameFactory;
     private readonly IRoomsManager _roomsManager;
     private readonly ILightsOutGameManager _gameManager;
     private readonly IArcadeEventsService _arcadeEventsService;
 
-    public StartLightsOutCommand(IDependencyContainerService dependencyContainerService,
+    public StartLightsOutCommand(Func<LightsOutGame> gameFactory,
         IRoomsManager roomsManager,
         ILightsOutGameManager gameManager,
         IArcadeEventsService arcadeEventsService)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _roomsManager = roomsManager;
         _gameManager = gameManager;
         _arcadeEventsService = arcadeEventsService;
@@ -72,7 +71,7 @@ public class StartLightsOutCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<LightsOutGame>();
+        var game = _gameFactory();
         game.Context = context;
         game.Owner = context.Sender;
         game.IsPrivateMode = true;
@@ -118,7 +117,7 @@ public class StartLightsOutCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<LightsOutGame>();
+        var game = _gameFactory();
         game.Context = context;
         room.Game = game;
         await game.DisplayAnnounce();

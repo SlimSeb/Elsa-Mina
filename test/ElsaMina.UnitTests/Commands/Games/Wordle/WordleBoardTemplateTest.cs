@@ -1,11 +1,11 @@
 using System.Globalization;
 using ElsaMina.Commands.Games.Wordle;
-using ElsaMina.Core.Services.CustomColors;
+using ElsaMina.Commands.Users.Colors;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
+using ElsaMina.Core.Services.Templates;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using ElsaMina.Core.Services.Templates;
 
 namespace ElsaMina.UnitTests.Commands.Games.Wordle;
 

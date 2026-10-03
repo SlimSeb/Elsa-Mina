@@ -10,7 +10,7 @@ namespace ElsaMina.Commands.Games.Wordle;
 /// whisper to the bot and any answer is whispered back.
 /// </summary>
 [NamedCommand("wordleguess", Aliases = ["wlg"])]
-public class GuessWordleCommand : Command
+public class GuessWordleCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly IWordleGameManager _gameManager;

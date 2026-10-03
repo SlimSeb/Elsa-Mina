@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Chess;
 
 [NamedCommand("chessplay", Aliases = ["chessmove"])]
-public class PlayChessCommand : Command
+public class PlayChessCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

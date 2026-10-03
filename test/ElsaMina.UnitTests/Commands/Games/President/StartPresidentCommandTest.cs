@@ -1,10 +1,9 @@
 using System.Globalization;
 using ElsaMina.Commands.Arcade.Events;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Commands.Games.President;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
@@ -17,7 +16,7 @@ namespace ElsaMina.UnitTests.Commands.Games.President;
 [TestFixture]
 public class StartPresidentCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<PresidentGame> _gameFactory;
     private IArcadeEventsService _arcadeEventsService;
     private IEventAnnouncer _eventAnnouncer;
     private StartPresidentCommand _command;
@@ -28,7 +27,7 @@ public class StartPresidentCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<PresidentGame>>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _eventAnnouncer = Substitute.For<IEventAnnouncer>();
         _context = Substitute.For<IContext>();
@@ -49,9 +48,9 @@ public class StartPresidentCommandTest
 
         _game = new PresidentGame(Substitute.For<IRandomService>(), templates, configuration);
         _game.Context = _context;
-        _dependencyContainerService.Resolve<PresidentGame>().Returns(_game);
+        _gameFactory().Returns(_game);
 
-        _command = new StartPresidentCommand(_dependencyContainerService, _arcadeEventsService, _eventAnnouncer);
+        _command = new StartPresidentCommand(_gameFactory, _arcadeEventsService, _eventAnnouncer);
     }
 
     private static IUser MakeUser(string id)
@@ -78,7 +77,7 @@ public class StartPresidentCommandTest
         using (Assert.EnterMultipleScope())
         {
             _context.Received(1).ReplyLocalizedMessage("games_muted_event");
-            _dependencyContainerService.DidNotReceive().Resolve<PresidentGame>();
+            _gameFactory.DidNotReceive()();
             _room.DidNotReceive().Game = Arg.Any<PresidentGame>();
         }
     }
@@ -91,7 +90,7 @@ public class StartPresidentCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("president_already_running");
-        _dependencyContainerService.DidNotReceive().Resolve<PresidentGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -102,7 +101,7 @@ public class StartPresidentCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("president_other_game_running");
-        _dependencyContainerService.DidNotReceive().Resolve<PresidentGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]

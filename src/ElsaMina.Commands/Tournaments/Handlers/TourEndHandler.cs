@@ -1,9 +1,10 @@
+using ElsaMina.Commands.Economy;
 using ElsaMina.Commands.Profile;
+using ElsaMina.Commands.Users.RoomUserData;
 using ElsaMina.Core;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Resources;
-using ElsaMina.Core.Services.RoomUserData;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
@@ -60,7 +61,7 @@ public class TourEndHandler : Handler
 
         var room = _roomsManager.GetRoom(roomId);
         var isBucksEnabled = room != null &&
-                             (await room.GetParameterValueAsync(Parameter.BucksEnabled, cancellationToken)).ToBoolean();
+                             (await room.GetParameterValueAsync(EconomyRoomParameters.BucksEnabled, cancellationToken)).ToBoolean();
 
         await SaveTournamentResultsAsync(result, roomId, isBucksEnabled, cancellationToken);
 

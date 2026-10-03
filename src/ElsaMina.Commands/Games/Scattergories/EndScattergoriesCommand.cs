@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Scattergories;
 
 [NamedCommand("endscattergories", Aliases = ["endscatt", "scattend"])]
-public class EndScattergoriesCommand : Command
+public class EndScattergoriesCommand : GameCommand
 {
     public override Rank RequiredRank => Rank.Driver;
 
