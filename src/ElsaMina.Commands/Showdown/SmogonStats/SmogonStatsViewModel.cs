@@ -1,5 +1,5 @@
+using ElsaMina.Core.Services.Smogon;
 using ElsaMina.Core.Services.Templates;
-using ElsaMina.Showdown.Smogon;
 
 namespace ElsaMina.Commands.Showdown.SmogonStats;
 

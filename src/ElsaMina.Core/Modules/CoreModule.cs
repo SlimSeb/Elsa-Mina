@@ -8,11 +8,16 @@ using ElsaMina.Core.Handlers.DefaultHandlers.Rooms;
 using ElsaMina.Core.Services.BattleTracker;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.Dex;
 using ElsaMina.Core.Services.Dispatch;
 using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Formats;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.Images;
+using ElsaMina.Core.Services.LanguageModel;
+using ElsaMina.Core.Services.LanguageModel.Google;
+using ElsaMina.Core.Services.LanguageModel.Mistral;
+using ElsaMina.Core.Services.LanguageModel.OpenAi;
 using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.Login;
 using ElsaMina.Core.Services.PrivateMessages;
@@ -22,6 +27,7 @@ using ElsaMina.Core.Services.RoomInfo;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Scheduling;
+using ElsaMina.Core.Services.Smogon;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Core.Services.Templates;
@@ -75,6 +81,13 @@ public class CoreModule : Module
         builder.RegisterType<KeyedTaskQueue>().As<IKeyedTaskQueue>();
         builder.RegisterType<IncomingMessageDispatcher>().As<IIncomingMessageDispatcher>().SingleInstance();
         builder.RegisterType<OutgoingMessageQueue>().As<IOutgoingMessageQueue>().SingleInstance();
+        builder.RegisterType<DexManager>().As<IDexManager>().As<IBotLifecycleParticipant>().SingleInstance();
+        builder.RegisterType<SmogonUsageDataProvider>().As<ISmogonUsageDataProvider>().SingleInstance();
+        builder.RegisterType<GeminiFlashProvider>().AsSelf().SingleInstance();
+        builder.RegisterType<MistralSmallProvider>().AsSelf().SingleInstance();
+        builder.RegisterType<GptMiniProvider>().AsSelf().SingleInstance();
+        builder.RegisterType<LanguageModelResolver>().As<ILanguageModelProvider>().SingleInstance();
+
         builder.RegisterType<Client>().As<IClient>().SingleInstance();
         builder.RegisterType<Bot>().As<IBot>().AsSelf().SingleInstance();
 

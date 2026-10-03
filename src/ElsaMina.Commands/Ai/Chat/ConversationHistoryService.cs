@@ -1,7 +1,7 @@
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
-using ElsaMina.LanguageModel;
 
 namespace ElsaMina.Commands.Ai.Chat;
 

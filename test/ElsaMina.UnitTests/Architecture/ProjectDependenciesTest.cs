@@ -5,9 +5,7 @@ using ElsaMina.Cloud;
 using ElsaMina.Commands;
 using ElsaMina.Core;
 using ElsaMina.DataAccess;
-using ElsaMina.LanguageModel;
 using ElsaMina.Logging;
-using ElsaMina.Showdown;
 
 namespace ElsaMina.UnitTests.Architecture;
 
@@ -23,17 +21,9 @@ public class ProjectDependenciesTest
     private static IEnumerable<TestCaseData> ForbiddenDependencies()
     {
         yield return new TestCaseData(typeof(Bot).Assembly,
-                new[] { "ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.Showdown", "ElsaMina.LanguageModel",
-                    "ElsaMina.DataAccess", "ElsaMina.Cloud", "ElsaMina.Console" })
+                new[] { "ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.DataAccess", "ElsaMina.Cloud",
+                    "ElsaMina.Console" })
             .SetName("Core depends on no feature, infrastructure or host project");
-        yield return new TestCaseData(typeof(ShowdownDataModule).Assembly,
-                new[] { "ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.DataAccess", "ElsaMina.Cloud",
-                    "ElsaMina.Console" })
-            .SetName("Showdown depends on no feature or infrastructure project");
-        yield return new TestCaseData(typeof(LanguageModelModule).Assembly,
-                new[] { "ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.DataAccess", "ElsaMina.Cloud",
-                    "ElsaMina.Console" })
-            .SetName("LanguageModel depends on no feature or infrastructure project");
         yield return new TestCaseData(typeof(BattlesModule).Assembly, new[] { "ElsaMina.Commands", "ElsaMina.Console" })
             .SetName("Battles does not depend on Commands");
         yield return new TestCaseData(typeof(CommandModule).Assembly, new[] { "ElsaMina.Battles", "ElsaMina.Console" })

@@ -36,18 +36,16 @@ dotnet ef migrations remove --project src/ElsaMina.DataAccess
 | Project | Role |
 |---|---|
 | `ElsaMina.Console` | Composition root: reads `config.json` into `Configuration`, registers every module, runs the message pump and shutdown |
-| `ElsaMina.Core` | Bot runtime kernel: dispatch, handlers, commands, contexts, rooms, lifecycle, templates. References only `Logging` |
+| `ElsaMina.Core` | Bot runtime: dispatch, handlers, commands, contexts, rooms, lifecycle, templates, plus shared services (dex, Smogon usage, team packing, language models). References only `Logging` |
 | `ElsaMina.Commands` | Every feature: commands, feature handlers and feature services |
 | `ElsaMina.Battles` | Autonomous battle bot: protocol parsing, simulation, and decision strategies |
-| `ElsaMina.Showdown` | Pokémon data shared by Commands and Battles: dex, Smogon usage, team packing |
-| `ElsaMina.LanguageModel` | Language model providers (Gemini, Mistral, GPT) and the fallback resolver |
 | `ElsaMina.DataAccess` | EF Core DbContext, models, migrations (PostgreSQL), and Core's persistence ports (`EfRoomParameterRepository`) |
 | `ElsaMina.Cloud` | S3 file upload, Google Drive, and Google Sheets integration |
 | `ElsaMina.Logging` | Thin logging abstraction over Serilog |
 
 **Dependency rules** (enforced by `test/ElsaMina.UnitTests/Architecture/ProjectDependenciesTest.cs`):
 - Core knows no feature, infrastructure or host project, and no EF/Google/AWS package. When Core needs something a feature or infrastructure provides, it defines an interface (a port) and the other project implements it.
-- Feature projects (`Commands`, `Battles`) never reference each other; shared domain code goes to `Showdown`.
+- Feature projects (`Commands`, `Battles`) never reference each other; code both need goes to Core.
 - Only `Console` references everything.
 
 ### Message Flow
@@ -98,7 +96,7 @@ Two concrete implementations: `RoomContext` and `PmContext`.
 
 ### Dependency Injection
 
-Uses Autofac. `ContainerBootstrapper` (Console) registers the modules: `DataAccessModule`, `CloudModule`, `CoreModule`, `LanguageModelModule`, `ShowdownDataModule`, `BattlesModule`, `CommandModule` (which registers the feature modules in `ElsaMina.Commands/Modules/`).
+Uses Autofac. `ContainerBootstrapper` (Console) registers the modules: `DataAccessModule`, `CloudModule`, `CoreModule`, `BattlesModule`, `CommandModule` (which registers the feature modules in `ElsaMina.Commands/Modules/`).
 
 - Inject dependencies through constructors only; there is no service locator. To create objects on demand inject `Func<T>` (games: `Func<WordleGame>`), and to break a construction cycle inject `Lazy<T>`.
 - Register objects created on demand that the container should not keep alive (games) with `.ExternallyOwned()`.
@@ -110,7 +108,7 @@ Services with work to do when the bot starts (load data, start a polling loop) o
 
 ### Configuration
 
-`config.json` is read into `Configuration` (Console), which implements each project's settings interface: `IConfiguration` (Core: connection, identity, rooms), `ICommandsConfiguration` (feature API keys and timings), `IDatabaseConfiguration`, `IS3CredentialsProvider` / `IGoogleServiceAccountConfiguration` (Cloud) and `ILanguageModelConfiguration`. A new setting goes on the interface of the project that uses it, and on `Configuration`.
+`config.json` is read into `Configuration` (Console), which implements each project's settings interface: `IConfiguration` (Core: connection, identity, rooms, language model keys), `ICommandsConfiguration` (feature API keys and timings), `IDatabaseConfiguration`, and `IS3CredentialsProvider` / `IGoogleServiceAccountConfiguration` (Cloud). A new setting goes on the interface of the project that uses it, and on `Configuration`.
 
 ### Localization
 

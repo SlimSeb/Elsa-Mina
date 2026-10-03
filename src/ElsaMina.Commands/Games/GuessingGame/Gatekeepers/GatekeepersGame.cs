@@ -1,9 +1,9 @@
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Services.Dex;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
-using ElsaMina.Showdown.Dex;
 
 namespace ElsaMina.Commands.Games.GuessingGame.Gatekeepers;
 

@@ -14,9 +14,7 @@ COPY src/ElsaMina.Console/*.csproj src/ElsaMina.Console/
 COPY src/ElsaMina.Core/*.csproj src/ElsaMina.Core/
 COPY src/ElsaMina.DataAccess/*.csproj src/ElsaMina.DataAccess/
 COPY src/ElsaMina.Cloud/*.csproj src/ElsaMina.Cloud/
-COPY src/ElsaMina.LanguageModel/*.csproj src/ElsaMina.LanguageModel/
 COPY src/ElsaMina.Logging/*.csproj src/ElsaMina.Logging/
-COPY src/ElsaMina.Showdown/*.csproj src/ElsaMina.Showdown/
 COPY test/ElsaMina.UnitTests/*.csproj test/ElsaMina.UnitTests/
 COPY test/ElsaMina.IntegrationTests/*.csproj test/ElsaMina.IntegrationTests/
 
@@ -28,9 +26,7 @@ COPY src/ElsaMina.Console/ src/ElsaMina.Console/
 COPY src/ElsaMina.Core/ src/ElsaMina.Core/
 COPY src/ElsaMina.DataAccess/ src/ElsaMina.DataAccess/
 COPY src/ElsaMina.Cloud/ src/ElsaMina.Cloud/
-COPY src/ElsaMina.LanguageModel/ src/ElsaMina.LanguageModel/
 COPY src/ElsaMina.Logging/ src/ElsaMina.Logging/
-COPY src/ElsaMina.Showdown/ src/ElsaMina.Showdown/
 COPY test/ElsaMina.UnitTests/ test/ElsaMina.UnitTests/
 COPY test/ElsaMina.IntegrationTests/ test/ElsaMina.IntegrationTests/
 

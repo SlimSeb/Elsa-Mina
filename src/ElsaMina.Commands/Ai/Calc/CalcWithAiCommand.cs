@@ -2,9 +2,9 @@ using System.Net;
 using System.Text.Json;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.LanguageModel;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Ai.Calc;

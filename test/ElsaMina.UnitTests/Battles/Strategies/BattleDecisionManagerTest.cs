@@ -3,8 +3,8 @@ using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.Llm;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
+using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.Probabilities;
-using ElsaMina.LanguageModel;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Battles.Strategies;

@@ -27,8 +27,6 @@
       <ProjectReference Include="..\..\src\ElsaMina.Battles\ElsaMina.Battles.csproj" />
       <ProjectReference Include="..\..\src\ElsaMina.Core\ElsaMina.Core.csproj" />
       <ProjectReference Include="..\..\src\ElsaMina.DataAccess\ElsaMina.DataAccess.csproj" />
-      <ProjectReference Include="..\..\src\ElsaMina.LanguageModel\ElsaMina.LanguageModel.csproj" />
-      <ProjectReference Include="..\..\src\ElsaMina.Showdown\ElsaMina.Showdown.csproj" />
       <ProjectReference Include="..\..\src\ElsaMina.Commands\ElsaMina.Commands.csproj" />
       <ProjectReference Include="..\..\src\ElsaMina.Console\ElsaMina.Console.csproj" />
       <ProjectReference Include="..\..\src\ElsaMina.Cloud\ElsaMina.Cloud.csproj" />

@@ -1,9 +1,9 @@
 using System.Globalization;
 using ElsaMina.Commands.Ai.Calc;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.LanguageModel;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Ai.Calc;

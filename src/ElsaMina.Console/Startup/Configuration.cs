@@ -4,7 +4,6 @@ using ElsaMina.Cloud.S3;
 using ElsaMina.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.DataAccess;
-using ElsaMina.LanguageModel;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Console.Startup;
@@ -13,7 +12,7 @@ namespace ElsaMina.Console.Startup;
 /// The settings read from config.json. Each project only sees the settings interface it defines.
 /// </summary>
 public class Configuration : ICommandsConfiguration, IDatabaseConfiguration, IS3CredentialsProvider,
-    IGoogleServiceAccountConfiguration, ILanguageModelConfiguration
+    IGoogleServiceAccountConfiguration
 {
     public LogLevel LogLevel { get; set; } = LogLevel.Info;
     public string Host { get; set; }
