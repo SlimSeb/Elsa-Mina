@@ -5,10 +5,9 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Teams.TeamProviders.Pokepaste;
 
-public class PokepasteProvider : ITeamProvider
+public partial class PokepasteProvider : ITeamProvider
 {
-    private static readonly Regex TEAM_LINK_REGEX = new(@"https:\/\/(pokepast\.es\/[0-9A-Fa-f]{16}\/?)",
-        RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex TEAM_LINK_REGEX = TeamLinkRegex();
 
     private readonly IHttpService _httpService;
 
@@ -45,4 +44,7 @@ public class PokepasteProvider : ITeamProvider
             return null;
         }
     }
+
+    [GeneratedRegex(@"https:\/\/(pokepast\.es\/[0-9A-Fa-f]{16}\/?)", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex TeamLinkRegex();
 }

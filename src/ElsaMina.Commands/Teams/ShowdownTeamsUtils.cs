@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace ElsaMina.Commands.Teams;
 
-public static class ShowdownTeamsUtils
+public static partial class ShowdownTeamsUtils
 {
     private static readonly string[] STAT_KEYS = ["hp", "atk", "def", "spa", "spd", "spe"];
 
@@ -47,8 +47,7 @@ public static class ShowdownTeamsUtils
         ["spe"] = "Spe"
     };
 
-    private static readonly Regex NATURE_REGEX =
-        new("^[A-Za-z]+ (N|n)ature", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex NATURE_REGEX = NatureRegex();
 
     #region Team export deserialization
 
@@ -926,4 +925,7 @@ public static class ShowdownTeamsUtils
     {
         return JsonSerializer.Serialize(DeserializeTeamExport(export));
     }
+
+    [GeneratedRegex("^[A-Za-z]+ (N|n)ature", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex NatureRegex();
 }

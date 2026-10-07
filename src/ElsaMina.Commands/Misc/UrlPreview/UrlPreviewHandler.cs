@@ -14,20 +14,16 @@ using HtmlAgilityPack;
 
 namespace ElsaMina.Commands.Misc.UrlPreview;
 
-public class UrlPreviewHandler : ChatMessageHandler
+public partial class UrlPreviewHandler : ChatMessageHandler
 {
     private const int MAX_WIDTH = 80;
     private const int MAX_HEIGHT = 80;
 
-    private static readonly Regex URL_REGEX =
-        new(@"https?://[^\s<>""]+", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex URL_REGEX = UrlRegex();
 
-    private static readonly Regex YOUTUBE_URL_REGEX =
-        new(@"(?:https?://)?(?:(?:www\.|m\.)?youtube\.com/(?:watch\?(?:.*&)?v=|shorts/)|youtu\.be/)[A-Za-z0-9_-]{11}",
-            RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex YOUTUBE_URL_REGEX = YoutubeUrlRegex();
 
-    private static readonly Regex REPLAY_URL_REGEX =
-        new(@"https://replay\.pokemonshowdown\.com/", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex REPLAY_URL_REGEX = ReplayUrlRegex();
 
     private const int MAX_DESCRIPTION_LENGTH = 300;
 
@@ -191,4 +187,13 @@ public class UrlPreviewHandler : ChatMessageHandler
 
         return result;
     }
+
+    [GeneratedRegex(@"https?://[^\s<>""]+", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex UrlRegex();
+
+    [GeneratedRegex(@"(?:https?://)?(?:(?:www\.|m\.)?youtube\.com/(?:watch\?(?:.*&)?v=|shorts/)|youtu\.be/)[A-Za-z0-9_-]{11}", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex YoutubeUrlRegex();
+
+    [GeneratedRegex(@"https://replay\.pokemonshowdown\.com/", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex ReplayUrlRegex();
 }

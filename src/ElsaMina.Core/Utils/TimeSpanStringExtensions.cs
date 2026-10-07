@@ -3,20 +3,9 @@ using System.Text.RegularExpressions;
 
 namespace ElsaMina.Core.Utils;
 
-public static class TimeSpanStringExtensions
+public static partial class TimeSpanStringExtensions
 {
-    private static readonly Regex TIME_SPAN_REGEX =
-        new(@"(\d+(?:\.\d+)?)\s*(
-            milliseconds?|ms|
-            seconds?|secs?|s|
-            minutes?|mins?|m|
-            hours?|hrs?|h|
-            days?|d|
-            weeks?|w
-        )",
-            RegexOptions.IgnoreCase
-            | RegexOptions.Compiled
-            | RegexOptions.IgnorePatternWhitespace, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex TIME_SPAN_REGEX = TimeSpanRegex();
     
     private static readonly Dictionary<string, Func<double, TimeSpan>> TIME_UNITS =
         new(StringComparer.OrdinalIgnoreCase)
@@ -101,4 +90,14 @@ public static class TimeSpanStringExtensions
 
         return total;
     }
+
+    [GeneratedRegex(@"(\d+(?:\.\d+)?)\s*(
+            milliseconds?|ms|
+            seconds?|secs?|s|
+            minutes?|mins?|m|
+            hours?|hrs?|h|
+            days?|d|
+            weeks?|w
+        )", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex TimeSpanRegex();
 }

@@ -6,7 +6,7 @@ using ElsaMina.Core.Services.Http;
 
 namespace ElsaMina.Commands.Alerts.Youtube;
 
-public class YoutubeAlertsApiClient : IYoutubeAlertsApiClient
+public partial class YoutubeAlertsApiClient : IYoutubeAlertsApiClient
 {
     private const string CHANNELS_URL = "https://www.googleapis.com/youtube/v3/channels";
     private const string VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos";
@@ -16,13 +16,9 @@ public class YoutubeAlertsApiClient : IYoutubeAlertsApiClient
     private static readonly XNamespace ATOM_NAMESPACE = "http://www.w3.org/2005/Atom";
     private static readonly XNamespace YOUTUBE_NAMESPACE = "http://www.youtube.com/xml/schemas/2015";
 
-    private static readonly Regex CHANNEL_ID_REGEX =
-        new(@"^(?:(?:https?://)?(?:www\.|m\.)?youtube\.com/channel/)?(UC[\w-]{22})/?$",
-            RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex CHANNEL_ID_REGEX = ChannelIdRegex();
 
-    private static readonly Regex HANDLE_REGEX =
-        new(@"^(?:(?:https?://)?(?:www\.|m\.)?youtube\.com/)?@?([\w.-]{3,30})/?$",
-            RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex HANDLE_REGEX = HandleRegex();
 
     private readonly IHttpService _httpService;
     private readonly IConfiguration _configuration;
@@ -105,4 +101,10 @@ public class YoutubeAlertsApiClient : IYoutubeAlertsApiClient
 
         return videos;
     }
+
+    [GeneratedRegex(@"^(?:(?:https?://)?(?:www\.|m\.)?youtube\.com/channel/)?(UC[\w-]{22})/?$", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex ChannelIdRegex();
+
+    [GeneratedRegex(@"^(?:(?:https?://)?(?:www\.|m\.)?youtube\.com/)?@?([\w.-]{3,30})/?$", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex HandleRegex();
 }

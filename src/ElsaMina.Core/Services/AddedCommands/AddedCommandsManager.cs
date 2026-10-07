@@ -9,13 +9,12 @@ using NCalc;
 
 namespace ElsaMina.Core.Services.AddedCommands;
 
-public class AddedCommandsManager : IAddedCommandsManager
+public partial class AddedCommandsManager : IAddedCommandsManager
 {
     private const int MAX_HEIGHT = 300;
     private const int MAX_WIDTH = 400;
 
-    private static readonly Regex EXPRESSION_IDENTIFIER =
-        new("{([^}]+)}", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex EXPRESSION_IDENTIFIER = ExpressionIdentifierRegex();
 
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly IImageService _imageService;
@@ -134,4 +133,7 @@ public class AddedCommandsManager : IAddedCommandsManager
         };
 
     #endregion
+
+    [GeneratedRegex("{([^}]+)}", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex ExpressionIdentifierRegex();
 }

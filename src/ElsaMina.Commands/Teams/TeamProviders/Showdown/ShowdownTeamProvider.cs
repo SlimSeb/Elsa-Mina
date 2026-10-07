@@ -5,16 +5,14 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Teams.TeamProviders.Showdown;
 
-public class ShowdownTeamProvider : ITeamProvider
+public partial class ShowdownTeamProvider : ITeamProvider
 {
     private const string SHOWDOWN_TEAM_API_URL = "https://teams.pokemonshowdown.com/api/getteam?teamid={0}&full=1";
 
     private const string SHOWDOWN_TEAM_API_URL_WITH_PASSWORD =
         "https://teams.pokemonshowdown.com/api/getteam?teamid={0}&password={1}&full=1";
 
-    private static readonly Regex SHOWDOWN_TEAM_LINK_REGEX =
-        new(@"https://(psim\.us/t|teams\.pokemonshowdown\.com/view)/\d+(-[a-z0-9]+)?", RegexOptions.Compiled,
-            Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex SHOWDOWN_TEAM_LINK_REGEX = ShowdownTeamLinkRegex();
 
     private readonly IHttpService _httpService;
 
@@ -56,4 +54,7 @@ public class ShowdownTeamProvider : ITeamProvider
             return null;
         }
     }
+
+    [GeneratedRegex(@"https://(psim\.us/t|teams\.pokemonshowdown\.com/view)/\d+(-[a-z0-9]+)?", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex ShowdownTeamLinkRegex();
 }

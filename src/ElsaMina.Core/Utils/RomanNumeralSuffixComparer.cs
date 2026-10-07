@@ -2,13 +2,11 @@ using System.Text.RegularExpressions;
 
 namespace ElsaMina.Core.Utils;
 
-public class RomanNumeralSuffixComparer : IComparer<string>
+public partial class RomanNumeralSuffixComparer : IComparer<string>
 {
     public static readonly RomanNumeralSuffixComparer INSTANCE = new();
 
-    private static readonly Regex CANONICAL_ROMAN_NUMERAL_REGEX =
-        new("^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$",
-            RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex CANONICAL_ROMAN_NUMERAL_REGEX = CanonicalRomanNumeralRegex();
 
     public int Compare(string first, string second)
     {
@@ -92,4 +90,7 @@ public class RomanNumeralSuffixComparer : IComparer<string>
         'M' => 1000,
         _ => 0
     };
+
+    [GeneratedRegex("^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex CanonicalRomanNumeralRegex();
 }
