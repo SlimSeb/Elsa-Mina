@@ -195,6 +195,41 @@ public class ResourcesServiceTest
     }
 
     [Test]
+    public void Test_SupportedCultures_ShouldContainAllShippedLocales_WhenEachHasResources()
+    {
+        // Arrange
+        string[] shippedLocales = ["de-DE", "en-US", "es-ES", "fr-FR", "it-IT", "pt-BR"];
+        var manager = FakeResourceManager.WithMultipleCultures(shippedLocales.ToDictionary(
+            locale => new CultureInfo(locale),
+            _ => new Dictionary<string, string> { ["key"] = "val" }));
+        var sut = CreateService(manager);
+
+        // Act
+        var supported = sut.SupportedCultures.Select(c => c.Name).ToList();
+
+        // Assert
+        Assert.That(supported, Is.EqualTo(shippedLocales));
+    }
+
+    [Test]
+    public void Test_SupportedCultures_ShouldIgnoreCulture_WhenItIsNotAShippedLocale()
+    {
+        // Arrange
+        var manager = FakeResourceManager.WithMultipleCultures(new Dictionary<CultureInfo, Dictionary<string, string>>
+        {
+            [new CultureInfo("en-US")] = new() { ["key"] = "val" },
+            [new CultureInfo("ja-JP")] = new() { ["key"] = "val" }
+        });
+        var sut = CreateService(manager);
+
+        // Act
+        var supported = sut.SupportedCultures.Select(c => c.Name).ToHashSet();
+
+        // Assert
+        Assert.That(supported, Is.EquivalentTo(new[] { "en-US" }));
+    }
+
+    [Test]
     public void Test_SupportedCultures_ShouldMergeAcrossManagers()
     {
         // Arrange

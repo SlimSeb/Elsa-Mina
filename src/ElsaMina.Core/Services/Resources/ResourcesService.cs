@@ -8,6 +8,10 @@ namespace ElsaMina.Core.Services.Resources;
 
 public class ResourcesService : IResourcesService
 {
+    // Enumerating every culture (CultureInfo.GetCultures) permanently caches ~1500 CultureData objects,
+    // so only the locales the bot ships resources for are probed.
+    private static readonly string[] CANDIDATE_CULTURE_NAMES = ["de-DE", "en-US", "es-ES", "fr-FR", "it-IT", "pt-BR"];
+
     private readonly CultureInfo _defaultCulture;
     private readonly IReadOnlyList<ResourceManager> _resourceManagers;
     private readonly ConcurrentDictionary<string, Lazy<IReadOnlyDictionary<string, string>>> _loadedCultures = new();
@@ -84,7 +88,7 @@ public class ResourcesService : IResourcesService
     {
         var supportedLocales = new HashSet<CultureInfo>();
         var candidateCultures = new List<CultureInfo> { CultureInfo.InvariantCulture };
-        candidateCultures.AddRange(CultureInfo.GetCultures(CultureTypes.AllCultures));
+        candidateCultures.AddRange(CANDIDATE_CULTURE_NAMES.Select(CultureInfo.GetCultureInfo));
 
         foreach (var culture in candidateCultures)
         {
