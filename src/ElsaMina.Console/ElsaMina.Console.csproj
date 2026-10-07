@@ -9,6 +9,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <!-- Lets the GC compact more aggressively (0-9) to keep the committed heap closer to the live heap -->
+        <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="5" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\ElsaMina.Battles\ElsaMina.Battles.csproj"/>
         <ProjectReference Include="..\ElsaMina.Commands\ElsaMina.Commands.csproj"/>
         <ProjectReference Include="..\ElsaMina.Core\ElsaMina.Core.csproj"/>
