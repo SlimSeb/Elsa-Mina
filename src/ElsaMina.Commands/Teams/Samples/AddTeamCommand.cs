@@ -13,11 +13,10 @@ using ElsaMina.Logging;
 namespace ElsaMina.Commands.Teams.Samples;
 
 [NamedCommand("add-team", Aliases = ["addteam"])]
-public class AddTeamCommand : Command
+public partial class AddTeamCommand : Command
 {
     private const int MAX_NAME_LENGTH = 70;
-    private static readonly Regex TEAM_NAME_FILTER = new(@"[^\w\d\s+\-[\]]", RegexOptions.Compiled,
-        Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex TEAM_NAME_FILTER = TeamNameFilterRegex();
 
     private readonly ITeamLinkMatchFactory _teamLinkMatchFactory;
     private readonly IClockService _clockService;
@@ -118,4 +117,7 @@ public class AddTeamCommand : Command
             context.ReplyLocalizedMessage("add_team_failure", exception.Message);
         }
     }
+
+    [GeneratedRegex(@"[^\w\d\s+\-[\]]", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex TeamNameFilterRegex();
 }

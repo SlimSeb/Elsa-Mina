@@ -39,8 +39,30 @@ else
   echo "No existing instances found"
 fi
 
+# The package is copied over the previous one, so assemblies dropped from the build stay behind.
+# Only build outputs missing from this release's manifest are removed: config, logs and data are kept.
+MANIFEST="publish-manifest.txt"
+if [[ -f "$MANIFEST" ]]; then
+  echo "Removing stale build outputs"
+  find . -type f \( -name '*.dll' -o -name '*.pdb' -o -name '*.so' -o -name '*.deps.json' \
+    -o -name '*.runtimeconfig.json' -o -path './refs/*' \) -print |
+    while IFS= read -r file; do
+      if ! grep -Fxq -- "$file" "$MANIFEST"; then
+        echo "Removing $file"
+        rm -f -- "$file"
+        rmdir -p -- "$(dirname -- "$file")" 2> /dev/null || true
+      fi
+    done
+else
+  echo "No $MANIFEST found, skipping stale build outputs cleanup"
+fi
+
 echo "Setting permissions"
 chmod u+x ElsaMina.Console
+
+# glibc creates up to 8 malloc arenas per core, each holding on to freed native memory.
+# Two arenas are plenty for the bot and keep native heap fragmentation low.
+export MALLOC_ARENA_MAX=2
 
 echo "Starting ElsaMina.Console"
 setsid nohup ./ElsaMina.Console >> elsa.log 2>&1 < /dev/null &

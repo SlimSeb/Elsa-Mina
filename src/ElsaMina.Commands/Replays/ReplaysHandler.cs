@@ -12,11 +12,9 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Replays;
 
-public class ReplaysHandler : ChatMessageHandler
+public partial class ReplaysHandler : ChatMessageHandler
 {
-    private static readonly Regex REPLAY_URL_REGEX =
-        new(@"https:\/\/(replay\.pokemonshowdown\.com\/(\w{1,30}-){0,1}\w{2,30}-\d{1,30}(-\w{33}){0,1})",
-            RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex REPLAY_URL_REGEX = ReplayUrlRegex();
 
     private readonly IHttpService _httpService;
     private readonly ITemplatesManager _templatesManager;
@@ -82,4 +80,7 @@ public class ReplaysHandler : ChatMessageHandler
             Log.Error(exception, "Failed to get replay info");
         }
     }
+
+    [GeneratedRegex(@"https:\/\/(replay\.pokemonshowdown\.com\/(\w{1,30}-){0,1}\w{2,30}-\d{1,30}(-\w{33}){0,1})", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex ReplayUrlRegex();
 }

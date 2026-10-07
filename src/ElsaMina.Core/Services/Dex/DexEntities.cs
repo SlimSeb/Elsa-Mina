@@ -86,13 +86,13 @@ public class EvolutionNext
 public class Evolution
 {
     [JsonPropertyName("pre")]
-    public object PreEvolution { get; set; }
+    public List<EvolutionNext> PreEvolution { get; set; }
 
     [JsonPropertyName("next")]
     public List<EvolutionNext> NextEvolutions { get; set; }
 
     [JsonPropertyName("mega")]
-    public object MegaEvolution { get; set; }
+    public List<MegaEvolution> MegaEvolution { get; set; }
 }
 
 public class Gender
@@ -155,5 +155,5 @@ public class Pokemon
     public int? Level100Experience { get; set; }
 
     [JsonPropertyName("formes")]
-    public object Formes { get; set; }
+    public List<Forme> Formes { get; set; }
 }

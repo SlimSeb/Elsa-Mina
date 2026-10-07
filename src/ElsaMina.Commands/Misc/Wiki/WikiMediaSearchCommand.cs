@@ -8,7 +8,7 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Misc.Wiki;
 
-public abstract class WikiMediaSearchCommand : Command
+public abstract partial class WikiMediaSearchCommand : Command
 {
     protected abstract string ApiUrl { get; }
     protected abstract string GetPageUrl(string title);
@@ -225,24 +225,40 @@ public abstract class WikiMediaSearchCommand : Command
     private static string CleanWikiMarkup(string text)
     {
         // Remove [[File:...]] / [[Image:...]] / [[Fichier:...]]
-        text = Regex.Replace(text, @"\[\[(File|Image|Fichier):[^\]]+\]\]", string.Empty, RegexOptions.IgnoreCase,
-            Constants.REGEX_MATCH_TIMEOUT);
+        text = FileLinkRegex().Replace(text, string.Empty);
         // [[link|display text]] → display text
-        text = Regex.Replace(text, @"\[\[[^\]]+\|([^\]]+)\]\]", "$1", RegexOptions.Compiled,
-            Constants.REGEX_MATCH_TIMEOUT);
+        text = LabeledLinkRegex().Replace(text, "$1");
         // [[link]] → link
-        text = Regex.Replace(text, @"\[\[([^\]]+)\]\]", "$1", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+        text = LinkRegex().Replace(text, "$1");
         // {{Template|arg}} → last pipe segment (e.g. {{Jeu|DP}} → DP)
-        text = Regex.Replace(text, @"\{\{[^{}]+\}\}", match =>
+        text = TemplateRegex().Replace(text, match =>
         {
             var parts = match.Value[2..^2].Split('|');
             return parts.Length > 1 ? parts[^1] : string.Empty;
-        }, RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+        });
         // Bold and italic
         text = text.Replace("'''", string.Empty).Replace("''", string.Empty);
         // HTML tags
-        text = Regex.Replace(text, @"<[^>]+>", string.Empty, RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+        text = HtmlTagRegex().Replace(text, string.Empty);
         // Collapse whitespace
-        return Regex.Replace(text, @"\s+", " ", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT).Trim();
+        return WhitespaceRegex().Replace(text, " ").Trim();
     }
+
+    [GeneratedRegex(@"\[\[(File|Image|Fichier):[^\]]+\]\]", RegexOptions.IgnoreCase, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex FileLinkRegex();
+
+    [GeneratedRegex(@"\[\[[^\]]+\|([^\]]+)\]\]", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex LabeledLinkRegex();
+
+    [GeneratedRegex(@"\[\[([^\]]+)\]\]", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex LinkRegex();
+
+    [GeneratedRegex(@"\{\{[^{}]+\}\}", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex TemplateRegex();
+
+    [GeneratedRegex(@"<[^>]+>", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex HtmlTagRegex();
+
+    [GeneratedRegex(@"\s+", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex WhitespaceRegex();
 }

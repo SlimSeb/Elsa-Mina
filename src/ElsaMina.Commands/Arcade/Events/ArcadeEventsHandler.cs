@@ -9,24 +9,18 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Arcade.Events;
 
-public class ArcadeEventsHandler : Handler
+public partial class ArcadeEventsHandler : Handler
 {
     private const string WEBHOOK_USERNAME = "Elsa Mina";
     private const string WEBHOOK_AVATAR_URL = "https://play.pokemonshowdown.com/sprites/trainers/lusamine.png";
     private const string NOTIFICATION_TITLE = "Event Notification";
     private const int NOTIFICATION_COLOR = 3066993;
 
-    private static readonly Regex EVENT_REGEX =
-        new("""<div class="broadcast-blue"><b>The "(.*?)" roomevent has started!</b></div>""", RegexOptions.Compiled,
-            Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex EVENT_REGEX = EventRegex();
 
-    private static readonly Regex INFOBOX_REGEX =
-        new(@"<td>(.*?)</td><td>(.*?)</td><td><time>.*?</time></td>",
-            RegexOptions.Compiled | RegexOptions.Singleline,
-            Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex INFOBOX_REGEX = InfoboxRegex();
 
-    private static readonly Regex HTML_TAG_REGEX =
-        new(@"<.*?>", RegexOptions.Compiled | RegexOptions.Singleline, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex HTML_TAG_REGEX = HtmlTagRegex();
 
     private static readonly TimeSpan GAMES_MUTE_DURATION = TimeSpan.FromMinutes(45);
 
@@ -145,4 +139,13 @@ public class ArcadeEventsHandler : Handler
             Log.Error(ex, "Error while sending arcade announce via webhook");
         }
     }
+
+    [GeneratedRegex("""<div class="broadcast-blue"><b>The "(.*?)" roomevent has started!</b></div>""", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex EventRegex();
+
+    [GeneratedRegex(@"<td>(.*?)</td><td>(.*?)</td><td><time>.*?</time></td>", RegexOptions.Singleline, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex InfoboxRegex();
+
+    [GeneratedRegex(@"<.*?>", RegexOptions.Singleline, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex HtmlTagRegex();
 }

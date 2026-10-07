@@ -5,25 +5,19 @@ using System.Text.RegularExpressions;
 
 namespace ElsaMina.Core.Utils;
 
-public static class StringExtensions
+public static partial class StringExtensions
 {
-    private static readonly Regex ALPHA_NUMERIC_FILTER_REGEX = new("[^A-Za-z0-9]",
-        RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex ALPHA_NUMERIC_FILTER_REGEX = AlphaNumericFilterRegex();
 
-    private static readonly Regex WHITESPACE_BETWEEN_TAGS_REGEX =
-        new(@"\s*(<[^>]+>)\s*", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex WHITESPACE_BETWEEN_TAGS_REGEX = WhitespaceBetweenTagsRegex();
 
-    private static readonly Regex EXCESS_WHITESPACE_BETWEEN_TAGS_REGEX =
-        new(@"\s{2,}(?=<)|(?<=>)\s{2,}", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex EXCESS_WHITESPACE_BETWEEN_TAGS_REGEX = ExcessWhitespaceBetweenTagsRegex();
 
-    private static readonly Regex HTML_TAG_REGEX =
-        new(@"<[^>]+>", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex HTML_TAG_REGEX = HtmlTagRegex();
 
-    private static readonly Regex MULTIPLE_WHITESPACE_REGEX =
-        new(@"\s{2,}", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex MULTIPLE_WHITESPACE_REGEX = MultipleWhitespaceRegex();
 
-    private static readonly Regex IMAGE_LINK_REGEX = new("(http)?s?:(//[^\"']*.(?:png|jpg|jpeg|gif|png|svg))",
-        RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex IMAGE_LINK_REGEX = ImageLinkRegex();
 
     public static string ToLowerAlphaNum(this string text)
     {
@@ -274,4 +268,22 @@ public static class StringExtensions
 
     private static bool IsKeycapBase(int cp)
         => cp is (>= '0' and <= '9') or '#' or '*';
+
+    [GeneratedRegex("[^A-Za-z0-9]", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex AlphaNumericFilterRegex();
+
+    [GeneratedRegex(@"\s*(<[^>]+>)\s*", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex WhitespaceBetweenTagsRegex();
+
+    [GeneratedRegex(@"\s{2,}(?=<)|(?<=>)\s{2,}", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex ExcessWhitespaceBetweenTagsRegex();
+
+    [GeneratedRegex(@"<[^>]+>", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex HtmlTagRegex();
+
+    [GeneratedRegex(@"\s{2,}", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex MultipleWhitespaceRegex();
+
+    [GeneratedRegex("(http)?s?:(//[^\"']*.(?:png|jpg|jpeg|gif|png|svg))", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex ImageLinkRegex();
 }

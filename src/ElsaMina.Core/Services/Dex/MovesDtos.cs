@@ -7,8 +7,12 @@ public sealed class MoveData
     [JsonPropertyName("num")]
     public int Num { get; set; }
 
+    /// <summary>
+    /// Accuracy percentage, or null when the move never misses.
+    /// </summary>
     [JsonPropertyName("accuracy")]
-    public object Accuracy { get; set; } = true;
+    [JsonConverter(typeof(MoveAccuracyJsonConverter))]
+    public int? Accuracy { get; set; }
 
     [JsonPropertyName("basePower")]
     public int BasePower { get; set; }

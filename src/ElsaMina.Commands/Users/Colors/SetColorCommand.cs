@@ -8,12 +8,9 @@ using ElsaMina.Core.Utils;
 namespace ElsaMina.Commands.Users.Colors;
 
 [NamedCommand("setcolor", Aliases = ["addnamecolor"])]
-public class SetColorCommand : Command
+public partial class SetColorCommand : Command
 {
-    private static readonly Regex HEX_COLOR_REGEX = new(
-        @"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-        RegexOptions.Compiled,
-        Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex HEX_COLOR_REGEX = HexColorRegex();
 
     private readonly INameColorsService _nameColorsService;
 
@@ -46,4 +43,7 @@ public class SetColorCommand : Command
         await _nameColorsService.SetColorAsync(userId, color, cancellationToken);
         context.ReplyLocalizedMessage("setcolor_success", color, userId);
     }
+
+    [GeneratedRegex(@"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex HexColorRegex();
 }

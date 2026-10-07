@@ -14,18 +14,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElsaMina.Commands.Watchlist;
 
-public class WatchlistService : IWatchlistService
+public partial class WatchlistService : IWatchlistService
 {
     private static readonly TimeSpan STAFF_INTRO_FETCH_TIMEOUT = TimeSpan.FromSeconds(5);
 
-    private static readonly Regex INFOBOX_OPEN_TAG =
-        new(@"<div class=""infobox"">", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex INFOBOX_OPEN_TAG = InfoboxOpenTagRegex();
 
-    private static readonly Regex INFOBOX_CLOSE_TAG =
-        new(@"</div>", RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex INFOBOX_CLOSE_TAG = InfoboxCloseTagRegex();
 
-    private static readonly Regex WATCHLIST_DIV = new(@"(<div class=""watchlist"">).*?(</div>)",
-        RegexOptions.Compiled | RegexOptions.Singleline, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex WATCHLIST_DIV = WatchlistDivRegex();
 
     private readonly IBotDbContextFactory _dbContextFactory;
     private readonly IBot _bot;
@@ -154,4 +151,13 @@ public class WatchlistService : IWatchlistService
         });
         return string.Join(", ", parts);
     }
+
+    [GeneratedRegex(@"<div class=""infobox"">", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex InfoboxOpenTagRegex();
+
+    [GeneratedRegex(@"</div>", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex InfoboxCloseTagRegex();
+
+    [GeneratedRegex(@"(<div class=""watchlist"">).*?(</div>)", RegexOptions.Singleline, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex WatchlistDivRegex();
 }

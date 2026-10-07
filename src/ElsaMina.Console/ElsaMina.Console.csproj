@@ -4,7 +4,16 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        <!-- The bot runs on a single core VPS: a background GC thread brings no benefit and costs memory -->
+        <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+        <!-- Dynamic PGO instruments methods and rejits hot ones, growing JIT code memory over time -->
+        <TieredPGO>false</TieredPGO>
     </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Lets the GC compact more aggressively (0-9) to keep the committed heap closer to the live heap -->
+        <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="5" />
+    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\ElsaMina.Battles\ElsaMina.Battles.csproj"/>
@@ -21,7 +30,7 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Grafana.OpenTelemetry" />
+      <PackageReference Include="Grafana.OpenTelemetry.Base" />
       <PackageReference Include="System.Security.Cryptography.Xml" />
     </ItemGroup>
 

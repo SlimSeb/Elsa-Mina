@@ -38,6 +38,8 @@ jobs:
         run: ./scripts/Build/build.sh
       - name: publish
         run: ./scripts/Build/publish.sh
+      - name: write publish manifest
+        run: (cd output && find . -type f | sort > publish-manifest.txt)
       - name: stage restart script
         run: cp scripts/Build/restart_remote.sh ./output/restart_remote.sh
       - name: upload artifacts

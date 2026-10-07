@@ -5,12 +5,11 @@ using ElsaMina.Logging;
 
 namespace ElsaMina.Commands.Teams.TeamProviders.CoupCritique;
 
-public class CoupCritiqueProvider : ITeamProvider
+public partial class CoupCritiqueProvider : ITeamProvider
 {
     private const string COUP_CRITIQUE_API_URL = "https://www.coupcritique.fr/api/teams/{0}";
 
-    private static readonly Regex TEAM_LINK_REGEX = new(@"https:\/\/(www\.coupcritique\.fr\/entity\/teams\/\d+\/?)",
-        RegexOptions.Compiled, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex TEAM_LINK_REGEX = TeamLinkRegex();
 
     private readonly IHttpService _httpService;
 
@@ -54,4 +53,7 @@ public class CoupCritiqueProvider : ITeamProvider
             return null;
         }
     }
+
+    [GeneratedRegex(@"https:\/\/(www\.coupcritique\.fr\/entity\/teams\/\d+\/?)", RegexOptions.None, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex TeamLinkRegex();
 }

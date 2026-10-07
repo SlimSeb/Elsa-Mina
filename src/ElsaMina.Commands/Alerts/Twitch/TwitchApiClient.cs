@@ -7,7 +7,7 @@ using ElsaMina.Core.Services.Http;
 
 namespace ElsaMina.Commands.Alerts.Twitch;
 
-public class TwitchApiClient : ITwitchApiClient
+public partial class TwitchApiClient : ITwitchApiClient
 {
     private const string TOKEN_URL = "https://id.twitch.tv/oauth2/token";
     private const string USERS_URL = "https://api.twitch.tv/helix/users";
@@ -15,8 +15,7 @@ public class TwitchApiClient : ITwitchApiClient
     private const int MAX_IDS_PER_REQUEST = 100;
     private static readonly TimeSpan TOKEN_EXPIRY_MARGIN = TimeSpan.FromMinutes(5);
 
-    private static readonly Regex LOGIN_REGEX = new(@"^(?:https?://)?(?:www\.)?(?:twitch\.tv/)?@?(\w{1,25})/?$",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex LOGIN_REGEX = LoginRegex();
 
     private readonly IHttpService _httpService;
     private readonly IConfiguration _configuration;
@@ -126,4 +125,7 @@ public class TwitchApiClient : ITwitchApiClient
             _tokenSemaphore.Release();
         }
     }
+
+    [GeneratedRegex(@"^(?:https?://)?(?:www\.)?(?:twitch\.tv/)?@?(\w{1,25})/?$", RegexOptions.IgnoreCase, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex LoginRegex();
 }

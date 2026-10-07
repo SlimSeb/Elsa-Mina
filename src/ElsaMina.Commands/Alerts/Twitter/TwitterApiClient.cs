@@ -5,14 +5,12 @@ using ElsaMina.Core.Services.Http;
 
 namespace ElsaMina.Commands.Alerts.Twitter;
 
-public class TwitterApiClient : ITwitterApiClient
+public partial class TwitterApiClient : ITwitterApiClient
 {
     private const string API_BASE_URL = "https://api.twitter.com/2";
     private const string MAX_RESULTS = "5";
 
-    private static readonly Regex USERNAME_REGEX =
-        new(@"^(?:(?:https?://)?(?:www\.|mobile\.)?(?:twitter|x)\.com/)?@?(\w{1,15})/?$",
-            RegexOptions.Compiled | RegexOptions.IgnoreCase, Constants.REGEX_MATCH_TIMEOUT);
+    private static readonly Regex USERNAME_REGEX = UsernameRegex();
 
     private readonly IHttpService _httpService;
     private readonly IConfiguration _configuration;
@@ -61,4 +59,7 @@ public class TwitterApiClient : ITwitterApiClient
     {
         return request.WithHeader("Authorization", $"Bearer {_configuration.TwitterBearerToken}");
     }
+
+    [GeneratedRegex(@"^(?:(?:https?://)?(?:www\.|mobile\.)?(?:twitter|x)\.com/)?@?(\w{1,15})/?$", RegexOptions.IgnoreCase, Constants.REGEX_MATCH_TIMEOUT_MILLISECONDS)]
+    private static partial Regex UsernameRegex();
 }
