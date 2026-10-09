@@ -51,11 +51,6 @@ public class ChessGameTest
         _mockUser2.UserId.Returns("player2");
     }
 
-    [TearDown]
-    public void TearDown()
-    {
-    }
-
     [Test]
     public async Task Test_JoinGame_ShouldAddPlayersAndStart_WhenTwoPlayersJoin()
     {

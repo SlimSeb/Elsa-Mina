@@ -72,7 +72,7 @@ public class ProjectDependenciesTest
         return XDocument.Load(projectFile)
             .Descendants("ProjectReference")
             .Select(reference => Path.GetFileNameWithoutExtension(
-                reference.Attribute("Include")!.Value.Replace('\\', Path.DirectorySeparatorChar)))
+                reference.Attribute("Include").Value.Replace('\\', Path.DirectorySeparatorChar)))
             .ToList();
     }
 

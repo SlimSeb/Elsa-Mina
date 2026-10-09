@@ -244,11 +244,11 @@ public class LightsOutGameTest
         // Force grid to all-false so we can predict neighbors
         var gridProp = typeof(LightsOutGame).GetProperty("Grid");
         var grid = new bool[_game.GridSize, _game.GridSize];
-        gridProp!.SetValue(_game, grid);
+        gridProp.SetValue(_game, grid);
 
         // Force IsRoundActive true via backing field
         var roundActiveProp = typeof(LightsOutGame).GetProperty("IsRoundActive");
-        roundActiveProp!.SetValue(_game, true);
+        roundActiveProp.SetValue(_game, true);
 
         int center = _game.GridSize / 2;
         await _game.ToggleCell(_owner, center, center);
@@ -276,8 +276,8 @@ public class LightsOutGameTest
         grid[0, 0] = true;
         grid[0, 1] = true;
         grid[1, 0] = true;
-        typeof(LightsOutGame).GetProperty("Grid")!.SetValue(_game, grid);
-        typeof(LightsOutGame).GetProperty("IsRoundActive")!.SetValue(_game, true);
+        typeof(LightsOutGame).GetProperty("Grid").SetValue(_game, grid);
+        typeof(LightsOutGame).GetProperty("IsRoundActive").SetValue(_game, true);
 
         await _game.ToggleCell(_owner, 0, 0);
 
@@ -294,8 +294,8 @@ public class LightsOutGameTest
         grid[0, 0] = true;
         grid[0, 1] = true;
         grid[1, 0] = true;
-        typeof(LightsOutGame).GetProperty("Grid")!.SetValue(_game, grid);
-        typeof(LightsOutGame).GetProperty("IsRoundActive")!.SetValue(_game, true);
+        typeof(LightsOutGame).GetProperty("Grid").SetValue(_game, grid);
+        typeof(LightsOutGame).GetProperty("IsRoundActive").SetValue(_game, true);
 
         await _game.ToggleCell(_owner, 0, 0);
 
@@ -316,8 +316,8 @@ public class LightsOutGameTest
         grid[0, 0] = true;
         grid[0, 1] = true;
         grid[1, 0] = true;
-        typeof(LightsOutGame).GetProperty("Grid")!.SetValue(_game, grid);
-        typeof(LightsOutGame).GetProperty("IsRoundActive")!.SetValue(_game, true);
+        typeof(LightsOutGame).GetProperty("Grid").SetValue(_game, grid);
+        typeof(LightsOutGame).GetProperty("IsRoundActive").SetValue(_game, true);
 
         await _game.ToggleCell(_owner, 0, 0);
 
@@ -338,12 +338,12 @@ public class LightsOutGameTest
         if (!_game.IsRoundActive) return;
 
         // Force MoveCount to 2 (≤ presses=3), then solve with 1 more = 3 total - still ≤3.
-        typeof(LightsOutGame).GetProperty("MoveCount")!.SetValue(_game, 2);
+        typeof(LightsOutGame).GetProperty("MoveCount").SetValue(_game, 2);
 
         var grid = new bool[_game.GridSize, _game.GridSize];
         grid[0, 0] = true; grid[0, 1] = true; grid[1, 0] = true;
-        typeof(LightsOutGame).GetProperty("Grid")!.SetValue(_game, grid);
-        typeof(LightsOutGame).GetProperty("IsRoundActive")!.SetValue(_game, true);
+        typeof(LightsOutGame).GetProperty("Grid").SetValue(_game, grid);
+        typeof(LightsOutGame).GetProperty("IsRoundActive").SetValue(_game, true);
 
         await _game.ToggleCell(_owner, 0, 0); // MoveCount becomes 3
 
@@ -357,12 +357,12 @@ public class LightsOutGameTest
         await _game.StartNewRound();
         if (!_game.IsRoundActive) return;
 
-        typeof(LightsOutGame).GetProperty("MoveCount")!.SetValue(_game, 5);
+        typeof(LightsOutGame).GetProperty("MoveCount").SetValue(_game, 5);
 
         var grid = new bool[_game.GridSize, _game.GridSize];
         grid[0, 0] = true; grid[0, 1] = true; grid[1, 0] = true;
-        typeof(LightsOutGame).GetProperty("Grid")!.SetValue(_game, grid);
-        typeof(LightsOutGame).GetProperty("IsRoundActive")!.SetValue(_game, true);
+        typeof(LightsOutGame).GetProperty("Grid").SetValue(_game, grid);
+        typeof(LightsOutGame).GetProperty("IsRoundActive").SetValue(_game, true);
 
         await _game.ToggleCell(_owner, 0, 0); // MoveCount becomes 6 (== presses*2)
 
@@ -376,12 +376,12 @@ public class LightsOutGameTest
         await _game.StartNewRound();
         if (!_game.IsRoundActive) return;
 
-        typeof(LightsOutGame).GetProperty("MoveCount")!.SetValue(_game, 9);
+        typeof(LightsOutGame).GetProperty("MoveCount").SetValue(_game, 9);
 
         var grid = new bool[_game.GridSize, _game.GridSize];
         grid[0, 0] = true; grid[0, 1] = true; grid[1, 0] = true;
-        typeof(LightsOutGame).GetProperty("Grid")!.SetValue(_game, grid);
-        typeof(LightsOutGame).GetProperty("IsRoundActive")!.SetValue(_game, true);
+        typeof(LightsOutGame).GetProperty("Grid").SetValue(_game, grid);
+        typeof(LightsOutGame).GetProperty("IsRoundActive").SetValue(_game, true);
 
         await _game.ToggleCell(_owner, 0, 0); // MoveCount becomes 10
 
@@ -468,8 +468,8 @@ public class LightsOutGameTest
 
         var grid = new bool[_game.GridSize, _game.GridSize];
         grid[0, 0] = true; grid[0, 1] = true; grid[1, 0] = true;
-        typeof(LightsOutGame).GetProperty("Grid")!.SetValue(_game, grid);
-        typeof(LightsOutGame).GetProperty("IsRoundActive")!.SetValue(_game, true);
+        typeof(LightsOutGame).GetProperty("Grid").SetValue(_game, grid);
+        typeof(LightsOutGame).GetProperty("IsRoundActive").SetValue(_game, true);
 
         await _game.ToggleCell(_owner, 0, 0);
 
@@ -498,17 +498,17 @@ public class LightsOutGameTest
         if (!_game.IsRoundActive) return;
 
         // Solve in 1 move (better than existing 10)
-        typeof(LightsOutGame).GetProperty("MoveCount")!.SetValue(_game, 0);
+        typeof(LightsOutGame).GetProperty("MoveCount").SetValue(_game, 0);
         var grid = new bool[_game.GridSize, _game.GridSize];
         grid[0, 0] = true; grid[0, 1] = true; grid[1, 0] = true;
-        typeof(LightsOutGame).GetProperty("Grid")!.SetValue(_game, grid);
-        typeof(LightsOutGame).GetProperty("IsRoundActive")!.SetValue(_game, true);
+        typeof(LightsOutGame).GetProperty("Grid").SetValue(_game, grid);
+        typeof(LightsOutGame).GetProperty("IsRoundActive").SetValue(_game, true);
 
         await _game.ToggleCell(_owner, 0, 0);
 
         await using var assertDb = new BotDbContext(_dbOptions);
         var record = await assertDb.LightsOutScores.FindAsync("testplayer");
-        Assert.That(record!.BestMoves, Is.EqualTo(1));
+        Assert.That(record.BestMoves, Is.EqualTo(1));
     }
 
     [Test]
@@ -526,17 +526,17 @@ public class LightsOutGameTest
         await _game.StartNewRound();
         if (!_game.IsRoundActive) return;
 
-        typeof(LightsOutGame).GetProperty("MoveCount")!.SetValue(_game, 9);
+        typeof(LightsOutGame).GetProperty("MoveCount").SetValue(_game, 9);
         var grid = new bool[_game.GridSize, _game.GridSize];
         grid[0, 0] = true; grid[0, 1] = true; grid[1, 0] = true;
-        typeof(LightsOutGame).GetProperty("Grid")!.SetValue(_game, grid);
-        typeof(LightsOutGame).GetProperty("IsRoundActive")!.SetValue(_game, true);
+        typeof(LightsOutGame).GetProperty("Grid").SetValue(_game, grid);
+        typeof(LightsOutGame).GetProperty("IsRoundActive").SetValue(_game, true);
 
         await _game.ToggleCell(_owner, 0, 0);
 
         await using var assertDb = new BotDbContext(_dbOptions);
         var record = await assertDb.LightsOutScores.FindAsync("testplayer");
-        Assert.That(record!.BestMoves, Is.EqualTo(1));
+        Assert.That(record.BestMoves, Is.EqualTo(1));
     }
 
     [Test]
@@ -555,17 +555,17 @@ public class LightsOutGameTest
         if (!_game.IsRoundActive) return;
 
         // Solve in 3 moves = 3 stars (level 1 has presses=3)
-        typeof(LightsOutGame).GetProperty("MoveCount")!.SetValue(_game, 2);
+        typeof(LightsOutGame).GetProperty("MoveCount").SetValue(_game, 2);
         var grid = new bool[_game.GridSize, _game.GridSize];
         grid[0, 0] = true; grid[0, 1] = true; grid[1, 0] = true;
-        typeof(LightsOutGame).GetProperty("Grid")!.SetValue(_game, grid);
-        typeof(LightsOutGame).GetProperty("IsRoundActive")!.SetValue(_game, true);
+        typeof(LightsOutGame).GetProperty("Grid").SetValue(_game, grid);
+        typeof(LightsOutGame).GetProperty("IsRoundActive").SetValue(_game, true);
 
         await _game.ToggleCell(_owner, 0, 0);
 
         await using var assertDb = new BotDbContext(_dbOptions);
         var record = await assertDb.LightsOutScores.FindAsync("testplayer");
-        Assert.That(record!.TotalStars, Is.EqualTo(5 + _game.Stars));
+        Assert.That(record.TotalStars, Is.EqualTo(5 + _game.Stars));
     }
 
     #endregion

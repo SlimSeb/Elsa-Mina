@@ -193,9 +193,9 @@ public class RemovePointsCommandTest
             "Arcade/Points/PointsUpdate",
             Arg.Is<PointsUpdateViewModel>(vm =>
                 vm.Username == "user1" &&
-                vm.PointsAdded == 5.0 &&
-                vm.NewTotal == 5.0 &&
-                vm.IsAddition == false
+                Math.Abs(vm.PointsAdded - 5.0) < 0.001 &&
+                Math.Abs(vm.NewTotal - 5.0) < 0.001 &&
+                !vm.IsAddition
             )
         );
     }
@@ -258,8 +258,8 @@ public class RemovePointsCommandTest
             "Arcade/Points/PointsUpdate",
             Arg.Is<PointsUpdateViewModel>(vm =>
                 vm.Leaderboard.Count == 2 &&
-                vm.Leaderboard["user1"] == 15 &&
-                vm.Leaderboard["user2"] == 15
+                Math.Abs(vm.Leaderboard["user1"] - 15) < 0.001 &&
+                Math.Abs(vm.Leaderboard["user2"] - 15) < 0.001
             )
         );
     }
@@ -298,7 +298,7 @@ public class RemovePointsCommandTest
 
         var action = async () => await _command.RunAsync(_context);
 
-        Assert.That(action, Throws.TypeOf<Exception>());
+        await Assert.ThatAsync(action, Throws.TypeOf<Exception>());
     }
 
     [Test]

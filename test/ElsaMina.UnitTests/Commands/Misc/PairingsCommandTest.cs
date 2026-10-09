@@ -42,7 +42,6 @@ public class PairingsCommandTest
     {
         // Arrange
         _context.Target.Returns("Player1, Player2, Player3, Player4");
-        var players = new List<string> { "Player1", "Player2", "Player3", "Player4" };
         _randomService.When(x => x.ShuffleInPlace(Arg.Any<List<string>>()))
             .Do(x => 
             {
@@ -81,7 +80,6 @@ public class PairingsCommandTest
             Arg.Any<HttpRequest>(),
             Arg.Any<CancellationToken>())
             .Returns(new HttpResponse<string> { Data = "Player1\nPlayer2\nPlayer3\nPlayer4" });
-        var players = new List<string> { "Player1", "Player2", "Player3", "Player4" };
         _randomService.When(x => x.ShuffleInPlace(Arg.Any<List<string>>()))
             .Do(x => 
             {
@@ -118,7 +116,6 @@ public class PairingsCommandTest
     {
         // Arrange
         _context.Target.Returns("Player1, Player2, Player3");
-        var players = new List<string> { "Player1", "Player2", "Player3" };
         _randomService.When(x => x.ShuffleInPlace(Arg.Any<List<string>>()))
             .Do(x => 
             {

@@ -36,7 +36,10 @@ jobs:
           dotnet sonarscanner begin /o:"slimf1" /k:"slimf1_Elsa-Mina" \
                                     /d:sonar.token="$SONAR_TOKEN" \
                                     /d:sonar.cs.vscoveragexml.reportsPaths=coverage.xml \
-                                    /d:sonar.exclusions="**/Migrations/**,**/scripts/**"
+                                    /d:sonar.exclusions="**/Migrations/**,**/scripts/**" \
+                                    /d:sonar.issue.ignore.multicriteria=e1 \
+                                    /d:sonar.issue.ignore.multicriteria.e1.ruleKey=csharpsquid:S1075 \
+                                    /d:sonar.issue.ignore.multicriteria.e1.resourceKey="**/*"
           dotnet build --no-incremental
           dotnet-coverage collect "dotnet test" -f xml -o "coverage.xml"
           dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"

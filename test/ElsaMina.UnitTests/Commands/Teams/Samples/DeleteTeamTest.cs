@@ -61,7 +61,7 @@ public class DeleteTeamCommandTests
         
         // Assert
         await using var dbContext = new BotDbContext(_dbContextOptions);
-        Assert.That(dbContext.Teams.Any(t => t.Id == "teamid"), Is.False);
+        Assert.That(await dbContext.Teams.AnyAsync(t => t.Id == "teamid"), Is.False);
         _context.Received().ReplyLocalizedMessage("deleteteam_team_deleted_successfully");
     }
 }

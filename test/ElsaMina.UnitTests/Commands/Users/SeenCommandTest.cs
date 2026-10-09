@@ -63,7 +63,7 @@ public class SeenCommandTest
         context.Received(1).GetString("seen_command_help");
         context.Received(1).Reply("seen help", rankAware: true);
         context.DidNotReceiveWithAnyArgs()
-            .ReplyRankAwareLocalizedMessage(null!, null!);
+            .ReplyRankAwareLocalizedMessage(null, null);
     }
 
     [Test]

@@ -1,0 +1,11 @@
+#!/bin/bash
+# Runs the Sonar analysis before a commit that changes C# or Razor code.
+# Enable it once with: git config core.hooksPath scripts/hooks
+set -euo pipefail
+
+if ! git diff --cached --name-only --diff-filter=ACMR | grep -qE '\.(cs|razor|csproj|props|editorconfig)$'; then
+  exit 0
+fi
+
+cd "$(git rev-parse --show-toplevel)"
+./scripts/Build/code-analysis.sh

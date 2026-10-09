@@ -26,7 +26,7 @@ public class TourConfigLauncher : IDynamicCommandProvider
             return false;
         }
 
-        var config = await _tourConfigService.GetTourConfigAsync(commandName, context.RoomId);
+        var config = await _tourConfigService.GetTourConfigAsync(commandName, context.RoomId, cancellationToken);
         if (config == null)
         {
             return false;

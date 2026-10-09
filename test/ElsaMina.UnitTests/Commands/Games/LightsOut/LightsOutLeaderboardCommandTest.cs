@@ -140,6 +140,6 @@ public class LightsOutLeaderboardCommandTest
 
         await _sut.RunAsync(_context);
 
-        Assert.That(capturedViewModel!.Leaderboard, Has.Count.EqualTo(20));
+        Assert.That(capturedViewModel.Leaderboard, Has.Count.EqualTo(20));
     }
 }

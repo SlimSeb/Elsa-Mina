@@ -1,3 +1,4 @@
+using System.Globalization;
 using ElsaMina.Commands.ChatLog;
 
 namespace ElsaMina.UnitTests.Commands.ChatLog;
@@ -8,7 +9,7 @@ public class ChatLogHelpersTest
     [TestCase("2024-01-01", "chatlogs/testroom/2024-01-01.txt")]
     public void Test_GetS3Key_ShouldReturnCorrectPath(string dateStr, string expected)
     {
-        var date = DateOnly.Parse(dateStr);
+        var date = DateOnly.Parse(dateStr, CultureInfo.InvariantCulture);
         Assert.That(ChatLogHelpers.GetS3Key("testroom", date), Is.EqualTo(expected));
     }
 

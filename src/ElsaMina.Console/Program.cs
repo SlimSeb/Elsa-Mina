@@ -16,7 +16,7 @@ var botHost = new BotHost(
     container.Resolve<IIncomingMessageDispatcher>());
 botHost.Start();
 
-System.Console.CancelKeyPress += (_, eventArgs) =>
+System.Console.CancelKeyPress += (sender, eventArgs) =>
 {
     eventArgs.Cancel = true;
     _ = botHost.ShutdownAsync();

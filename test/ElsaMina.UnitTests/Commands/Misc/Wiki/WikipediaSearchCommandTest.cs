@@ -2,7 +2,6 @@ using System.Globalization;
 using ElsaMina.Commands.Misc.Wiki;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Http;
-using ElsaMina.Core.Services.Images;
 using ElsaMina.Core.Services.Rooms;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -12,14 +11,12 @@ namespace ElsaMina.UnitTests.Commands.Misc.Wiki;
 public class WikipediaSearchCommandTest
 {
     private IHttpService _mockHttpService;
-    private IImageService _imageService;
     private WikipediaSearchCommand _command;
 
     [SetUp]
     public void SetUp()
     {
         _mockHttpService = Substitute.For<IHttpService>();
-        _imageService = Substitute.For<IImageService>();
         _command = new WikipediaSearchCommand(_mockHttpService);
     }
 

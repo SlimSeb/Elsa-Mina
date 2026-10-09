@@ -49,11 +49,6 @@ public class ConnectFourGameTest
         _mockUser2.Name.Returns("Player2");
     }
 
-    [TearDown]
-    public void TearDown()
-    {
-    }
-
     [Test]
     public async Task Test_JoinGame_ShouldAddPlayers_WhenGameIsNotStarted()
     {

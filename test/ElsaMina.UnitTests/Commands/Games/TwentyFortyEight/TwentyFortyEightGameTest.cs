@@ -58,16 +58,11 @@ public class TwentyFortyEightGameTest
         _game.Owner = _mockUser;
     }
 
-    [TearDown]
-    public void TearDown()
-    {
-    }
-
     // Sets the Grid property via reflection to enable controlled game state for testing.
     private static void SetGrid(TwentyFortyEightGame game, int[,] grid)
     {
         typeof(TwentyFortyEightGame)
-            .GetProperty(nameof(TwentyFortyEightGame.Grid))!
+            .GetProperty(nameof(TwentyFortyEightGame.Grid))
             .SetValue(game, grid);
     }
 

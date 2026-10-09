@@ -51,11 +51,6 @@ public class SlotsFunCommandTest
         _command = new SlotsFunCommand(_randomService, _clockService, _templatesManager, _arcadeEventsService);
     }
 
-    [TearDown]
-    public void TearDown()
-    {
-    }
-
     [Test]
     public void Test_RequiredRank_ShouldBeRegular()
     {

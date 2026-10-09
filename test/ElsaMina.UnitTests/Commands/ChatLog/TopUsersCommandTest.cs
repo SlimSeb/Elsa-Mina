@@ -75,7 +75,6 @@ public class TopUsersCommandTest
 
         await _command.RunAsync(context);
 
-        var now = DateTime.UtcNow;
         await _fileSharingService.DidNotReceiveWithAnyArgs().ListFilesAsync(default, default);
     }
 

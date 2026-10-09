@@ -50,7 +50,7 @@ public class TakeDollCommandTest
         _context.RoomId.Returns("room1");
         _roomUserDataService
             .TakeDollFromUserAsync("room1", "alice", "pikachu", Arg.Any<CancellationToken>())
-            .Throws(new ArgumentException());
+            .Throws(new ArgumentException("Test failure"));
 
         // Act
         await _command.RunAsync(_context);

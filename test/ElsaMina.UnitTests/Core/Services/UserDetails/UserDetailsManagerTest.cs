@@ -62,7 +62,6 @@ public class  UserDetailsManagerTest
     public async Task Test_GetUserDetails_ShouldReturnNull_WhenUserDetailsAreNotReceived()
     {
         // Arrange
-        // TODO : revoir ce test
         _systemService.SleepAsync(Arg.Any<TimeSpan>()).Returns(Task.Delay(TimeSpan.FromSeconds(1)));
 
         // Act

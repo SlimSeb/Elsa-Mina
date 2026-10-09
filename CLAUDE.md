@@ -13,6 +13,7 @@ Elsa-Mina is a Pokémon Showdown chat bot written in C# (.NET 10.0). It connects
 ./scripts/Build/restore.sh       # Restore NuGet packages
 ./scripts/Build/build.sh         # Build the solution
 ./scripts/Build/test.sh          # Run all tests
+./scripts/Build/code-analysis.sh # Fail on any Sonar rule issue (same check as CI)
 
 # Run a single test project
 dotnet test test/ElsaMina.UnitTests/ElsaMina.UnitTests.csproj --no-restore --verbosity normal
@@ -169,6 +170,7 @@ The `games_muted_event` key already exists in the `Games` feature resx files for
 
 - **One class per file**: every class, record, or interface must live in its own dedicated `.cs` file named after the type. Never define multiple types in a single file.
 - **No single-letter variables**: use descriptive names everywhere. Exception: integer loop indices (`i`, `j`, `k`) are allowed.
+- **Sonar rules**: every project builds with `SonarAnalyzer.CSharp` (`Directory.Build.props`), the rules SonarCloud runs. Sonar warnings fail the `code-analysis` CI job, so fix them; when a rule is wrong for a line, suppress it there with `#pragma warning disable Sxxxx // why`. Rules off for the whole repository are in `.editorconfig` (and in `sonar.yml` for SonarCloud).
 
 ## Testing Conventions
 

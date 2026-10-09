@@ -18,11 +18,14 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
         foreach (var definition in providers.SelectMany(provider => provider.GetDefinitions()))
         {
             // Les valeurs sont stockées sous l'identifiant : deux paramètres avec le même => ils s'écrasent entre eux
-            if (!definitions.TryAdd(new Parameter(definition.Identifier, definition.Name), definition))
+            var parameter = new Parameter(definition.Identifier, definition.Name);
+            if (definitions.ContainsKey(parameter))
             {
                 throw new InvalidOperationException(
                     $"Room parameter identifier '{definition.Identifier}' is defined more than once");
             }
+
+            definitions[parameter] = definition;
         }
 
         return definitions;

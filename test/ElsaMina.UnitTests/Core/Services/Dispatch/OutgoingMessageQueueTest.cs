@@ -17,7 +17,7 @@ public class OutgoingMessageQueueTest
     private ISystemService _systemService;
     private OutgoingMessageQueue _queue;
     private DateTimeOffset _now;
-    private List<TimeSpan> _sleeps;
+    private readonly List<TimeSpan> _sleeps = [];
 
     [SetUp]
     public void SetUp()
@@ -26,7 +26,7 @@ public class OutgoingMessageQueueTest
         _clockService = Substitute.For<IClockService>();
         _systemService = Substitute.For<ISystemService>();
         _now = START;
-        _sleeps = [];
+        _sleeps.Clear();
         _clockService.CurrentUtcDateTimeOffset.Returns(_ => _now);
         _systemService.SleepAsync(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>()).Returns(callInfo =>
         {

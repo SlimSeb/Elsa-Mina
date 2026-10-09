@@ -74,6 +74,7 @@ public class IncomingMessageDispatcherTest
 
         // Assert
         await otherRoomHandled.Task.WaitAsync(TIMEOUT);
+        Assert.That(blockRoom.Task.IsCompleted, Is.False);
         blockRoom.SetResult();
         await _dispatcher.WhenIdleAsync().WaitAsync(TIMEOUT);
     }

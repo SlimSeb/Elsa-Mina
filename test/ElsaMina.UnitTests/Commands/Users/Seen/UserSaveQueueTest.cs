@@ -11,10 +11,10 @@ namespace ElsaMina.UnitTests.Commands.Users.Seen;
 
 public class UserSaveQueueTests
 {
-    private ICommandsConfiguration _configuration = null!;
-    private IBotDbContextFactory _dbContextFactory = null!;
-    private DbContextOptions<BotDbContext> _options = null!;
-    private IClockService _clockService = null!;
+    private ICommandsConfiguration _configuration = null;
+    private IBotDbContextFactory _dbContextFactory = null;
+    private DbContextOptions<BotDbContext> _options = null;
+    private IClockService _clockService = null;
 
     [SetUp]
     public void SetUp()
@@ -87,7 +87,7 @@ public class UserSaveQueueTests
         Assert.That(user, Is.Not.Null);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(user!.UserId, Is.EqualTo("user1"));
+            Assert.That(user.UserId, Is.EqualTo("user1"));
             Assert.That(user.UserName, Is.EqualTo("User 1"));
             Assert.That(user.LastOnline, Is.EqualTo(_clockService.CurrentUtcDateTimeOffset));
             Assert.That(user.LastSeenRoomId, Is.EqualTo("room-a"));

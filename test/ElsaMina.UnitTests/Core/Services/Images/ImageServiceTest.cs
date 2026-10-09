@@ -23,7 +23,7 @@ public class ImageServiceTest
         // Arrange
         var assembly = typeof(ImageServiceTest).Assembly;
         var stream = assembly.GetManifestResourceStream(
-            "ElsaMina.UnitTests.Core.Services.Images.die.png")!;
+            "ElsaMina.UnitTests.Core.Services.Images.die.png");
 
         _httpService.SendForStreamAsync(Arg.Any<HttpRequest>()).Returns(stream);
 

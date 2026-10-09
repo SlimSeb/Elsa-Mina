@@ -30,7 +30,7 @@ public class SemantixDailyServiceTest
     [Test]
     public void Test_GetDailyAnswer_ShouldBeDeterministic_ForSameDay()
     {
-        _clockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 15));
+        _clockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 15, 0, 0, 0, DateTimeKind.Utc));
 
         var first = _sut.GetDailyAnswer();
         var second = _sut.GetDailyAnswer();
@@ -42,10 +42,10 @@ public class SemantixDailyServiceTest
     [Test]
     public void Test_GetDailyAnswer_ShouldChange_BetweenDays()
     {
-        _clockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 15));
+        _clockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 15, 0, 0, 0, DateTimeKind.Utc));
         var dayOne = _sut.GetDailyAnswer();
 
-        _clockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 16));
+        _clockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 16, 0, 0, 0, DateTimeKind.Utc));
         var dayTwo = _sut.GetDailyAnswer();
 
         Assert.That(dayOne, Is.Not.EqualTo(dayTwo));
@@ -55,7 +55,7 @@ public class SemantixDailyServiceTest
     public void Test_GetDailyAnswer_ShouldReturnNull_WhenNoAnswersAvailable()
     {
         _dataManager.SemantixAnswersFr.Returns((IReadOnlyList<string>)null);
-        _clockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 15));
+        _clockService.CurrentUtcDateTime.Returns(new DateTime(2026, 6, 15, 0, 0, 0, DateTimeKind.Utc));
 
         Assert.That(_sut.GetDailyAnswer(), Is.Null);
     }

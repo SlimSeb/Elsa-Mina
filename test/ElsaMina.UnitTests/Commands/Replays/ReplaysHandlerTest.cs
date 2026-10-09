@@ -15,7 +15,6 @@ public class ReplaysHandlerTest
     private ReplaysHandler _replaysHandler;
     private IHttpService _httpService;
     private ITemplatesManager _templatesManager;
-    private IRoomsManager _roomsManager;
     private IContext _context;
     private IRoom _room;
 
@@ -25,7 +24,6 @@ public class ReplaysHandlerTest
         var contextFactory = Substitute.For<IContextFactory>();
         _httpService = Substitute.For<IHttpService>();
         _templatesManager = Substitute.For<ITemplatesManager>();
-        _roomsManager = Substitute.For<IRoomsManager>();
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
         _room.TimeZone.Returns(TimeZoneInfo.Utc);
