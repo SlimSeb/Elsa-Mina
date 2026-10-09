@@ -7,7 +7,7 @@ namespace ElsaMina.UnitTests.Persistence;
 
 public class BotDbContextExtensionsTest
 {
-    private DbContextOptions<BotDbContext> _options = null!;
+    private DbContextOptions<BotDbContext> _options = null;
 
     [SetUp]
     public void SetUp()
@@ -32,7 +32,7 @@ public class BotDbContextExtensionsTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(user, Is.Not.Null);
-            Assert.That(user!.UserName, Is.EqualTo("ghost"));
+            Assert.That(user.UserName, Is.EqualTo("ghost"));
         }
     }
 
@@ -68,7 +68,7 @@ public class BotDbContextExtensionsTest
         await using var dbContext = new BotDbContext(_options);
 
         // Act
-        await dbContext.EnsureUserExistsAsync(null!);
+        await dbContext.EnsureUserExistsAsync(null);
         await dbContext.EnsureUserExistsAsync(string.Empty);
         await dbContext.SaveChangesAsync();
 

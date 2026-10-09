@@ -96,7 +96,7 @@ public class TarotConcurrencyTest
         var leader = _game.CurrentPlayer;
         var waiting = _game.Players.First(player => player != leader);
         var leaderCard = _game.GetLegalMoves(leader).First();
-        var waitingCard = waiting.Hand.First();
+        var waitingCard = waiting.Hand[0];
 
         await Task.WhenAll(
             _game.PlayAsync(waiting.User, waitingCard),

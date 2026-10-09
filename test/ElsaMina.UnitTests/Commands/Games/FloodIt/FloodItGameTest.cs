@@ -57,11 +57,6 @@ public class FloodItGameTest
         _game.Owner = _mockUser;
     }
 
-    [TearDown]
-    public void TearDown()
-    {
-    }
-
     // Helper: produce a two-color grid (color 0 at [0,0], color 1 everywhere else).
     // The greedy solver will pick color 1 in 1 move, which is <= MaxMoves, so init won't loop.
     private void SetUpTwoColorGrid()

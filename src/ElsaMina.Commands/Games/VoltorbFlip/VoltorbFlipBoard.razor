@@ -20,7 +20,6 @@
     const string cellStyle = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR};";
     const string cellStyleWithBg = $"border: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; background-color: {StyleConstants.PRIMARY_BACKGROUND_COLOR};";
 
-    const string voltorbSpriteUrl = "https://i.imgur.com/mrFUlA2.png";
     const string tileCellStyle = "background-color: #B48C85; color: black; font-weight: bold;";
     const string hiddenCellStyle = "background-color: #3C7E67; background-image: linear-gradient(45deg, #51A073 25%, transparent 25%, transparent 75%, #51A073 75%), linear-gradient(45deg, #51A073 25%, transparent 25%, transparent 75%, #51A073 75%); background-size: 24px 24px; background-position: 0 0, 12px 12px; color: black; font-weight: bold;";
 }
@@ -58,7 +57,7 @@
                                     else if (game.TileValues[row, col] == 0)
                                     {
                                         <div style="width: 36px; height: 36px; text-align: center; @tileCellStyle padding: 6px 0 0 0; box-sizing: border-box;">
-                                            <img src="@voltorbSpriteUrl" width="24" height="24" alt="Voltorb" style="display: inline-block;" />
+                                            <img src="@VoltorbFlipConstants.VOLTORB_SPRITE_URL" width="24" height="24" alt="Voltorb" style="display: inline-block;" />
                                         </div>
                                     }
                                     else
@@ -102,7 +101,7 @@
                 <span style="background-color: #e8e8e8; padding: 1px 4px;">1</span>&nbsp;@GetString("vf_panel_legend_one")<br/>
                 <span style="background-color: #ff9; font-weight: bold; padding: 1px 4px;">2</span>&nbsp;@GetString("vf_panel_legend_two")<br/>
                 <span style="background-color: #f90; font-weight: bold; padding: 1px 4px;">3</span>&nbsp;@GetString("vf_panel_legend_three")<br/>
-                <img src="@voltorbSpriteUrl" width="16" height="16" style="vertical-align: middle;" alt="Voltorb" />&nbsp;@GetString("vf_panel_legend_voltorb")<br/>
+                <img src="@VoltorbFlipConstants.VOLTORB_SPRITE_URL" width="16" height="16" style="vertical-align: middle;" alt="Voltorb" />&nbsp;@GetString("vf_panel_legend_voltorb")<br/>
                 <br/>
                 @if (game.IsRoundActive)
                 {
@@ -112,7 +111,7 @@
                         name="send"
                         value="/botmsg @Model.BotName,@(Model.Trigger)vftogglemark @Model.RoomId, 1"
                         style="@MarkerButtonStyle(game.ActiveMarkerType == VoltorbFlipMarkerType.Voltorb)">
-                        <img src="@voltorbSpriteUrl" width="12" height="12" alt="Voltorb" style="vertical-align: middle;" />
+                        <img src="@VoltorbFlipConstants.VOLTORB_SPRITE_URL" width="12" height="12" alt="Voltorb" style="vertical-align: middle;" />
                     </button>
                     <button
                         class="button"

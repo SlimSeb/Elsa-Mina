@@ -107,7 +107,7 @@ public class AddTeamToRoomCommandTests
 
         // Assert
         await using var dbContext = new BotDbContext(_options);
-        var updated = dbContext.Teams.Include(otherTeam => otherTeam.Rooms).Single();
+        var updated = await dbContext.Teams.Include(otherTeam => otherTeam.Rooms).SingleAsync();
         Assert.That(updated.Rooms.Any(roomTeam =>
             roomTeam.RoomId == "roomId" && roomTeam.TeamId == "teamid"), Is.True);
         _context.Received().ReplyLocalizedMessage("add_team_to_room_success");

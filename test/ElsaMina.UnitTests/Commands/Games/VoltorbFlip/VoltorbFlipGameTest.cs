@@ -62,11 +62,6 @@ public class VoltorbFlipGameTest
         _game.Owner = _mockUser;
     }
 
-    [TearDown]
-    public void TearDown()
-    {
-    }
-
     #region StartNewRound
 
     [Test]

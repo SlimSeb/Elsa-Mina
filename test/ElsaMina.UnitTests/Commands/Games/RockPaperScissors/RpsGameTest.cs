@@ -41,7 +41,7 @@ public class RpsGameTest
     [Test]
     public async Task Test_Join_ShouldAddFirstPlayer_WhenGameIsEmpty()
     {
-        var (success, messageKey, args) = await _game.Join("Player1");
+        var (success, messageKey, _) = await _game.Join("Player1");
 
         using (Assert.EnterMultipleScope())
         {

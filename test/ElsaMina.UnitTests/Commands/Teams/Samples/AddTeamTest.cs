@@ -121,7 +121,7 @@ public class AddTeamCommandTests
 
         // Assert
         await using var dbContext = new BotDbContext(_options);
-        var team = dbContext.Teams.Include(team => team.Rooms).Single();
+        var team = await dbContext.Teams.Include(team => team.Rooms).SingleAsync();
 
         using (Assert.EnterMultipleScope())
         {
@@ -162,7 +162,7 @@ public class AddTeamCommandTests
 
         // Assert
         await using var dbContext = new BotDbContext(_options);
-        var team = dbContext.Teams.Include(team => team.Rooms).Single();
+        var team = await dbContext.Teams.Include(team => team.Rooms).SingleAsync();
 
         using (Assert.EnterMultipleScope())
         {
@@ -195,7 +195,7 @@ public class AddTeamCommandTests
             .Returns(Task.FromException<int>(new Exception("Database error")));
 
         _dbContextFactory.CreateDbContextAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult((BotDbContext)throwingDbContext));
+            .Returns(Task.FromResult(throwingDbContext));
 
         // Act
         await _command.RunAsync(_context);
@@ -226,7 +226,7 @@ public class AddTeamCommandTests
 
         // Assert
         await using var dbContext = new BotDbContext(_options);
-        var team = dbContext.Teams.Single();
+        var team = await dbContext.Teams.SingleAsync();
         Assert.That(team.Format, Is.EqualTo(expectedFormat));
     }
 }

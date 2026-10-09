@@ -1,0 +1,7 @@
+root = true
+
+[*.{cs,razor}]
+# S1075 (hardcoded URIs): the flagged URLs are the fixed endpoints of public APIs (Showdown, Smogon, YouTube...),
+# not environment-specific locations, so moving them to configuration would add settings nobody changes.
+# The same rule is ignored on SonarCloud by .github/workflows/sonar.yml.
+dotnet_diagnostic.S1075.severity = none

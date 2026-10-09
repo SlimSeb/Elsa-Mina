@@ -45,7 +45,7 @@ public class ShowdownTeamsUtilsTest
 
         // Assert
         Assert.That(result, Has.Count.EqualTo(1));
-        var pokemonSet = result.First();
+        var pokemonSet = result[0];
         using (Assert.EnterMultipleScope())
         {
             Assert.That(pokemonSet.Species, Is.EqualTo("Pikachu"));

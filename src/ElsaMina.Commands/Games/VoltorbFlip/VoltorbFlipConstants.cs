@@ -4,6 +4,7 @@ public static class VoltorbFlipConstants
 {
     public const int GRID_SIZE = 5;
     public const int MAX_LEVEL = 8;
+    public const string VOLTORB_SPRITE_URL = "https://i.imgur.com/mrFUlA2.png";
     public static readonly TimeSpan INACTIVITY_TIMEOUT = TimeSpan.FromMinutes(1);
 
     // Each level has 5 possible board configurations: (twos, threes, voltorbs)

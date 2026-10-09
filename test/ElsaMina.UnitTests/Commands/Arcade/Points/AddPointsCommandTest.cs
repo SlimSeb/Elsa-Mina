@@ -159,9 +159,9 @@ public class AddPointsCommandTest
             "Arcade/Points/PointsUpdate",
             Arg.Is<PointsUpdateViewModel>(vm =>
                 vm.Username == "user1" &&
-                vm.PointsAdded == 5.0 &&
-                vm.NewTotal == 5.0 &&
-                vm.IsAddition == true
+                Math.Abs(vm.PointsAdded - 5.0) < 0.001 &&
+                Math.Abs(vm.NewTotal - 5.0) < 0.001 &&
+                vm.IsAddition
             )
         );
     }
@@ -232,9 +232,9 @@ public class AddPointsCommandTest
             "Arcade/Points/PointsUpdate",
             Arg.Is<PointsUpdateViewModel>(vm =>
                 vm.Leaderboard.Count == 3 &&
-                vm.Leaderboard["user3"] == 20 &&
-                vm.Leaderboard["user1"] == 15 &&
-                vm.Leaderboard["user2"] == 5
+                Math.Abs(vm.Leaderboard["user3"] - 20) < 0.001 &&
+                Math.Abs(vm.Leaderboard["user1"] - 15) < 0.001 &&
+                Math.Abs(vm.Leaderboard["user2"] - 5) < 0.001
             )
         );
     }
@@ -272,7 +272,7 @@ public class AddPointsCommandTest
 
         var action = async () => await _command.RunAsync(_context);
 
-        Assert.That(action, Throws.TypeOf<Exception>());
+        await Assert.ThatAsync(action, Throws.TypeOf<Exception>());
     }
 
     [Test]

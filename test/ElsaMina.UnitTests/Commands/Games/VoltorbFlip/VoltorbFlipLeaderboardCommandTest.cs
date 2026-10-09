@@ -197,7 +197,7 @@ public class VoltorbFlipLeaderboardCommandTest
 
         var action = async () => await _command.RunAsync(_context);
 
-        Assert.That(action, Throws.TypeOf<Exception>());
+        await Assert.ThatAsync(action, Throws.TypeOf<Exception>());
     }
 
     [Test]

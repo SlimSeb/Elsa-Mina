@@ -37,10 +37,6 @@ public class CommandTest
             _action = action;
         }
 
-        public string CommandHelpMessageKey { get; set; }
-
-        public override string HelpMessageKey => CommandHelpMessageKey;
-
         public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
         {
             _action.Invoke();

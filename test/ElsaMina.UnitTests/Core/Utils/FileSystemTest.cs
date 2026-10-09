@@ -8,7 +8,7 @@ public class FileSystemTest
     public void Test_MakeRelativePath_ShouldReturnRelativePath()
     {
         // Arrange
-        var root = Path.GetPathRoot(Path.GetTempPath())!;
+        var root = Path.GetPathRoot(Path.GetTempPath());
         var absolutePath = Path.Combine(root, "Library", "Stuff", "Lol", "Test", "Stuff.png");
         var referencePath = Path.Combine(root, "Library", "Stuff", "Lol");
 

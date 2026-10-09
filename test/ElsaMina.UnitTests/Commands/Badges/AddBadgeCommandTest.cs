@@ -117,7 +117,7 @@ public class AddBadgeCommandTest
                 Name = "ExistingBadge",
                 Image = "img"
             });
-            setupDb.SaveChanges();
+            await setupDb.SaveChangesAsync();
         }
 
         // Act
@@ -141,7 +141,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        var badge = db.Badges.Single();
+        var badge = await db.Badges.SingleAsync();
 
         using (Assert.EnterMultipleScope())
         {
@@ -172,7 +172,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        Assert.That(db.Badges.Single().IsTrophy, Is.True);
+        Assert.That((await db.Badges.SingleAsync()).IsTrophy, Is.True);
     }
 
     [Test]
@@ -193,7 +193,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        Assert.That(db.Badges.Single().IsTrophy, Is.False);
+        Assert.That((await db.Badges.SingleAsync()).IsTrophy, Is.False);
     }
 
     [Test]
@@ -210,7 +210,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        Assert.That(db.Badges.Single().Id, Is.EqualTo("testbadge123"));
+        Assert.That((await db.Badges.SingleAsync()).Id, Is.EqualTo("testbadge123"));
     }
 
     [Test]
@@ -227,7 +227,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        var badge = db.Badges.Single();
+        var badge = await db.Badges.SingleAsync();
 
         using (Assert.EnterMultipleScope())
         {
@@ -251,7 +251,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        Assert.That(db.Badges.Count(), Is.EqualTo(1));
+        Assert.That(await db.Badges.CountAsync(), Is.EqualTo(1));
     }
 
     [Test]
@@ -268,7 +268,7 @@ public class AddBadgeCommandTest
 
         // Assert - if disposal failed, next context creation would throw or reuse stale tracking
         await using var db = new BotDbContext(_options);
-        Assert.That(db.Badges.Count(), Is.EqualTo(1));
+        Assert.That(await db.Badges.CountAsync(), Is.EqualTo(1));
     }
 
     [Test]
@@ -292,7 +292,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        Assert.That(db.Badges.Count(), Is.EqualTo(1));
+        Assert.That(await db.Badges.CountAsync(), Is.EqualTo(1));
     }
 
     [Test]
@@ -309,7 +309,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        var badge = db.Badges.Single();
+        var badge = await db.Badges.SingleAsync();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(badge.Id, Is.EqualTo("testbadge"));
@@ -331,7 +331,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        Assert.That(db.Badges.Single().RoomId, Is.EqualTo("specificroom"));
+        Assert.That((await db.Badges.SingleAsync()).RoomId, Is.EqualTo("specificroom"));
     }
 
     [Test]
@@ -348,7 +348,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        var badge = db.Badges.Single();
+        var badge = await db.Badges.SingleAsync();
         using (Assert.EnterMultipleScope())
         {
             Assert.That(badge.Name, Is.EqualTo("Cool Badge!"));
@@ -376,7 +376,7 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        Assert.That(db.Badges.Count(), Is.EqualTo(1)); // unchanged
+        Assert.That(await db.Badges.CountAsync(), Is.EqualTo(1)); // unchanged
     }
 
     [Test]
@@ -391,6 +391,6 @@ public class AddBadgeCommandTest
 
         // Assert
         await using var db = new BotDbContext(_options);
-        Assert.That(db.Badges.Count(), Is.Zero);
+        Assert.That(await db.Badges.CountAsync(), Is.Zero);
     }
 }

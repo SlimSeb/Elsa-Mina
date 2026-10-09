@@ -93,7 +93,7 @@ public class DeleteAllTeamsByTierCommandTest
         _context.Received(1).ReplyLocalizedMessage("deleteallteams_success", 2, "gen9ou");
 
         await using var verifyContext = new BotDbContext(_dbContextOptions);
-        Assert.That(verifyContext.RoomTeams.Any(rt => rt.RoomId == ROOM_ID), Is.False);
+        Assert.That(await verifyContext.RoomTeams.AnyAsync(rt => rt.RoomId == ROOM_ID), Is.False);
     }
 
     [Test]
@@ -110,7 +110,7 @@ public class DeleteAllTeamsByTierCommandTest
 
         // Assert
         await using var verifyContext = new BotDbContext(_dbContextOptions);
-        Assert.That(verifyContext.Teams.Any(t => t.Id == "team1"), Is.False);
+        Assert.That(await verifyContext.Teams.AnyAsync(t => t.Id == "team1"), Is.False);
     }
 
     [Test]
@@ -130,9 +130,9 @@ public class DeleteAllTeamsByTierCommandTest
         await using var verifyContext = new BotDbContext(_dbContextOptions);
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(verifyContext.Teams.Any(t => t.Id == "team1"), Is.True);
-            Assert.That(verifyContext.RoomTeams.Any(rt => rt.TeamId == "team1" && rt.RoomId == OTHER_ROOM_ID), Is.True);
-            Assert.That(verifyContext.RoomTeams.Any(rt => rt.TeamId == "team1" && rt.RoomId == ROOM_ID), Is.False);
+            Assert.That(await verifyContext.Teams.AnyAsync(t => t.Id == "team1"), Is.True);
+            Assert.That(await verifyContext.RoomTeams.AnyAsync(rt => rt.TeamId == "team1" && rt.RoomId == OTHER_ROOM_ID), Is.True);
+            Assert.That(await verifyContext.RoomTeams.AnyAsync(rt => rt.TeamId == "team1" && rt.RoomId == ROOM_ID), Is.False);
         }
     }
 
@@ -168,6 +168,6 @@ public class DeleteAllTeamsByTierCommandTest
 
         // Assert
         await using var verifyContext = new BotDbContext(_dbContextOptions);
-        Assert.That(verifyContext.RoomTeams.Any(rt => rt.TeamId == "team2" && rt.RoomId == OTHER_ROOM_ID), Is.True);
+        Assert.That(await verifyContext.RoomTeams.AnyAsync(rt => rt.TeamId == "team2" && rt.RoomId == OTHER_ROOM_ID), Is.True);
     }
 }

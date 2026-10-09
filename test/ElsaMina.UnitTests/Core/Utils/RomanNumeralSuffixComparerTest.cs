@@ -19,13 +19,7 @@ public class RomanNumeralSuffixComparerTest
     [TestCase("Cup X", "Cup IX", ExpectedResult = 1)]
     [TestCase("Cup XL", "Cup L", ExpectedResult = -1)]
     public int Test_Compare_ShouldFallBackToNumeral_WhenPrefixesAreEqual(string first, string second)
-    {
-        // Act
-        var result = _comparer.Compare(first, second);
-
-        // Assert
-        return Math.Sign(result);
-    }
+        => Math.Sign(_comparer.Compare(first, second));
 
     [Test]
     public void Test_Compare_ShouldPrioritizePrefix_WhenPrefixesDiffer()
@@ -60,13 +54,7 @@ public class RomanNumeralSuffixComparerTest
     [TestCase("Vainqueur ADV Cup", "French Frontier", ExpectedResult = 1)]
     [TestCase("French Frontier", "Vainqueur ADV Cup I", ExpectedResult = -1)]
     public int Test_Compare_ShouldTreatMissingNumeralAsZero(string first, string second)
-    {
-        // Act
-        var result = _comparer.Compare(first, second);
-
-        // Assert
-        return Math.Sign(result);
-    }
+        => Math.Sign(_comparer.Compare(first, second));
 
     [Test]
     [TestCase("Winner VGC", "Winner VGC")]
@@ -138,13 +126,7 @@ public class RomanNumeralSuffixComparerTest
     [TestCase("Cup I", null, ExpectedResult = 1)]
     [TestCase("", "", ExpectedResult = 0)]
     public int Test_Compare_ShouldHandleNullAndEmptyStrings(string first, string second)
-    {
-        // Act
-        var result = _comparer.Compare(first, second);
-
-        // Assert
-        return Math.Sign(result);
-    }
+        => Math.Sign(_comparer.Compare(first, second));
 
     [Test]
     public void Test_Compare_ShouldOrderABadgeList_WhenUsedAsAnOrderByComparer()

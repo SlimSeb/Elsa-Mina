@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.UserData;
 using NSubstitute;
@@ -63,6 +64,6 @@ public class UserDataServiceTest
         var result = await _userDataService.GetRegisterDateAsync(userName);
 
         // Assert
-        Assert.That(result, Is.EqualTo(DateTimeOffset.Parse("07/08/2021 16:00:00Z")));
+        Assert.That(result, Is.EqualTo(DateTimeOffset.Parse("07/08/2021 16:00:00Z", CultureInfo.InvariantCulture)));
     }
 }

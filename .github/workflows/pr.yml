@@ -9,3 +9,8 @@ jobs:
     uses: ./.github/workflows/test.yml
     with:
       dotnet-version: "10.0.x"
+
+  code-analysis:
+    uses: ./.github/workflows/code-analysis.yml
+    with:
+      dotnet-version: "10.0.x"

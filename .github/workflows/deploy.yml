@@ -10,6 +10,11 @@ jobs:
     with:
       dotnet-version: "10.0.x"
 
+  code-analysis:
+    uses: ./.github/workflows/code-analysis.yml
+    with:
+      dotnet-version: "10.0.x"
+
   analyze:
     needs: test
     uses: ./.github/workflows/sonar.yml
@@ -19,7 +24,7 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build:
-    needs: test
+    needs: [test, code-analysis]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1

@@ -42,7 +42,7 @@ public class TakeBadgeCommandTest
         _context.RoomId.Returns("roomId");
         _roomUserDataService
             .TakeBadgeFromUserAsync("roomId", "userid", "nonexistingbadge")
-            .Throws(new ArgumentException());
+            .Throws(new ArgumentException("Test failure"));
 
         // Act
         await _command.RunAsync(_context);

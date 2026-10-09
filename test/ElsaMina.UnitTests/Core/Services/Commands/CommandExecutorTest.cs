@@ -42,8 +42,8 @@ public class CommandExecutorTest
             Substitute.For<ICommand>(),
             Substitute.For<ICommand>()
         };
-        expectedCommands.ElementAt(0).Name.Returns("1");
-        expectedCommands.ElementAt(1).Name.Returns("2");
+        expectedCommands[0].Name.Returns("1");
+        expectedCommands[1].Name.Returns("2");
         _commandRegistry.Commands.Returns(expectedCommands);
 
         // Act

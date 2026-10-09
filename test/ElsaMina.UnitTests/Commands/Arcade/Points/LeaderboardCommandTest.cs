@@ -97,9 +97,9 @@ public class LeaderboardCommandTest
             "Arcade/Points/Leaderboard",
             Arg.Is<LeaderboardViewModel>(vm =>
                 vm.Leaderboard.Count == 3 &&
-                vm.Leaderboard["user1"] == 15 &&
-                vm.Leaderboard["user2"] == 25 &&
-                vm.Leaderboard["user3"] == 10
+                Math.Abs(vm.Leaderboard["user1"] - 15) < 0.001 &&
+                Math.Abs(vm.Leaderboard["user2"] - 25) < 0.001 &&
+                Math.Abs(vm.Leaderboard["user3"] - 10) < 0.001
             )
         );
     }
@@ -182,8 +182,8 @@ public class LeaderboardCommandTest
         await _templatesManager.Received(1).GetTemplateAsync(
             "Arcade/Points/Leaderboard",
             Arg.Is<LeaderboardViewModel>(vm =>
-                vm.Leaderboard["user1"] == 10.5 &&
-                vm.Leaderboard["user2"] == 7.25
+                Math.Abs(vm.Leaderboard["user1"] - 10.5) < 0.001 &&
+                Math.Abs(vm.Leaderboard["user2"] - 7.25) < 0.001
             )
         );
     }
@@ -196,7 +196,7 @@ public class LeaderboardCommandTest
 
         var action = async () => await _command.RunAsync(_context);
 
-        Assert.That(action, Throws.TypeOf<Exception>());
+        await Assert.ThatAsync(action, Throws.TypeOf<Exception>());
     }
 
     [Test]
@@ -230,7 +230,7 @@ public class LeaderboardCommandTest
             "Arcade/Points/Leaderboard",
             Arg.Is<LeaderboardViewModel>(vm =>
                 vm.Leaderboard.Count == 1 &&
-                vm.Leaderboard["onlyuser"] == 100
+                Math.Abs(vm.Leaderboard["onlyuser"] - 100) < 0.001
             )
         );
     }

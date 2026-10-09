@@ -60,7 +60,7 @@ public static class TraceGolden
 
     private static void WriteGolden(string path, IReadOnlyList<string> lines)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
         File.WriteAllLines(path, lines);
     }
 

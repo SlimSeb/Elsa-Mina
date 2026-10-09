@@ -55,7 +55,7 @@ public class PollEndHandlerTests
         var savedPolls = await assertContext.SavedPolls.ToListAsync();
 
         Assert.That(savedPolls, Is.Not.Empty);
-        var savedPoll = savedPolls.First();
+        var savedPoll = savedPolls[0];
         using (Assert.EnterMultipleScope())
         {
             Assert.That(savedPoll.RoomId, Is.EqualTo(TestRoomId));
@@ -79,7 +79,7 @@ public class PollEndHandlerTests
         var savedPolls = await assertContext.SavedPolls.ToListAsync();
 
         Assert.That(savedPolls, Is.Not.Empty);
-        var savedPoll = savedPolls.First();
+        var savedPoll = savedPolls[0];
         using (Assert.EnterMultipleScope())
         {
             Assert.That(savedPoll.RoomId, Is.EqualTo(TestRoomId));

@@ -102,7 +102,9 @@ public static partial class StringExtensions
     public static string ToMd5Digest(this string text)
     {
         var stringBuilder = new StringBuilder();
+#pragma warning disable S4790 // MD5 is required to match Showdown's name colours, nothing secret is hashed
         foreach (var octet in MD5.HashData(Encoding.UTF8.GetBytes(text)))
+#pragma warning restore S4790
         {
             stringBuilder.Append(octet.ToString("x2").ToLower());
         }

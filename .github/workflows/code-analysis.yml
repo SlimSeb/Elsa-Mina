@@ -1,0 +1,30 @@
+name: code-analysis
+
+on:
+  workflow_call:
+    inputs:
+      dotnet-version:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  sonar-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          # ElsaMina.Console's build runs GitVersion: it needs the full history.
+          fetch-depth: 0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+          cache: true
+          cache-dependency-path: "**/*.csproj"
+      - name: restore
+        run: ./scripts/Build/restore.sh
+      - name: analyze
+        run: ./scripts/Build/code-analysis.sh

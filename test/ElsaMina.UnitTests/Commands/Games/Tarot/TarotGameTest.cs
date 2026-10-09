@@ -278,7 +278,7 @@ public class TarotGameTest
     [Test]
     public async Task Test_AnnounceSlam_ShouldBeRejected_ForNonTaker()
     {
-        var users = await JoinAndStartAsync(4);
+        await JoinAndStartAsync(4);
         await BidInOrderAsync(TarotBid.GardeSans, TarotBid.Pass, TarotBid.Pass, TarotBid.Pass);
 
         var defender = _game.Players.First(player => !player.IsTaker);

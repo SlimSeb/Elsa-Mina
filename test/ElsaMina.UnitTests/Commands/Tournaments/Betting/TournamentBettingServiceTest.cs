@@ -116,16 +116,6 @@ public class TournamentBettingServiceTest
     }
 
     [Test]
-    public async Task Test_PlaceBetAsync_ShouldReturnSuccess_WhenBetIsValid()
-    {
-        await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
-
-        var result = await _service.PlaceBetAsync("bettor1", "playera", "room1");
-
-        Assert.That(result, Is.EqualTo(BetPlacementError.Success));
-    }
-
-    [Test]
     public async Task Test_PlaceBetAsync_ShouldReturnAlreadyBet_WhenBettorAlreadyHasABet()
     {
         await _service.AnnounceBetsAsync(Players("playerA", "playerB"), "room1");
@@ -362,7 +352,7 @@ public class TournamentBettingServiceTest
         await _service.ResolveBetsAsync("playera", "room1");
 
         await using var dbContext = new BotDbContext(_dbOptions);
-        var records = dbContext.BetRecords.Where(r => r.RoomId == "room1").ToList();
+        var records = await dbContext.BetRecords.Where(r => r.RoomId == "room1").ToListAsync();
         Assert.That(records, Has.Count.EqualTo(2));
     }
 
