@@ -5,8 +5,8 @@ namespace ElsaMina.Core.Services.Dispatch;
 
 public class IncomingMessageDispatcher : IIncomingMessageDispatcher
 {
-    // Upper bound on frames received but not handled yet. Reading from the socket pauses beyond it,
-    // so a stuck room cannot grow memory without limit.
+    // Max de frames reçues mais pas encore traitées. Au-delà on arrête de lire la socket,
+    // comme ça une room bloquée peut pas faire exploser la mémoire
     private const int MAX_PENDING_FRAMES = 4096;
 
     private readonly IBot _bot;

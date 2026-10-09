@@ -3,19 +3,19 @@ namespace ElsaMina.Core.Services.Dispatch;
 public interface IOutgoingMessageQueue
 {
     /// <summary>
-    /// Sends <paramref name="message"/> right away when the send cooldown allows it, otherwise queues it.
-    /// Queued messages go out in order, one cooldown apart, whichever thread queued them.
-    /// The same message sent again within the duplicate window is dropped.
+    /// Envoie <paramref name="message"/> direct si le cooldown d'envoi le permet, sinon le met en file.
+    /// Les messages en file partent dans l'ordre, espacés d'un cooldown, peu importe le thread qui les a mis.
+    /// Le même message renvoyé pendant la fenêtre anti-doublon passe à la trappe.
     /// </summary>
     void Enqueue(string message);
 
     /// <summary>
-    /// The number of messages waiting for the cooldown.
+    /// Le nb de messages qui attendent le cooldown
     /// </summary>
     int PendingCount { get; }
 
     /// <summary>
-    /// Completes once every queued message has been handed to the client.
+    /// Se termine quand tous les messages en file ont été passés au client
     /// </summary>
     Task FlushAsync(CancellationToken cancellationToken = default);
 }

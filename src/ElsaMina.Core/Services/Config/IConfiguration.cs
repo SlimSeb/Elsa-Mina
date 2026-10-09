@@ -3,9 +3,8 @@ using ElsaMina.Logging;
 namespace ElsaMina.Core.Services.Config;
 
 /// <summary>
-/// Settings the bot runtime needs: connection, identity, rooms and access. Other projects define their own
-/// settings interfaces (database, cloud, features), all implemented by the configuration
-/// loaded from config.json.
+/// Les paramètres dont le runtime du bot a besoin : connexion, identité, rooms et accès. Les autres projets ont
+/// leurs propres interfaces (bdd, cloud, features), toutes implémentées par la config chargée depuis config.json
 /// </summary>
 public interface IConfiguration : ILoggingConfiguration
 {

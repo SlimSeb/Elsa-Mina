@@ -35,7 +35,7 @@ public partial class AddedCommandsManager : IAddedCommandsManager, IDynamicComma
     public Task<bool> TryExecuteAsync(string commandName, IContext context,
         CancellationToken cancellationToken = default)
     {
-        // Custom commands belong to a room, so they cannot be used in private messages.
+        // Les commandes custom sont liées à une room, donc pas utilisables en MP
         if (context.IsPrivateMessage)
         {
             return Task.FromResult(false);

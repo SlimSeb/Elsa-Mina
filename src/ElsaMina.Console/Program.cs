@@ -25,7 +25,7 @@ System.Console.CancelKeyPress += (_, eventArgs) =>
 AppDomain.CurrentDomain.ProcessExit += (_, _) =>
 {
     Log.Information("Exiting...");
-    // ProcessExit gives the handler a few seconds at most: block on the flush rather than starting it and returning.
+    // ProcessExit laisse quelques secondes max au handler : on bloque sur le flush au lieu de le lancer et return direct
     botHost.ShutdownAsync().GetAwaiter().GetResult();
     telemetry?.Dispose();
     Log.CloseAndFlush();

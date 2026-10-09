@@ -131,14 +131,14 @@ public class LadderCommand : Command
 
             if (previousPlacements.TryGetValue(playerId, out var previousPlacement))
             {
-                // positive difference => improvement
+                // différence positive => amélioration
                 player.IndexDifference = previousPlacement - player.Index;
             }
 
             if (hasPrefix && previousPrefixedPlacements != null &&
                 previousPrefixedPlacements.TryGetValue(playerId, out var previousPrefixedPlacement))
             {
-                // positive difference => improvement
+                // différence positive => amélioration
                 player.InnerIndexDifference = previousPrefixedPlacement - player.InnerIndex;
             }
         }

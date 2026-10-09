@@ -16,8 +16,8 @@ using NSubstitute;
 namespace ElsaMina.UnitTests.Startup;
 
 /// <summary>
-/// Builds the real container, so a missing or circular registration fails here rather than at startup.
-/// Only infrastructure that would reach the network is replaced.
+/// Construit le vrai container, comme ça une registration manquante ou circulaire pète ici et pas au démarrage.
+/// On remplace juste l'infra qui taperait le réseau
 /// </summary>
 public class ContainerBootstrapperTest
 {

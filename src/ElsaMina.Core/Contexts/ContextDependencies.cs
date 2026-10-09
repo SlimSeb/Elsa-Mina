@@ -6,8 +6,8 @@ using ElsaMina.Core.Services.UserDetails;
 namespace ElsaMina.Core.Contexts;
 
 /// <summary>
-/// The injected collaborators every context shares, grouped so that context
-/// constructors only take the data specific to the received message.
+/// Les collaborateurs injectés que tous les contextes partagent, regroupés pour que les
+/// constructeurs de contexte ne prennent que les données propres au message reçu.
 /// </summary>
 public sealed record ContextDependencies(
     IConfiguration Configuration,

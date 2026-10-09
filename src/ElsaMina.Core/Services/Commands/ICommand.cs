@@ -17,10 +17,10 @@ public interface ICommand
     public IEnumerable<string> RoomRestriction { get; }
 
     /// <summary>
-    /// When true, the command runs in order with the other messages of its room: the room's next message is only
-    /// handled once the command has finished. Use it for commands that change in-memory state shared with other
-    /// messages, such as a game. Never use it for a command that waits for a message from the server, it would
-    /// wait for a message queued behind itself. When false (the default), the command runs in the background.
+    /// Si true, la commande passe dans l'ordre avec les autres messages de sa room : le message suivant de la room est
+    /// traité seulement une fois la commande finie. A utiliser pour les commandes qui modifient un état en mémoire partagé
+    /// avec d'autres messages (genre un jeu). Surtout pas pour une commande qui attend un message du serveur, sinon elle
+    /// attend un message coincé derrière elle-même ^^ Si false (par défaut), la commande tourne en fond.
     /// </summary>
     public bool RunsInMessageOrder { get; }
 

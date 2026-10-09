@@ -6,9 +6,9 @@ public interface ISmogonUsageDataProvider
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Returns the month's usage ranking, without the details (moves, items...).
-    /// Much lighter than <see cref="GetUsageDataAsync"/>: a few dozen KB instead of
-    /// several MB, so it can be used to aggregate several months in a row.
+    /// Renvoie le classement d'utilisation du mois, sans les détails (moves, items...).
+    /// Beaucoup plus léger que <see cref="GetUsageDataAsync"/> : quelques dizaines de Ko contre
+    /// plusieurs Mo, donc utilisable pour agréger plusieurs mois d'affilée.
     /// </summary>
     Task<IReadOnlyList<SmogonUsageRankingEntryDto>> GetUsageRankingAsync(string month, string format,
         Level playerLevel, CancellationToken cancellationToken = default);

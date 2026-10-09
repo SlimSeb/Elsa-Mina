@@ -8,17 +8,17 @@ public interface ICommandExecutor
     IEnumerable<ICommand> GetAllCommands();
 
     /// <summary>
-    /// Runs the command named <paramref name="commandName"/>, a custom command, or replies with suggestions.
-    /// Completes once the command no longer holds up the room's message order: when it has finished for a
-    /// command that <see cref="ICommand.RunsInMessageOrder"/>, as soon as it has started otherwise.
-    /// Failures are reported to the user through the context, never thrown.
+    /// Lance la commande <paramref name="commandName"/>, une commande custom, ou répond avec des suggestions.
+    /// Se termine quand la commande bloque plus l'ordre des messages de la room : quand elle est finie pour une
+    /// commande qui <see cref="ICommand.RunsInMessageOrder"/>, dès qu'elle a démarré sinon.
+    /// Les erreurs sont remontées à l'user via le contexte, jamais throw.
     /// </summary>
     Task TryExecuteCommandAsync(string commandName, IContext context, CancellationToken cancellationToken = default);
 
     bool TryCancel(Guid executionId);
 
     /// <summary>
-    /// Completes once every command started so far has finished.
+    /// Se termine quand toutes les commandes lancées jusqu'ici sont finies
     /// </summary>
     Task WhenAllCommandsCompletedAsync(CancellationToken cancellationToken = default);
 }

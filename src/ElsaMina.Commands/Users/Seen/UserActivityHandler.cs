@@ -4,7 +4,7 @@ using ElsaMina.DataAccess.Models;
 namespace ElsaMina.Commands.Users.Seen;
 
 /// <summary>
-/// Records when and where users were last seen, for the seen command.
+/// Enregistre quand et où les users ont été vus pour la dernière fois (pour la commande seen)
 /// </summary>
 public sealed class UserActivityHandler : Handler
 {

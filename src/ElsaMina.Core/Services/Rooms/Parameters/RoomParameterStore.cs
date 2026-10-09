@@ -67,8 +67,8 @@ public class RoomParameterStore : IRoomParameterStore
             _values[parameterDefinition.Identifier] = value;
         }
 
-        // The value has already been validated, so the side effect cannot throw on a legal value.
-        // Room may not be wired yet during initialization, in which case there is nothing to apply to.
+        // La valeur est déjà validée, donc l'effet de bord peut pas throw sur une valeur légale
+        // La room est peut-être pas encore branchée pendant l'init, dans ce cas y a rien à appliquer
         if (Room != null)
         {
             parameterDefinition.OnUpdateAction?.Invoke(Room, value);

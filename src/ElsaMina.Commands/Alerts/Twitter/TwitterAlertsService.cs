@@ -9,7 +9,7 @@ namespace ElsaMina.Commands.Alerts.Twitter;
 
 public class TwitterAlertsService : PollingAlertsService, ITwitterAlertsService
 {
-    // The X API has very strict rate limits: poll rarely
+    // L'API X a des limites de requêtes très strictes : on interroge peu souvent
     private static readonly TimeSpan POLL_INTERVAL = TimeSpan.FromMinutes(15);
     private const int MAX_TWEETS_ANNOUNCED_PER_POLL = 3;
     private const string TEMPLATE_KEY = "Alerts/Twitter/TweetAlert";
@@ -17,7 +17,7 @@ public class TwitterAlertsService : PollingAlertsService, ITwitterAlertsService
     private readonly IAlertsManager _alertsManager;
     private readonly ITwitterApiClient _twitterApiClient;
 
-    // Key present = account already initialized; value = last tweet seen (null if none)
+    // Présence de la clé = compte déjà initialisé ; valeur = dernier tweet vu (null si aucun)
     private readonly Dictionary<string, string> _lastTweetIds = new();
 
     public TwitterAlertsService(IAlertsManager alertsManager,
@@ -89,7 +89,7 @@ public class TwitterAlertsService : PollingAlertsService, ITwitterAlertsService
 
         var username = userAlerts.First().ChannelName;
         var roomIds = userAlerts.Select(alert => alert.RoomId).ToList();
-        // The API returns tweets newest first: announce them in chronological order
+        // L'API renvoie les tweets du plus récent au plus ancien : on les annonce dans l'ordre chronologique
         foreach (var tweet in tweets.Take(MAX_TWEETS_ANNOUNCED_PER_POLL).Reverse())
         {
             await AnnounceAsync(roomIds, TEMPLATE_KEY, new TweetAlertViewModel

@@ -1,8 +1,8 @@
 namespace ElsaMina.Core.Services.Rooms.Parameters;
 
 /// <summary>
-/// Contributes room parameters. Register implementations with <c>.As&lt;IRoomParameterProvider&gt;()</c>;
-/// their definitions are listed in registration order, Core's first.
+/// Fournit des paramètres de room. Enregistrer les implémentations avec <c>.As&lt;IRoomParameterProvider&gt;()</c> ;
+/// les définitions sont listées dans l'ordre d'enregistrement, celles de Core en premier
 /// </summary>
 public interface IRoomParameterProvider
 {

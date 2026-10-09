@@ -3,8 +3,8 @@ namespace ElsaMina.Core.Services.Dispatch;
 public static class ShowdownFrame
 {
     /// <summary>
-    /// Showdown only omits the <c>&gt;ROOMID</c> header for the lobby and for global messages
-    /// (pm, queryresponse, challstr, ...), so a frame without a header is attributed to the lobby.
+    /// Showdown omet le header <c>&gt;ROOMID</c> seulement pour le lobby et les messages globaux
+    /// (pm, queryresponse, challstr...), donc frame sans header => lobby
     /// </summary>
     public const string HEADERLESS_ROOM_ID = "lobby";
 

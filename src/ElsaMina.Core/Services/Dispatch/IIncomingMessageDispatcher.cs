@@ -3,14 +3,14 @@ namespace ElsaMina.Core.Services.Dispatch;
 public interface IIncomingMessageDispatcher
 {
     /// <summary>
-    /// Schedules a frame received from the server. Frames of the same room are handled one after the
-    /// other, in the order they were received; frames of different rooms are handled concurrently.
-    /// Returns once the frame is scheduled, not once it is handled.
+    /// Planifie une frame reçue du serveur. Les frames d'une même room sont traitées l'une après l'autre, dans
+    /// l'ordre d'arrivée ; celles de rooms différentes en parallèle.
+    /// Rend la main dès que la frame est planifiée, pas quand elle est traitée.
     /// </summary>
     Task DispatchAsync(string frame, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Completes once every frame scheduled so far has been handled.
+    /// Se termine quand toutes les frames planifiées jusqu'ici ont été traitées
     /// </summary>
     Task WhenIdleAsync(CancellationToken cancellationToken = default);
 }

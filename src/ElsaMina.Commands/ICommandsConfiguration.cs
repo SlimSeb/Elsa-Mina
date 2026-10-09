@@ -3,8 +3,8 @@ using ElsaMina.Core.Services.Config;
 namespace ElsaMina.Commands;
 
 /// <summary>
-/// Settings used by features only: API keys, sheet names, webhooks and feature timings.
-/// Core's <see cref="IConfiguration"/> keeps what the bot runtime itself needs.
+/// Les paramètres utilisés que par les features : clés d'API, noms de sheets, webhooks, timings...
+/// Le <see cref="IConfiguration"/> de Core garde juste ce dont le runtime du bot a besoin
 /// </summary>
 public interface ICommandsConfiguration : IConfiguration
 {

@@ -3,9 +3,9 @@ using ElsaMina.Core.Services.Commands;
 namespace ElsaMina.Commands.Games;
 
 /// <summary>
-/// Base class for commands that change a game's in-memory state. They run in order with the other messages of
-/// their room (see <see cref="ICommand.RunsInMessageOrder"/>), so two moves, or a move and a chat answer read by a
-/// game handler, never interleave.
+/// Classe de base pour les commandes qui modifient l'état en mémoire d'un jeu. Elles passent dans l'ordre avec les
+/// autres messages de la room (cf <see cref="ICommand.RunsInMessageOrder"/>), comme ça deux coups (ou un coup + une
+/// réponse dans le chat lue par un handler du jeu) se mélangent jamais
 /// </summary>
 public abstract class GameCommand : Command
 {

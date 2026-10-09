@@ -12,7 +12,7 @@ public class HandlerManager : IHandlerManager
 
     private readonly ConcurrentDictionary<string, IHandler> _handlers = [];
 
-    // Lazy: handlers depend on services that depend back on the bot, so they are built once the container is ready.
+    // Lazy : les handlers dépendent de services qui dépendent du bot => on les construit une fois le container prêt
     public HandlerManager(Lazy<IEnumerable<IHandler>> registeredHandlers, ITelemetryService telemetryService)
     {
         _registeredHandlers = registeredHandlers;
@@ -77,7 +77,7 @@ public class HandlerManager : IHandlerManager
         {
             activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
             activity?.AddException(exception);
-            // Logged here only: one handler failing must not hide the others' results or be logged twice.
+            // Log ici et nulle part ailleurs : un handler qui plante doit pas cacher les résultats des autres, ni être loggé 2 fois
             Log.Error(exception, "Error while handling message in handler {Handler}", handler.Identifier);
         }
     }

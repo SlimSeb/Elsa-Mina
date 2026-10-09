@@ -19,9 +19,9 @@ public class NamedCommandAttribute : Attribute
     public string[] Aliases { get; set; } = [];
 
     /// <summary>
-    /// The feature the command belongs to, used for feature switches and the command list. When not set, it is
-    /// derived from the namespace: the segment after <c>ElsaMina.Commands.</c>, or the project name for commands
-    /// defined in another feature project (<c>ElsaMina.Battles.Commands</c> gives <c>Battles</c>).
+    /// La feature de la commande, utilisée pour les switchs de features et la liste des commandes. Si pas renseignée,
+    /// on la déduit du namespace : le segment après <c>ElsaMina.Commands.</c>, ou le nom du projet pour les commandes
+    /// définies dans un autre projet de feature (<c>ElsaMina.Battles.Commands</c> => <c>Battles</c>)
     /// </summary>
     public string Category { get; set; }
 }

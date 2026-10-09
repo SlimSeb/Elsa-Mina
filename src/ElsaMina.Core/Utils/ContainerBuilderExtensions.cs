@@ -25,8 +25,8 @@ public static class ContainerBuilderExtensions
             return;
         }
 
-        // Commands hold no per-call state, so one instance serves every call. ICommandRegistry indexes it
-        // under its name and aliases.
+        // Les commandes gardent pas d'état par appel, donc une seule instance pour tous les appels. ICommandRegistry
+        // l'indexe sous son nom et ses alias
         builder.RegisterType<TCommand>().As<ICommand>().SingleInstance();
     }
 

@@ -6,8 +6,8 @@ public interface IHandler
     string Identifier { get; }
 
     /// <summary>
-    /// The message types this handler handles.
-    /// Return an empty set (or null) to handle every message type.
+    /// L'ensemble des types de messages que cet handler gère
+    /// Retourner un ensemble vide (ou null) pour gérer n'importe quel type de message
     /// </summary>
     IReadOnlySet<string> HandledMessageTypes { get; }
 

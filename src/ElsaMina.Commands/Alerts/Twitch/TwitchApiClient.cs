@@ -58,7 +58,7 @@ public partial class TwitchApiClient : ITwitchApiClient
         var streams = new List<TwitchStream>();
         foreach (var chunk in userIds.Chunk(MAX_IDS_PER_REQUEST))
         {
-            // Helix expects a repeated user_id parameter, which HttpRequest cannot express
+            // Helix attend le paramètre user_id répété, ce que HttpRequest ne sait pas exprimer
             var query = string.Join("&", chunk.Select(userId => $"user_id={Uri.EscapeDataString(userId)}"));
             var response = await SendAuthorizedAsync<TwitchStreamsResponse>(
                 () => HttpRequest.Get($"{STREAMS_URL}?{query}&first={MAX_IDS_PER_REQUEST}"), cancellationToken);
@@ -80,7 +80,7 @@ public partial class TwitchApiClient : ITwitchApiClient
         }
         catch (HttpException exception) when (exception.StatusCode == HttpStatusCode.Unauthorized)
         {
-            // The token may have been revoked before it expired: request a new one and retry once
+            // Le token a pu être révoqué avant son expiration : on en redemande un et on réessaie une fois
             _accessToken = null;
             return await SendWithTokenAsync<TResponse>(requestBuilder(), cancellationToken);
         }

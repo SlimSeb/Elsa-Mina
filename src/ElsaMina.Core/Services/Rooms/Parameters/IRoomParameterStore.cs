@@ -7,7 +7,7 @@ public interface IRoomParameterStore
     IRoom Room { get; set; }
 
     /// <summary>
-    /// Loads the stored values of <paramref name="roomId"/>, keyed by parameter identifier.
+    /// Charge les valeurs enregistrées de <paramref name="roomId"/>, indexées par identifiant de paramètre
     /// </summary>
     void Initialize(string roomId, IReadOnlyDictionary<string, string> storedValues);
 }

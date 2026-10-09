@@ -39,10 +39,10 @@ public class KeyedTaskQueue : IKeyedTaskQueue
         }
         catch
         {
-            // The previous item's failure belongs to its own caller, it must not stop this one.
+            // L'erreur de la tâche précédente c'est le pb de son appelant, ça doit pas bloquer celle-ci
         }
 
-        // Always leave the caller's stack first, so work never runs inside EnqueueAsync's lock.
+        // On quitte toujours la stack de l'appelant d'abord, pour jamais exécuter le taf dans le lock d'EnqueueAsync
         await Task.Yield();
         await work().ConfigureAwait(false);
     }
@@ -55,7 +55,7 @@ public class KeyedTaskQueue : IKeyedTaskQueue
         }
         catch
         {
-            // Observed by the caller of EnqueueAsync.
+            // Observée par l'appelant d'EnqueueAsync
         }
 
         lock (_lock)

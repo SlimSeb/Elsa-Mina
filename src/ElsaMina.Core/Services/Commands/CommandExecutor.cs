@@ -51,7 +51,7 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
         var command = _commandRegistry.Find(commandName);
         if (command == null)
         {
-            // Custom commands and suggestions may hit the database: run them in the background like commands.
+            // Les commandes custom et les suggestions peuvent taper la bdd : on les lance en fond comme les commandes
             _ = Track(commandName, context, cancellationToken,
                 token => TryExecuteFallbackAsync(commandName, context, token));
             return;
@@ -95,7 +95,7 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
 
         var task = Task.Run(async () =>
         {
-            // Wait for the registration below, so the command is always removed after it was added.
+            // On attend l'enregistrement juste en dessous, comme ça la commande est toujours retirée après avoir été ajoutée
             await started.Task;
             try
             {

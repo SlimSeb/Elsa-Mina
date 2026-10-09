@@ -15,7 +15,7 @@ public class HttpService : IHttpService
 
     public HttpService(ITelemetryService telemetryService)
     {
-        // For IPv6, and the lack of happy eyeballs support in the .NET HTTP client.
+        // Pour l'ipv6 et le manque de support du happy eyeballs côté client http .NET.
         var socketsHandler = new SocketsHttpHandler
         {
             AutomaticDecompression = DecompressionMethods.All,

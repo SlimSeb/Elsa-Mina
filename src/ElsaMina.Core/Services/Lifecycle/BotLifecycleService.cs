@@ -6,8 +6,8 @@ public class BotLifecycleService : IBotLifecycleService
 {
     private readonly Lazy<IEnumerable<IBotLifecycleParticipant>> _participants;
 
-    // Lazy: many participants depend on the bot, which depends on this service, so they are only built when the
-    // bot starts, once it exists.
+    // Lazy : plein de participants dépendent du bot, qui dépend de ce service => on les construit seulement au
+    // démarrage du bot, une fois qu'il existe
     public BotLifecycleService(Lazy<IEnumerable<IBotLifecycleParticipant>> participants)
     {
         _participants = participants;
@@ -20,7 +20,7 @@ public class BotLifecycleService : IBotLifecycleService
 
     public Task OnExitingAsync(CancellationToken cancellationToken = default)
     {
-        // A participant failing to flush must not stop the others from flushing.
+        // Un participant qui plante pendant son flush doit pas empêcher les autres de flush
         return Task.WhenAll(_participants.Value.Select(participant => ExitSafelyAsync(participant, cancellationToken)));
     }
 

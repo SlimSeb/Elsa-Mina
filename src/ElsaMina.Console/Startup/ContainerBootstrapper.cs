@@ -11,8 +11,8 @@ namespace ElsaMina.Console.Startup;
 
 public static class ContainerBootstrapper
 {
-    /// <param name="configuration">The settings read from config.json.</param>
-    /// <param name="overrides">Registrations applied last, replacing earlier ones (used by tests to stub infrastructure).</param>
+    /// <param name="configuration">Les paramètres lus depuis config.json</param>
+    /// <param name="overrides">Registrations appliquées en dernier, qui écrasent les précédentes (pour que les tests stub l'infra)</param>
     public static IContainer Build(Configuration configuration, Action<ContainerBuilder> overrides = null)
     {
         var builder = new ContainerBuilder();

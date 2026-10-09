@@ -1,9 +1,9 @@
 namespace ElsaMina.Core.Services.Lifecycle;
 
 /// <summary>
-/// A service that has work to do when the bot starts (load data before connecting) or stops
-/// (flush pending writes before the process exits). Register it with
-/// <c>.As&lt;IBotLifecycleParticipant&gt;()</c> in its module; Core runs every registered participant.
+/// Un service qui a du taf au démarrage du bot (charger des données avant de se connecter) ou à l'arrêt
+/// (flush les écritures en attente avant que le process se termine). L'enregistrer avec
+/// <c>.As&lt;IBotLifecycleParticipant&gt;()</c> dans son module, Core lance tous les participants enregistrés
 /// </summary>
 public interface IBotLifecycleParticipant
 {

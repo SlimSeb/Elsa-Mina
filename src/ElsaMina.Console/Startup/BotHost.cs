@@ -7,7 +7,7 @@ namespace ElsaMina.Console.Startup;
 
 public sealed class BotHost
 {
-    // The deploy script sends SIGTERM and waits 10 seconds before killing the process.
+    // Le script de déploiement envoie un SIGTERM puis attend 10s avant de kill le process
     private static readonly TimeSpan SHUTDOWN_TIMEOUT = TimeSpan.FromSeconds(8);
 
     private readonly IBot _bot;
@@ -38,7 +38,7 @@ public sealed class BotHost
     }
 
     /// <summary>
-    /// Flushes pending work and lets <see cref="RunAsync"/> return. Safe to call more than once.
+    /// Flush le taf en attente et laisse <see cref="RunAsync"/> se terminer. On peut l'appeler plusieurs fois sans pb
     /// </summary>
     public Task ShutdownAsync()
     {
@@ -65,8 +65,8 @@ public sealed class BotHost
     {
         try
         {
-            // Reading stays sequential so the dispatcher sees frames in arrival order; it then handles
-            // each room's frames in order while different rooms run concurrently.
+            // La lecture reste séquentielle pour que le dispatcher voie les frames dans l'ordre d'arrivée ; ensuite il traite
+            // les frames de chaque room dans l'ordre, et les rooms différentes en parallèle
             await foreach (var message in _client.Messages)
             {
                 await _dispatcher.DispatchAsync(message);

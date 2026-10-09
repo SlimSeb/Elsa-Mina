@@ -10,8 +10,8 @@ using ElsaMina.Logging;
 namespace ElsaMina.UnitTests.Architecture;
 
 /// <summary>
-/// Keeps the project boundaries described in CLAUDE.md: Core is the runtime kernel and knows no feature or
-/// infrastructure; feature projects never depend on each other; nothing depends on the console host.
+/// Vérifie les frontières entre projets décrites dans CLAUDE.md : Core c'est le noyau du runtime et connaît aucune
+/// feature ni infra ; les projets de features dépendent jamais les uns des autres ; rien dépend de la console
 /// </summary>
 public class ProjectDependenciesTest
 {

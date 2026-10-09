@@ -17,7 +17,7 @@ public class LanguageModelResolver : ILanguageModelProvider
     private readonly Lazy<GptMiniProvider> _gptProvider;
     private List<ILanguageModelProvider> _cachedProviders;
 
-    // Lazy: a provider is only built when its API key is configured.
+    // Lazy : un provider est construit que si sa clé d'API est configurée
     public LanguageModelResolver(IConfiguration configuration,
         Lazy<GeminiFlashProvider> geminiProvider,
         Lazy<MistralSmallProvider> mistralProvider,

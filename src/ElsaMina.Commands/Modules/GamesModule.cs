@@ -186,8 +186,8 @@ public class GamesModule : Module
         builder.RegisterHandler<ScattergoriesHandler>();
         builder.RegisterHandler<HangmanAnnounceHandler>();
 
-        // Games are created on demand through Func<TGame> and live as long as the room or player keeps them.
-        // ExternallyOwned stops the root container from keeping every game ever created alive until shutdown.
+        // Les jeux sont créés à la demande via Func<TGame> et vivent tant que la room ou le joueur les garde.
+        // ExternallyOwned sinon le container root garde en vie tous les jeux jamais créés jusqu'à l'arrêt (fuite mémoire ^^)
         builder.RegisterType<GuessingGameFactory>().As<IGuessingGameFactory>().SingleInstance();
         builder.RegisterType<CountriesGame>().AsSelf().ExternallyOwned();
         builder.RegisterType<CapitalCitiesGame>().AsSelf().ExternallyOwned();

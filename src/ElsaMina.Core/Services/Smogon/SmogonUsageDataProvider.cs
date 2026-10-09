@@ -45,8 +45,8 @@ public class SmogonUsageDataProvider : ISmogonUsageDataProvider
     }
 
     /// <summary>
-    /// Parses the ASCII table published by Smogon. Separator lines start with '+' and
-    /// the header has "Rank" in its first column: both are skipped as they have no numeric rank.
+    /// Parse le tableau ASCII publié par Smogon. Les lignes de séparation commencent par '+' et
+    /// l'en-tête a "Rank" en première colonne : les deux sont ignorées faute de rang numérique.
     /// </summary>
     private static List<SmogonUsageRankingEntryDto> ParseUsageRanking(string content)
     {

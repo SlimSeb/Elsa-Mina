@@ -50,7 +50,7 @@ public partial class ReplaysHandler : ChatMessageHandler
 
         replayLink += ".json";
 
-        // risky?
+        // risqué ?
         try
         {
             Log.Information("Fetching replay info from : {0}", replayLink);

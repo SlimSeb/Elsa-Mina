@@ -183,7 +183,7 @@ public partial class DollService : IDollService
     }
 
     /// <summary>
-    /// Resolves what <see cref="ICommandsConfiguration.DollsDriveName"/> points at, cheapest and most reliable first.
+    /// Trouve ce que <see cref="ICommandsConfiguration.DollsDriveName"/> désigne, en tentant d'abord le moins cher et le plus fiable
     /// </summary>
     private async Task<string> ResolveContainerIdAsync(string driveName, CancellationToken cancellationToken)
     {

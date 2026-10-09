@@ -55,8 +55,8 @@ public partial class CommandModule : Module
             builder.RegisterInstance(resourceManager).As<ResourceManager>().SingleInstance();
         }
 
-        // RoomsModule registers the custom commands provider: it comes first so custom commands keep priority over
-        // the other dynamic command providers, which are tried in registration order.
+        // RoomsModule enregistre le provider des commandes custom : il passe en premier pour qu'elles gardent la priorité
+        // sur les autres providers dynamiques (testés dans l'ordre d'enregistrement)
         builder.RegisterModule<RoomsModule>();
         builder.RegisterModule<AdminModule>();
         builder.RegisterModule<AiModule>();

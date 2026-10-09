@@ -18,8 +18,8 @@ public class ContextFactory : IContextFactory
     private readonly IPmSendersManager _pmSendersManager;
     private readonly ContextDependencies _contextDependencies;
 
-    // Every handler receives the same parts array for a line, so the context is built once per line and shared,
-    // instead of once per message handler. Entries go away with the array.
+    // Tous les handlers reçoivent le même tableau de parts pour une ligne => on construit le contexte une fois par ligne
+    // et on le partage, au lieu d'en refaire un par handler. Les entrées disparaissent avec le tableau
     private readonly ConditionalWeakTable<string[], StrongBox<IContext>> _contextsByMessage = new();
 
     public ContextFactory(IConfiguration configuration,

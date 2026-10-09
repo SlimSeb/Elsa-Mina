@@ -14,8 +14,8 @@ public class TwitchLiveAlertsService : PollingAlertsService, ITwitchLiveAlertsSe
     private readonly ITwitchApiClient _twitchApiClient;
     private readonly IClockService _clockService;
 
-    // Last stream announced per channel: avoids announcing a stream again,
-    // even if the API briefly leaves it out between two polls
+    // Dernier live annoncé par chaîne : évite de ré-annoncer un live déjà signalé,
+    // même si l'API l'omet ponctuellement entre deux polls
     private readonly Dictionary<string, string> _lastAnnouncedStreamIds = new();
     private bool _isFirstPoll = true;
 
@@ -68,7 +68,7 @@ public class TwitchLiveAlertsService : PollingAlertsService, ITwitchLiveAlertsSe
 
             _lastAnnouncedStreamIds[stream.UserId] = stream.Id;
 
-            // When the bot starts, do not announce streams that started long before
+            // Au démarrage du bot, on ne ré-annonce pas les lives commencés bien avant
             if (_isFirstPoll && now - stream.StartedAt > PollInterval * 2)
             {
                 continue;

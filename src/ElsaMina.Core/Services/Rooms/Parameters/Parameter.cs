@@ -1,10 +1,10 @@
 namespace ElsaMina.Core.Services.Rooms.Parameters;
 
 /// <summary>
-/// A room parameter. <see cref="Identifier"/> is the short key its value is stored under and the only thing equality
-/// looks at; <see cref="Name"/> is the readable name staff can also type in the room configuration command.
-/// Core defines the parameters the runtime needs below; features define theirs next to the
-/// <see cref="IRoomParameterProvider"/> that describes them.
+/// Un paramètre de room. <see cref="Identifier"/> c'est la clé courte sous laquelle la valeur est stockée, et c'est
+/// la seule chose regardée pour l'égalité ; <see cref="Name"/> c'est le nom lisible que le staff peut aussi taper
+/// dans la commande de config de room. Core définit en dessous les paramètres dont le runtime a besoin, les features
+/// définissent les leurs à côté de leur <see cref="IRoomParameterProvider"/>
 /// </summary>
 public sealed class Parameter : IEquatable<Parameter>
 {

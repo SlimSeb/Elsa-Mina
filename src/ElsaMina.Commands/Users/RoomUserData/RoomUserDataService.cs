@@ -57,7 +57,7 @@ public class RoomUserDataService : IRoomUserDataService, IBotLifecycleParticipan
         var user = await dbContext.Users.FindAsync([userId], cancellationToken: cancellationToken);
         if (user == null)
         {
-            // Make sure every pending save has finished before creating a new user
+            // S'assurer que toutes les sauvegardes en attente sont finies avant de créer un nouvel user
             await _userSaveQueue.WaitForFlushAsync(cancellationToken);
             user = new SavedUser
             {

@@ -37,9 +37,9 @@ using NSubstitute;
 namespace ElsaMina.IntegrationTests.Commands.Profile;
 
 /// <summary>
-/// Runs the profile command through the real pipeline: frame dispatcher, handlers, command executor, profile
-/// service and user details manager. A fake server answers the bot's <c>/cmd userdetails</c> queries with
-/// <c>queryresponse</c> frames, so the test covers the command waiting for a reply that arrives as a later frame.
+/// Fait passer la commande profile dans le vrai pipeline : dispatcher de frames, handlers, executor, service de
+/// profil et user details manager. Un faux serveur répond aux requêtes <c>/cmd userdetails</c> du bot avec des
+/// frames <c>queryresponse</c>, donc on teste bien la commande qui attend une réponse arrivant dans une frame plus tard
 /// </summary>
 [TestFixture]
 public class ProfileCommandIntegrationTest
@@ -88,7 +88,7 @@ public class ProfileCommandIntegrationTest
     [TearDown]
     public void TearDown()
     {
-        // Lets a query still waiting on the fake timeout end before the container goes away.
+        // Laisse une requête qui attend encore le faux timeout se terminer avant que le container disparaisse
         _userDetailsTimeout.TrySetResult();
         _container.Dispose();
         _client.Dispose();
@@ -137,25 +137,25 @@ public class ProfileCommandIntegrationTest
         // Arrange
         _isServerAnsweringAutomatically = false;
 
-        // Act: the first profile waits for its user details
+        // Act : le premier profil attend ses user details
         await _dispatcher.DispatchAsync($">{ROOM_ID}\n|c:|1700000000|+Earth|-profile");
         await Wait.UntilAsync(() => _userDetailsQueries.Contains($"{USER_DETAILS_QUERY_PREFIX}earth"),
             "the user details query for earth");
 
-        // Assert: nothing is rendered without the details, and the room's next command is still handled
+        // Assert : rien n'est rendu sans les details, et la commande suivante de la room est quand même traitée
         Assert.That(FindProfile("earth"), Is.Null);
         await _dispatcher.DispatchAsync($">{ROOM_ID}\n|c:|1700000001|+Earth|-profile mec");
         await Wait.UntilAsync(() => _userDetailsQueries.Contains($"{USER_DETAILS_QUERY_PREFIX}mec"),
             "the user details query for mec, sent while earth's profile is still waiting");
 
-        // Act: the server answers in the opposite order
+        // Act : le serveur répond dans l'ordre inverse
         await AnswerUserDetailsAsync("mec");
         var mecProfile = await WaitForProfileAsync("mec");
         Assert.That(FindProfile("earth"), Is.Null, "earth's profile must keep waiting for its own details");
         await AnswerUserDetailsAsync("earth");
         var earthProfile = await WaitForProfileAsync("earth");
 
-        // Assert: each reply resolved its own query
+        // Assert : chaque réponse a bien résolu sa propre requête
         using (Assert.EnterMultipleScope())
         {
             Assert.That(mecProfile, Does.Contain("Mec").And.Contain("sprites/trainers/dawn.png"));
@@ -168,8 +168,8 @@ public class ProfileCommandIntegrationTest
     [Test]
     public async Task Test_ProfileCommand_ShouldReceiveUserDetails_WhenRequestedInPrivateMessage()
     {
-        // Private messages and query responses both come without a room header, so they share one lane:
-        // the reply can only be handled because the command does not hold that lane while it waits.
+        // Les MP et les query responses arrivent tous les deux sans header de room, donc même lane :
+        // la réponse peut être traitée seulement parce que la commande bloque pas la lane pendant qu'elle attend
 
         // Act
         await _dispatcher.DispatchAsync("|pm|+Earth| Bot|-profile");
@@ -199,7 +199,7 @@ public class ProfileCommandIntegrationTest
         _userDetailsTimeout.SetResult();
         var profile = await WaitForProfileAsync("earth");
 
-        // Assert: the profile falls back to the stored data and the default avatar
+        // Assert : le profil retombe sur les données en bdd et l'avatar par défaut
         var defaultAvatar = ProfileService.GetAvatar(null, null);
         using (Assert.EnterMultipleScope())
         {
@@ -313,8 +313,8 @@ public class ProfileCommandIntegrationTest
     }
 
     /// <summary>
-    /// Real waits for the outgoing message cooldown, and a timeout the test controls for the user details query,
-    /// so a test can make the query time out without waiting five seconds.
+    /// Vraies attentes pour le cooldown des messages sortants, et un timeout contrôlé par le test pour la requête
+    /// user details, comme ça on peut faire timeout la requête sans attendre 5 secondes
     /// </summary>
     private ISystemService CreateSystemService()
     {
@@ -341,7 +341,7 @@ public class ProfileCommandIntegrationTest
         _userDetailsQueries.Enqueue(message);
         if (_isServerAnsweringAutomatically)
         {
-            // The server answers asynchronously, as a later frame.
+            // Le serveur répond en async, dans une frame plus tard
             _ = Task.Run(() => AnswerUserDetailsAsync(message[USER_DETAILS_QUERY_PREFIX.Length..]));
         }
     }

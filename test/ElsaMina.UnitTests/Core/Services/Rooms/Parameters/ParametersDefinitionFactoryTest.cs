@@ -55,7 +55,7 @@ public class ParametersDefinitionFactoryTest
     [Test]
     public void Test_GetParametersDefinitions_ShouldKeepStoredIdentifiers()
     {
-        // Values are stored in the database under these identifiers: changing one loses every room's setting.
+        // Les valeurs sont stockées en bdd sous ces identifiants : si on en change un, toutes les rooms perdent leur réglage
         string[] expectedIdentifiers =
             ["loc", "tzn", "atc", "err", "tms", "rpl", "tbe", "ytl", "urlp", "tgf", "bck", "evn", "stk"];
 

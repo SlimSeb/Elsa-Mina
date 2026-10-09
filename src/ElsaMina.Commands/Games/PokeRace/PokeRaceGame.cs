@@ -103,7 +103,7 @@ public class PokeRaceGame : Game, IPokeRaceGame
         var html = await BuildRaceStartHtmlAsync();
         Context.SendUpdatableHtml(HtmlId, html, true);
 
-        // Not awaited: the start command runs in the room's message order and must not hold the room for the countdown.
+        // Pas d'await : la commande de lancement passe dans l'ordre des messages de la room, faut pas bloquer la room pendant le compte à rebours
         _ = StartRaceUpdatesAfterCountdownAsync();
     }
 

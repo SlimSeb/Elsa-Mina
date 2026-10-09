@@ -3,8 +3,8 @@ using ElsaMina.Core.Contexts;
 namespace ElsaMina.Core.Services.Commands;
 
 /// <summary>
-/// Handles command names that are not registered commands, such as custom commands stored per room.
-/// Providers are tried in registration order; the first one returning true wins.
+/// Gère les noms de commandes qui sont pas des commandes enregistrées, genre les commandes custom par room.
+/// Les providers sont testés dans l'ordre d'enregistrement, le premier qui renvoie true gagne
 /// </summary>
 public interface IDynamicCommandProvider
 {

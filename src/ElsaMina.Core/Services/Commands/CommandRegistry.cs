@@ -6,7 +6,7 @@ public class CommandRegistry : ICommandRegistry
 {
     private readonly Lazy<(Dictionary<string, ICommand> ByName, IReadOnlyCollection<ICommand> Commands)> _index;
 
-    // Lazy: commands depend on services that depend back on the executor, so they are only built on first use.
+    // Lazy : les commandes dépendent de services qui dépendent de l'executor, donc construites seulement au premier usage
     public CommandRegistry(Lazy<IEnumerable<ICommand>> commands)
     {
         _index = new Lazy<(Dictionary<string, ICommand>, IReadOnlyCollection<ICommand>)>(() => BuildIndex(commands.Value));
@@ -48,7 +48,7 @@ public class CommandRegistry : ICommandRegistry
             }
         }
 
-        // A command whose names were all taken over by a later one is no longer reachable.
+        // Une commande dont tous les noms ont été pris par une autre enregistrée après est plus atteignable
         var reachable = byName.Values.ToHashSet();
         return (byName, all.Where(reachable.Contains).Distinct().ToList());
     }

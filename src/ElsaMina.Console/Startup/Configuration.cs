@@ -9,7 +9,7 @@ using ElsaMina.Logging;
 namespace ElsaMina.Console.Startup;
 
 /// <summary>
-/// The settings read from config.json. Each project only sees the settings interface it defines.
+/// Les paramètres lus depuis config.json. Chaque projet voit que l'interface de paramètres qu'il définit lui-même
 /// </summary>
 public class Configuration : ICommandsConfiguration, IDatabaseConfiguration, IS3CredentialsProvider,
     IGoogleServiceAccountConfiguration

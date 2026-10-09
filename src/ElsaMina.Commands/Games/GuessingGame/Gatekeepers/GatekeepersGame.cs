@@ -12,12 +12,12 @@ public class GatekeepersGame : GuessingGame
     private const int ANSWERS_COUNT = 4;
     private const string TEMPLATE_PATH = "Games/GuessingGame/Gatekeepers/GatekeepersGamePanel";
 
-    private const string FOOTPRINT_SPRITE_URL = // Yes, this is silly
+    private const string FOOTPRINT_SPRITE_URL = // C'est très con oui
         "https://raw.githubusercontent.com/SlimSeb/SpriteCollection/refs/heads/main/Gen5Footprints/{0}.png";
 
     private static readonly TimeSpan SHOW_PORTRAITS_AT = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan SHOW_SILHOUETTES_AT = TimeSpan.FromSeconds(5);
-    private const int MAX_SPECIES_ID = 649; // Gens 1 to 5
+    private const int MAX_SPECIES_ID = 649; // Gen 1 à 5
 
     private static int NextGameId { get; set; } = 1;
 

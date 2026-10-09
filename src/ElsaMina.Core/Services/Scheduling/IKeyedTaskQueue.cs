@@ -1,19 +1,19 @@
 namespace ElsaMina.Core.Services.Scheduling;
 
 /// <summary>
-/// Runs work items one after the other for a given key, while work for different keys runs concurrently.
+/// Exécute les tâches l'une après l'autre pour une même clé, et en parallèle pour des clés différentes
 /// </summary>
 public interface IKeyedTaskQueue
 {
     /// <summary>
-    /// Queues <paramref name="work"/> behind the work already queued for <paramref name="key"/>.
-    /// The returned task completes when <paramref name="work"/> has completed, and carries its exception if it fails.
-    /// A failing work item never prevents the next ones for the same key from running.
+    /// Met <paramref name="work"/> en file derrière ce qui attend déjà pour <paramref name="key"/>.
+    /// La tâche renvoyée se termine quand <paramref name="work"/> est fini, et porte son exception s'il plante.
+    /// Une tâche qui plante empêche jamais les suivantes de la même clé de tourner.
     /// </summary>
     Task EnqueueAsync(string key, Func<Task> work);
 
     /// <summary>
-    /// The number of keys that currently have queued or running work.
+    /// Le nb de clés qui ont du taf en file ou en cours
     /// </summary>
     int ActiveKeyCount { get; }
 }

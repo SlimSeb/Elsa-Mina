@@ -17,7 +17,7 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
         var definitions = new Dictionary<Parameter, IParameterDefinition>();
         foreach (var definition in providers.SelectMany(provider => provider.GetDefinitions()))
         {
-            // Values are stored under the identifier: two parameters sharing one would overwrite each other.
+            // Les valeurs sont stockées sous l'identifiant : deux paramètres avec le même => ils s'écrasent entre eux
             if (!definitions.TryAdd(new Parameter(definition.Identifier, definition.Name), definition))
             {
                 throw new InvalidOperationException(

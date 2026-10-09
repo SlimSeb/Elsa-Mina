@@ -160,6 +160,6 @@ public class ChatLogService : IChatLogService, IBotLifecycleParticipant
         return Task.CompletedTask;
     }
 
-    // Uploads the logs written since the last periodic flush, so a restart does not wait a full interval for them.
+    // Envoie les logs écrits depuis le dernier flush périodique, sinon après un restart faut attendre tout un intervalle pour les avoir
     public Task OnExitingAsync(CancellationToken cancellationToken) => FlushAllAsync(cancellationToken);
 }

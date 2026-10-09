@@ -84,7 +84,7 @@ public class OutgoingMessageQueue : IOutgoingMessageQueue
 
     private async Task DrainAsync()
     {
-        // Leave the caller's lock before waiting.
+        // On sort du lock de l'appelant avant d'attendre
         await Task.Yield();
         while (true)
         {
@@ -107,14 +107,14 @@ public class OutgoingMessageQueue : IOutgoingMessageQueue
 
             lock (_lock)
             {
-                // Trust the wait rather than re-reading the clock, so a coarse clock cannot stall the queue.
+                // On fait confiance à l'attente plutôt que de relire l'horloge, sinon une horloge pas précise peut bloquer la file
                 var now = _clockService.CurrentUtcDateTimeOffset;
                 SendNow(_pending.Dequeue(), now > _nextSendTime ? now : _nextSendTime);
             }
         }
     }
 
-    // Must be called while holding _lock.
+    // A appeler en tenant _lock !!
     private void SendNow(string message, DateTimeOffset now)
     {
         Log.Debug("[Sending] {0}", message);

@@ -1,8 +1,8 @@
 namespace ElsaMina.Core.Services.Lifecycle;
 
 /// <summary>
-/// Runs the registered <see cref="IBotLifecycleParticipant"/>s: what to prepare before connecting,
-/// and what to flush before stopping.
+/// Lance les <see cref="IBotLifecycleParticipant"/> enregistrés : ce qu'il faut préparer avant de se connecter,
+/// et ce qu'il faut flush avant de s'arrêter
 /// </summary>
 public interface IBotLifecycleService
 {

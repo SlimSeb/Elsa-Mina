@@ -3,8 +3,8 @@ namespace ElsaMina.Core;
 public interface IBot : IDisposable
 {
     /// <summary>
-    /// Handles one frame received from the server. Callers that receive frames concurrently must
-    /// go through <see cref="Services.Dispatch.IIncomingMessageDispatcher"/>, which keeps each room's frames in order.
+    /// Traite une frame reçue du serveur. Si on reçoit des frames en parallèle faut passer par
+    /// <see cref="Services.Dispatch.IIncomingMessageDispatcher"/>, qui garde les frames de chaque room dans l'ordre
     /// </summary>
     Task HandleReceivedMessageAsync(string message);
     void Send(string message);
@@ -14,7 +14,7 @@ public interface IBot : IDisposable
     void OnDisconnect();
 
     /// <summary>
-    /// Runs the shutdown work (pending saves, queued messages) and waits for it, until <paramref name="cancellationToken"/> fires.
+    /// Lance le taf d'arrêt (sauvegardes en attente, messages en file) et l'attend, jusqu'à ce que <paramref name="cancellationToken"/> se déclenche
     /// </summary>
     Task StopAsync(CancellationToken cancellationToken = default);
     TimeSpan UpTime { get; }
