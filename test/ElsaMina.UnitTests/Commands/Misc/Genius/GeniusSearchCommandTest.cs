@@ -1,4 +1,5 @@
 using System.Globalization;
+using ElsaMina.Commands;
 using ElsaMina.Commands.Misc.Genius;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
@@ -14,7 +15,7 @@ namespace ElsaMina.UnitTests.Commands.Misc.Genius;
 [TestFixture]
 public class GeniusSearchCommandTest
 {
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private IHttpService _httpService;
     private ITemplatesManager _templatesManager;
     private IImageService _imageService;
@@ -24,7 +25,7 @@ public class GeniusSearchCommandTest
     [SetUp]
     public void SetUp()
     {
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _httpService = Substitute.For<IHttpService>();
         _templatesManager = Substitute.For<ITemplatesManager>();
         _imageService = Substitute.For<IImageService>();

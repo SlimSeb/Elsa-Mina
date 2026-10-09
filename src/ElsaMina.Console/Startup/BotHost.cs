@@ -1,4 +1,5 @@
 using ElsaMina.Core;
+using ElsaMina.Core.Services.Dispatch;
 using ElsaMina.Logging;
 using Lusamine.WebSocketClient.Events;
 
@@ -6,19 +7,21 @@ namespace ElsaMina.Console.Startup;
 
 public sealed class BotHost
 {
-    // Handlers are I/O bound, and some await a response carried by a later message (see
-    // PendingQueryRequestsManager), so this needs enough headroom that waiting handlers never
-    // starve the pump of the slot needed to deliver what they are waiting for.
-    private const int MAX_CONCURRENT_MESSAGES = 64;
+    // Le script de déploiement envoie un SIGTERM puis attend 10s avant de kill le process
+    private static readonly TimeSpan SHUTDOWN_TIMEOUT = TimeSpan.FromSeconds(8);
 
     private readonly IBot _bot;
     private readonly IClient _client;
-    private readonly ManualResetEvent _exitEvent = new(false);
+    private readonly IIncomingMessageDispatcher _dispatcher;
+    private readonly TaskCompletionSource _stopped = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly Lock _shutdownLock = new();
+    private Task _shutdownTask;
 
-    public BotHost(IBot bot, IClient client)
+    public BotHost(IBot bot, IClient client, IIncomingMessageDispatcher dispatcher)
     {
         _bot = bot;
         _client = client;
+        _dispatcher = dispatcher;
     }
 
     public void Start()
@@ -31,32 +34,43 @@ public sealed class BotHost
     public async Task RunAsync()
     {
         await _bot.StartAsync();
-        _exitEvent.WaitOne();
+        await _stopped.Task;
     }
 
-    public void Shutdown()
+    /// <summary>
+    /// Flush le taf en attente et laisse <see cref="RunAsync"/> se terminer. On peut l'appeler plusieurs fois sans pb
+    /// </summary>
+    public Task ShutdownAsync()
     {
-        _bot.OnExit();
+        lock (_shutdownLock)
+        {
+            return _shutdownTask ??= RunShutdownAsync();
+        }
+    }
+
+    private async Task RunShutdownAsync()
+    {
+        using var timeout = new CancellationTokenSource(SHUTDOWN_TIMEOUT);
+        try
+        {
+            await _bot.StopAsync(timeout.Token);
+        }
+        finally
+        {
+            _stopped.TrySetResult();
+        }
     }
 
     private async Task RunMessagePumpAsync()
     {
         try
         {
-            await Parallel.ForEachAsync(
-                _client.Messages,
-                new ParallelOptions { MaxDegreeOfParallelism = MAX_CONCURRENT_MESSAGES },
-                async (message, _) =>
-                {
-                    try
-                    {
-                        await _bot.HandleReceivedMessageAsync(message);
-                    }
-                    catch (Exception exception)
-                    {
-                        Log.Error(exception, "Error while handling message");
-                    }
-                });
+            // La lecture reste séquentielle pour que le dispatcher voie les frames dans l'ordre d'arrivée ; ensuite il traite
+            // les frames de chaque room dans l'ordre, et les rooms différentes en parallèle
+            await foreach (var message in _client.Messages)
+            {
+                await _dispatcher.DispatchAsync(message);
+            }
         }
         catch (Exception exception)
         {

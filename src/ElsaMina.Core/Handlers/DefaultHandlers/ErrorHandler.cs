@@ -4,7 +4,7 @@ namespace ElsaMina.Core.Handlers.DefaultHandlers;
 
 public class ErrorHandler : Handler
 {
-    public override IReadOnlySet<string> HandledMessageTypes => new HashSet<string> { "error", "popup" };
+    public override IReadOnlySet<string> HandledMessageTypes { get; } = new HashSet<string> { "error", "popup" };
 
     public override Task HandleReceivedMessageAsync(string[] parts, string roomId = null,
         CancellationToken cancellationToken = default)

@@ -29,11 +29,11 @@ public class LeagueOfLegendsHistoryCommand : Command
     private const int HISTORY_COUNT = 5;
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly ITemplatesManager _templatesManager;
 
     public LeagueOfLegendsHistoryCommand(IHttpService httpService,
-        IConfiguration configuration,
+        ICommandsConfiguration configuration,
         ITemplatesManager templatesManager)
     {
         _httpService = httpService;

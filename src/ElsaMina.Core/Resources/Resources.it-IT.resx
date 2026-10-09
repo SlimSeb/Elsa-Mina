@@ -53,9 +53,6 @@
     <data name="parameter_name_locale" xml:space="preserve">
         <value>Lingua</value>
     </data>
-    <data name="parameter_name_is_showing_team_links_preview" xml:space="preserve">
-        <value>Mostra anteprima delle squadre dai link</value>
-    </data>
     <data name="parameter_name_is_showing_error_messages" xml:space="preserve">
         <value>Mostra i messaggi di errore</value>
     </data>
@@ -68,44 +65,11 @@
     <data name="parameter_description_is_showing_error_messages" xml:space="preserve">
         <value>Mostra il messaggio d'errore e la trace quando un comando fallisce</value>
     </data>
-    <data name="parameter_description_is_showing_team_links_preview" xml:space="preserve">
-        <value>Mostra un'anteprima di una squadra quando viene condiviso un link Pokepaste o CoupCritique</value>
-    </data>
     <data name="parameter_description_locale" xml:space="preserve">
         <value>La lingua utilizzata per i comandi</value>
     </data>
-    <data name="parameter_name_is_showing_replays_preview" xml:space="preserve">
-        <value>Mostra informazioni del replay</value>
-    </data>
-    <data name="parameter_description_is_showing_replays_preview" xml:space="preserve">
-        <value>Mostra i giocatori e le squadre di un replay</value>
-    </data>
-    <data name="parameter_name_is_showing_youtube_link_preview" xml:space="preserve">
-        <value>Anteprima link YouTube</value>
-    </data>
-    <data name="parameter_description_is_showing_youtube_link_preview" xml:space="preserve">
-        <value>Mostra il titolo e le informazioni di un video YouTube quando viene pubblicato un link</value>
-    </data>
-    <data name="parameter_name_is_showing_url_preview" xml:space="preserve">
-        <value>Anteprima URL</value>
-    </data>
-    <data name="parameter_description_is_showing_url_preview" xml:space="preserve">
-        <value>Mostra una scheda di anteprima con titolo e descrizione quando viene pubblicato un URL</value>
-    </data>
-    <data name="parameter_name_bucks_enabled" xml:space="preserve">
-        <value>Bucks</value>
-    </data>
-    <data name="parameter_description_bucks_enabled" xml:space="preserve">
-        <value>Abilita o disabilita l'economia di bucks (saldi, trasferimenti, premi) per questa stanza.</value>
-    </data>
     <data name="bucks_disabled" xml:space="preserve">
         <value>L'economia di bucks è disabilitata in questa stanza.</value>
-    </data>
-    <data name="parameter_name_klipy_gif_enabled" xml:space="preserve">
-        <value>GIF di KLIPY</value>
-    </data>
-    <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
-        <value>Abilita i comandi klipygif e klipysearch nella stanza</value>
     </data>
     <data name="command_execution_error" xml:space="preserve">
         <value>L'esecuzione del comando ha generato un errore.</value>
@@ -127,35 +91,5 @@
     </data>
     <data name="rank_former_staff" xml:space="preserve">
         <value>Ex staff</value>
-    </data>
-    <data name="parameter_name_tournament_betting_enabled" xml:space="preserve">
-        <value>Scommesse torneo</value>
-    </data>
-    <data name="parameter_description_tournament_betting_enabled" xml:space="preserve">
-        <value>Abilita o disabilita le scommesse sui tornei per questa stanza.</value>
-    </data>
-    <data name="parameter_name_event_announces_type" xml:space="preserve">
-        <value>Annunci tra stanze</value>
-    </data>
-    <data name="parameter_description_event_announces_type" xml:space="preserve">
-        <value>Scegli quali eventi delle stanze collegate vengono annunciati in questa stanza.</value>
-    </data>
-    <data name="parameter_value_event_announces_all" xml:space="preserve">
-        <value>Tornei e giochi</value>
-    </data>
-    <data name="parameter_value_event_announces_tournaments" xml:space="preserve">
-        <value>Solo tornei</value>
-    </data>
-    <data name="parameter_value_event_announces_games" xml:space="preserve">
-        <value>Solo giochi</value>
-    </data>
-    <data name="parameter_value_event_announces_none" xml:space="preserve">
-        <value>Nessuno</value>
-    </data>
-    <data name="parameter_name_streaks_enabled" xml:space="preserve">
-        <value>Serie</value>
-    </data>
-    <data name="parameter_description_streaks_enabled" xml:space="preserve">
-        <value>Abilita o disabilita le serie e le classifiche di serie per questa stanza.</value>
     </data>
 </root>

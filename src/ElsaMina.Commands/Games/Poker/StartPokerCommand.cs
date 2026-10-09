@@ -1,22 +1,22 @@
+using ElsaMina.Commands.Economy;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 
 namespace ElsaMina.Commands.Games.Poker;
 
 [NamedCommand("poker", Aliases = ["texasholdem", "holdem"])]
-public class StartPokerCommand : Command
+public class StartPokerCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<PokerGame> _gameFactory;
     private readonly IEventAnnouncer _eventAnnouncer;
 
-    public StartPokerCommand(IDependencyContainerService dependencyContainerService,
+    public StartPokerCommand(Func<PokerGame> gameFactory,
         IEventAnnouncer eventAnnouncer)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _eventAnnouncer = eventAnnouncer;
     }
 
@@ -52,7 +52,7 @@ public class StartPokerCommand : Command
 
         var isForFun = !await context.IsBucksEnabledAsync(cancellationToken);
 
-        var game = _dependencyContainerService.Resolve<PokerGame>();
+        var game = _gameFactory();
         game.Context = context;
         game.BuyIn = buyIn;
         game.IsForFun = isForFun;

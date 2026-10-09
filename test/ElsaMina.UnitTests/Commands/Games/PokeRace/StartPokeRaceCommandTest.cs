@@ -1,6 +1,5 @@
 using ElsaMina.Commands.Games.PokeRace;
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
@@ -13,7 +12,7 @@ namespace ElsaMina.UnitTests.Commands.Games.PokeRace;
 [TestFixture]
 public class StartPokeRaceCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<PokeRaceGame> _gameFactory;
     private IContext _context;
     private IRoom _room;
     private StartPokeRaceCommand _command;
@@ -21,11 +20,11 @@ public class StartPokeRaceCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<PokeRaceGame>>();
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
         _context.Room.Returns(_room);
-        _command = new StartPokeRaceCommand(_dependencyContainerService);
+        _command = new StartPokeRaceCommand(_gameFactory);
     }
 
     private static PokeRaceGame BuildGame()
@@ -54,7 +53,7 @@ public class StartPokeRaceCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("pokerace_already_running");
-        _dependencyContainerService.DidNotReceive().Resolve<PokeRaceGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -66,7 +65,7 @@ public class StartPokeRaceCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("pokerace_other_game_running");
-        _dependencyContainerService.DidNotReceive().Resolve<PokeRaceGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -74,13 +73,13 @@ public class StartPokeRaceCommandTest
     {
         _room.Game.Returns((IGame)null);
         var game = BuildGame();
-        _dependencyContainerService.Resolve<PokeRaceGame>().Returns(game);
+        _gameFactory().Returns(game);
 
         await _command.RunAsync(_context);
 
         _context.DidNotReceive().ReplyLocalizedMessage("pokerace_already_running");
         _context.DidNotReceive().ReplyLocalizedMessage("pokerace_other_game_running");
-        _dependencyContainerService.Received(1).Resolve<PokeRaceGame>();
+        _gameFactory.Received(1)();
     }
 
     [Test]
@@ -88,7 +87,7 @@ public class StartPokeRaceCommandTest
     {
         _room.Game.Returns((IGame)null);
         var game = BuildGame();
-        _dependencyContainerService.Resolve<PokeRaceGame>().Returns(game);
+        _gameFactory().Returns(game);
 
         await _command.RunAsync(_context);
 

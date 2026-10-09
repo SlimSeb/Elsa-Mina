@@ -1,25 +1,24 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.VoltorbFlip;
 
 [NamedCommand("voltorbflip", Aliases = ["vf", "voltorb-flip"])]
-public class StartVoltorbFlipCommand : Command
+public class StartVoltorbFlipCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<VoltorbFlipGame> _gameFactory;
     private readonly IRoomsManager _roomsManager;
     private readonly IVoltorbFlipGameManager _gameManager;
     private readonly IArcadeEventsService _arcadeEventsService;
 
-    public StartVoltorbFlipCommand(IDependencyContainerService dependencyContainerService,
+    public StartVoltorbFlipCommand(Func<VoltorbFlipGame> gameFactory,
         IRoomsManager roomsManager,
         IVoltorbFlipGameManager gameManager,
         IArcadeEventsService arcadeEventsService)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _roomsManager = roomsManager;
         _gameManager = gameManager;
         _arcadeEventsService = arcadeEventsService;
@@ -72,7 +71,7 @@ public class StartVoltorbFlipCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<VoltorbFlipGame>();
+        var game = _gameFactory();
         game.Context = context;
         game.Owner = context.Sender;
         game.IsPrivateMode = true;
@@ -118,7 +117,7 @@ public class StartVoltorbFlipCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<VoltorbFlipGame>();
+        var game = _gameFactory();
         game.Context = context;
         room.Game = game;
         await game.DisplayAnnounce();

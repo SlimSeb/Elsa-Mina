@@ -46,7 +46,7 @@ public partial class UrlPreviewHandler : ChatMessageHandler
 
     public override async Task HandleMessageAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var isPreviewEnabled = (await context.Room.GetParameterValueAsync(Parameter.ShowUrlPreview,
+        var isPreviewEnabled = (await context.Room.GetParameterValueAsync(UrlPreviewRoomParameters.ShowUrlPreview,
             cancellationToken)).ToBoolean();
         if (!isPreviewEnabled)
         {

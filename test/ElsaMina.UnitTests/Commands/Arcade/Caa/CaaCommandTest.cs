@@ -1,9 +1,10 @@
+using ElsaMina.Cloud.Sheets;
+using ElsaMina.Commands;
 using ElsaMina.Commands.Arcade.Caa;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
-using ElsaMina.Cloud.Sheets;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Arcade.Caa;
@@ -13,7 +14,7 @@ public class CaaCommandTest
     private ISheetProvider _sheetProvider;
     private ISheet _sheet;
     private ITemplatesManager _templatesManager;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private IContext _context;
     private CaaCommand _command;
 
@@ -29,7 +30,7 @@ public class CaaCommandTest
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>())
             .Returns("<html>caa</html>");
 
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _configuration.CaaSpreadsheetName.Returns("CAA Spreadsheet");
         _configuration.CaaSheetName.Returns("Feuille tampon");
 

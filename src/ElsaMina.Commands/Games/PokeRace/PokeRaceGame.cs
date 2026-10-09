@@ -102,9 +102,18 @@ public class PokeRaceGame : Game, IPokeRaceGame
 
         var html = await BuildRaceStartHtmlAsync();
         Context.SendUpdatableHtml(HtmlId, html, true);
-        await _systemService.SleepAsync(TimeSpan.FromSeconds(3));
 
-        _raceUpdateTimer.Start();
+        // Pas d'await : la commande de lancement passe dans l'ordre des messages de la room, faut pas bloquer la room pendant le compte à rebours
+        _ = StartRaceUpdatesAfterCountdownAsync();
+    }
+
+    private async Task StartRaceUpdatesAfterCountdownAsync()
+    {
+        await _systemService.SleepAsync(TimeSpan.FromSeconds(3));
+        if (!IsEnded)
+        {
+            _raceUpdateTimer.Start();
+        }
     }
 
     public void Cancel()

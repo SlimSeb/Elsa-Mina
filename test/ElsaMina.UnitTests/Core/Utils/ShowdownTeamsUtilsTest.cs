@@ -1,6 +1,7 @@
-using ElsaMina.Commands.Teams;
-using ElsaMina.Core.Utils;
 using System.Text.Json;
+using ElsaMina.Commands.Teams;
+using ElsaMina.Core.Services.Teams;
+using ElsaMina.Core.Utils;
 
 namespace ElsaMina.UnitTests.Core.Utils;
 

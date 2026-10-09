@@ -15,6 +15,7 @@ using ElsaMina.Commands.Misc.Translation;
 using ElsaMina.Commands.Misc.UrlPreview;
 using ElsaMina.Commands.Misc.Wiki;
 using ElsaMina.Commands.Misc.Youtube;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Modules;
@@ -24,6 +25,10 @@ public class MiscModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
+
+        builder.RegisterType<YoutubeRoomParameters>().As<IRoomParameterProvider>().SingleInstance();
+        builder.RegisterType<UrlPreviewRoomParameters>().As<IRoomParameterProvider>().SingleInstance();
+        builder.RegisterType<KlipyRoomParameters>().As<IRoomParameterProvider>().SingleInstance();
 
         builder.RegisterCommand<FactsCommand>();
         builder.RegisterCommand<BitcoinCommand>();

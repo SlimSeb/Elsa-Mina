@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Core.Handlers;
-using ElsaMina.Core.Services.EventAnnounces;
 
 namespace ElsaMina.Commands.Games;
 
@@ -11,7 +11,7 @@ public partial class HangmanAnnounceHandler : Handler
 
     private readonly IEventAnnouncer _eventAnnouncer;
 
-    public override IReadOnlySet<string> HandledMessageTypes => (HashSet<string>)["uhtml"];
+    public override IReadOnlySet<string> HandledMessageTypes { get; } = (HashSet<string>)["uhtml"];
 
     private uint _lastId;
 

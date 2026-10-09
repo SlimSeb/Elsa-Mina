@@ -1,9 +1,9 @@
+using ElsaMina.Cloud.Sheets;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Utils;
-using ElsaMina.Cloud.Sheets;
 
 namespace ElsaMina.Commands.Arcade.Sheets;
 
@@ -15,9 +15,9 @@ public class ArcadeSheetAddPointsCommand : Command
     private const int POINTS_COLUMN = 9;
 
     private readonly ISheetProvider _sheetProvider;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
 
-    public ArcadeSheetAddPointsCommand(ISheetProvider sheetProvider, IConfiguration configuration)
+    public ArcadeSheetAddPointsCommand(ISheetProvider sheetProvider, ICommandsConfiguration configuration)
     {
         _sheetProvider = sheetProvider;
         _configuration = configuration;

@@ -1,8 +1,8 @@
+using System.Text.Json;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
 using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.LanguageModel.OpenAi;
-using System.Text.Json;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Core.Services.LanguageModel;

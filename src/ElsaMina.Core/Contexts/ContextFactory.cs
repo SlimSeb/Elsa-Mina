@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Resources;
@@ -17,6 +18,10 @@ public class ContextFactory : IContextFactory
     private readonly IPmSendersManager _pmSendersManager;
     private readonly ContextDependencies _contextDependencies;
 
+    // Tous les handlers reçoivent le même tableau de parts pour une ligne => on construit le contexte une fois par ligne
+    // et on le partage, au lieu d'en refaire un par handler. Les entrées disparaissent avec le tableau
+    private readonly ConditionalWeakTable<string[], StrongBox<IContext>> _contextsByMessage = new();
+
     public ContextFactory(IConfiguration configuration,
         IResourcesService resourcesService,
         IRoomsManager roomsManager,
@@ -33,6 +38,13 @@ public class ContextFactory : IContextFactory
 
     public IContext TryBuildContextFromReceivedMessage(string[] parts, string roomId = null)
     {
+        return _contextsByMessage
+            .GetValue(parts, messageParts => new StrongBox<IContext>(BuildContext(messageParts, roomId)))
+            .Value;
+    }
+
+    private IContext BuildContext(string[] parts, string roomId)
+    {
         switch (parts.Length)
         {
             case > 1 when parts[1] == "c:":
@@ -43,7 +55,12 @@ public class ContextFactory : IContextFactory
                     return null;
                 }
 
-                var timestamp = long.Parse(parts[2]);
+                if (parts.Length < 5 || !long.TryParse(parts[2], out var timestamp))
+                {
+                    Log.Warning("Ignoring malformed chat message in room {RoomId}", roomId);
+                    return null;
+                }
+
                 var userId = parts[3].ToLowerAlphaNum();
                 // The message is everything after the 4th pipe. Rejoin so that
                 // messages containing '|' are not truncated.
@@ -62,7 +79,7 @@ public class ContextFactory : IContextFactory
                     RawMessage = string.Join("|", parts)
                 };
             }
-            case > 2 when parts[1] == "pm":
+            case > 3 when parts[1] == "pm":
             {
                 // The message is everything after the 4th pipe. Rejoin so that
                 // messages containing '|' (e.g. form submissions) are not truncated.

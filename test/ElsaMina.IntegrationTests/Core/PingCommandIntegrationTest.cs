@@ -1,20 +1,18 @@
 using Autofac;
+using ElsaMina.Commands.CustomCommands;
 using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Handlers.DefaultHandlers;
-using ElsaMina.Core.Services.AddedCommands;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
+using ElsaMina.Core.Services.Dispatch;
+using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Lifecycle;
-using ElsaMina.Core.Services.PlayTime;
 using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.FeatureSwitches;
-using ElsaMina.Core.Services.Start;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Core.Services.UserDetails;
@@ -32,7 +30,6 @@ public class PingCommandIntegrationTest
     private IClient _client;
     private Bot _bot;
     private IContainer _container;
-    private DependencyContainerService _dependencyContainerService;
 
     [SetUp]
     public void SetUp()
@@ -41,13 +38,10 @@ public class PingCommandIntegrationTest
         var clockService = Substitute.For<IClockService>();
         var roomsManager = Substitute.For<IRoomsManager>();
         var systemService = Substitute.For<ISystemService>();
-        var startManager = Substitute.For<IStartManager>();
         var configuration = Substitute.For<IConfiguration>();
         var resourcesService = Substitute.For<IResourcesService>();
         var userDetailsManager = Substitute.For<IUserDetailsManager>();
         var addedCommandsManager = Substitute.For<IAddedCommandsManager>();
-        var playTimeUpdateService = Substitute.For<IPlayTimeUpdateService>();
-        _dependencyContainerService = new DependencyContainerService();
 
         clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
         configuration.Trigger.Returns("-");
@@ -91,13 +85,16 @@ public class PingCommandIntegrationTest
         roomsManager.GetRoom(BOT_DEVELOPMENT_ROOM_ID).Returns(botDevelopmentRoom);
 
         var telemetry = Substitute.For<ITelemetryService>();
-        var handlerManager = new HandlerManager(_dependencyContainerService, telemetry);
-        _bot = new Bot(_client, clockService, roomsManager, handlerManager,
-            systemService, new BotLifecycleService(startManager, playTimeUpdateService), telemetry);
 
         var builder = new ContainerBuilder();
-        builder.RegisterInstance(_dependencyContainerService).As<IDependencyContainerService>();
-        builder.RegisterInstance(_bot).As<IBot>();
+        builder.RegisterInstance(_client).As<IClient>();
+        builder.RegisterInstance(clockService).As<IClockService>();
+        builder.RegisterInstance(systemService).As<ISystemService>();
+        builder.RegisterInstance(Substitute.For<IBotLifecycleService>()).As<IBotLifecycleService>();
+        builder.RegisterType<OutgoingMessageQueue>().As<IOutgoingMessageQueue>().SingleInstance();
+        builder.RegisterType<HandlerManager>().As<IHandlerManager>().SingleInstance();
+        builder.RegisterType<CommandRegistry>().As<ICommandRegistry>().SingleInstance();
+        builder.RegisterType<Bot>().As<IBot>().AsSelf().SingleInstance();
         builder.RegisterInstance(roomsManager).As<IRoomsManager>();
         builder.RegisterInstance(configuration).As<IConfiguration>();
         builder.RegisterInstance(resourcesService).As<IResourcesService>();
@@ -113,7 +110,8 @@ public class PingCommandIntegrationTest
         builder.RegisterCommand<TestPingCommand>();
 
         _container = builder.Build();
-        _dependencyContainerService.SetContainer(_container);
+        _bot = _container.Resolve<Bot>();
+        _container.Resolve<IHandlerManager>().Initialize();
     }
 
     [TearDown]

@@ -1,8 +1,9 @@
+using ElsaMina.Cloud.Sheets;
+using ElsaMina.Commands;
 using ElsaMina.Commands.Arcade.Caa;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Cloud.Sheets;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Arcade.Caa;
@@ -11,7 +12,7 @@ namespace ElsaMina.UnitTests.Commands.Arcade.Caa;
 public class AddCaaPointsCommandTest
 {
     private ISheetProvider _sheetProvider;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private ISheet _sheet;
     private IContext _context;
     private AddCaaPointsCommand _command;
@@ -20,7 +21,7 @@ public class AddCaaPointsCommandTest
     public void SetUp()
     {
         _sheetProvider = Substitute.For<ISheetProvider>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _sheet = Substitute.For<ISheet>();
         _context = Substitute.For<IContext>();
 

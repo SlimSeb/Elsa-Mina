@@ -1,5 +1,5 @@
+using ElsaMina.Commands.Repeats;
 using ElsaMina.Commands.Repeats.List;
-using ElsaMina.Core.Services.Repeats;
 using ElsaMina.UnitTests.Core.Services.Templates;
 using NSubstitute;
 

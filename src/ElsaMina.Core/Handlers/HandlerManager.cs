@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Logging;
 
@@ -8,14 +7,15 @@ namespace ElsaMina.Core.Handlers;
 
 public class HandlerManager : IHandlerManager
 {
-    private readonly IDependencyContainerService _containerService;
+    private readonly Lazy<IEnumerable<IHandler>> _registeredHandlers;
     private readonly ITelemetryService _telemetryService;
 
     private readonly ConcurrentDictionary<string, IHandler> _handlers = [];
 
-    public HandlerManager(IDependencyContainerService containerService, ITelemetryService telemetryService)
+    // Lazy : les handlers dépendent de services qui dépendent du bot => on les construit une fois le container prêt
+    public HandlerManager(Lazy<IEnumerable<IHandler>> registeredHandlers, ITelemetryService telemetryService)
     {
-        _containerService = containerService;
+        _registeredHandlers = registeredHandlers;
         _telemetryService = telemetryService;
     }
 
@@ -25,7 +25,12 @@ public class HandlerManager : IHandlerManager
 
     public void Initialize()
     {
-        var handlers = _containerService.Resolve<IEnumerable<IHandler>>().ToList();
+        if (IsInitialized)
+        {
+            return;
+        }
+
+        var handlers = _registeredHandlers.Value.ToList();
         foreach (var handler in handlers)
         {
             _handlers[handler.Identifier] = handler;
@@ -72,8 +77,8 @@ public class HandlerManager : IHandlerManager
         {
             activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
             activity?.AddException(exception);
+            // Log ici et nulle part ailleurs : un handler qui plante doit pas cacher les résultats des autres, ni être loggé 2 fois
             Log.Error(exception, "Error while handling message in handler {Handler}", handler.Identifier);
-            throw;
         }
     }
 }

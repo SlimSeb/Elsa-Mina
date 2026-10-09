@@ -1,5 +1,4 @@
 using System.Diagnostics.Metrics;
-using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Logging;
 using Grafana.OpenTelemetry;
@@ -32,7 +31,7 @@ public sealed class TelemetryBootstrapper : IDisposable
         _meterProvider = meterProvider;
     }
 
-    public static TelemetryBootstrapper Initialize(IConfiguration configuration)
+    public static TelemetryBootstrapper Initialize(Configuration configuration)
     {
         var otlpEndpoint = configuration.OtlpEndpoint;
         var otlpHeaders = configuration.OltpHeaders;

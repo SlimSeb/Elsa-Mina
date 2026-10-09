@@ -1,9 +1,12 @@
-using ElsaMina.Cloud.S3;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Services.Config;
 
-public interface IConfiguration : IS3CredentialsProvider, ILoggingConfiguration
+/// <summary>
+/// Les paramètres dont le runtime du bot a besoin : connexion, identité, rooms et accès. Les autres projets ont
+/// leurs propres interfaces (bdd, cloud, features), toutes implémentées par la config chargée depuis config.json
+/// </summary>
+public interface IConfiguration : ILoggingConfiguration
 {
     string Host { get; }
     string Port { get; }
@@ -19,36 +22,8 @@ public interface IConfiguration : IS3CredentialsProvider, ILoggingConfiguration
     string GithubToken { get; }
     string GithubRepository { get; }
     string DefaultLocaleCode { get; }
-    string ConnectionString { get; }
-    int DatabaseMaxRetries { get; }
-    TimeSpan DatabaseRetryDelay { get; }
-    string YoutubeApiKey { get; }
-    string DictionaryApiKey { get; }
-    string RiotApiKey { get; }
-    string GeniusApiKey { get; }
-    string ArcadeWebhookUrl { get; }
     string MistralApiKey { get; }
     string ChatGptApiKey { get; }
     string GeminiApiKey { get; }
-    string ElevenLabsApiKey { get; }
-    string KlipyApiKey { get; }
-    string UnsplashApiKey { get; }
-    string SpoonacularApiKey { get; }
-    string TwitchClientId { get; }
-    string TwitchClientSecret { get; }
-    string TwitterBearerToken { get; }
-    TimeSpan PlayTimeUpdatesInterval { get; }
     TimeSpan LoginRetryDelay { get; }
-    string ArcadeSpreadsheetName { get; }
-    string ArcadeHallOfFameSheetName { get; }
-    string CaaSpreadsheetName { get; }
-    string CaaSheetName { get; }
-    string DollsDriveName { get; }
-    IReadOnlyDictionary<string, IEnumerable<string>> EventAnnounces { get; }
-    IReadOnlyDictionary<string, string> DiscordWebhooks { get; }
-    int UserUpdateBatchSize { get; set; }
-    TimeSpan UserUpdateFlushInterval { get; set; }
-    IReadOnlyDictionary<string, string> GoogleServiceAccountData { get; set; }
-    string OtlpEndpoint { get; }
-    string OltpHeaders { get; }
 }

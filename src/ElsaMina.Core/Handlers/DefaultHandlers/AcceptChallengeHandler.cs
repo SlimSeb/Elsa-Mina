@@ -6,7 +6,7 @@ namespace ElsaMina.Core.Handlers.DefaultHandlers;
 public class AcceptChallengeHandler : Handler
 {
     private const string CHALLENGE_MESSAGE_PREFIX = "/challenge ";
-    public override IReadOnlySet<string> HandledMessageTypes => new HashSet<string> { "pm" };
+    public override IReadOnlySet<string> HandledMessageTypes { get; } = new HashSet<string> { "pm" };
     
     private readonly IBot _bot;
 

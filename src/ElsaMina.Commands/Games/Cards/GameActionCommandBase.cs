@@ -12,7 +12,7 @@ namespace ElsaMina.Commands.Games.Cards;
 /// message whose target is prefixed with the room id, e.g. <c>roomid, garde</c>.
 /// </summary>
 /// <typeparam name="TGame">The game interface the room's running game must implement.</typeparam>
-public abstract class GameActionCommandBase<TGame> : Command where TGame : class, IGame
+public abstract class GameActionCommandBase<TGame> : GameCommand where TGame : class, IGame
 {
     private readonly IRoomsManager _roomsManager;
 

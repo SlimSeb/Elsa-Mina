@@ -25,11 +25,9 @@ public static class ContainerBuilderExtensions
             return;
         }
 
-        builder.RegisterType<TCommand>().Named<ICommand>(commandName);
-        foreach (var commandAlias in commandAttribute.Aliases ?? Enumerable.Empty<string>())
-        {
-            builder.RegisterType<TCommand>().Named<ICommand>(commandAlias);
-        }
+        // Les commandes gardent pas d'état par appel, donc une seule instance pour tous les appels. ICommandRegistry
+        // l'indexe sous son nom et ses alias
+        builder.RegisterType<TCommand>().As<ICommand>().SingleInstance();
     }
 
     public static void RegisterHandler<THandler>(this ContainerBuilder builder) where THandler : IHandler

@@ -1,5 +1,4 @@
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.LanguageModel.Google;
 using ElsaMina.Core.Services.LanguageModel.Mistral;
 using ElsaMina.Core.Services.LanguageModel.OpenAi;
@@ -13,13 +12,21 @@ namespace ElsaMina.Core.Services.LanguageModel;
 public class LanguageModelResolver : ILanguageModelProvider
 {
     private readonly IConfiguration _configuration;
-    private readonly IDependencyContainerService _dependencyContainer;
+    private readonly Lazy<GeminiFlashProvider> _geminiProvider;
+    private readonly Lazy<MistralSmallProvider> _mistralProvider;
+    private readonly Lazy<GptMiniProvider> _gptProvider;
     private List<ILanguageModelProvider> _cachedProviders;
 
-    public LanguageModelResolver(IConfiguration configuration, IDependencyContainerService dependencyContainer)
+    // Lazy : un provider est construit que si sa clé d'API est configurée
+    public LanguageModelResolver(IConfiguration configuration,
+        Lazy<GeminiFlashProvider> geminiProvider,
+        Lazy<MistralSmallProvider> mistralProvider,
+        Lazy<GptMiniProvider> gptProvider)
     {
         _configuration = configuration;
-        _dependencyContainer = dependencyContainer;
+        _geminiProvider = geminiProvider;
+        _mistralProvider = mistralProvider;
+        _gptProvider = gptProvider;
     }
 
     /// <summary>
@@ -88,17 +95,17 @@ public class LanguageModelResolver : ILanguageModelProvider
         // In order of priority
         if (!string.IsNullOrWhiteSpace(_configuration.GeminiApiKey))
         {
-            providers.Add(_dependencyContainer.Resolve<GeminiFlashProvider>());
+            providers.Add(_geminiProvider.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(_configuration.MistralApiKey))
         {
-            providers.Add(_dependencyContainer.Resolve<MistralSmallProvider>());
+            providers.Add(_mistralProvider.Value);
         }
 
         if (!string.IsNullOrWhiteSpace(_configuration.ChatGptApiKey))
         {
-            providers.Add(_dependencyContainer.Resolve<GptMiniProvider>());
+            providers.Add(_gptProvider.Value);
         }
 
         return providers;

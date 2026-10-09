@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.Battleship;
 
 [NamedCommand("end-battleship", Aliases = ["bsend", "bs-end"])]
-public class EndBattleshipCommand : Command
+public class EndBattleshipCommand : GameCommand
 {
     public override Rank RequiredRank => Rank.Voiced;
 

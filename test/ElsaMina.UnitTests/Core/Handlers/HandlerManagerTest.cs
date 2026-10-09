@@ -1,5 +1,4 @@
 using ElsaMina.Core.Handlers;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Telemetry;
 using NSubstitute;
 
@@ -7,16 +6,16 @@ namespace ElsaMina.UnitTests.Core.Handlers;
 
 public class HandlerManagerTests
 {
-    private IDependencyContainerService _mockContainerService;
+    private List<IHandler> _registeredHandlers;
     private ITelemetryService _telemetryService;
     private HandlerManager _handlerManager;
 
     [SetUp]
     public void SetUp()
     {
-        _mockContainerService = Substitute.For<IDependencyContainerService>();
+        _registeredHandlers = [];
         _telemetryService = Substitute.For<ITelemetryService>();
-        _handlerManager = new HandlerManager(_mockContainerService, _telemetryService);
+        _handlerManager = new HandlerManager(new Lazy<IEnumerable<IHandler>>(() => _registeredHandlers), _telemetryService);
     }
 
     [Test]
@@ -28,8 +27,7 @@ public class HandlerManagerTests
         var handler2 = Substitute.For<IHandler>();
         handler2.Identifier.Returns("Handler2");
 
-        _mockContainerService.Resolve<IEnumerable<IHandler>>()
-            .Returns(new[] { handler1, handler2 });
+        _registeredHandlers.AddRange(new[] { handler1, handler2 });
 
         // Act
         _handlerManager.Initialize();
@@ -43,8 +41,7 @@ public class HandlerManagerTests
     {
         // Arrange
         var handler = Substitute.For<IHandler>();
-        _mockContainerService.Resolve<IEnumerable<IHandler>>()
-            .Returns(new[] { handler });
+        _registeredHandlers.AddRange(new[] { handler });
 
         // Act
         _handlerManager.Initialize();
@@ -71,8 +68,7 @@ public class HandlerManagerTests
         handler2.Identifier.Returns("Handler2");
         handler3.Identifier.Returns("Handler3");
 
-        _mockContainerService.Resolve<IEnumerable<IHandler>>()
-            .Returns(new[] { handler1, handler2, handler3 });
+        _registeredHandlers.AddRange(new[] { handler1, handler2, handler3 });
         _handlerManager.Initialize();
 
         var parts = new[] { "MessagePart1", "MessagePart2" };
@@ -96,7 +92,7 @@ public class HandlerManagerTests
         handler.Identifier.Returns("Handler1");
         handler.HandledMessageTypes.Returns((IReadOnlySet<string>)null);
 
-        _mockContainerService.Resolve<IEnumerable<IHandler>>().Returns(new[] { handler });
+        _registeredHandlers.AddRange(new[] { handler });
         _handlerManager.Initialize();
 
         var parts = new[] { "room", "anytype", "data" };
@@ -117,7 +113,7 @@ public class HandlerManagerTests
         handler.Identifier.Returns("Handler1");
         handler.HandledMessageTypes.Returns(new HashSet<string> { "challstr" });
 
-        _mockContainerService.Resolve<IEnumerable<IHandler>>().Returns(new[] { handler });
+        _registeredHandlers.AddRange(new[] { handler });
         _handlerManager.Initialize();
 
         var parts = new[] { "room", "challstr", "data" };
@@ -138,7 +134,7 @@ public class HandlerManagerTests
         handler.Identifier.Returns("Handler1");
         handler.HandledMessageTypes.Returns(new HashSet<string> { "challstr" });
 
-        _mockContainerService.Resolve<IEnumerable<IHandler>>().Returns(new[] { handler });
+        _registeredHandlers.AddRange(new[] { handler });
         _handlerManager.Initialize();
 
         var parts = new[] { "room", "updateuser", "data" };
@@ -159,7 +155,7 @@ public class HandlerManagerTests
         handler.Identifier.Returns("Handler1");
         handler.HandledMessageTypes.Returns(new HashSet<string> { "challstr" });
 
-        _mockContainerService.Resolve<IEnumerable<IHandler>>().Returns(new[] { handler });
+        _registeredHandlers.AddRange(new[] { handler });
         _handlerManager.Initialize();
 
         var parts = new[] { "room" };
@@ -180,7 +176,7 @@ public class HandlerManagerTests
         handler.Identifier.Returns("Handler1");
         handler.HandledMessageTypes.Returns((IReadOnlySet<string>)null);
 
-        _mockContainerService.Resolve<IEnumerable<IHandler>>().Returns(new[] { handler });
+        _registeredHandlers.AddRange(new[] { handler });
         _handlerManager.Initialize();
 
         var parts = new[] { "room" };

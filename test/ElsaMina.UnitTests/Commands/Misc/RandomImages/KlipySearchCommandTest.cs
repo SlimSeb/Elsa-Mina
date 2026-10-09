@@ -36,7 +36,7 @@ public class KlipySearchCommandTest
 
         _configuration.Trigger.Returns("-");
         _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<object>()).Returns("<html/>");
-        _room.GetParameterValueAsync(Parameter.KlipyGifEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(KlipyRoomParameters.KlipyGifEnabled, Arg.Any<CancellationToken>())
             .Returns("true");
         _clockService.CurrentUtcDateTimeOffset.Returns(DateTimeOffset.UtcNow);
         _eventsService.AreGamesMuted(Arg.Any<string>()).Returns(false);
@@ -84,7 +84,7 @@ public class KlipySearchCommandTest
     [Test]
     public async Task Test_RunAsync_ShouldDoNothing_WhenKlipyGifIsDisabled()
     {
-        _room.GetParameterValueAsync(Parameter.KlipyGifEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(KlipyRoomParameters.KlipyGifEnabled, Arg.Any<CancellationToken>())
             .Returns("false");
         var context = MakeContext("cats");
 

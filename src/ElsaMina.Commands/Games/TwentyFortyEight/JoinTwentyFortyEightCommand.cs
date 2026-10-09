@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.TwentyFortyEight;
 
 [NamedCommand("2048join")]
-public class JoinTwentyFortyEightCommand : Command
+public class JoinTwentyFortyEightCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
 

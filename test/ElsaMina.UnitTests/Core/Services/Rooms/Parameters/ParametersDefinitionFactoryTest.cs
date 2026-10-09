@@ -1,6 +1,14 @@
 using System.Globalization;
+using ElsaMina.Commands.Economy;
+using ElsaMina.Commands.EventAnnounces;
+using ElsaMina.Commands.Misc.RandomImages;
+using ElsaMina.Commands.Misc.UrlPreview;
+using ElsaMina.Commands.Misc.Youtube;
+using ElsaMina.Commands.Replays;
+using ElsaMina.Commands.Teams.TeamPreviewOnLink;
+using ElsaMina.Commands.Tournaments.Betting;
+using ElsaMina.Commands.Users.Streaks;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
@@ -29,25 +37,56 @@ public class ParametersDefinitionFactoryTest
             new CultureInfo("fr-FR")
         });
 
-        _factory = new ParametersDefinitionFactory(_configuration, _resourcesService);
+        _factory = new ParametersDefinitionFactory(
+        [
+            new CoreRoomParameters(_configuration, _resourcesService),
+            new TeamPreviewRoomParameters(),
+            new ReplaysRoomParameters(),
+            new TournamentBettingRoomParameters(),
+            new YoutubeRoomParameters(),
+            new UrlPreviewRoomParameters(),
+            new KlipyRoomParameters(),
+            new EconomyRoomParameters(),
+            new EventAnnouncesRoomParameters(),
+            new StreaksRoomParameters()
+        ]);
     }
 
     [Test]
-    public void Test_GetParametersDefinitions_ShouldContainEveryParameter()
+    public void Test_GetParametersDefinitions_ShouldKeepStoredIdentifiers()
     {
+        // Les valeurs sont stockées en bdd sous ces identifiants : si on en change un, toutes les rooms perdent leur réglage
+        string[] expectedIdentifiers =
+            ["loc", "tzn", "atc", "err", "tms", "rpl", "tbe", "ytl", "urlp", "tgf", "bck", "evn", "stk"];
+
         // Act
         var definitions = _factory.GetParametersDefinitions();
 
         // Assert
-        var expected = Enum.GetValues<Parameter>();
-        using (Assert.EnterMultipleScope())
+        Assert.That(definitions.Keys.Select(parameter => parameter.Identifier), Is.EquivalentTo(expectedIdentifiers));
+    }
+
+    [Test]
+    public void Test_GetParametersDefinitions_ShouldListCoreParametersFirst()
+    {
+        // Act
+        var firstParameters = _factory.GetParametersDefinitions().Keys.Take(4);
+
+        // Assert
+        Assert.That(firstParameters, Is.EqualTo(new[]
         {
-            Assert.That(definitions, Has.Count.EqualTo(expected.Length));
-            foreach (var parameter in expected)
-            {
-                Assert.That(definitions.ContainsKey(parameter), Is.True, $"Missing definition for {parameter}");
-            }
-        }
+            Parameter.Locale, Parameter.TimeZone, Parameter.HasCommandAutoCorrect, Parameter.ShowErrorMessages
+        }));
+    }
+
+    [Test]
+    public void Test_GetParametersDefinitions_ShouldThrow_WhenTwoProvidersShareAnIdentifier()
+    {
+        // Arrange
+        var factory = new ParametersDefinitionFactory([new EconomyRoomParameters(), new EconomyRoomParameters()]);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => factory.GetParametersDefinitions());
     }
 
     [Test]
@@ -109,20 +148,20 @@ public class ParametersDefinitionFactoryTest
     }
 
     [Test]
-    [TestCase(Parameter.HasCommandAutoCorrect, true)]
-    [TestCase(Parameter.ShowErrorMessages, true)]
-    [TestCase(Parameter.ShowTeamLinksPreview, true)]
-    [TestCase(Parameter.ShowReplaysPreview, true)]
-    [TestCase(Parameter.TournamentBettingEnabled, true)]
-    [TestCase(Parameter.ShowYoutubeLinkPreview, true)]
-    [TestCase(Parameter.KlipyGifEnabled, true)]
-    [TestCase(Parameter.ShowUrlPreview, false)]
-    [TestCase(Parameter.BucksEnabled, false)]
-    [TestCase(Parameter.StreaksEnabled, true)]
-    public void Test_BooleanParameters_ShouldHaveExpectedDefault(Parameter parameter, bool expectedDefault)
+    [TestCase("atc", true)]
+    [TestCase("err", true)]
+    [TestCase("tms", true)]
+    [TestCase("rpl", true)]
+    [TestCase("tbe", true)]
+    [TestCase("ytl", true)]
+    [TestCase("tgf", true)]
+    [TestCase("urlp", false)]
+    [TestCase("bck", false)]
+    [TestCase("stk", true)]
+    public void Test_BooleanParameters_ShouldHaveExpectedDefault(string identifier, bool expectedDefault)
     {
         // Act
-        var definition = _factory.GetParametersDefinitions()[parameter];
+        var definition = _factory.GetParametersDefinitions()[new Parameter(identifier)];
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -136,7 +175,7 @@ public class ParametersDefinitionFactoryTest
     public void Test_EventAnnouncesTypeDefinition_ShouldBeEnumerationDefaultingToTournamentsWithEveryOption()
     {
         // Act
-        var definition = _factory.GetParametersDefinitions()[Parameter.EventAnnouncesType];
+        var definition = _factory.GetParametersDefinitions()[EventAnnouncesRoomParameters.EventAnnouncesType];
 
         // Assert
         using (Assert.EnterMultipleScope())

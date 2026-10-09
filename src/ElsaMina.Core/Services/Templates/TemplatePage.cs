@@ -1,4 +1,3 @@
-using ElsaMina.Core.Services.CustomColors;
 using Microsoft.AspNetCore.Components;
 
 namespace ElsaMina.Core.Services.Templates;

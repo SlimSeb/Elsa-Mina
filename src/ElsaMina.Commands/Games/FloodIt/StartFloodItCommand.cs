@@ -1,25 +1,24 @@
 using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Games.FloodIt;
 
 [NamedCommand("floodit", Aliases = ["fi"])]
-public class StartFloodItCommand : Command
+public class StartFloodItCommand : GameCommand
 {
-    private readonly IDependencyContainerService _dependencyContainerService;
+    private readonly Func<FloodItGame> _gameFactory;
     private readonly IRoomsManager _roomsManager;
     private readonly IFloodItGameManager _gameManager;
     private readonly IArcadeEventsService _arcadeEventsService;
 
-    public StartFloodItCommand(IDependencyContainerService dependencyContainerService,
+    public StartFloodItCommand(Func<FloodItGame> gameFactory,
         IRoomsManager roomsManager,
         IFloodItGameManager gameManager,
         IArcadeEventsService arcadeEventsService)
     {
-        _dependencyContainerService = dependencyContainerService;
+        _gameFactory = gameFactory;
         _roomsManager = roomsManager;
         _gameManager = gameManager;
         _arcadeEventsService = arcadeEventsService;
@@ -72,7 +71,7 @@ public class StartFloodItCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<FloodItGame>();
+        var game = _gameFactory();
         game.Context = context;
         game.Owner = context.Sender;
         game.IsPrivateMode = true;
@@ -118,7 +117,7 @@ public class StartFloodItCommand : Command
             return;
         }
 
-        var game = _dependencyContainerService.Resolve<FloodItGame>();
+        var game = _gameFactory();
         game.Context = context;
         room.Game = game;
         await game.DisplayAnnounce();

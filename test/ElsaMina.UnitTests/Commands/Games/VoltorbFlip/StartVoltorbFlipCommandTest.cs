@@ -2,7 +2,6 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.VoltorbFlip;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
@@ -14,7 +13,7 @@ namespace ElsaMina.UnitTests.Commands.Games.VoltorbFlip;
 
 public class StartVoltorbFlipCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<VoltorbFlipGame> _gameFactory;
     private IRoomsManager _roomsManager;
     private IVoltorbFlipGameManager _gameManager;
     private IArcadeEventsService _arcadeEventsService;
@@ -28,13 +27,13 @@ public class StartVoltorbFlipCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<VoltorbFlipGame>>();
         _roomsManager = Substitute.For<IRoomsManager>();
         _gameManager = Substitute.For<IVoltorbFlipGameManager>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _configuration = Substitute.For<IConfiguration>();
         _templatesManager = Substitute.For<ITemplatesManager>();
-        _command = new StartVoltorbFlipCommand(_dependencyContainerService, _roomsManager, _gameManager, _arcadeEventsService);
+        _command = new StartVoltorbFlipCommand(_gameFactory, _roomsManager, _gameManager, _arcadeEventsService);
 
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
@@ -49,7 +48,7 @@ public class StartVoltorbFlipCommandTest
             .Returns((1, 0, 1));
         var dbContextFactory = Substitute.For<IBotDbContextFactory>();
         _game = new VoltorbFlipGame(randomService, _templatesManager, _configuration, dbContextFactory);
-        _dependencyContainerService.Resolve<VoltorbFlipGame>().Returns(_game);
+        _gameFactory().Returns(_game);
     }
 
     [Test]
@@ -67,7 +66,7 @@ public class StartVoltorbFlipCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("games_muted_event");
-        _dependencyContainerService.DidNotReceive().Resolve<VoltorbFlipGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -80,7 +79,7 @@ public class StartVoltorbFlipCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        _dependencyContainerService.Received(1).Resolve<VoltorbFlipGame>();
+        _gameFactory.Received(1)();
         Assert.That(_room.Game, Is.SameAs(_game));
     }
 
@@ -109,7 +108,7 @@ public class StartVoltorbFlipCommandTest
 
         // Assert
         _context.Received(1).ReplyLocalizedMessage("vf_game_already_running");
-        _dependencyContainerService.DidNotReceive().Resolve<VoltorbFlipGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -125,7 +124,7 @@ public class StartVoltorbFlipCommandTest
 
         // Assert
         _context.Received(1).ReplyLocalizedMessage("vf_game_waiting");
-        _dependencyContainerService.DidNotReceive().Resolve<VoltorbFlipGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -142,7 +141,7 @@ public class StartVoltorbFlipCommandTest
 
         // Assert
         _context.Received(1).ReplyLocalizedMessage("vf_game_round_active");
-        _dependencyContainerService.DidNotReceive().Resolve<VoltorbFlipGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -159,7 +158,7 @@ public class StartVoltorbFlipCommandTest
 
         // Assert
         await existingGame.Received(1).StartNewRound();
-        _dependencyContainerService.DidNotReceive().Resolve<VoltorbFlipGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]

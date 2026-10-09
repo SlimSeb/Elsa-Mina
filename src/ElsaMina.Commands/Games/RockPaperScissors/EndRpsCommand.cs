@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.RockPaperScissors;
 
 [NamedCommand("rpsend")]
-public class EndRpsCommand : Command
+public class EndRpsCommand : GameCommand
 {
     public override Rank RequiredRank => Rank.Voiced;
 

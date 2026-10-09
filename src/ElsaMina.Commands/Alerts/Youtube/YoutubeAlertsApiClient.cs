@@ -21,9 +21,9 @@ public partial class YoutubeAlertsApiClient : IYoutubeAlertsApiClient
     private static readonly Regex HANDLE_REGEX = HandleRegex();
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
 
-    public YoutubeAlertsApiClient(IHttpService httpService, IConfiguration configuration)
+    public YoutubeAlertsApiClient(IHttpService httpService, ICommandsConfiguration configuration)
     {
         _httpService = httpService;
         _configuration = configuration;

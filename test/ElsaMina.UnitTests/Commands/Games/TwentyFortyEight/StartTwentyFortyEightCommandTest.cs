@@ -2,7 +2,6 @@ using ElsaMina.Commands.Arcade.Events;
 using ElsaMina.Commands.Games.TwentyFortyEight;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.Games;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
@@ -16,7 +15,7 @@ namespace ElsaMina.UnitTests.Commands.Games.TwentyFortyEight;
 
 public class StartTwentyFortyEightCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<TwentyFortyEightGame> _gameFactory;
     private IRoomsManager _roomsManager;
     private ITwentyFortyEightGameManager _gameManager;
     private IArcadeEventsService _arcadeEventsService;
@@ -31,13 +30,13 @@ public class StartTwentyFortyEightCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<TwentyFortyEightGame>>();
         _roomsManager = Substitute.For<IRoomsManager>();
         _gameManager = Substitute.For<ITwentyFortyEightGameManager>();
         _arcadeEventsService = Substitute.For<IArcadeEventsService>();
         _configuration = Substitute.For<IConfiguration>();
         _templatesManager = Substitute.For<ITemplatesManager>();
-        _command = new StartTwentyFortyEightCommand(_dependencyContainerService, _roomsManager, _gameManager, _arcadeEventsService);
+        _command = new StartTwentyFortyEightCommand(_gameFactory, _roomsManager, _gameManager, _arcadeEventsService);
 
         _context = Substitute.For<IContext>();
         _room = Substitute.For<IRoom>();
@@ -66,7 +65,7 @@ public class StartTwentyFortyEightCommandTest
         _configuration.Name.Returns("Bot");
         _configuration.Trigger.Returns("-");
         _game = new TwentyFortyEightGame(randomService, _templatesManager, _configuration, dbContextFactory);
-        _dependencyContainerService.Resolve<TwentyFortyEightGame>().Returns(_game);
+        _gameFactory().Returns(_game);
         _gameManager.GetGame(Arg.Any<string>(), Arg.Any<string>()).ReturnsNull();
     }
 
@@ -93,7 +92,7 @@ public class StartTwentyFortyEightCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("games_muted_event");
-        _dependencyContainerService.DidNotReceive().Resolve<TwentyFortyEightGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -103,7 +102,7 @@ public class StartTwentyFortyEightCommandTest
 
         await _command.RunAsync(_context);
 
-        _dependencyContainerService.Received(1).Resolve<TwentyFortyEightGame>();
+        _gameFactory.Received(1)();
         _context.Received(1).SendUpdatableHtml(Arg.Any<string>(), Arg.Any<string>(), false);
     }
 
@@ -135,7 +134,7 @@ public class StartTwentyFortyEightCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("tfe_game_already_running");
-        _dependencyContainerService.DidNotReceive().Resolve<TwentyFortyEightGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -148,7 +147,7 @@ public class StartTwentyFortyEightCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("tfe_game_waiting");
-        _dependencyContainerService.DidNotReceive().Resolve<TwentyFortyEightGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -162,7 +161,7 @@ public class StartTwentyFortyEightCommandTest
         await _command.RunAsync(_context);
 
         _context.Received(1).ReplyLocalizedMessage("tfe_game_round_active");
-        _dependencyContainerService.DidNotReceive().Resolve<TwentyFortyEightGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -176,7 +175,7 @@ public class StartTwentyFortyEightCommandTest
         await _command.RunAsync(_context);
 
         await existingGame.Received(1).StartNewRound();
-        _dependencyContainerService.DidNotReceive().Resolve<TwentyFortyEightGame>();
+        _gameFactory.DidNotReceive()();
     }
 
     [Test]
@@ -228,7 +227,7 @@ public class StartTwentyFortyEightCommandTest
 
         await _command.RunAsync(_context);
 
-        _dependencyContainerService.Received(1).Resolve<TwentyFortyEightGame>();
+        _gameFactory.Received(1)();
         Assert.That(_game.IsPrivateMode, Is.True);
     }
 

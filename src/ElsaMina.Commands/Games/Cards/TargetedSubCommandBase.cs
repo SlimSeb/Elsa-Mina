@@ -10,7 +10,7 @@ namespace ElsaMina.Commands.Games.Cards;
 /// replacement. Triggered from the room sub panel button (<c>{game}subaccept playerid</c>) or in a
 /// private message whose target is prefixed with the room id (<c>roomid, playerid</c>).
 /// </summary>
-public abstract class TargetedSubCommandBase<TGame> : Command where TGame : class, ICardGame
+public abstract class TargetedSubCommandBase<TGame> : GameCommand where TGame : class, ICardGame
 {
     private readonly IRoomsManager _roomsManager;
 

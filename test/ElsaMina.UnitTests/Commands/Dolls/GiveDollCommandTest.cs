@@ -1,7 +1,7 @@
 using ElsaMina.Commands.Dolls;
+using ElsaMina.Commands.Users.RoomUserData;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.RoomUserData;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Dolls;

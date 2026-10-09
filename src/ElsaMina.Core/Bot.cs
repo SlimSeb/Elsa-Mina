@@ -1,8 +1,8 @@
-﻿using ElsaMina.Core.Handlers;
+using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Services.Clock;
+using ElsaMina.Core.Services.Dispatch;
 using ElsaMina.Core.Services.Lifecycle;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Logging;
 
@@ -11,22 +11,16 @@ namespace ElsaMina.Core;
 public class Bot : IBot
 {
     private const int MESSAGE_LENGTH_LIMIT = 125_000;
-    private static readonly TimeSpan SAME_MESSAGE_COOLDOWN = TimeSpan.FromSeconds(3);
-    private static readonly TimeSpan SEND_MESSAGE_COOLDOWN = TimeSpan.FromMilliseconds(250);
 
     private readonly IClient _client;
     private readonly IClockService _clockService;
     private readonly IRoomsManager _roomsManager;
     private readonly IHandlerManager _handlerManager;
-    private readonly ISystemService _systemService;
+    private readonly IOutgoingMessageQueue _outgoingMessageQueue;
     private readonly IBotLifecycleService _botLifecycleService;
     private readonly ITelemetryService _telemetryService;
 
-    private readonly SemaphoreSlim _initializeRoomSemaphore = new(1, 1);
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private string _currentRoom;
-    private string _lastMessage;
-    private DateTimeOffset _lastMessageTime;
     private DateTimeOffset _connectionTime;
     private bool _disposed;
 
@@ -34,7 +28,7 @@ public class Bot : IBot
         IClockService clockService,
         IRoomsManager roomsManager,
         IHandlerManager handlerManager,
-        ISystemService systemService,
+        IOutgoingMessageQueue outgoingMessageQueue,
         IBotLifecycleService botLifecycleService,
         ITelemetryService telemetryService)
     {
@@ -42,13 +36,14 @@ public class Bot : IBot
         _clockService = clockService;
         _roomsManager = roomsManager;
         _handlerManager = handlerManager;
-        _systemService = systemService;
+        _outgoingMessageQueue = outgoingMessageQueue;
         _botLifecycleService = botLifecycleService;
         _telemetryService = telemetryService;
     }
 
     public async Task StartAsync()
     {
+        _handlerManager.Initialize();
         await _botLifecycleService.OnStartingAsync(_cancellationTokenSource.Token);
         await _client.Connect();
         _connectionTime = _clockService.CurrentUtcDateTimeOffset;
@@ -64,11 +59,19 @@ public class Bot : IBot
     {
         _roomsManager.Clear();
     }
-    
-    public void OnExit()
+
+    public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         Log.Information("Exiting bot...");
-        _ = _botLifecycleService.OnExitingAsync();
+        try
+        {
+            await _botLifecycleService.OnExitingAsync(cancellationToken);
+            await _outgoingMessageQueue.FlushAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            Log.Warning("Shutdown work did not complete in time");
+        }
     }
 
     public TimeSpan UpTime => _clockService.CurrentUtcDateTimeOffset - _connectionTime;
@@ -81,35 +84,22 @@ public class Bot : IBot
             return;
         }
 
-        string room = null;
-        if (lines[0].Length > 0 && lines[0][0] == '>')
+        var roomId = ShowdownFrame.GetRoomId(lines[0]);
+        var firstBodyLine = lines[0][0] == '>' ? 1 : 0;
+
+        if (lines.Length > firstBodyLine + 1 && lines[firstBodyLine].StartsWith("|init|chat"))
         {
-            room = lines[0][1..];
-            _currentRoom = room;
+            await _roomsManager.InitializeRoomAsync(roomId, lines, _cancellationTokenSource.Token);
+            return;
         }
 
-        if (lines.Length > 2 && lines[1].StartsWith("|init|chat"))
+        foreach (var line in lines)
         {
-            await _initializeRoomSemaphore.WaitAsync(_cancellationTokenSource.Token);
-            try
-            {
-                await _roomsManager.InitializeRoomAsync(room, lines, _cancellationTokenSource.Token);
-            }
-            finally
-            {
-                _initializeRoomSemaphore.Release();
-            }
-        }
-        else
-        {
-            foreach (var line in lines)
-            {
-                await ReadLine(room, line);
-            }
+            await ReadLine(roomId, line);
         }
     }
 
-    private async Task ReadLine(string room, string line)
+    private async Task ReadLine(string roomId, string line)
     {
         var parts = line.Split("|");
         if (parts.Length < 2)
@@ -117,41 +107,21 @@ public class Bot : IBot
             return;
         }
 
-        var roomId = room ?? _currentRoom;
-        var messageType = parts.Length > 1 ? parts[1] : string.Empty;
+        Log.Debug("[Received] ({0}) {1}", roomId, line);
 
-        Log.Debug("[Received] ({0}) {1}", room, line);
+        _telemetryService.RecordMessageReceived(roomId, parts[1]);
 
-        _telemetryService.RecordMessageReceived(roomId, messageType);
-
-        if (!_handlerManager.IsInitialized)
-        {
-            _handlerManager.Initialize();
-        }
-        
         await _handlerManager.HandleMessageAsync(parts, roomId, _cancellationTokenSource.Token);
     }
 
     public void Send(string message)
     {
-        var now = _clockService.CurrentUtcDateTimeOffset;
-        if (_lastMessage == message && now - _lastMessageTime < SAME_MESSAGE_COOLDOWN)
-        {
-            return;
-        }
-
         if (message.Length > MESSAGE_LENGTH_LIMIT)
         {
             throw new ArgumentException("Message length limit reached", nameof(message));
         }
 
-        Log.Debug("[Sending] {0}", message);
-
-        _telemetryService.RecordMessageSent();
-        _client.Send(message);
-        _lastMessage = message;
-        _lastMessageTime = now;
-        _systemService.Sleep(SEND_MESSAGE_COOLDOWN);
+        _outgoingMessageQueue.Enqueue(message);
     }
 
     public void Say(string roomId, string message)

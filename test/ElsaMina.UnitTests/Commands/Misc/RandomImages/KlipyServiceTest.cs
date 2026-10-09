@@ -1,3 +1,4 @@
+using ElsaMina.Commands;
 using ElsaMina.Commands.Misc.RandomImages;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
@@ -18,7 +19,7 @@ public class KlipyServiceTest
     ];
 
     private IHttpService _httpService;
-    private IConfiguration _configuration;
+    private ICommandsConfiguration _configuration;
     private IRandomService _randomService;
     private KlipyService _klipyService;
 
@@ -26,7 +27,7 @@ public class KlipyServiceTest
     public void SetUp()
     {
         _httpService = Substitute.For<IHttpService>();
-        _configuration = Substitute.For<IConfiguration>();
+        _configuration = Substitute.For<ICommandsConfiguration>();
         _randomService = Substitute.For<IRandomService>();
 
         _configuration.KlipyApiKey.Returns("test-key");

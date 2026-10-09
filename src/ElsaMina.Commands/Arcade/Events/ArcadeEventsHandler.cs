@@ -26,12 +26,12 @@ public partial class ArcadeEventsHandler : Handler
 
     private readonly ConcurrentDictionary<string, bool> _pendingEvents = new();
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly IBot _bot;
     private readonly IEventRoleMappingService _eventRoleMappingService;
     private readonly IArcadeEventsService _arcadeEventsService;
 
-    public ArcadeEventsHandler(IHttpService httpService, IConfiguration configuration, IBot bot,
+    public ArcadeEventsHandler(IHttpService httpService, ICommandsConfiguration configuration, IBot bot,
         IEventRoleMappingService eventRoleMappingService, IArcadeEventsService arcadeEventsService)
     {
         _httpService = httpService;

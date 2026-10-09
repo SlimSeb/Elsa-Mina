@@ -1,9 +1,8 @@
 using ElsaMina.Commands.Economy;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Commands.Games.Poker;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Services.DependencyInjection;
-using ElsaMina.Core.Services.EventAnnounces;
 using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
@@ -15,7 +14,7 @@ namespace ElsaMina.UnitTests.Commands.Games.Poker;
 
 public class StartPokerCommandTest
 {
-    private IDependencyContainerService _dependencyContainerService;
+    private Func<PokerGame> _gameFactory;
     private IEventAnnouncer _eventAnnouncer;
     private ITemplatesManager _templatesManager;
     private StartPokerCommand _command;
@@ -26,7 +25,7 @@ public class StartPokerCommandTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
+        _gameFactory = Substitute.For<Func<PokerGame>>();
         _eventAnnouncer = Substitute.For<IEventAnnouncer>();
         _templatesManager = Substitute.For<ITemplatesManager>();
         _context = Substitute.For<IContext>();
@@ -41,14 +40,14 @@ public class StartPokerCommandTest
         _context.RoomId.Returns("poker-room");
         _context.Sender.Returns(sender);
         _room.Game.ReturnsNull();
-        _room.GetParameterValueAsync(Parameter.BucksEnabled, Arg.Any<CancellationToken>())
+        _room.GetParameterValueAsync(EconomyRoomParameters.BucksEnabled, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult("false"));
 
         _game = new PokerGame(Substitute.For<IRandomService>(), _templatesManager,
             Substitute.For<IConfiguration>(), Substitute.For<IMoneyService>());
-        _dependencyContainerService.Resolve<PokerGame>().Returns(_game);
+        _gameFactory().Returns(_game);
 
-        _command = new StartPokerCommand(_dependencyContainerService, _eventAnnouncer);
+        _command = new StartPokerCommand(_gameFactory, _eventAnnouncer);
     }
 
     [Test]

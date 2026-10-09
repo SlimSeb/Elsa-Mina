@@ -1,19 +1,18 @@
 using ElsaMina.Core.Contexts;
-using ElsaMina.Core.Services.AddedCommands;
 using ElsaMina.Core.Services.Commands;
-using ElsaMina.Core.Services.DependencyInjection;
 using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Telemetry;
 using NSubstitute;
+using NSubstitute.ReturnsExtensions;
 
 namespace ElsaMina.UnitTests.Core.Services.Commands;
 
 public class CommandExecutorTest
 {
-    private IDependencyContainerService _dependencyContainerService;
-    private IAddedCommandsManager _addedCommandsManager;
+    private ICommandRegistry _commandRegistry;
+    private IDynamicCommandProvider _dynamicCommandProvider;
     private ITelemetryService _telemetryService;
     private IFeatureSwitchService _featureSwitchService;
     private CommandExecutor _commandExecutor;
@@ -22,14 +21,16 @@ public class CommandExecutorTest
     [SetUp]
     public void SetUp()
     {
-        _dependencyContainerService = Substitute.For<IDependencyContainerService>();
-        _addedCommandsManager = Substitute.For<IAddedCommandsManager>();
+        _commandRegistry = Substitute.For<ICommandRegistry>();
+        _commandRegistry.Find(Arg.Any<string>()).ReturnsNull();
+        _commandRegistry.Commands.Returns([]);
+        _dynamicCommandProvider = Substitute.For<IDynamicCommandProvider>();
         _telemetryService = Substitute.For<ITelemetryService>();
         _featureSwitchService = Substitute.For<IFeatureSwitchService>();
         _featureSwitchService.IsFeatureEnabled(Arg.Any<string>()).Returns(true);
         _context = Substitute.For<IContext>();
-        _commandExecutor = new CommandExecutor(_dependencyContainerService, _addedCommandsManager,
-            [], _telemetryService, _featureSwitchService);
+        _commandExecutor = new CommandExecutor(_commandRegistry,
+            [_dynamicCommandProvider], _telemetryService, _featureSwitchService);
     }
 
     [Test]
@@ -43,7 +44,7 @@ public class CommandExecutorTest
         };
         expectedCommands.ElementAt(0).Name.Returns("1");
         expectedCommands.ElementAt(1).Name.Returns("2");
-        _dependencyContainerService.GetAllNamedRegistrations<ICommand>().Returns(expectedCommands);
+        _commandRegistry.Commands.Returns(expectedCommands);
 
         // Act
         var result = _commandExecutor.GetAllCommands();
@@ -62,8 +63,7 @@ public class CommandExecutorTest
         command2.Name.Returns("cmd2");
         var duplicateCommand = Substitute.For<ICommand>();
         duplicateCommand.Name.Returns("cmd1");
-        _dependencyContainerService.GetAllNamedRegistrations<ICommand>()
-            .Returns([command1, command2, duplicateCommand]);
+        _commandRegistry.Commands.Returns([command1, command2, duplicateCommand]);
 
         // Act
         var result = _commandExecutor.GetAllCommands().ToList();
@@ -84,8 +84,7 @@ public class CommandExecutorTest
         var commandName = "testCommand";
         var command = Substitute.For<ICommand>();
         var runSignal = new TaskCompletionSource<bool>();
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);
         command.When(x => x.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()))
@@ -93,6 +92,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
         await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
 
         // Assert
@@ -111,8 +111,7 @@ public class CommandExecutorTest
         var commandName = "testCommand";
         var command = Substitute.For<ICommand>();
         var runSignal = new TaskCompletionSource<bool>();
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.RoomRestriction.Returns(["franais"]);
         _context.RoomId.Returns(roomId);
@@ -121,6 +120,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
         if (expectedRunCalls > 0)
         {
             await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
@@ -136,14 +136,14 @@ public class CommandExecutorTest
         // Arrange
         var commandName = "testCommand";
         var command = Substitute.For<ICommand>();
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.IsPrivateMessage.Returns(true);
         command.IsPrivateMessageOnly.Returns(false);
         command.IsAllowedInPrivateMessage.Returns(false);
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         await command.DidNotReceive().RunAsync(_context);
@@ -155,13 +155,13 @@ public class CommandExecutorTest
         // Arrange
         var commandName = "whitelistCommand";
         var command = Substitute.For<ICommand>();
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         command.IsWhitelistOnly.Returns(true);
         _context.IsSenderWhitelisted.Returns(false);
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         await command.DidNotReceive().RunAsync(_context);
@@ -173,12 +173,12 @@ public class CommandExecutorTest
         // Arrange
         var commandName = "rankedCommand";
         var command = Substitute.For<ICommand>();
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.HasRankOrHigher(command.RequiredRank).Returns(false);
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         await command.DidNotReceive().RunAsync(_context, Arg.Any<CancellationToken>());
@@ -191,8 +191,7 @@ public class CommandExecutorTest
         var commandName = "pmCommand";
         var command = Substitute.For<ICommand>();
         var runSignal = new TaskCompletionSource<bool>();
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.IsPrivateMessage.Returns(true);
         _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);
@@ -201,6 +200,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
         await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
 
         // Assert
@@ -208,14 +208,13 @@ public class CommandExecutorTest
     }
 
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldThrow_WhenCommandExecutionFails()
+    public async Task Test_TryExecuteCommandAsync_ShouldReportErrorToUserAndNotThrow_WhenCommandExecutionFails()
     {
         // Arrange
         var commandName = "failingCommand";
         var command = Substitute.For<ICommand>();
         var expectedException = new InvalidOperationException("boom");
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);
         command.RoomRestriction.Returns(Array.Empty<string>());
@@ -224,62 +223,132 @@ public class CommandExecutorTest
             .Returns(Task.FromException(expectedException));
 
         // Act
-        var exception = Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await _commandExecutor.TryExecuteCommandAsync(commandName, _context));
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(exception, Is.SameAs(expectedException));
-            Assert.That(_commandExecutor.RunningCommands, Is.Empty);
-        }
+        await _context.Received(1).HandleErrorAsync(expectedException, Arg.Any<CancellationToken>());
+        Assert.That(_commandExecutor.RunningCommands, Is.Empty);
     }
 
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldTryAddedCommand_WhenNotRegisteredAndNotPrivateMessage()
+    public async Task Test_TryExecuteCommandAsync_ShouldReturnBeforeCommandCompletes_WhenCommandRunsInBackground()
+    {
+        // Arrange
+        var commandName = "slowCommand";
+        var command = Substitute.For<ICommand>();
+        var release = new TaskCompletionSource();
+        _commandRegistry.Find(commandName).Returns(command);
+        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
+        command.RoomRestriction.Returns(Array.Empty<string>());
+        command.RunsInMessageOrder.Returns(false);
+        command.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()).Returns(release.Task);
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context).WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Assert
+        Assert.That(_commandExecutor.RunningCommands.Count(), Is.EqualTo(1));
+        release.SetResult();
+        await _commandExecutor.WhenAllCommandsCompletedAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.That(_commandExecutor.RunningCommands, Is.Empty);
+    }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldWaitForCommand_WhenCommandRunsInMessageOrder()
+    {
+        // Arrange
+        var commandName = "gameCommand";
+        var command = Substitute.For<ICommand>();
+        var release = new TaskCompletionSource();
+        _commandRegistry.Find(commandName).Returns(command);
+        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
+        command.RoomRestriction.Returns(Array.Empty<string>());
+        command.RunsInMessageOrder.Returns(true);
+        command.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()).Returns(release.Task);
+
+        // Act
+        var execution = _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await Task.Delay(50);
+        var wasCompletedBeforeRelease = execution.IsCompleted;
+        release.SetResult();
+        await execution.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Assert
+        Assert.That(wasCompletedBeforeRelease, Is.False);
+    }
+
+    [Test]
+    public async Task Test_OnExitingAsync_ShouldWaitForRunningCommands()
+    {
+        // Arrange
+        var commandName = "slowCommand";
+        var command = Substitute.For<ICommand>();
+        var release = new TaskCompletionSource();
+        _commandRegistry.Find(commandName).Returns(command);
+        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
+        command.RoomRestriction.Returns(Array.Empty<string>());
+        command.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()).Returns(release.Task);
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+
+        // Act
+        var exiting = _commandExecutor.OnExitingAsync(CancellationToken.None);
+        await Task.Delay(50);
+        var wasCompletedBeforeRelease = exiting.IsCompleted;
+        release.SetResult();
+        await exiting.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Assert
+        Assert.That(wasCompletedBeforeRelease, Is.False);
+    }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldTryDynamicProvider_WhenNotRegisteredAndNotPrivateMessage()
     {
         // Arrange
         var commandName = "customCommand";
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
+        _commandRegistry.Find(commandName).ReturnsNull();
         _context.IsPrivateMessage.Returns(false);
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
-        await _addedCommandsManager.Received(1).TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>());
+        await _dynamicCommandProvider.Received(1).TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>());
     }
 
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldLogError_WhenCommandNotFoundAndIsPrivateMessage()
+    public async Task Test_TryExecuteCommandAsync_ShouldAskDynamicProviders_WhenCommandNotFoundAndIsPrivateMessage()
     {
         // Arrange
         var commandName = "missingCommand";
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
+        _commandRegistry.Find(commandName).ReturnsNull();
         _context.IsPrivateMessage.Returns(true);
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>());
+        await _dynamicCommandProvider.Received(1).TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>());
     }
 
-
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldExecuteAddedCommand_WhenCommandNotRegisteredAndNotPrivateMessage()
+    public async Task Test_TryExecuteCommandAsync_ShouldAskDynamicProvider_WhenCommandNotRegisteredAndNotPrivateMessage()
     {
         // Arrange
         var commandName = "customCommand";
         var context = Substitute.For<IContext>();
         context.IsPrivateMessage.Returns(false);
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
+        _commandRegistry.Find(commandName).ReturnsNull();
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
-        await _addedCommandsManager.Received().TryExecuteAddedCommand(commandName, context, Arg.Any<CancellationToken>());
+        await _dynamicCommandProvider.Received().TryExecuteAsync(commandName, context, Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -291,9 +360,9 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         command.Name.Returns("help");
         command.Aliases.Returns(Array.Empty<string>());
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
-        _dependencyContainerService.GetAllNamedRegistrations<ICommand>().Returns([command]);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
+        _commandRegistry.Find(commandName).ReturnsNull();
+        _commandRegistry.Commands.Returns([command]);
+        _dynamicCommandProvider.TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
         room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
@@ -301,6 +370,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         _context.Received(1)
@@ -316,18 +386,19 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         command.Name.Returns("help");
         command.Aliases.Returns(Array.Empty<string>());
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
-        _dependencyContainerService.GetAllNamedRegistrations<ICommand>().Returns([command]);
+        _commandRegistry.Find(commandName).ReturnsNull();
+        _commandRegistry.Commands.Returns([command]);
         _context.IsPrivateMessage.Returns(true);
         _context.Room.Returns(room);
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         _context.Received(1)
             .ReplyLocalizedMessage("command_autocorrect_suggestion", commandName, "help");
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>());
+        await _dynamicCommandProvider.Received(1).TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>());
         await room.DidNotReceive()
             .GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>());
     }
@@ -338,8 +409,8 @@ public class CommandExecutorTest
         // Arrange
         var commandName = "hep";
         var room = Substitute.For<IRoom>();
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
+        _commandRegistry.Find(commandName).ReturnsNull();
+        _dynamicCommandProvider.TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
         room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
@@ -347,6 +418,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         _context.DidNotReceive()
@@ -354,18 +426,19 @@ public class CommandExecutorTest
     }
 
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldNotReplyAutoCorrect_WhenAddedCommandHandled()
+    public async Task Test_TryExecuteCommandAsync_ShouldNotReplyAutoCorrect_WhenDynamicProviderHandledCommand()
     {
         // Arrange
         var commandName = "customCommand";
         var room = Substitute.For<IRoom>();
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(true);
+        _commandRegistry.Find(commandName).ReturnsNull();
+        _dynamicCommandProvider.TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>()).Returns(true);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         _context.DidNotReceive()
@@ -381,8 +454,7 @@ public class CommandExecutorTest
         var commandName = "restrictedCommand";
         var command = Substitute.For<ICommand>();
         var runSignal = new TaskCompletionSource<bool>();
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.IsPrivateMessage.Returns(true);
         _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);
@@ -393,6 +465,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
         await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
 
         // Assert
@@ -405,8 +478,7 @@ public class CommandExecutorTest
         // Arrange
         var commandName = "restrictedCommand";
         var command = Substitute.For<ICommand>();
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.IsPrivateMessage.Returns(false);
         _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.RoomRestriction.Returns(["someroom"]);
@@ -414,6 +486,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         await command.DidNotReceive().RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>());
@@ -430,20 +503,21 @@ public class CommandExecutorTest
     }
 
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldDoNothing_WhenCommandNotFoundAndIsPrivateMessage()
+    public async Task Test_TryExecuteCommandAsync_ShouldOnlyAskDynamicProviders_WhenCommandNotFoundAndIsPrivateMessage()
     {
         // Arrange
         var commandName = "nonExistentCommand";
         var context = Substitute.For<IContext>();
         context.IsPrivateMessage.Returns(true);
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
+        _commandRegistry.Find(commandName).ReturnsNull();
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(commandName, context, Arg.Any<CancellationToken>());
-        _dependencyContainerService.DidNotReceive().ResolveNamed<ICommand>(commandName);
+        await _dynamicCommandProvider.Received(1).TryExecuteAsync(commandName, context, Arg.Any<CancellationToken>());
+        _commandRegistry.Received(1).Find(commandName);
     }
 
     [Test]
@@ -456,10 +530,11 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
-        _dependencyContainerService.DidNotReceive().IsRegisteredWithName<ICommand>(Arg.Any<string>());
-        await _addedCommandsManager.DidNotReceive().TryExecuteAddedCommand(Arg.Any<string>(), Arg.Any<IContext>(), Arg.Any<CancellationToken>());
+        _commandRegistry.DidNotReceive().Find(Arg.Any<string>());
+        await _dynamicCommandProvider.DidNotReceive().TryExecuteAsync(Arg.Any<string>(), Arg.Any<IContext>(), Arg.Any<CancellationToken>());
     }
 
     [Test]
@@ -471,8 +546,7 @@ public class CommandExecutorTest
         var runSignal = new TaskCompletionSource<bool>();
         _featureSwitchService.IsMaydayActive.Returns(true);
         _context.IsSenderWhitelisted.Returns(true);
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);
         command.When(x => x.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()))
@@ -480,6 +554,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
         await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
 
         // Assert
@@ -493,14 +568,14 @@ public class CommandExecutorTest
         var commandName = "featureCommand";
         var command = Substitute.For<ICommand>();
         command.Category.Returns("SomeFeature");
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         _context.IsSenderWhitelisted.Returns(false);
         _featureSwitchService.IsFeatureEnabled("SomeFeature").Returns(false);
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         await command.DidNotReceive().RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>());
@@ -514,8 +589,7 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         var runSignal = new TaskCompletionSource<bool>();
         command.Category.Returns("SomeFeature");
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         _context.IsSenderWhitelisted.Returns(true);
         _featureSwitchService.IsFeatureEnabled("SomeFeature").Returns(false);
@@ -525,6 +599,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
         await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
 
         // Assert
@@ -539,8 +614,7 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         var runSignal = new TaskCompletionSource<bool>();
         command.Category.Returns("SomeFeature");
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(true);
-        _dependencyContainerService.ResolveNamed<ICommand>(commandName).Returns(command);
+        _commandRegistry.Find(commandName).Returns(command);
         _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         _context.IsSenderWhitelisted.Returns(false);
         _featureSwitchService.IsFeatureEnabled("SomeFeature").Returns(true);
@@ -550,6 +624,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
         await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
 
         // Assert
@@ -566,9 +641,9 @@ public class CommandExecutorTest
         hiddenCommand.Name.Returns("help");
         hiddenCommand.Aliases.Returns(Array.Empty<string>());
         hiddenCommand.IsHidden.Returns(true);
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
-        _dependencyContainerService.GetAllNamedRegistrations<ICommand>().Returns([hiddenCommand]);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
+        _commandRegistry.Find(commandName).ReturnsNull();
+        _commandRegistry.Commands.Returns([hiddenCommand]);
+        _dynamicCommandProvider.TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
         room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
@@ -576,6 +651,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         _context.DidNotReceive()
@@ -596,9 +672,9 @@ public class CommandExecutorTest
         hiddenCommand.Name.Returns("heap");
         hiddenCommand.Aliases.Returns(Array.Empty<string>());
         hiddenCommand.IsHidden.Returns(true);
-        _dependencyContainerService.IsRegisteredWithName<ICommand>(commandName).Returns(false);
-        _dependencyContainerService.GetAllNamedRegistrations<ICommand>().Returns([visibleCommand, hiddenCommand]);
-        _addedCommandsManager.TryExecuteAddedCommand(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
+        _commandRegistry.Find(commandName).ReturnsNull();
+        _commandRegistry.Commands.Returns([visibleCommand, hiddenCommand]);
+        _dynamicCommandProvider.TryExecuteAsync(commandName, _context, Arg.Any<CancellationToken>()).Returns(false);
         _context.IsPrivateMessage.Returns(false);
         _context.Room.Returns(room);
         room.GetParameterValueAsync(Parameter.HasCommandAutoCorrect, Arg.Any<CancellationToken>())
@@ -606,6 +682,7 @@ public class CommandExecutorTest
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
 
         // Assert
         _context.Received(1)

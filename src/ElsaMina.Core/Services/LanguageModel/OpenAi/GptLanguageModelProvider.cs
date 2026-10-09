@@ -1,5 +1,6 @@
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Http;
+using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Services.LanguageModel.OpenAi;

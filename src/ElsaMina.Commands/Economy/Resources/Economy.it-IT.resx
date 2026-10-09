@@ -79,4 +79,10 @@
     <data name="money_leaderboard_amount" xml:space="preserve">
         <value>Bucks</value>
     </data>
+    <data name="parameter_name_bucks_enabled" xml:space="preserve">
+        <value>Bucks</value>
+    </data>
+    <data name="parameter_description_bucks_enabled" xml:space="preserve">
+        <value>Abilita o disabilita l'economia di bucks (saldi, trasferimenti, premi) per questa stanza.</value>
+    </data>
 </root>

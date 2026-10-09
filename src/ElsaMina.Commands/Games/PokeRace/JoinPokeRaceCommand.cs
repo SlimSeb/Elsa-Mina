@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.PokeRace;
 
 [NamedCommand("racejoin", Aliases = ["joinrace"])]
-public class JoinPokeRaceCommand : Command
+public class JoinPokeRaceCommand : GameCommand
 {
     public override Rank RequiredRank => Rank.Regular;
 

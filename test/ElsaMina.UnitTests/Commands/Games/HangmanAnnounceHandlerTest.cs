@@ -1,5 +1,5 @@
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Commands.Games;
-using ElsaMina.Core.Services.EventAnnounces;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Commands.Games;

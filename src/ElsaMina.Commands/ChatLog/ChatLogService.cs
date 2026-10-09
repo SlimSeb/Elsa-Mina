@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
 using ElsaMina.Cloud;
+using ElsaMina.Core.Services.Lifecycle;
 using Serilog;
 using Serilog.Core;
 using AppLog = ElsaMina.Logging.Log;
 
 namespace ElsaMina.Commands.ChatLog;
 
-public class ChatLogService : IChatLogService
+public class ChatLogService : IChatLogService, IBotLifecycleParticipant
 {
     private static readonly TimeSpan FLUSH_INTERVAL = TimeSpan.FromMinutes(30);
     private const string LOGS_DIRECTORY = "chatlogs";
@@ -152,4 +153,13 @@ public class ChatLogService : IChatLogService
 
         _disposed = true;
     }
+
+    public Task OnStartingAsync(CancellationToken cancellationToken)
+    {
+        Start();
+        return Task.CompletedTask;
+    }
+
+    // Envoie les logs écrits depuis le dernier flush périodique, sinon après un restart faut attendre tout un intervalle pour les avoir
+    public Task OnExitingAsync(CancellationToken cancellationToken) => FlushAllAsync(cancellationToken);
 }

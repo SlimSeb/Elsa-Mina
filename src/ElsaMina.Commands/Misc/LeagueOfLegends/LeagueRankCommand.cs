@@ -16,11 +16,11 @@ public class LeagueRankCommand : Command
     private const string FLEX_QUEUE = "RANKED_FLEX_SR";
 
     private readonly IHttpService _httpService;
-    private readonly IConfiguration _configuration;
+    private readonly ICommandsConfiguration _configuration;
     private readonly ITemplatesManager _templatesManager;
 
     public LeagueRankCommand(IHttpService httpService,
-        IConfiguration configuration,
+        ICommandsConfiguration configuration,
         ITemplatesManager templatesManager)
     {
         _httpService = httpService;

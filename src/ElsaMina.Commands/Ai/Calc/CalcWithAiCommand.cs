@@ -1,11 +1,11 @@
 using System.Net;
-using ElsaMina.Core.Services.LanguageModel;
+using System.Text.Json;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.LanguageModel;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Logging;
-using System.Text.Json;
 
 namespace ElsaMina.Commands.Ai.Calc;
 

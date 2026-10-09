@@ -5,6 +5,7 @@ using ElsaMina.Commands.Teams.TeamProviders;
 using ElsaMina.Commands.Teams.TeamProviders.CoupCritique;
 using ElsaMina.Commands.Teams.TeamProviders.Pokepaste;
 using ElsaMina.Commands.Teams.TeamProviders.Showdown;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Modules;
@@ -14,6 +15,8 @@ public class TeamsModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
+
+        builder.RegisterType<TeamPreviewRoomParameters>().As<IRoomParameterProvider>().SingleInstance();
 
         builder.RegisterCommand<AddTeamCommand>();
         builder.RegisterCommand<AddTeamToRoomCommand>();

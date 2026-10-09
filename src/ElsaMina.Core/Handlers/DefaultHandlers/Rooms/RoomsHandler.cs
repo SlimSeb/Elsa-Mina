@@ -1,5 +1,4 @@
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.DataAccess.Models;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Core.Handlers.DefaultHandlers.Rooms;
@@ -14,15 +13,13 @@ public sealed class RoomsHandler : Handler
     private const string NO_INIT_MARKER = "noinit";
 
     private readonly IRoomsManager _roomsManager;
-    private readonly IUserSaveQueue _userSaveQueue;
 
-    public RoomsHandler(IRoomsManager roomsManager, IUserSaveQueue userSaveQueue)
+    public RoomsHandler(IRoomsManager roomsManager)
     {
         _roomsManager = roomsManager;
-        _userSaveQueue = userSaveQueue;
     }
 
-    public override IReadOnlySet<string> HandledMessageTypes => (HashSet<string>)
+    public override IReadOnlySet<string> HandledMessageTypes { get; } = (HashSet<string>)
     [
         CHAT_MESSAGE_MARKER, DE_INIT_MARKER, JOIN_MARKER, LEAVE_MARKER, RENAME_MARKER, NO_INIT_MARKER
     ];
@@ -49,7 +46,6 @@ public sealed class RoomsHandler : Handler
                     room.UpdateMessageQueue(parts[3], parts[4]);
                 }
 
-                _userSaveQueue.Enqueue(parts[3], roomId, UserAction.Chatting);
 
                 break;
             case DE_INIT_MARKER:
@@ -62,7 +58,6 @@ public sealed class RoomsHandler : Handler
                 }
 
                 _roomsManager.AddUserToRoom(roomId, parts[2]);
-                _userSaveQueue.Enqueue(parts[2], roomId, UserAction.Joining);
                 break;
             case LEAVE_MARKER:
                 if (parts.Length < 3)
@@ -71,7 +66,6 @@ public sealed class RoomsHandler : Handler
                 }
 
                 _roomsManager.RemoveUserFromRoom(roomId, parts[2]);
-                _userSaveQueue.Enqueue(parts[2], roomId, UserAction.Leaving);
                 break;
             case RENAME_MARKER:
                 _roomsManager.RenameUserInRoom(roomId, parts[3], parts[2]);

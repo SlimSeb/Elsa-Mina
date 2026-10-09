@@ -3,6 +3,7 @@ using ElsaMina.Commands.ChatLog;
 using ElsaMina.Commands.CustomCommands;
 using ElsaMina.Commands.Development;
 using ElsaMina.Commands.Economy;
+using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Commands.JoinPhrases;
 using ElsaMina.Commands.Polls;
 using ElsaMina.Commands.Polls.Suggestions;
@@ -10,6 +11,9 @@ using ElsaMina.Commands.Repeats;
 using ElsaMina.Commands.Repeats.Form;
 using ElsaMina.Commands.Repeats.List;
 using ElsaMina.Commands.Shop;
+using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.Lifecycle;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Commands.Modules;
@@ -19,6 +23,9 @@ public class RoomsModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
+
+        builder.RegisterType<EconomyRoomParameters>().As<IRoomParameterProvider>().SingleInstance();
+        builder.RegisterType<EventAnnouncesRoomParameters>().As<IRoomParameterProvider>().SingleInstance();
 
         builder.RegisterCommand<AddCustomCommand>();
         builder.RegisterCommand<CustomCommandList>();
@@ -54,10 +61,11 @@ public class RoomsModule : Module
         builder.RegisterHandler<ChatLogHandler>();
 
         builder.RegisterType<MoneyService>().As<IMoneyService>().SingleInstance();
-        builder.RegisterType<ChatLogService>().As<IChatLogService>().SingleInstance().OnActivating(e =>
-        {
-            e.Instance.Start();
-        }).AutoActivate();
+        builder.RegisterType<AddedCommandsManager>().As<IAddedCommandsManager>().As<IDynamicCommandProvider>()
+            .SingleInstance();
+        builder.RegisterType<RepeatsManager>().As<IRepeatsManager>().As<IBotLifecycleParticipant>().SingleInstance();
+        builder.RegisterType<EventAnnouncer>().As<IEventAnnouncer>().SingleInstance();
+        builder.RegisterType<ChatLogService>().As<IChatLogService>().As<IBotLifecycleParticipant>().SingleInstance();
 
         RegisterShopCommands(builder);
     }

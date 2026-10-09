@@ -5,7 +5,7 @@ using ElsaMina.Core.Services.Rooms;
 namespace ElsaMina.Commands.Games.LightsOut;
 
 [NamedCommand("lotoggle")]
-public class ToggleLightsOutCommand : Command
+public class ToggleLightsOutCommand : GameCommand
 {
     private readonly IRoomsManager _roomsManager;
     private readonly ILightsOutGameManager _gameManager;
