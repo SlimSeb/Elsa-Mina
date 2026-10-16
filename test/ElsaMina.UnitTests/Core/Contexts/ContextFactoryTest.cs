@@ -347,8 +347,11 @@ public class ContextFactoryTest
         var second = _contextFactory.TryBuildContextFromReceivedMessage(parts, "room1");
 
         // Assert
-        Assert.That(first, Is.Not.Null);
-        Assert.That(second, Is.SameAs(first));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(first, Is.Not.Null);
+            Assert.That(second, Is.SameAs(first));
+        }
         _roomsManager.Received(1).GetRoom("room1");
     }
 

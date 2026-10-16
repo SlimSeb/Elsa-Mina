@@ -9,6 +9,8 @@ namespace ElsaMina.UnitTests.Commands.Games.PokeRace;
 
 public class PokeRaceGameTest
 {
+    private static readonly string[] FINISHED_POKEMON = ["Rapidash", "Ninjask"];
+
     private static readonly TimeSpan FAST_INTERVAL = TimeSpan.FromMilliseconds(10);
     private static readonly TimeSpan WAIT_TIMEOUT = TimeSpan.FromSeconds(10);
 
@@ -208,7 +210,7 @@ public class PokeRaceGameTest
         {
             Assert.That(game.IsEnded, Is.True);
             Assert.That(lastModel, Is.Not.Null);
-            Assert.That(lastModel.Finished, Is.EquivalentTo(new[] { "Rapidash", "Ninjask" }));
+            Assert.That(lastModel.Finished, Is.EquivalentTo(FINISHED_POKEMON));
             Assert.That(lastModel.SortedPositions.All(position => position.Position >= PokeRaceConstants.RACE_LENGTH),
                 Is.True);
             Assert.That(lastModel.AllEvents, Is.Not.Empty);

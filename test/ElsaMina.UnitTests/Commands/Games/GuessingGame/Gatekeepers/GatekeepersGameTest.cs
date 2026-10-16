@@ -11,6 +11,8 @@ namespace ElsaMina.UnitTests.Commands.Games.GuessingGame.Gatekeepers;
 
 public class GatekeepersGameTest
 {
+    private static readonly string[] SQUIRTLE_NAMES = ["Squirtle", "Carapuce"];
+
     private const string TEMPLATE_PATH = "Games/GuessingGame/Gatekeepers/GatekeepersGamePanel";
 
     private ITemplatesManager _templatesManager;
@@ -84,7 +86,7 @@ public class GatekeepersGameTest
         var model = _renderedModels.Single();
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_game.ValidAnswers, Is.EqualTo(new[] { "Squirtle", "Carapuce" }));
+            Assert.That(_game.ValidAnswers, Is.EqualTo(SQUIRTLE_NAMES));
             Assert.That(model.CurrentOptions, Has.Count.EqualTo(4));
             Assert.That(model.CurrentValidAnswer, Is.SameAs(_pokedex[2]));
             Assert.That(model.FootprintSprite, Does.EndWith("/Gen5Footprints/7.png"));

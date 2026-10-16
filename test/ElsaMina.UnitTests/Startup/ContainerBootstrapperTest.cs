@@ -63,8 +63,11 @@ public class ContainerBootstrapperTest
     public void Test_Build_ShouldResolveRuntimeEntryPoints()
     {
         // Act & Assert
-        Assert.That(_container.Resolve<IBot>(), Is.Not.Null);
-        Assert.That(_container.Resolve<IIncomingMessageDispatcher>(), Is.Not.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_container.Resolve<IBot>(), Is.Not.Null);
+            Assert.That(_container.Resolve<IIncomingMessageDispatcher>(), Is.Not.Null);
+        }
     }
 
     [Test]

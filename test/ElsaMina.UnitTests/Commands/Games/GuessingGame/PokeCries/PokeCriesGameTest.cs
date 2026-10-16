@@ -11,6 +11,9 @@ namespace ElsaMina.UnitTests.Commands.Games.GuessingGame.PokeCries;
 
 public class PokeCriesGameTest
 {
+    private static readonly string[] IVYSAUR_NAMES = ["Herbizarre", "Ivysaur", "Fushigisou"];
+    private static readonly string[] SARDOCHE_NAMES = ["Sardoche"];
+
     private IDexManager _dexManager;
     private IRandomService _randomService;
     private IContext _context;
@@ -69,7 +72,7 @@ public class PokeCriesGameTest
         await _game.CallOnTurnStart();
 
         // Assert
-        Assert.That(_game.ValidAnswers, Is.EqualTo(new[] { "Herbizarre", "Ivysaur", "Fushigisou" }));
+        Assert.That(_game.ValidAnswers, Is.EqualTo(IVYSAUR_NAMES));
         _context.Received(1).ReplyHtml(
             "<audio controls src=\"https://media.pokemoncentral.it/wiki/versi/002.mp3\"></audio>");
     }
@@ -100,7 +103,7 @@ public class PokeCriesGameTest
         await _game.CallOnTurnStart();
 
         // Assert
-        Assert.That(_game.ValidAnswers, Is.EqualTo(new[] { "Sardoche" }));
+        Assert.That(_game.ValidAnswers, Is.EqualTo(SARDOCHE_NAMES));
         _context.Received(1).ReplyHtml(Arg.Is<string>(html => html.Contains("sardoche")), Arg.Any<string>(),
             Arg.Any<bool>());
         _randomService.DidNotReceive().NextInt(Arg.Any<int>(), Arg.Any<int>());

@@ -4,6 +4,9 @@ namespace ElsaMina.UnitTests.Battles;
 
 public class BattleMessageParserTest
 {
+    private static readonly bool[] FIRST_SLOT_FORCED_TO_SWITCH = [true];
+    private static readonly string[] GARCHOMP_MOVES = ["earthquake", "swordsdance"];
+
     private const string ROOM_ID = "battle-gen9ou-123456";
 
     private BattleMessageParser _parser;
@@ -218,7 +221,7 @@ public class BattleMessageParserTest
             Assert.That(garchomp.IsActive, Is.True);
             Assert.That(garchomp.IsFainted, Is.False);
             Assert.That(garchomp.Stats, Is.EqualTo(new BattlePokemonStats(200, 180, 150, 160, 190)));
-            Assert.That(garchomp.Moves, Is.EqualTo(new[] { "earthquake", "swordsdance" }));
+            Assert.That(garchomp.Moves, Is.EqualTo(GARCHOMP_MOVES));
             Assert.That(garchomp.Item, Is.EqualTo("choicescarf"));
             Assert.That(garchomp.Ability, Is.EqualTo("roughskin"));
             Assert.That(garchomp.TeraType, Is.EqualTo("Ground"));
@@ -254,7 +257,7 @@ public class BattleMessageParserTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_context.ForceSwitchSlots, Is.EqualTo(new[] { true }));
+            Assert.That(_context.ForceSwitchSlots, Is.EqualTo(FIRST_SLOT_FORCED_TO_SWITCH));
             Assert.That(_context.SidePokemon, Is.Empty);
             Assert.That(_context.ActiveSlots, Has.Count.EqualTo(1));
             Assert.That(_context.ActiveSlots[0].Moves, Is.Empty);

@@ -116,8 +116,11 @@ public class BlackjackCommandTest
         await _command.RunAsync(_context);
 
         // Assert
-        Assert.That(_room.Game, Is.SameAs(_game));
-        Assert.That(_game.Context, Is.SameAs(_context));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_room.Game, Is.SameAs(_game));
+            Assert.That(_game.Context, Is.SameAs(_context));
+        }
         await _templatesManager.Received(1).GetTemplateAsync("Games/Blackjack/BlackjackAnnounce", Arg.Any<object>());
     }
 
