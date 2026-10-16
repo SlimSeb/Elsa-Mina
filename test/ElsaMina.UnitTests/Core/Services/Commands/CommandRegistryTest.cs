@@ -21,9 +21,12 @@ public class CommandRegistryTest
         var registry = new CommandRegistry(new Lazy<IEnumerable<ICommand>>(() => [command]));
 
         // Act & Assert
-        Assert.That(registry.Find("help"), Is.SameAs(command));
-        Assert.That(registry.Find("h"), Is.SameAs(command));
-        Assert.That(registry.Find("aide"), Is.SameAs(command));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(registry.Find("help"), Is.SameAs(command));
+            Assert.That(registry.Find("h"), Is.SameAs(command));
+            Assert.That(registry.Find("aide"), Is.SameAs(command));
+        }
     }
 
     [Test]
@@ -48,8 +51,11 @@ public class CommandRegistryTest
         var registry = new CommandRegistry(new Lazy<IEnumerable<ICommand>>(() => [first, second]));
 
         // Act & Assert
-        Assert.That(registry.Find("help"), Is.SameAs(second));
-        Assert.That(registry.Commands, Is.EqualTo(new[] { second }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(registry.Find("help"), Is.SameAs(second));
+            Assert.That(registry.Commands, Is.EqualTo(new[] { second }));
+        }
     }
 
     [Test]

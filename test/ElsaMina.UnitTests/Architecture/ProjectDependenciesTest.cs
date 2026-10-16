@@ -18,26 +18,38 @@ public class ProjectDependenciesTest
     private static readonly string[] INFRASTRUCTURE_PACKAGES =
         ["Microsoft.EntityFrameworkCore", "Npgsql", "Google.", "AWSSDK."];
 
+    private static readonly string[] CORE_FORBIDDEN_PROJECTS =
+        ["ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.DataAccess", "ElsaMina.Cloud", "ElsaMina.Console"];
+
+    private static readonly string[] BATTLES_FORBIDDEN_PROJECTS = ["ElsaMina.Commands", "ElsaMina.Console"];
+
+    private static readonly string[] COMMANDS_FORBIDDEN_PROJECTS = ["ElsaMina.Battles", "ElsaMina.Console"];
+
+    private static readonly string[] DATA_ACCESS_FORBIDDEN_PROJECTS =
+        ["ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.Cloud", "ElsaMina.Console"];
+
+    private static readonly string[] CLOUD_FORBIDDEN_PROJECTS =
+        ["ElsaMina.Core", "ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.DataAccess", "ElsaMina.Console"];
+
+    private static readonly string[] LOGGING_FORBIDDEN_PROJECTS =
+    [
+        "ElsaMina.Core", "ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.DataAccess", "ElsaMina.Cloud",
+        "ElsaMina.Console"
+    ];
+
     private static IEnumerable<TestCaseData> ForbiddenDependencies()
     {
-        yield return new TestCaseData(typeof(Bot).Assembly,
-                new[] { "ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.DataAccess", "ElsaMina.Cloud",
-                    "ElsaMina.Console" })
+        yield return new TestCaseData(typeof(Bot).Assembly, CORE_FORBIDDEN_PROJECTS)
             .SetName("Core depends on no feature, infrastructure or host project");
-        yield return new TestCaseData(typeof(BattlesModule).Assembly, new[] { "ElsaMina.Commands", "ElsaMina.Console" })
+        yield return new TestCaseData(typeof(BattlesModule).Assembly, BATTLES_FORBIDDEN_PROJECTS)
             .SetName("Battles does not depend on Commands");
-        yield return new TestCaseData(typeof(CommandModule).Assembly, new[] { "ElsaMina.Battles", "ElsaMina.Console" })
+        yield return new TestCaseData(typeof(CommandModule).Assembly, COMMANDS_FORBIDDEN_PROJECTS)
             .SetName("Commands does not depend on Battles");
-        yield return new TestCaseData(typeof(BotDbContext).Assembly,
-                new[] { "ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.Cloud", "ElsaMina.Console" })
+        yield return new TestCaseData(typeof(BotDbContext).Assembly, DATA_ACCESS_FORBIDDEN_PROJECTS)
             .SetName("DataAccess depends on no feature project");
-        yield return new TestCaseData(typeof(CloudModule).Assembly,
-                new[] { "ElsaMina.Core", "ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.DataAccess",
-                    "ElsaMina.Console" })
+        yield return new TestCaseData(typeof(CloudModule).Assembly, CLOUD_FORBIDDEN_PROJECTS)
             .SetName("Cloud depends on no other project");
-        yield return new TestCaseData(typeof(Log).Assembly,
-                new[] { "ElsaMina.Core", "ElsaMina.Commands", "ElsaMina.Battles", "ElsaMina.DataAccess",
-                    "ElsaMina.Cloud", "ElsaMina.Console" })
+        yield return new TestCaseData(typeof(Log).Assembly, LOGGING_FORBIDDEN_PROJECTS)
             .SetName("Logging depends on no other project");
     }
 
@@ -66,7 +78,7 @@ public class ProjectDependenciesTest
         Assert.That(references.Where(name => INFRASTRUCTURE_PACKAGES.Any(name.StartsWith)), Is.Empty);
     }
 
-    private static IEnumerable<string> GetDeclaredProjectReferences(string projectName)
+    private static List<string> GetDeclaredProjectReferences(string projectName)
     {
         var projectFile = Path.Combine(FindRepositoryRoot(), "src", projectName, $"{projectName}.csproj");
         return XDocument.Load(projectFile)

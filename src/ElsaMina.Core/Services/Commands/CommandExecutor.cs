@@ -52,8 +52,8 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
         if (command == null)
         {
             // Les commandes custom et les suggestions peuvent taper la bdd : on les lance en fond comme les commandes
-            _ = Track(commandName, context, cancellationToken,
-                token => TryExecuteFallbackAsync(commandName, context, token));
+            _ = Track(commandName, context,
+                token => TryExecuteFallbackAsync(commandName, context, token), cancellationToken);
             return;
         }
 
@@ -63,8 +63,8 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
         }
 
         Log.Information("Executing {0} as a normal command", commandName);
-        var execution = Track(command.Name, context, cancellationToken,
-            token => RunCommandAsync(command, context, token));
+        var execution = Track(command.Name, context,
+            token => RunCommandAsync(command, context, token), cancellationToken);
 
         if (command.RunsInMessageOrder)
         {
@@ -86,8 +86,8 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
 
     #region Execution tracking
 
-    private Task Track(string commandName, IContext context, CancellationToken externalToken,
-        Func<CancellationToken, Task> run)
+    private Task Track(string commandName, IContext context, Func<CancellationToken, Task> run,
+        CancellationToken externalToken)
     {
         var executionId = Guid.NewGuid();
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(externalToken);

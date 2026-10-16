@@ -11,6 +11,8 @@ namespace ElsaMina.UnitTests.Commands.Alerts.Twitch;
 
 public class TwitchApiClientTest
 {
+    private static readonly string[] FIRST_USER_ID = ["1"];
+
     private static readonly DateTimeOffset NOW = new(2026, 5, 21, 12, 0, 0, TimeSpan.Zero);
 
     private IHttpService _httpService;
@@ -32,7 +34,7 @@ public class TwitchApiClientTest
         _client = new TwitchApiClient(_httpService, _configuration, _clockService);
     }
 
-    private static IHttpResponse<T> Response<T>(T data)
+    private static HttpResponse<T> Response<T>(T data)
     {
         return new HttpResponse<T> { Data = data };
     }
@@ -179,7 +181,7 @@ public class TwitchApiClientTest
                 calls++;
                 return calls == 1
                     ? throw new HttpException(HttpStatusCode.Unauthorized, "revoked")
-                    : Task.FromResult(Response(new TwitchUsersResponse
+                    : Task.FromResult<IHttpResponse<TwitchUsersResponse>>(Response(new TwitchUsersResponse
                         { Data = [new TwitchUser { Id = "1", Login = "streamer" }] }));
             });
 
@@ -235,7 +237,7 @@ public class TwitchApiClientTest
             Assert.That(requests[0].Uri, Does.StartWith("https://api.twitch.tv/helix/streams?user_id=1&user_id=2&"));
             Assert.That(requests[0].Uri, Does.EndWith("user_id=100&first=100"));
             Assert.That(requests[1].Uri, Does.StartWith("https://api.twitch.tv/helix/streams?user_id=101&"));
-            Assert.That(streams.Select(stream => stream.UserId), Is.EqualTo(new[] { "1" }));
+            Assert.That(streams.Select(stream => stream.UserId), Is.EqualTo(FIRST_USER_ID));
         }
     }
 

@@ -9,6 +9,8 @@ namespace ElsaMina.UnitTests.Core.Services.Resources;
 
 public class ResourcesServiceTest
 {
+    private static readonly string[] ENGLISH_ONLY = ["en-US"];
+
     private IConfiguration _configuration;
 
     [SetUp]
@@ -226,7 +228,7 @@ public class ResourcesServiceTest
         var supported = sut.SupportedCultures.Select(c => c.Name).ToHashSet();
 
         // Assert
-        Assert.That(supported, Is.EquivalentTo(new[] { "en-US" }));
+        Assert.That(supported, Is.EquivalentTo(ENGLISH_ONLY));
     }
 
     [Test]

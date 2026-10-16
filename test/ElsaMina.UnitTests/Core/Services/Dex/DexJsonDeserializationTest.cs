@@ -35,11 +35,14 @@ public class DexJsonDeserializationTest
     {
         var pokemon = JsonSerializer.Deserialize<Pokemon>(POKEMON_JSON, JSON_OPTIONS);
 
-        Assert.That(pokemon.Evolution.PreEvolution, Has.Count.EqualTo(2));
-        Assert.That(pokemon.Evolution.PreEvolution[1].PokedexId, Is.EqualTo(2));
-        Assert.That(pokemon.Evolution.PreEvolution[1].Name, Is.EqualTo("Herbizarre"));
-        Assert.That(pokemon.Evolution.PreEvolution[1].Condition, Is.EqualTo("Niveau 32"));
-        Assert.That(pokemon.Evolution.NextEvolutions, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pokemon.Evolution.PreEvolution, Has.Count.EqualTo(2));
+            Assert.That(pokemon.Evolution.PreEvolution[1].PokedexId, Is.EqualTo(2));
+            Assert.That(pokemon.Evolution.PreEvolution[1].Name, Is.EqualTo("Herbizarre"));
+            Assert.That(pokemon.Evolution.PreEvolution[1].Condition, Is.EqualTo("Niveau 32"));
+            Assert.That(pokemon.Evolution.NextEvolutions, Is.Null);
+        }
     }
 
     [Test]
@@ -47,9 +50,12 @@ public class DexJsonDeserializationTest
     {
         var pokemon = JsonSerializer.Deserialize<Pokemon>(POKEMON_JSON, JSON_OPTIONS);
 
-        Assert.That(pokemon.Evolution.MegaEvolution, Has.Count.EqualTo(1));
-        Assert.That(pokemon.Evolution.MegaEvolution[0].Orb, Is.EqualTo("Florizarrite"));
-        Assert.That(pokemon.Evolution.MegaEvolution[0].Sprites.Shiny, Is.EqualTo("mega-shiny.png"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pokemon.Evolution.MegaEvolution, Has.Count.EqualTo(1));
+            Assert.That(pokemon.Evolution.MegaEvolution[0].Orb, Is.EqualTo("Florizarrite"));
+            Assert.That(pokemon.Evolution.MegaEvolution[0].Sprites.Shiny, Is.EqualTo("mega-shiny.png"));
+        }
     }
 
     [Test]
@@ -57,9 +63,12 @@ public class DexJsonDeserializationTest
     {
         var pokemon = JsonSerializer.Deserialize<Pokemon>(POKEMON_JSON, JSON_OPTIONS);
 
-        Assert.That(pokemon.Formes, Has.Count.EqualTo(1));
-        Assert.That(pokemon.Formes[0].Region, Is.EqualTo("alola"));
-        Assert.That(pokemon.Formes[0].Name.English, Is.EqualTo("Alolan Rattata"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pokemon.Formes, Has.Count.EqualTo(1));
+            Assert.That(pokemon.Formes[0].Region, Is.EqualTo("alola"));
+            Assert.That(pokemon.Formes[0].Name.English, Is.EqualTo("Alolan Rattata"));
+        }
     }
 
     [Test]
@@ -69,9 +78,12 @@ public class DexJsonDeserializationTest
 
         var pokemon = JsonSerializer.Deserialize<Pokemon>(json, JSON_OPTIONS);
 
-        Assert.That(pokemon.Evolution.PreEvolution, Is.Null);
-        Assert.That(pokemon.Evolution.MegaEvolution, Is.Null);
-        Assert.That(pokemon.Formes, Is.Null);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(pokemon.Evolution.PreEvolution, Is.Null);
+            Assert.That(pokemon.Evolution.MegaEvolution, Is.Null);
+            Assert.That(pokemon.Formes, Is.Null);
+        }
     }
 
     [Test]

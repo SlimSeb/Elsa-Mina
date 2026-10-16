@@ -153,7 +153,7 @@ public class CalcBasedBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.TeamPreview));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 2 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.TWO));
         }
     }
 
@@ -191,7 +191,7 @@ public class CalcBasedBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 2 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.TWO));
             Assert.That(decision.UseTerastallize, Is.True);
         }
     }
@@ -215,7 +215,7 @@ public class CalcBasedBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 2 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.TWO));
         }
     }
 
@@ -233,7 +233,7 @@ public class CalcBasedBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 1 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.ONE));
         }
     }
 
@@ -255,7 +255,7 @@ public class CalcBasedBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert - Surf is out of PP so the fallback picks Thunderbolt
-        Assert.That(decision.Choices, Is.EqualTo(new[] { 2 }));
+        Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.TWO));
     }
 
     [Test]
@@ -335,7 +335,7 @@ public class CalcBasedBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert
-        Assert.That(decision.Choices, Is.EqualTo(new[] { 1 }));
+        Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.ONE));
     }
 
     [Test]
@@ -359,7 +359,7 @@ public class CalcBasedBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 3 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.THREE));
         }
     }
 
@@ -378,7 +378,7 @@ public class CalcBasedBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 2 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.TWO));
         }
     }
 
@@ -395,7 +395,7 @@ public class CalcBasedBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert - Charizard is weak to Waterfall, Snorlax takes it neutrally with more HP
-        Assert.That(decision.Choices, Is.EqualTo(new[] { 3 }));
+        Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.THREE));
     }
 
     [Test]
@@ -412,7 +412,7 @@ public class CalcBasedBattleDecisionServiceTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 2, 3 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.TWO_AND_THREE));
             _searchAlgorithm.DidNotReceive().FindBestAction(Arg.Any<SimulationModel>());
         }
     }
@@ -446,7 +446,7 @@ public class CalcBasedBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 2, 2 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.TWO_AND_TWO));
             Assert.That(decision.UseTerastallize, Is.False);
         }
     }
@@ -464,7 +464,7 @@ public class CalcBasedBattleDecisionServiceTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 2, 2 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.TWO_AND_TWO));
             Assert.That(decision.UseTerastallize, Is.True);
         }
     }
@@ -481,7 +481,7 @@ public class CalcBasedBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(context);
 
         // Assert
-        Assert.That(decision.Choices, Is.EqualTo(new[] { 1, 1 }));
+        Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.ONE_AND_ONE));
     }
 
     [Test]

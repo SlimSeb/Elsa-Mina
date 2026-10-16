@@ -5,3 +5,8 @@ root = true
 # not environment-specific locations, so moving them to configuration would add settings nobody changes.
 # The same rule is ignored on SonarCloud by .github/workflows/sonar.yml.
 dotnet_diagnostic.S1075.severity = none
+
+[src/**.cs]
+# S107 (too many parameters) is not in the analyzer's default rule set, but SonarCloud's quality profile
+# ("Sonar way comprehensive") reports it on production code: turn it on here so code-analysis.sh catches it too.
+dotnet_diagnostic.S107.severity = warning

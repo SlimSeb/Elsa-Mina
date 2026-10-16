@@ -66,7 +66,7 @@ public class SimpleBattleDecisionServiceTest<TService> where TService : IBattleD
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.TeamPreview));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 2 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.TWO));
         }
     }
 
@@ -84,7 +84,7 @@ public class SimpleBattleDecisionServiceTest<TService> where TService : IBattleD
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 3 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.THREE));
         }
     }
 
@@ -99,7 +99,7 @@ public class SimpleBattleDecisionServiceTest<TService> where TService : IBattleD
         var decision = await _service.GetDecisionAsync(_context);
 
         // Assert
-        Assert.That(decision.Choices, Is.EqualTo(new[] { 1, 2 }));
+        Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.ONE_AND_TWO));
     }
 
     [Test]
@@ -143,7 +143,7 @@ public class SimpleBattleDecisionServiceTest<TService> where TService : IBattleD
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 2 }));
+            Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.TWO));
             Assert.That(decision.UseTerastallize, Is.False);
         }
     }
@@ -158,7 +158,7 @@ public class SimpleBattleDecisionServiceTest<TService> where TService : IBattleD
         var decision = await _service.GetDecisionAsync(_context);
 
         // Assert
-        Assert.That(decision.Choices, Is.EqualTo(new[] { 1, 3 }));
+        Assert.That(decision.Choices, Is.EqualTo(ExpectedChoices.ONE_AND_THREE));
     }
 
     [Test]

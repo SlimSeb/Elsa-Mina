@@ -20,7 +20,7 @@ public class SpoonacularServiceTest
         _service = new SpoonacularService(_httpService, _configuration);
     }
 
-    private static IHttpResponse<T> Response<T>(T data)
+    private static HttpResponse<T> Response<T>(T data)
     {
         return new HttpResponse<T> { Data = data };
     }

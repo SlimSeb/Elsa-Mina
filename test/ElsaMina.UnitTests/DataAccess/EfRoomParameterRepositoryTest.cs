@@ -44,9 +44,12 @@ public class EfRoomParameterRepositoryTest
         var values = await _repository.LoadOrCreateRoomAsync("room", "Renamed room");
 
         // Assert
-        Assert.That(inserted, Is.True);
-        Assert.That(updated, Is.True);
-        Assert.That(values, Is.EqualTo(new Dictionary<string, string> { ["bck"] = "False" }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(inserted, Is.True);
+            Assert.That(updated, Is.True);
+            Assert.That(values, Is.EqualTo(new Dictionary<string, string> { ["bck"] = "False" }));
+        }
         await using var dbContext = new BotDbContext(_options);
         Assert.That((await dbContext.RoomInfo.FindAsync("room"))?.Title, Is.EqualTo("Renamed room"));
     }

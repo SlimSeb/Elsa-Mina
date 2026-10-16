@@ -8,6 +8,9 @@ namespace ElsaMina.UnitTests.Core.Services.Dispatch;
 
 public class IncomingMessageDispatcherTest
 {
+    private static readonly string[] FIRST_THEN_SECOND_FRAME = [">room\n|c:|1|%A|first", ">room\n|c:|1|%A|second"];
+    private static readonly string[] OK_FRAME = [">room\n|c:|1|%A|ok"];
+
     private static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(5);
 
     private IBot _bot;
@@ -46,8 +49,11 @@ public class IncomingMessageDispatcherTest
         await _dispatcher.WhenIdleAsync().WaitAsync(TIMEOUT);
 
         // Assert
-        Assert.That(handledBeforeRelease, Is.Zero);
-        Assert.That(handled, Is.EqualTo(new[] { ">room\n|c:|1|%A|first", ">room\n|c:|1|%A|second" }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(handledBeforeRelease, Is.Zero);
+            Assert.That(handled, Is.EqualTo(FIRST_THEN_SECOND_FRAME));
+        }
     }
 
     [Test]
@@ -102,6 +108,6 @@ public class IncomingMessageDispatcherTest
         await _dispatcher.WhenIdleAsync().WaitAsync(TIMEOUT);
 
         // Assert
-        Assert.That(handled, Is.EqualTo(new[] { ">room\n|c:|1|%A|ok" }));
+        Assert.That(handled, Is.EqualTo(OK_FRAME));
     }
 }

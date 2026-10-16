@@ -5,4 +5,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <!-- scripts/Build/code-analysis.sh sets AnalysisLogDirectory to collect every diagnostic, info-level ones included -->
+  <PropertyGroup Condition="'$(AnalysisLogDirectory)' != ''">
+    <ErrorLog>$(AnalysisLogDirectory)/$(MSBuildProjectName).sarif,version=2.1</ErrorLog>
+  </PropertyGroup>
 </Project>

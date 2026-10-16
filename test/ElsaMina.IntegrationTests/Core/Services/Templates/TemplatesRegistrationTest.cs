@@ -53,8 +53,11 @@ public class TemplatesRegistrationTest
     {
         var templateType = FindTemplateType(templateKey);
 
-        Assert.That(templateType, Is.Not.Null, $"No component found for template '{templateKey}'");
-        Assert.That(typeof(IComponent).IsAssignableFrom(templateType), Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(templateType, Is.Not.Null, $"No component found for template '{templateKey}'");
+            Assert.That(typeof(IComponent).IsAssignableFrom(templateType), Is.True);
+        }
     }
 
     [TestCaseSource(nameof(GetTemplateKeys))]

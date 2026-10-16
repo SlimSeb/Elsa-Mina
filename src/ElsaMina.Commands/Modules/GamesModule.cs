@@ -189,8 +189,14 @@ public class GamesModule : Module
         // Les jeux sont créés à la demande via Func<TGame> et vivent tant que la room ou le joueur les garde.
         // ExternallyOwned sinon le container root garde en vie tous les jeux jamais créés jusqu'à l'arrêt (fuite mémoire ^^)
         builder.RegisterType<GuessingGameFactory>().As<IGuessingGameFactory>().SingleInstance();
-        builder.RegisterType<CountriesGame>().AsSelf().ExternallyOwned();
-        builder.RegisterType<CapitalCitiesGame>().AsSelf().ExternallyOwned();
+        RegisterGuessingGame<CountriesGame>(builder, "countriesgame");
+        RegisterGuessingGame<PokeDescGame>(builder, "pokedesc");
+        RegisterGuessingGame<PokeCriesGame>(builder, "pokecries");
+        RegisterGuessingGame<GatekeepersGame>(builder, "gatekeepers");
+        RegisterGuessingGame<CapitalCitiesGame>(builder, "capitalcities");
+        RegisterGuessingGame<HigherLowerGame>(builder, "higherlower");
+        RegisterGuessingGame<WhosThatPokemonGame>(builder, "whosthatpokemon");
+        RegisterGuessingGame<TriviaGame>(builder, "trivia");
         builder.RegisterType<ConnectFourGame>().AsSelf().ExternallyOwned();
         builder.RegisterType<ConnectFourRatingService>().As<IConnectFourRatingService>().SingleInstance();
         builder.RegisterType<ChessGame>().AsSelf().ExternallyOwned();
@@ -207,11 +213,6 @@ public class GamesModule : Module
         builder.RegisterType<BeloteGame>().AsSelf().ExternallyOwned();
         builder.RegisterType<BeloteStatsService>().As<IBeloteStatsService>().SingleInstance();
         builder.RegisterType<PokerGame>().AsSelf().ExternallyOwned();
-        builder.RegisterType<PokeDescGame>().AsSelf().ExternallyOwned();
-        builder.RegisterType<PokeCriesGame>().AsSelf().ExternallyOwned();
-        builder.RegisterType<GatekeepersGame>().AsSelf().ExternallyOwned();
-        builder.RegisterType<HigherLowerGame>().AsSelf().ExternallyOwned();
-        builder.RegisterType<WhosThatPokemonGame>().AsSelf().ExternallyOwned();
         builder.RegisterType<LightsOutGame>().AsSelf().ExternallyOwned();
         builder.RegisterType<LightsOutGameManager>().As<ILightsOutGameManager>().SingleInstance();
         builder.RegisterType<WordleGame>().AsSelf().ExternallyOwned();
@@ -229,6 +230,17 @@ public class GamesModule : Module
         builder.RegisterType<BlackjackGame>().AsSelf().ExternallyOwned();
         builder.RegisterType<BlackjackGameManager>().As<IBlackjackGameManager>().SingleInstance();
         builder.RegisterType<OpenTdbTriviaService>().As<ITriviaService>().SingleInstance();
-        builder.RegisterType<TriviaGame>().AsSelf().ExternallyOwned();
+    }
+
+    private static void RegisterGuessingGame<TGame>(ContainerBuilder builder, string commandName)
+        where TGame : GuessingGame
+    {
+        builder.RegisterType<TGame>().AsSelf().ExternallyOwned();
+        builder.Register(componentContext =>
+            {
+                var createGame = componentContext.Resolve<Func<TGame>>();
+                return new GuessingGameRegistration(commandName, () => createGame());
+            })
+            .SingleInstance();
     }
 }
