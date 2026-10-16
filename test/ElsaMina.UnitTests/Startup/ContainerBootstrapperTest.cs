@@ -3,6 +3,7 @@ using Autofac;
 using ElsaMina.Cloud;
 using ElsaMina.Cloud.GoogleDrive;
 using ElsaMina.Cloud.Sheets;
+using ElsaMina.Commands.Games.GuessingGame;
 using ElsaMina.Console.Startup;
 using ElsaMina.Core;
 using ElsaMina.Core.Handlers;
@@ -88,6 +89,25 @@ public class ContainerBootstrapperTest
         // Assert
         Assert.That(commands, Is.Not.Empty);
         Assert.That(commands.Select(command => command.Name), Has.All.Not.Empty);
+    }
+
+    [Test]
+    public void Test_Build_ShouldCreateAGuessingGame_ForEveryGuessingGameAlias()
+    {
+        // Arrange
+        var factory = _container.Resolve<IGuessingGameFactory>();
+        var aliases = typeof(GuessingGameCommand)
+            .GetCustomAttributes(typeof(NamedCommandAttribute), false)
+            .Cast<NamedCommandAttribute>()
+            .Single()
+            .Aliases;
+
+        // Act & Assert
+        Assert.That(aliases, Is.Not.Empty);
+        foreach (var alias in aliases)
+        {
+            Assert.That(factory.Create(alias), Is.Not.Null, $"No guessing game is registered for {alias}");
+        }
     }
 
     [Test]
