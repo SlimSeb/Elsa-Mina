@@ -14,6 +14,16 @@ public class BattleMessageParserTrackingTest
     private const string PELIPPER = "p1: Pelipper";
     private const string GHOLDENGO = "p1: Gholdengo";
 
+    private static readonly string[] TRICK_ROOM_AND_PSYCHIC_TERRAIN = ["TRICK_ROOM", "PSYCHIC_TERRAIN"];
+    private static readonly string[] REFLECT_ONLY = ["REFLECT"];
+    private static readonly string[] STEALTH_ROCK_ONLY = ["STEALTH_ROCK"];
+    private static readonly string[] CONFUSION_AND_LEECH_SEED = ["CONFUSION", "LEECH_SEED"];
+    private static readonly string[] TAUNT_AND_SALT_CURE = ["TAUNT", "SALT_CURE"];
+    private static readonly string[] STEEL_ONLY = ["STEEL"];
+    private static readonly string[] HURRICANE_ONLY = ["hurricane"];
+    private static readonly string[] GARCHOMP_THEN_ZOROARK = ["p2: Garchomp", "p2: Zoroark"];
+    private static readonly string[] GARCHOMP_MOVES = ["earthquake", "outrage", "stealthrock", "swordsdance"];
+
     private static readonly Dictionary<string, Dictionary<string, object>> OUR_TEAM = new()
     {
         [GARCHOMP] = SidePokemon(GARCHOMP, "Garchomp, L80, M", "280/280", "roughskin", "leftovers",
@@ -199,7 +209,7 @@ public class BattleMessageParserTrackingTest
         Apply("|-fieldstart|move: Psychic Terrain");
 
         // Assert
-        Assert.That(Tracked.Fields.Keys, Is.EquivalentTo(new[] { "TRICK_ROOM", "PSYCHIC_TERRAIN" }));
+        Assert.That(Tracked.Fields.Keys, Is.EquivalentTo(TRICK_ROOM_AND_PSYCHIC_TERRAIN));
     }
 
     [Test]
@@ -249,7 +259,7 @@ public class BattleMessageParserTrackingTest
         Apply("|-sideend|p1: Elsa|Stealth Rock|[from] move: Rapid Spin|[of] p1a: Garchomp");
 
         // Assert
-        Assert.That(Tracked.SideConditions.Keys, Is.EqualTo(new[] { "REFLECT" }));
+        Assert.That(Tracked.SideConditions.Keys, Is.EqualTo(REFLECT_ONLY));
     }
 
     [Test]
@@ -266,8 +276,8 @@ public class BattleMessageParserTrackingTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(Tracked.SideConditions.Keys, Is.EqualTo(new[] { "REFLECT" }));
-            Assert.That(Tracked.OpponentSideConditions.Keys, Is.EqualTo(new[] { "STEALTH_ROCK" }));
+            Assert.That(Tracked.SideConditions.Keys, Is.EqualTo(REFLECT_ONLY));
+            Assert.That(Tracked.OpponentSideConditions.Keys, Is.EqualTo(STEALTH_ROCK_ONLY));
         }
     }
 
@@ -329,8 +339,8 @@ public class BattleMessageParserTrackingTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(Garchomp.Effects, Is.EquivalentTo(new[] { "CONFUSION", "LEECH_SEED" }));
-            Assert.That(Opponent("Tinkaton").Effects, Is.EquivalentTo(new[] { "TAUNT", "SALT_CURE" }));
+            Assert.That(Garchomp.Effects, Is.EquivalentTo(CONFUSION_AND_LEECH_SEED));
+            Assert.That(Opponent("Tinkaton").Effects, Is.EquivalentTo(TAUNT_AND_SALT_CURE));
         }
     }
 
@@ -434,7 +444,7 @@ public class BattleMessageParserTrackingTest
         {
             Assert.That(Opponent("Tinkaton").Terastallized, Is.True);
             Assert.That(Opponent("Tinkaton").TeraType, Is.EqualTo("STEEL"));
-            Assert.That(Opponent("Tinkaton").Types, Is.EqualTo(new[] { "STEEL" }));
+            Assert.That(Opponent("Tinkaton").Types, Is.EqualTo(STEEL_ONLY));
             Assert.That(Tracked.OpponentUsedTera, Is.True);
             Assert.That(Tracked.UsedTera, Is.False);
         }
@@ -517,7 +527,7 @@ public class BattleMessageParserTrackingTest
         {
             Assert.That(Garchomp.Moves["outrage"].CurrentPp, Is.EqualTo(14));
             Assert.That(Garchomp.Moves["swordsdance"].CurrentPp, Is.EqualTo(31));
-            Assert.That(Opponent("Zapdos").Moves.Keys, Is.EqualTo(new[] { "hurricane" }));
+            Assert.That(Opponent("Zapdos").Moves.Keys, Is.EqualTo(HURRICANE_ONLY));
             Assert.That(Opponent("Zapdos").Moves["hurricane"].CurrentPp, Is.EqualTo(15));
         }
     }
@@ -603,7 +613,7 @@ public class BattleMessageParserTrackingTest
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(Tracked.OpponentTeam.Select(pokemon => pokemon.Identifier), Is.EqualTo(new[] { "p2: Garchomp", "p2: Zoroark" }));
+            Assert.That(Tracked.OpponentTeam.Select(pokemon => pokemon.Identifier), Is.EqualTo(GARCHOMP_THEN_ZOROARK));
             Assert.That(Tracked.OpponentActivePokemon.Identifier, Is.EqualTo("p2: Zoroark"));
             Assert.That(Opponent("Garchomp").Active, Is.False);
         }
@@ -625,7 +635,7 @@ public class BattleMessageParserTrackingTest
             Assert.That(Tracked.CanTera, Is.False);
             Assert.That(Tracked.AvailableSwitches, Is.Empty);
             Assert.That(Tracked.AvailableMoves.Select(move => move.Id),
-                Is.EqualTo(new[] { "earthquake", "outrage", "stealthrock", "swordsdance" }));
+                Is.EqualTo(GARCHOMP_MOVES));
         }
     }
 

@@ -29,7 +29,7 @@ public class MiniPokeV1ParityTest
             featureNames.Describe);
     }
 
-    public static IEnumerable<TestCaseData> Fixtures() => MiniPokeParityChecker.FixtureCases(FIXTURES_DIRECTORY);
+    private static IEnumerable<TestCaseData> Fixtures() => MiniPokeParityChecker.FixtureCases(FIXTURES_DIRECTORY);
 
     [Test]
     public void Test_Fixtures_ShouldCoverEnoughDecisions()

@@ -16,6 +16,9 @@ public class MiniPokeBattleDecisionServiceTest
     private const int FALLBACK_MOVE_CHOICE = 99;
     private const int ACTION_COUNT = BattleObservation.ActionCount;
     private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV1, "Models/MiniPokeV1");
+    private static readonly int[] SECOND_CHOICE = [2];
+    private static readonly int[] FOURTH_CHOICE = [4];
+    private static readonly int[] FIFTH_CHOICE = [5];
 
     private IMiniPokeModel _model;
     private IMiniPokeEncoder _encoder;
@@ -91,7 +94,7 @@ public class MiniPokeBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Switch));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 5 }));
+            Assert.That(decision.Choices, Is.EqualTo(FIFTH_CHOICE));
         }
     }
 
@@ -108,7 +111,7 @@ public class MiniPokeBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 4 }));
+            Assert.That(decision.Choices, Is.EqualTo(FOURTH_CHOICE));
             Assert.That(decision.UseTerastallize, Is.False);
         }
     }
@@ -126,7 +129,7 @@ public class MiniPokeBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 2 }));
+            Assert.That(decision.Choices, Is.EqualTo(SECOND_CHOICE));
             Assert.That(decision.UseTerastallize, Is.True);
         }
     }
@@ -150,7 +153,7 @@ public class MiniPokeBattleDecisionServiceTest
         var decision = await _service.GetDecisionAsync(CreateSinglesContext());
 
         // Assert: action 8 is model move 2, the request's 2nd move
-        Assert.That(decision.Choices, Is.EqualTo(new[] { 2 }));
+        Assert.That(decision.Choices, Is.EqualTo(SECOND_CHOICE));
     }
 
     [Test]
@@ -352,7 +355,7 @@ public class MiniPokeBattleDecisionServiceTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-            Assert.That(decision.Choices, Is.EqualTo(new[] { 4 }));
+            Assert.That(decision.Choices, Is.EqualTo(FOURTH_CHOICE));
         }
     }
 }

@@ -16,7 +16,7 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
 
     private readonly IMiniPokeModel _model;
     private readonly IMiniPokeEncoder _encoder;
-    private readonly IBattleDecisionService _fallback;
+    private readonly CalcBasedBattleDecisionService _fallback;
     private readonly IRandomService _randomService;
     private readonly MiniPokeModelOptions _options;
 

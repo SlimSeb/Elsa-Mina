@@ -7,6 +7,9 @@ namespace ElsaMina.UnitTests.Core.Services.Dex;
 
 public class DexManagerTest
 {
+    private static readonly int[] HALF_DRAIN = [1, 2];
+    private static readonly string[] DRAGON_GROUND_TYPES = ["Dragon", "Ground"];
+
     private IHttpService _httpService;
     private DexManager _dexManager;
 
@@ -70,8 +73,8 @@ public class DexManagerTest
         {
             Assert.That(_dexManager.Moves["earthquake"].BasePower, Is.EqualTo(100));
             Assert.That(_dexManager.Moves["uturn"].SelfSwitch, Is.True);
-            Assert.That(_dexManager.Moves["drainpunch"].Drain, Is.EqualTo(new[] { 1, 2 }));
-            Assert.That(_dexManager.Species["garchomp"].Types, Is.EqualTo(new[] { "Dragon", "Ground" }));
+            Assert.That(_dexManager.Moves["drainpunch"].Drain, Is.EqualTo(HALF_DRAIN));
+            Assert.That(_dexManager.Species["garchomp"].Types, Is.EqualTo(DRAGON_GROUND_TYPES));
             Assert.That(_dexManager.Species["gastrodon"].CosmeticFormes, Does.Contain("Gastrodon-East"));
         }
     }

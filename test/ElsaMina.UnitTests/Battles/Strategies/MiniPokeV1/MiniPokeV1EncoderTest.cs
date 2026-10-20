@@ -15,6 +15,7 @@ public class MiniPokeV1EncoderTest
 {
     private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV1,
         Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV1"));
+    private static readonly string[] PROTECT_ONLY = ["protect"];
 
     private BattleMessageParser _parser;
     private BattleContext _context;
@@ -40,7 +41,7 @@ public class MiniPokeV1EncoderTest
         {
             ident = $"p1: {member.Species}", details = $"{member.Species}, L80", condition = "100/100",
             active = index == 0, stats = new { atk = 1, def = 1, spa = 1, spd = 1, spe = 1 },
-            moves = new[] { "protect" }, baseAbility = "pressure", item = member.Item, pokeball = "pokeball",
+            moves = PROTECT_ONLY, baseAbility = "pressure", item = member.Item, pokeball = "pokeball",
             ability = "pressure"
         });
         var request = new
