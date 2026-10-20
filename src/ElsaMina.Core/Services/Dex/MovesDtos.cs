@@ -59,6 +59,41 @@ public sealed class MoveData
     [JsonPropertyName("drain")]
     public int[] Drain { get; set; } = Array.Empty<int>();
 
+    /// <summary>
+    /// Fraction of the user's max HP restored, as [numerator, denominator].
+    /// </summary>
+    [JsonPropertyName("heal")]
+    public int[] Heal { get; set; } = Array.Empty<int>();
+
+    /// <summary>
+    /// Fraction of the damage dealt taken as recoil, as [numerator, denominator].
+    /// </summary>
+    [JsonPropertyName("recoil")]
+    public int[] Recoil { get; set; } = Array.Empty<int>();
+
+    [JsonPropertyName("struggleRecoil")]
+    public bool StruggleRecoil { get; set; }
+
+    [JsonPropertyName("sideCondition")]
+    public string SideCondition { get; set; } = string.Empty;
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = string.Empty;
+
+    [JsonPropertyName("forceSwitch")]
+    public bool ForceSwitch { get; set; }
+
+    /// <summary>
+    /// Whether the user switches out after using the move (U-turn, Baton Pass, Shed Tail...).
+    /// </summary>
+    [JsonPropertyName("selfSwitch")]
+    [JsonConverter(typeof(TruthyJsonConverter))]
+    public bool SelfSwitch { get; set; }
+
+    [JsonPropertyName("isMax")]
+    [JsonConverter(typeof(TruthyJsonConverter))]
+    public bool IsMax { get; set; }
+
     [JsonPropertyName("zMove")]
     public ZMoveInfo ZMove { get; set; } = new();
 }

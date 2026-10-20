@@ -31,7 +31,8 @@ public class BattleStrategyCommandTest
             BattleDecisionStrategy.Llm,
             BattleDecisionStrategy.DamageCalc,
             BattleDecisionStrategy.TypeMatchup,
-            BattleDecisionStrategy.Random
+            BattleDecisionStrategy.Random,
+            BattleDecisionStrategy.MiniPokeV1
         ]);
 
         // Act
@@ -40,7 +41,7 @@ public class BattleStrategyCommandTest
         // Assert
         _context.Received(1).Reply(Arg.Is<string>(msg =>
             msg.Contains("Current battle decision strategy: **Llm**") &&
-            msg.Contains("llm, damagecalc, typematchup, random")));
+            msg.Contains("llm, damagecalc, typematchup, random, minipokev1")));
     }
 
     [Test]
@@ -75,7 +76,8 @@ public class BattleStrategyCommandTest
             BattleDecisionStrategy.Llm,
             BattleDecisionStrategy.DamageCalc,
             BattleDecisionStrategy.TypeMatchup,
-            BattleDecisionStrategy.Random
+            BattleDecisionStrategy.Random,
+            BattleDecisionStrategy.MiniPokeV1
         ]);
 
         // Act

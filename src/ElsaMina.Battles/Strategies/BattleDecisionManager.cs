@@ -1,4 +1,5 @@
 using ElsaMina.Battles.Strategies.Llm;
+using ElsaMina.Battles.Strategies.MiniPoke;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Battles.Strategies;
@@ -9,17 +10,21 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
     private readonly CalcBasedBattleDecisionService _calcService;
     private readonly TypeMatchupBattleDecisionService _typeMatchupService;
     private readonly RandomBattleDecisionService _randomService;
+    private readonly Dictionary<BattleDecisionStrategy, MiniPokeBattleDecisionService> _miniPokeServices;
 
     public BattleDecisionManager(
         LlmBattleDecisionService llmService,
         CalcBasedBattleDecisionService calcService,
         TypeMatchupBattleDecisionService typeMatchupService,
-        RandomBattleDecisionService randomService)
+        RandomBattleDecisionService randomService,
+        IEnumerable<MiniPokeBattleDecisionService> miniPokeServices)
     {
         _llmService = llmService;
         _calcService = calcService;
         _typeMatchupService = typeMatchupService;
         _randomService = randomService;
+        // One per minipoke model version registered in BattlesModule
+        _miniPokeServices = miniPokeServices.ToDictionary(service => service.Strategy);
     }
 
     public BattleDecisionStrategy ActiveStrategy { get; set; } = BattleDecisionStrategy.DamageCalc;
@@ -29,7 +34,8 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
         BattleDecisionStrategy.DamageCalc,
         BattleDecisionStrategy.Llm,
         BattleDecisionStrategy.TypeMatchup,
-        BattleDecisionStrategy.Random
+        BattleDecisionStrategy.Random,
+        .._miniPokeServices.Keys.Order()
     ];
 
     public bool TrySetStrategy(string strategyName, out BattleDecisionStrategy strategy)
@@ -55,14 +61,35 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
             case "random" or "rand":
                 strategy = BattleDecisionStrategy.Random;
                 break;
+            case "minipoke" when _miniPokeServices.Count > 0:
+                // The latest model version
+                strategy = _miniPokeServices.Keys.Max();
+                break;
             default:
-                strategy = ActiveStrategy;
-                return false;
+                if (!TryFindMiniPokeStrategy(normalized, out strategy))
+                {
+                    strategy = ActiveStrategy;
+                    return false;
+                }
+
+                break;
         }
 
         ActiveStrategy = strategy;
         Log.Information("Active battle decision strategy switched to: {Strategy}", strategy);
         return true;
+    }
+
+    /// <summary>
+    /// A minipoke model version by its strategy name ("minipokev1").
+    /// </summary>
+    private bool TryFindMiniPokeStrategy(string name, out BattleDecisionStrategy strategy)
+    {
+        var matches = _miniPokeServices.Keys
+            .Where(candidate => candidate.ToString().Equals(name, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        strategy = matches.FirstOrDefault();
+        return matches.Count > 0;
     }
 
     public IBattleDecisionService GetCurrentService()
@@ -73,7 +100,7 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
             BattleDecisionStrategy.DamageCalc => _calcService,
             BattleDecisionStrategy.TypeMatchup => _typeMatchupService,
             BattleDecisionStrategy.Random => _randomService,
-            _ => _calcService
+            _ => _miniPokeServices.TryGetValue(ActiveStrategy, out var miniPokeService) ? miniPokeService : _calcService
         };
     }
 

@@ -2,8 +2,12 @@ using Autofac;
 using ElsaMina.Battles.Commands;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.Llm;
+using ElsaMina.Battles.Strategies.MiniPoke;
+using ElsaMina.Battles.Strategies.MiniPokeV1;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
+using ElsaMina.Battles.Tracking;
+using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Battles;
@@ -14,6 +18,7 @@ public class BattlesModule : Module
     {
         base.Load(builder);
 
+        builder.RegisterType<BattleDex>().As<IBattleDex>().SingleInstance();
         builder.RegisterType<BattleMessageParser>().As<IBattleMessageParser>().SingleInstance();
         builder.RegisterType<SmogonOpponentMovesPredictor>().As<IOpponentMovesPredictor>().SingleInstance();
         // Swap MinimaxSearch for MonteCarloTreeSearch to use MCTS instead
@@ -24,6 +29,8 @@ public class BattlesModule : Module
         builder.RegisterType<LlmBattlePromptBuilder>().As<ILlmBattlePromptBuilder>().SingleInstance();
         builder.RegisterType<LlmBattleDecisionParser>().As<ILlmBattleDecisionParser>().SingleInstance();
         builder.RegisterType<LlmBattleDecisionService>().AsSelf().SingleInstance();
+        // minipoke model versions: one line each (see tools/minipoke/README.md)
+        RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1);
         builder.RegisterType<BattleDecisionManager>().As<IBattleDecisionService>().As<IBattleDecisionManager>().SingleInstance();
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
         builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();
@@ -35,5 +42,29 @@ public class BattlesModule : Module
         builder.RegisterCommand<UseTeamCommand>();
         builder.RegisterCommand<LadderingCommand>();
         builder.RegisterCommand<BattleStrategyCommand>();
+    }
+
+    /// <summary>
+    /// A minipoke model version: the files exported to Models/{strategy}, played by its own decision service
+    /// with the encoder matching the encoder.py it was trained with. The decision manager picks up every version.
+    /// </summary>
+    private static void RegisterMiniPoke<TEncoder>(ContainerBuilder builder, BattleDecisionStrategy strategy)
+        where TEncoder : MiniPokeEncoder
+    {
+        var options = new MiniPokeModelOptions(strategy,
+            Path.Join(AppContext.BaseDirectory, "Models", strategy.ToString()));
+        builder.Register(_ => new MiniPokeOnnxModel(options)).Keyed<IMiniPokeModel>(strategy).SingleInstance();
+        builder.RegisterType<TEncoder>()
+            .WithParameter(TypedParameter.From(options))
+            .Keyed<IMiniPokeEncoder>(strategy)
+            .SingleInstance();
+        builder.Register(context => new MiniPokeBattleDecisionService(
+                context.ResolveKeyed<IMiniPokeModel>(strategy),
+                context.ResolveKeyed<IMiniPokeEncoder>(strategy),
+                context.Resolve<CalcBasedBattleDecisionService>(),
+                context.Resolve<IRandomService>(),
+                options))
+            .AsSelf()
+            .SingleInstance();
     }
 }

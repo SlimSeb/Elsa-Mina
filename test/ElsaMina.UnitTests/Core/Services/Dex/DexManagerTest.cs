@@ -56,6 +56,27 @@ public class DexManagerTest
     }
 
     [Test]
+    public async Task Test_LoadDexAsync_ShouldLoadShowdownData_WhenHttpFails()
+    {
+        // Arrange
+        _httpService.SendAsync<Pokemon[]>(Arg.Any<HttpRequest>())
+            .Throws(new Exception("Network error"));
+
+        // Act
+        await _dexManager.LoadDexAsync();
+
+        // Assert: moves.json and pokedex.json ship with the bot
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_dexManager.Moves["earthquake"].BasePower, Is.EqualTo(100));
+            Assert.That(_dexManager.Moves["uturn"].SelfSwitch, Is.True);
+            Assert.That(_dexManager.Moves["drainpunch"].Drain, Is.EqualTo(new[] { 1, 2 }));
+            Assert.That(_dexManager.Species["garchomp"].Types, Is.EqualTo(new[] { "Dragon", "Ground" }));
+            Assert.That(_dexManager.Species["gastrodon"].CosmeticFormes, Does.Contain("Gastrodon-East"));
+        }
+    }
+
+    [Test]
     public async Task Test_LoadDexAsync_ShouldLeavePokedexEmpty_WhenHttpFails()
     {
         // Arrange

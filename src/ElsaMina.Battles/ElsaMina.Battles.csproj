@@ -9,12 +9,21 @@
     <ItemGroup>
         <PackageReference Include="Autofac"/>
         <PackageReference Include="Lusamine.DamageCalc"/>
+        <PackageReference Include="Microsoft.ML.OnnxRuntime"/>
+        <PackageReference Include="System.IO.Hashing"/>
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\ElsaMina.Core\ElsaMina.Core.csproj"/>
         <ProjectReference Include="..\ElsaMina.DataAccess\ElsaMina.DataAccess.csproj"/>
         <ProjectReference Include="..\ElsaMina.Logging\ElsaMina.Logging.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- minipoke strategies: each model version exports minipoke.onnx and encoder_spec.json to Models/{Strategy} -->
+        <None Update="Models\**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

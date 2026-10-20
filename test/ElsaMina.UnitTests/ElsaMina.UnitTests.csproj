@@ -40,4 +40,11 @@
       <EmbeddedResource Include="Core\Services\Images\die.png" />
     </ItemGroup>
 
+    <ItemGroup>
+      <!-- Battles recorded by tools/minipoke/make_fixtures.py for each minipoke version's parity test -->
+      <None Update="Battles\Strategies\MiniPoke*\Fixtures\*.json.gz">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

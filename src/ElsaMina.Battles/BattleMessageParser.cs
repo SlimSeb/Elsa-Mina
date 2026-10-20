@@ -1,4 +1,5 @@
 using ElsaMina.Battles.Dtos;
+using ElsaMina.Battles.Tracking;
 using ElsaMina.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -8,12 +9,24 @@ namespace ElsaMina.Battles;
 public class BattleMessageParser : IBattleMessageParser
 {
     private const string MOVE_PREFIX = "move: ";
+    // Only the first turn (about 25 lines) comes before the first request; a watched battle never sends one
+    private const int MAX_PENDING_LINES = 200;
     private static readonly JsonSerializerOptions JSON_OPTIONS = new()
     {
         PropertyNameCaseInsensitive = true,
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
         AllowTrailingCommas = true
     };
+
+    private readonly BattleLogTracker _logTracker;
+    private readonly BattleRequestTracker _requestTracker;
+
+    public BattleMessageParser(IBattleDex dex)
+    {
+        var resolver = new TrackedPokemonResolver(dex);
+        _logTracker = new BattleLogTracker(dex, resolver);
+        _requestTracker = new BattleRequestTracker(resolver);
+    }
 
     public bool TryApplyMessage(string[] parts, string roomId, BattleContext context, out BattleMessageResult result)
     {
@@ -22,6 +35,11 @@ public class BattleMessageParser : IBattleMessageParser
         if (parts.Length < 2)
         {
             return false;
+        }
+
+        if (parts[1] != "request")
+        {
+            TrackLogLine(parts, context.Tracked);
         }
 
         if (parts[1] == "start")
@@ -73,6 +91,7 @@ public class BattleMessageParser : IBattleMessageParser
             context.ForceSwitchSlots = ParseForceSwitch(battleState);
             context.SidePokemon = ParseSidePokemon(battleState);
             context.ActiveSlots = ParseActiveSlots(battleState);
+            TrackRequest(battleState, context);
 
             result = new BattleMessageResult(BattleMessageType.RequestUpdated);
             return true;
@@ -82,6 +101,39 @@ public class BattleMessageParser : IBattleMessageParser
             Log.Error(exception, "Failed to parse battle request");
             return false;
         }
+    }
+
+    private void TrackLogLine(string[] parts, TrackedBattleState tracked)
+    {
+        // Until the first request tells us our side, keep the lines (the first turn's switch-ins) for later
+        if (tracked.PlayerRole == null)
+        {
+            if (tracked.PendingLines.Count < MAX_PENDING_LINES)
+            {
+                tracked.PendingLines.Add(parts);
+            }
+
+            return;
+        }
+
+        _logTracker.Apply(parts, tracked);
+    }
+
+    private void TrackRequest(BattleStateDto request, BattleContext context)
+    {
+        var tracked = context.Tracked;
+        if (tracked.PlayerRole == null && !string.IsNullOrEmpty(context.SideId))
+        {
+            tracked.PlayerRole = context.SideId;
+            foreach (var pendingLine in tracked.PendingLines)
+            {
+                _logTracker.Apply(pendingLine, tracked);
+            }
+
+            tracked.PendingLines.Clear();
+        }
+
+        _requestTracker.Apply(request, tracked);
     }
 
     private static bool TryApplyOpponentMessage(string[] parts, BattleContext context)
@@ -574,7 +626,7 @@ public class BattleMessageParser : IBattleMessageParser
                     pokemon.Stats.Spe),
                 Moves = pokemon.Moves,
                 BaseAbility = pokemon.BaseAbility,
-                Ability = pokemon.Ability,
+                Ability = pokemon.Ability ?? "",
                 Item = pokemon.Item,
                 Pokeball = pokemon.Pokeball,
                 TeraType = pokemon.TeraType,

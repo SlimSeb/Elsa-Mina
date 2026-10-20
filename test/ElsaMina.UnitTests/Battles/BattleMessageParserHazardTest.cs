@@ -1,4 +1,6 @@
 using ElsaMina.Battles;
+using ElsaMina.Battles.Tracking;
+using NSubstitute;
 
 namespace ElsaMina.UnitTests.Battles;
 
@@ -10,7 +12,7 @@ public class BattleMessageParserHazardTest
     [SetUp]
     public void SetUp()
     {
-        _parser = new BattleMessageParser();
+        _parser = new BattleMessageParser(Substitute.For<IBattleDex>());
         _context = new BattleContext("battle-gen9ou-123456") { SideId = "p1" };
     }
 

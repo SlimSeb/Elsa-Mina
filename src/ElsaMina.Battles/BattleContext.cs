@@ -1,3 +1,5 @@
+using ElsaMina.Battles.Tracking;
+
 namespace ElsaMina.Battles;
 
 public class BattleContext
@@ -59,4 +61,9 @@ public class BattleContext
     public List<BattleActiveSlot> ActiveSlots { get; set; } = [];
     public List<OpponentPokemonState> OpponentPokemon { get; set; } = [];
     public OpponentPokemonState ActiveOpponent => OpponentPokemon.FirstOrDefault(p => p.IsActive);
+
+    /// <summary>
+    /// The battle as poke-env tracks it, for the minipoke strategies (see <see cref="TrackedBattleState"/>).
+    /// </summary>
+    public TrackedBattleState Tracked { get; } = new();
 }

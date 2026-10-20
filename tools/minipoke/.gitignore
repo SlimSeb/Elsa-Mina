@@ -1,0 +1,7 @@
+# Local training artifacts: only the code is versioned. Exported models go to src/ElsaMina.Battles/Models.
+.venv/
+__pycache__/
+checkpoints/
+export/
+replays/
+pokemon-showdown/

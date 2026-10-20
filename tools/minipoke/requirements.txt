@@ -1,0 +1,9 @@
+# Training (train.py), export (export_onnx.py) and parity fixtures (make_fixtures.py).
+# poke-env is pinned: ElsaMina's battle tracker (src/ElsaMina.Battles/Tracking) is a port of this exact
+# version, so upgrading it means re-checking the port against new fixtures.
+poke-env==0.16.1
+torch>=2.3
+numpy>=2.0
+onnx>=1.23
+onnxscript>=0.7
+onnxruntime>=1.31

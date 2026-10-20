@@ -59,6 +59,12 @@ public sealed class PokedexEntry
     [JsonPropertyName("otherFormes")]
     public string[] OtherFormes { get; set; }
 
+    /// <summary>
+    /// Formes that only change the sprite (Gastrodon-East, Vivillon-Fancy...): they share this entry's data.
+    /// </summary>
+    [JsonPropertyName("cosmeticFormes")]
+    public string[] CosmeticFormes { get; set; }
+
     [JsonPropertyName("formeOrder")]
     public string[] FormeOrder { get; set; }
 

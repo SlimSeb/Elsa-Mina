@@ -1,6 +1,7 @@
 using ElsaMina.Battles;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.Llm;
+using ElsaMina.Battles.Strategies.MiniPoke;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
 using ElsaMina.Core.Services.LanguageModel;
@@ -16,6 +17,7 @@ public class BattleDecisionManagerTest
     private CalcBasedBattleDecisionService _calcService;
     private TypeMatchupBattleDecisionService _typeMatchupService;
     private RandomBattleDecisionService _randomService;
+    private MiniPokeBattleDecisionService _miniPokeV1Service;
     private BattleDecisionManager _manager;
 
     [SetUp]
@@ -32,8 +34,12 @@ public class BattleDecisionManagerTest
         _llmService = new LlmBattleDecisionService(languageModelProvider, opponentMovesPredictor, promptBuilder, decisionParser, _calcService);
         _typeMatchupService = new TypeMatchupBattleDecisionService(randomService);
         _randomService = new RandomBattleDecisionService(randomService);
+        _miniPokeV1Service = new MiniPokeBattleDecisionService(Substitute.For<IMiniPokeModel>(),
+            Substitute.For<IMiniPokeEncoder>(), _calcService, randomService,
+            new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV1, "Models/MiniPokeV1"));
 
-        _manager = new BattleDecisionManager(_llmService, _calcService, _typeMatchupService, _randomService);
+        _manager = new BattleDecisionManager(_llmService, _calcService, _typeMatchupService, _randomService,
+            [_miniPokeV1Service]);
     }
 
     [Test]
@@ -111,6 +117,49 @@ public class BattleDecisionManagerTest
             Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.Random));
             Assert.That(_manager.GetCurrentService(), Is.SameAs(_randomService));
         }
+    }
+
+    [TestCase("minipokev1")]
+    [TestCase(" MiniPokeV1 ")]
+    [TestCase("minipoke")]
+    public void Test_TrySetStrategy_ShouldSwitchToMiniPokeV1_WhenInputNamesIt(string input)
+    {
+        // Act
+        var result = _manager.TrySetStrategy(input, out var strategy);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV1));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV1));
+            Assert.That(_manager.GetCurrentService(), Is.SameAs(_miniPokeV1Service));
+        }
+    }
+
+    [Test]
+    public void Test_TrySetStrategy_ShouldReturnFalse_WhenMiniPokeVersionIsNotRegistered()
+    {
+        // Arrange
+        var manager = new BattleDecisionManager(_llmService, _calcService, _typeMatchupService, _randomService, []);
+
+        // Act
+        var result = manager.TrySetStrategy("minipokev1", out _);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.False);
+            Assert.That(manager.AvailableStrategies, Does.Not.Contain(BattleDecisionStrategy.MiniPokeV1));
+            Assert.That(manager.TrySetStrategy("minipoke", out _), Is.False);
+        }
+    }
+
+    [Test]
+    public void Test_AvailableStrategies_ShouldListEveryStrategy()
+    {
+        // Assert
+        Assert.That(_manager.AvailableStrategies, Is.EquivalentTo(Enum.GetValues<BattleDecisionStrategy>()));
     }
 
     [Test]
