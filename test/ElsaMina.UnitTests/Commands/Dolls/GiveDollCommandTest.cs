@@ -99,19 +99,19 @@ public class GiveDollCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldRefuse_WhenRankIsInsufficientInTheTargetRoom()
+    [TestCase(true, "Alice, Pikachu, room1", ExpectedResult = "room1")]
+    [TestCase(true, "Alice, Pikachu", ExpectedResult = null)]
+    [TestCase(false, "Alice, Pikachu, room1", ExpectedResult = "contextroom")]
+    public string Test_GetTargetRoomId_ShouldReturnThirdArgumentOnlyInPrivateMessage(bool isPrivateMessage,
+        string target)
     {
         // Arrange
-        _context.Target.Returns("Alice, Pikachu, room1");
-        _context.IsPrivateMessage.Returns(true);
-        _context.HasSufficientRankInRoom("room1", Rank.Driver, Arg.Any<CancellationToken>()).Returns(false);
+        _context.Target.Returns(target);
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.RoomId.Returns("contextroom");
 
-        // Act
-        await _command.RunAsync(_context);
-
-        // Assert
-        _context.Received(1).ReplyLocalizedMessage("doll_pm_insufficient_rank");
-        await _roomUserDataService.DidNotReceiveWithAnyArgs().GiveDollToUserAsync(default, default, default);
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
     }
 
     [Test]
@@ -120,7 +120,6 @@ public class GiveDollCommandTest
         // Arrange
         _context.Target.Returns("Alice, Pikachu, Room 1");
         _context.IsPrivateMessage.Returns(true);
-        _context.HasSufficientRankInRoom("room1", Rank.Driver, Arg.Any<CancellationToken>()).Returns(true);
         _dollService.GetDollAsync("pikachu", Arg.Any<CancellationToken>())
             .Returns(new Doll { Id = "pikachu", Name = "Pikachu", Size = 16, Image = "https://images/pikachu.png" });
 

@@ -17,6 +17,7 @@ public class GuessingGameAnswerCommand : GameCommand
 
     public override bool IsAllowedInPrivateMessage => true;
     public override bool IsPrivateMessageOnly => true;
+    public override Rank RequiredRank => Rank.Regular;
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

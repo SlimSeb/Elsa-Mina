@@ -1,9 +1,9 @@
 using System.Runtime.CompilerServices;
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.UserDetails;
 using ElsaMina.Core.Utils;
 using ElsaMina.Logging;
 
@@ -25,7 +25,7 @@ public class ContextFactory : IContextFactory
     public ContextFactory(IConfiguration configuration,
         IResourcesService resourcesService,
         IRoomsManager roomsManager,
-        IUserDetailsManager userDetailsManager,
+        IAuthorizationService authorizationService,
         IBot bot,
         IPmSendersManager pmSendersManager)
     {
@@ -33,7 +33,7 @@ public class ContextFactory : IContextFactory
         _roomsManager = roomsManager;
         _pmSendersManager = pmSendersManager;
         _contextDependencies = new ContextDependencies(configuration, resourcesService, roomsManager,
-            userDetailsManager, bot);
+            authorizationService, bot);
     }
 
     public IContext TryBuildContextFromReceivedMessage(string[] parts, string roomId = null)

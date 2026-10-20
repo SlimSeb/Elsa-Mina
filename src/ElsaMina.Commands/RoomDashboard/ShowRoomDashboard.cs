@@ -22,34 +22,11 @@ public class ShowRoomDashboard : Command
     public override Rank RequiredRank => Rank.Driver;
     public override bool IsAllowedInPrivateMessage => true;
 
+    public override string GetTargetRoomId(IContext context) => ParseArguments(context).RoomId;
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var isOptions = false;
-        string roomId = null;
-
-        if (string.IsNullOrWhiteSpace(context.Target))
-        {
-            roomId = context.RoomId;
-        }
-        else
-        {
-            var parts = context.Target.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            foreach (var part in parts)
-            {
-                var cleanPart = part.ToLowerAlphaNum();
-                if (cleanPart is "options" or "option" or "config")
-                {
-                    isOptions = true;
-                }
-                else if (roomId == null)
-                {
-                    roomId = cleanPart;
-                }
-            }
-
-            roomId ??= context.RoomId;
-        }
-
+        var (roomId, isOptions) = ParseArguments(context);
         if (string.IsNullOrEmpty(roomId))
         {
             context.ReplyLocalizedMessage("dashboard_room_doesnt_exist", string.Empty);
@@ -60,11 +37,6 @@ public class ShowRoomDashboard : Command
         if (room == null)
         {
             context.ReplyLocalizedMessage("dashboard_room_doesnt_exist", roomId);
-            return;
-        }
-
-        if (!await context.HasSufficientRankInRoom(roomId, Rank.Driver, cancellationToken))
-        {
             return;
         }
 
@@ -81,5 +53,32 @@ public class ShowRoomDashboard : Command
         {
             await _roomDashboardService.SendDashboardPageAsync(context, roomId, cancellationToken);
         }
+    }
+
+    // La room est le 1er argument qui n'est pas "options", celle du message s'il y en a pas
+    private static (string RoomId, bool IsOptions) ParseArguments(IContext context)
+    {
+        if (string.IsNullOrWhiteSpace(context.Target))
+        {
+            return (context.RoomId, false);
+        }
+
+        var isOptions = false;
+        string roomId = null;
+        var parts = context.Target.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        foreach (var part in parts)
+        {
+            var cleanPart = part.ToLowerAlphaNum();
+            if (cleanPart is "options" or "option" or "config")
+            {
+                isOptions = true;
+            }
+            else if (roomId == null)
+            {
+                roomId = cleanPart;
+            }
+        }
+
+        return (roomId ?? context.RoomId, isOptions);
     }
 }

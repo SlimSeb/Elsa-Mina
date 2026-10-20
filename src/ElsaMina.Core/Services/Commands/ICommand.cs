@@ -12,6 +12,14 @@ public interface ICommand
     public bool IsWhitelistOnly { get; }
     public bool IsPrivateMessageOnly { get; }
     public Rank RequiredRank { get; }
+
+    /// <summary>
+    /// Le rang demandé quand la commande est lancée en PM, dans la room de <see cref="GetTargetRoomId"/>. Par défaut le
+    /// même que <see cref="RequiredRank"/>. Mettre Regular pour une commande ouverte à tous en PM (une info, un jeu solo) :
+    /// en room son rang sert juste à éviter le spam
+    /// </summary>
+    public Rank RequiredRankInPrivateMessage { get; }
+
     public string HelpMessageKey { get; }
     public bool IsHidden { get; }
     public IEnumerable<string> RoomRestriction { get; }
@@ -23,6 +31,14 @@ public interface ICommand
     /// attend un message coincé derrière elle-même ^^ Si false (par défaut), la commande tourne en fond.
     /// </summary>
     public bool RunsInMessageOrder { get; }
+
+    /// <summary>
+    /// La room où on vérifie le rang du user avant de lancer la commande. Par défaut celle du contexte (la room par
+    /// défaut en PM). Une commande qui agit sur une room passée en argument doit la renvoyer ici, avec le même parsing que
+    /// <see cref="RunAsync"/>, sinon on vérifie le rang dans une room et elle agit dans une autre. Null = la room du
+    /// contexte, à renvoyer seulement si la commande agit alors dans cette room ou refuse de tourner
+    /// </summary>
+    string GetTargetRoomId(IContext context);
 
     Task RunAsync(IContext context, CancellationToken cancellationToken = default);
 }

@@ -1,8 +1,10 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Lifecycle;
+using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Core.Utils;
@@ -16,6 +18,7 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
     private readonly IEnumerable<IDynamicCommandProvider> _dynamicCommandProviders;
     private readonly ITelemetryService _telemetryService;
     private readonly IFeatureSwitchService _featureSwitchService;
+    private readonly IAuthorizationService _authorizationService;
 
     private readonly ConcurrentDictionary<Guid, RunningCommand> _runningCommands = new();
 
@@ -23,12 +26,14 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
         ICommandRegistry commandRegistry,
         IEnumerable<IDynamicCommandProvider> dynamicCommandProviders,
         ITelemetryService telemetryService,
-        IFeatureSwitchService featureSwitchService)
+        IFeatureSwitchService featureSwitchService,
+        IAuthorizationService authorizationService)
     {
         _commandRegistry = commandRegistry;
         _dynamicCommandProviders = dynamicCommandProviders;
         _telemetryService = telemetryService;
         _featureSwitchService = featureSwitchService;
+        _authorizationService = authorizationService;
     }
 
     #region Public API
@@ -62,9 +67,10 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
             return;
         }
 
-        Log.Information("Executing {0} as a normal command", commandName);
+        // Le rang se vérifie dans la tâche de la commande : en PM il peut falloir demander au serveur, et sa réponse
+        // arrive derrière le message qu'on traite
         var execution = Track(command.Name, context, cancellationToken,
-            token => RunCommandAsync(command, context, token));
+            token => AuthorizeAndRunCommandAsync(command, context, token));
 
         if (command.RunsInMessageOrder)
         {
@@ -117,6 +123,29 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
         _runningCommands[executionId] = new RunningCommand(executionId, commandName, context, linkedCts, task);
         started.SetResult();
         return task;
+    }
+
+    private async Task AuthorizeAndRunCommandAsync(ICommand command, IContext context,
+        CancellationToken cancellationToken)
+    {
+        var authorization = await _authorizationService.AuthorizeAsync(context, command, cancellationToken);
+        if (!authorization.IsAllowed)
+        {
+            Log.Information("Denied {0} to {1}: rank {2} required in room {3}", command.Name, context.Sender?.UserId,
+                authorization.RequiredRank, authorization.RoomId);
+
+            // En room on reste silencieux comme avant, en PM le user sait pas forcément dans quelle room on regarde
+            if (context.IsPrivateMessage)
+            {
+                context.ReplyLocalizedMessage("command_insufficient_rank",
+                    User.GetCharacterFromRank(authorization.RequiredRank), authorization.RoomId);
+            }
+
+            return;
+        }
+
+        Log.Information("Executing {0} as a normal command", command.Name);
+        await RunCommandAsync(command, context, cancellationToken);
     }
 
     private async Task RunCommandAsync(ICommand command, IContext context, CancellationToken cancellationToken)
@@ -251,11 +280,6 @@ public class CommandExecutor : ICommandExecutor, IBotLifecycleParticipant
         if (!string.IsNullOrEmpty(command.Category)
             && !_featureSwitchService.IsFeatureEnabled(command.Category)
             && !context.IsSenderWhitelisted)
-        {
-            return false;
-        }
-
-        if (!context.HasRankOrHigher(command.RequiredRank))
         {
             return false;
         }

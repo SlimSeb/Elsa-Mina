@@ -26,16 +26,12 @@ public class TopUsersCommand : Command
     public override Rank RequiredRank => Rank.Driver;
     public override bool IsAllowedInPrivateMessage => true;
 
+    public override string GetTargetRoomId(IContext context) =>
+        string.IsNullOrWhiteSpace(context.Target) ? context.RoomId : context.Target.Trim().ToLowerAlphaNum();
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var roomId = string.IsNullOrWhiteSpace(context.Target)
-            ? context.RoomId
-            : context.Target.Trim().ToLowerAlphaNum();
-
-        if (!await context.HasSufficientRankInRoom(roomId, RequiredRank, cancellationToken))
-        {
-            return;
-        }
+        var roomId = GetTargetRoomId(context);
 
         var now = _clockService.CurrentUtcDateTime;
         var keys = await _fileSharingService.ListFilesAsync(

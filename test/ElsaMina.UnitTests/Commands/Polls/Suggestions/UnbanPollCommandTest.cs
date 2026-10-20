@@ -157,4 +157,18 @@ public class UnbanPollCommandTest
 
         Assert.That(await CountBansAsync(), Is.Zero);
     }
+
+    [Test]
+    [TestCase(true, "alice", ExpectedResult = "testroom")]
+    [TestCase(false, "alice", ExpectedResult = "testroom")]
+    public string Test_GetTargetRoomId_ShouldAlwaysReturnDefaultRoom(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
+    }
 }

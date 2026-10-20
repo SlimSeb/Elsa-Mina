@@ -29,6 +29,7 @@ public class StartSemantixCommand : GameCommand
 
     public override Rank RequiredRank => Rank.Voiced;
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRankInPrivateMessage => Rank.Regular;
     public override string HelpMessageKey => "sx_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)

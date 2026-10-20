@@ -31,6 +31,9 @@ public class SaveEventRoleCommand : Command
     public override bool IsAllowedInPrivateMessage => true;
     public override bool IsPrivateMessageOnly => true;
 
+    // Format : roomId;;eventName;;discordRoleId
+    public override string GetTargetRoomId(IContext context) => context.Target.Split(";;")[0].Trim();
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(context.Target))
@@ -47,7 +50,7 @@ public class SaveEventRoleCommand : Command
             return;
         }
 
-        var roomId = parts[0].Trim();
+        var roomId = GetTargetRoomId(context);
         var eventName = parts[1].Trim();
         var discordRoleId = parts[2].Trim();
 
@@ -67,11 +70,6 @@ public class SaveEventRoleCommand : Command
         if (room == null)
         {
             context.ReplyLocalizedMessage("eventroles_room_not_found");
-            return;
-        }
-
-        if (!await context.HasSufficientRankInRoom(roomId, Rank.Driver, cancellationToken))
-        {
             return;
         }
 

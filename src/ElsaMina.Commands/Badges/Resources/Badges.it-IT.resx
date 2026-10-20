@@ -96,9 +96,6 @@
     <data name="badge_pm_missing_room" xml:space="preserve">
         <value>In PM, specifica la stanza. Sintassi: -givebadge utente, badge, stanza</value>
     </data>
-    <data name="badge_pm_insufficient_rank" xml:space="preserve">
-        <value>Non hai permessi sufficienti in questa stanza.</value>
-    </data>
     <data name="user_badge_panel_help" xml:space="preserve">
         <value>Sintassi: -userbadges nomeutente, [stanza]</value>
     </data>

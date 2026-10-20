@@ -18,10 +18,13 @@ public class SetLocaleCommand : Command
 
     public override Rank RequiredRank => Rank.RoomOwner;
 
+    // La room est le 1er argument
+    public override string GetTargetRoomId(IContext context) => context.Target.Split(",")[0].Trim();
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var arguments = context.Target.Split(",");
-        var roomId = arguments[0].Trim();
+        var roomId = GetTargetRoomId(context);
         var locale = arguments[1].Trim();
         CultureInfo cultureInfo;
         try

@@ -69,9 +69,6 @@
     <data name="doll_pm_missing_room" xml:space="preserve">
         <value>En PM, especifica la sala. Sintaxis: -givedoll usuario, muñeco, sala</value>
     </data>
-    <data name="doll_pm_insufficient_rank" xml:space="preserve">
-        <value>No tienes permisos suficientes en esta sala.</value>
-    </data>
     <data name="doll_list_empty" xml:space="preserve">
         <value>El catálogo de muñecos está vacío.</value>
     </data>

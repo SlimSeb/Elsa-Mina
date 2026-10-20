@@ -22,6 +22,10 @@ public class AddBadgeCommand : Command
     public override bool IsAllowedInPrivateMessage => true;
     public override string HelpMessageKey => "badge_help_message";
 
+    // En PM la room est le 3e argument
+    public override string GetTargetRoomId(IContext context) =>
+        context.IsPrivateMessage ? context.GetRoomIdArgument(2) : context.RoomId;
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var arguments = context.Target.Split(",");
@@ -36,25 +40,11 @@ public class AddBadgeCommand : Command
         var isTrophy = context.Command is "add-trophy" or "newtrophy" or "new-trophy";
         var badgeId = name.ToLowerAlphaNum();
 
-        string roomId;
-        if (context.IsPrivateMessage)
+        var roomId = GetTargetRoomId(context);
+        if (roomId == null)
         {
-            if (arguments.Length < 3 || string.IsNullOrWhiteSpace(arguments[2]))
-            {
-                context.ReplyLocalizedMessage("badge_pm_missing_room");
-                return;
-            }
-            roomId = arguments[2].Trim().ToLowerAlphaNum();
-
-            if (!await context.HasSufficientRankInRoom(roomId, Rank.Driver, cancellationToken))
-            {
-                context.ReplyLocalizedMessage("badge_pm_insufficient_rank");
-                return;
-            }
-        }
-        else
-        {
-            roomId = context.RoomId;
+            context.ReplyLocalizedMessage("badge_pm_missing_room");
+            return;
         }
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);

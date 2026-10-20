@@ -85,8 +85,6 @@ public class DeleteEventRoleCommandTest
         _context.Target.Returns("My Event;;testroom");
         _context.RoomId.Returns("testroom");
         _roomsManager.GetRoom("testroom").Returns(_room);
-        _context.HasSufficientRankInRoom("testroom", Rank.Driver, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(true));
 
         await _command.RunAsync(_context);
 
@@ -95,18 +93,16 @@ public class DeleteEventRoleCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldNotDelete_WhenInsufficientRank()
+    [TestCase("My Event;;testroom", ExpectedResult = "testroom")]
+    [TestCase("My Event", ExpectedResult = "defaultroom")]
+    public string Test_GetTargetRoomId_ShouldReturnRoomTheCommandActsOn(string target)
     {
-        _context.Target.Returns("My Event;;testroom");
-        _context.RoomId.Returns("testroom");
-        _roomsManager.GetRoom("testroom").Returns(_room);
-        _context.HasSufficientRankInRoom("testroom", Rank.Driver, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(false));
+        // Arrange
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("defaultroom");
 
-        await _command.RunAsync(_context);
-
-        await _eventRoleMappingService.DidNotReceive()
-            .DeleteMappingAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
     }
 
     [Test]
@@ -115,8 +111,6 @@ public class DeleteEventRoleCommandTest
         _context.Target.Returns("My Event");
         _context.RoomId.Returns("defaultroom");
         _roomsManager.GetRoom("defaultroom").Returns(_room);
-        _context.HasSufficientRankInRoom("defaultroom", Rank.Driver, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(true));
 
         await _command.RunAsync(_context);
 
@@ -129,8 +123,6 @@ public class DeleteEventRoleCommandTest
         _context.Target.Returns("My Event;;testroom");
         _context.RoomId.Returns("testroom");
         _roomsManager.GetRoom("testroom").Returns(_room);
-        _context.HasSufficientRankInRoom("testroom", Rank.Driver, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(true));
 
         await _command.RunAsync(_context);
 

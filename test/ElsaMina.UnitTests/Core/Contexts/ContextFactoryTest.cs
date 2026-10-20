@@ -1,10 +1,10 @@
 using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.PrivateMessages;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.UserDetails;
 using NSubstitute;
 using DateTimeOffset = System.DateTimeOffset;
 
@@ -16,7 +16,7 @@ public class ContextFactoryTest
     private IConfiguration _configuration;
     private IResourcesService _resourcesService;
     private IRoomsManager _roomsManager;
-    private IUserDetailsManager _userDetailsManager;
+    private IAuthorizationService _authorizationService;
     private IBot _bot;
     private IPmSendersManager _pmSendersManager;
 
@@ -26,7 +26,7 @@ public class ContextFactoryTest
         _configuration = Substitute.For<IConfiguration>();
         _resourcesService = Substitute.For<IResourcesService>();
         _roomsManager = Substitute.For<IRoomsManager>();
-        _userDetailsManager = Substitute.For<IUserDetailsManager>();
+        _authorizationService = Substitute.For<IAuthorizationService>();
         _bot = Substitute.For<IBot>();
         _pmSendersManager = Substitute.For<IPmSendersManager>();
 
@@ -34,7 +34,7 @@ public class ContextFactoryTest
             _configuration,
             _resourcesService,
             _roomsManager,
-            _userDetailsManager,
+            _authorizationService,
             _bot,
             _pmSendersManager
         );

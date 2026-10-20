@@ -32,6 +32,10 @@ public class UserBadgePanelCommand : Command
     public override bool IsAllowedInPrivateMessage => true;
     public override string HelpMessageKey => "user_badge_panel_help";
 
+    // La room est le 2e argument, obligatoire en PM
+    public override string GetTargetRoomId(IContext context) =>
+        context.GetRoomIdArgument(1) ?? (context.IsPrivateMessage ? null : context.RoomId);
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(context.Target))
@@ -43,24 +47,10 @@ public class UserBadgePanelCommand : Command
         var parts = context.Target.Split(",");
         var targetUserId = parts[0].Trim().ToLowerAlphaNum();
 
-        string roomId;
-        if (parts.Length >= 2 && !string.IsNullOrWhiteSpace(parts[1]))
-        {
-            roomId = parts[1].Trim().ToLowerAlphaNum();
-        }
-        else if (!context.IsPrivateMessage)
-        {
-            roomId = context.RoomId;
-        }
-        else
+        var roomId = GetTargetRoomId(context);
+        if (roomId == null)
         {
             context.ReplyLocalizedMessage("badge_pm_missing_room");
-            return;
-        }
-
-        if (context.IsPrivateMessage && !await context.HasSufficientRankInRoom(roomId, Rank.Driver, cancellationToken))
-        {
-            context.ReplyLocalizedMessage("badge_pm_insufficient_rank");
             return;
         }
 

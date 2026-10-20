@@ -21,6 +21,13 @@ public class EditBadgeCommand : Command
     public override string HelpMessageKey => "badge_edit_help_message";
     public override bool IsAllowedInPrivateMessage => true;
 
+    // Avec plus de 3 arguments, le dernier est la room
+    public override string GetTargetRoomId(IContext context)
+    {
+        var parts = context.Target.Split(",");
+        return parts.Length > 3 ? parts[^1].Trim().ToLowerAlphaNum() : context.RoomId;
+    }
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var parts = context.Target.Split(",");
@@ -32,36 +39,28 @@ public class EditBadgeCommand : Command
 
         var badgeId = parts[0].Trim().ToLowerAlphaNum();
         var newName = parts[1].Trim();
-        var roomId = context.RoomId;
+        var roomId = GetTargetRoomId(context);
         string newImage;
         bool? newIsTrophy = null;
         bool? newIsTeamTournament = null;
         if (parts.Length >= 6)
         {
-            roomId = parts[^1].Trim().ToLowerAlphaNum();
             newIsTeamTournament = parts[^2].Trim().ToBoolean();
             newIsTrophy = parts[^3].Trim().ToBoolean();
             newImage = string.Join(",", parts[2..^3]).Trim();
         }
         else if (parts.Length == 5)
         {
-            roomId = parts[^1].Trim().ToLowerAlphaNum();
             newIsTrophy = parts[^2].Trim().ToBoolean();
             newImage = string.Join(",", parts[2..^2]).Trim();
         }
         else if (parts.Length > 3)
         {
-            roomId = parts[^1].Trim().ToLowerAlphaNum();
             newImage = string.Join(",", parts[2..^1]).Trim();
         }
         else
         {
             newImage = string.Join(",", parts[2..]).Trim();
-        }
-
-        if (context.IsPrivateMessage && !await context.HasSufficientRankInRoom(roomId, RequiredRank, cancellationToken))
-        {
-            return;
         }
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);

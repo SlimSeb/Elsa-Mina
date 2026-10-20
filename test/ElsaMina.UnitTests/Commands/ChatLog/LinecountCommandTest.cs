@@ -151,4 +151,19 @@ public class LinecountCommandTest
 
     private static MemoryStream ToStream(string content) =>
         new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+    [Test]
+    [TestCase(true, "alice, French Room", ExpectedResult = "frenchroom")]
+    [TestCase(false, "alice", ExpectedResult = null)]
+    public string Test_GetTargetRoomId_ShouldReturnSecondArgument(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        var context = Substitute.For<IContext>();
+        context.IsPrivateMessage.Returns(isPrivateMessage);
+        context.Target.Returns(target);
+        context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return _command.GetTargetRoomId(context);
+    }
 }

@@ -96,9 +96,6 @@
     <data name="badge_pm_missing_room" xml:space="preserve">
         <value>In PM, please specify the room. Syntax: -givebadge user, badge, room</value>
     </data>
-    <data name="badge_pm_insufficient_rank" xml:space="preserve">
-        <value>You do not have sufficient permissions in this room.</value>
-    </data>
     <data name="user_badge_panel_help" xml:space="preserve">
         <value>Syntax: -userbadges username, [room]</value>
     </data>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="permissions_grant_help" xml:space="preserve">
+        <value>Gives a user rights in this room, for the bot only. Syntax: -grant user, right[, duration]. In PM, add the room at the end. The right is a rank (+, % or @), a command (e.g. add-badge) or a category (e.g. category:Badges). Durations: 30m, 12h, 3d, 2w. Without one, the right lasts until -revoke.</value>
+    </data>
+    <data name="permissions_revoke_help" xml:space="preserve">
+        <value>Removes a right given with -grant. Syntax: -revoke user, right. In PM, add the room at the end.</value>
+    </data>
+    <data name="permissions_list_help" xml:space="preserve">
+        <value>Lists the rights given in this room. Syntax: -grants [user]. In PM: -grants [user,] room.</value>
+    </data>
+    <data name="permissions_room_not_found" xml:space="preserve">
+        <value>The bot is not in the room {0}.</value>
+    </data>
+    <data name="permissions_unknown_target" xml:space="preserve">
+        <value>Unknown right: {0}. Use a rank (+, % or @), a command name or category:Name.</value>
+    </data>
+    <data name="permissions_rank_not_grantable" xml:space="preserve">
+        <value>Only the ranks +, % and @ can be given.</value>
+    </data>
+    <data name="permissions_target_not_grantable" xml:space="preserve">
+        <value>This right cannot be given: {0}.</value>
+    </data>
+    <data name="permissions_target_already_allowed" xml:space="preserve">
+        <value>Everyone can already use this: {0}.</value>
+    </data>
+    <data name="permissions_target_above_rank" xml:space="preserve">
+        <value>You cannot give this right, it needs a higher rank than yours: {0}.</value>
+    </data>
+    <data name="permissions_invalid_duration" xml:space="preserve">
+        <value>Invalid duration: {0}. Examples: 30m, 12h, 3d, 2w (one year at most).</value>
+    </data>
+    <data name="permissions_grant_success" xml:space="preserve">
+        <value>Right given to {0} in {2}: {1} (expires: {3}). The bot runs these commands with its own rank, so only give rights to people you trust.</value>
+    </data>
+    <data name="permissions_revoke_success" xml:space="preserve">
+        <value>Right removed from {0} in {2}: {1}.</value>
+    </data>
+    <data name="permissions_revoke_not_found" xml:space="preserve">
+        <value>{0} has no right {1} in {2}.</value>
+    </data>
+    <data name="permissions_list_empty" xml:space="preserve">
+        <value>No rights have been given in {0}.</value>
+    </data>
+    <data name="permissions_list_title" xml:space="preserve">
+        <value>Rights given in {0}</value>
+    </data>
+    <data name="permissions_list_user" xml:space="preserve">
+        <value>User</value>
+    </data>
+    <data name="permissions_list_right" xml:space="preserve">
+        <value>Right</value>
+    </data>
+    <data name="permissions_list_granted_by" xml:space="preserve">
+        <value>Given by</value>
+    </data>
+    <data name="permissions_list_expires" xml:space="preserve">
+        <value>Expires</value>
+    </data>
+    <data name="permissions_target_rank" xml:space="preserve">
+        <value>rank {0}</value>
+    </data>
+    <data name="permissions_target_command" xml:space="preserve">
+        <value>command {0}</value>
+    </data>
+    <data name="permissions_target_category" xml:space="preserve">
+        <value>category {0}</value>
+    </data>
+    <data name="permissions_never_expires" xml:space="preserve">
+        <value>never</value>
+    </data>
+</root>

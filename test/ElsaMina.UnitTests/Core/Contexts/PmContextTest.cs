@@ -1,10 +1,10 @@
 using System.Globalization;
 using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.UserDetails;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Core.Contexts;
@@ -14,7 +14,7 @@ public class PmContextTests
     private IConfiguration _configuration;
     private IResourcesService _resourcesService;
     private IRoomsManager _roomsManager;
-    private IUserDetailsManager _userDetailsManager;
+    private IAuthorizationService _authorizationService;
     private IBot _bot;
     private IUser _sender;
     private string _message;
@@ -27,7 +27,7 @@ public class PmContextTests
         _configuration = Substitute.For<IConfiguration>();
         _resourcesService = Substitute.For<IResourcesService>();
         _roomsManager = Substitute.For<IRoomsManager>();
-        _userDetailsManager = Substitute.For<IUserDetailsManager>();
+        _authorizationService = Substitute.For<IAuthorizationService>();
         _bot = Substitute.For<IBot>();
         _sender = Substitute.For<IUser>();
         _message = "Test message";
@@ -39,7 +39,7 @@ public class PmContextTests
     }
 
     private PmContext CreatePmContext() =>
-        new(new ContextDependencies(_configuration, _resourcesService, _roomsManager, _userDetailsManager, _bot),
+        new(new ContextDependencies(_configuration, _resourcesService, _roomsManager, _authorizationService, _bot),
             _message, _target, _sender, _command);
 
     [Test]

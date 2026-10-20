@@ -1,5 +1,6 @@
 ﻿using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.Rooms;
 
 namespace ElsaMina.Commands.Development;
 
@@ -7,6 +8,7 @@ namespace ElsaMina.Commands.Development;
 public class Ping : Command
 {
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRankInPrivateMessage => Rank.Regular;
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {

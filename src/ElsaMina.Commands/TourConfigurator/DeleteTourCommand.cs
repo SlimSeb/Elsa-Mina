@@ -30,6 +30,13 @@ public class DeleteTourCommand : Command
     public override bool IsAllowedInPrivateMessage => true;
     public override bool IsPrivateMessageOnly => true;
 
+    // Format : tourId, roomId
+    public override string GetTargetRoomId(IContext context)
+    {
+        var args = context.Target.Split(',');
+        return args.Length > 1 ? args[1].Trim() : context.RoomId;
+    }
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(context.Target))
@@ -39,17 +46,12 @@ public class DeleteTourCommand : Command
 
         var args = context.Target.Split(',');
         var tourId = args[0].Trim();
-        var roomId = args.Length > 1 ? args[1].Trim() : context.RoomId;
+        var roomId = GetTargetRoomId(context);
 
         var room = _roomsManager.GetRoom(roomId);
         if (room == null)
         {
             context.ReplyLocalizedMessage("tourconfig_room_not_found");
-            return;
-        }
-
-        if (!await context.HasSufficientRankInRoom(roomId, Rank.Driver, cancellationToken))
-        {
             return;
         }
 

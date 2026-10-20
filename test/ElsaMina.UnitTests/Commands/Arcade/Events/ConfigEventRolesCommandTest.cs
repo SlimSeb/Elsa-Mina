@@ -101,4 +101,18 @@ public class ConfigEventRolesCommandTest
             Arg.Any<EventRoleMappingViewModel>());
         _context.Received(1).ReplyHtmlPage("testroomeventroles", Arg.Any<string>());
     }
+
+    [Test]
+    [TestCase(true, "", ExpectedResult = "contextroom")]
+    [TestCase(false, "OtherRoom", ExpectedResult = "otherroom")]
+    public string Test_GetTargetRoomId_ShouldReturnTargetOrContextRoom(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
+    }
 }

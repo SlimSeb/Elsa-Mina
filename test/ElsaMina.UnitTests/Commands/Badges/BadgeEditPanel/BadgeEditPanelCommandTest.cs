@@ -289,4 +289,20 @@ public class BadgeEditPanelCommandTest
                 vm.Badges.Count == 10
             ));
     }
+
+    [Test]
+    [TestCase(true, "", ExpectedResult = "contextroom")]
+    [TestCase(false, "Other Room, 2", ExpectedResult = "otherroom")]
+    public string Test_GetTargetRoomId_ShouldReturnFirstArgumentOrContextRoom(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        var context = Substitute.For<IContext>();
+        context.IsPrivateMessage.Returns(isPrivateMessage);
+        context.Target.Returns(target);
+        context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return new BadgeEditPanelCommand(Substitute.For<IBotDbContextFactory>(), Substitute.For<ITemplatesManager>(),
+            Substitute.For<IConfiguration>(), Substitute.For<IRoomsManager>()).GetTargetRoomId(context);
+    }
 }

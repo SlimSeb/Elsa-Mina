@@ -30,6 +30,9 @@ public class SaveTourCommand : Command
     public override bool IsAllowedInPrivateMessage => true;
     public override bool IsPrivateMessageOnly => true;
 
+    // Format : roomId;;id;;tier;;...
+    public override string GetTargetRoomId(IContext context) => context.Target.Split(";;")[0].Trim();
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(context.Target))
@@ -46,7 +49,7 @@ public class SaveTourCommand : Command
             return;
         }
 
-        var roomId = parts[0].Trim();
+        var roomId = GetTargetRoomId(context);
         var tourId = parts[1].Trim().ToLower().Replace(" ", "");
         var tier = parts[2].Trim();
         var format = parts[3].Trim();
@@ -71,11 +74,6 @@ public class SaveTourCommand : Command
         if (room == null)
         {
             context.ReplyLocalizedMessage("tourconfig_room_not_found");
-            return;
-        }
-
-        if (!await context.HasSufficientRankInRoom(roomId, Rank.Driver, cancellationToken))
-        {
             return;
         }
 

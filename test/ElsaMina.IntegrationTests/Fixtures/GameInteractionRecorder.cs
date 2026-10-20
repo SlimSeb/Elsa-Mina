@@ -235,12 +235,6 @@ public sealed class GameInteractionRecorder
 
         public bool HasRankOrHigher(Rank requiredRank) => true;
 
-        public Task<Rank> GetUserRankInRoom(string roomId, CancellationToken cancellationToken = default) =>
-            Task.FromResult(Rank.Regular);
-
-        public Task<bool> HasSufficientRankInRoom(string roomId, Rank requiredRank,
-            CancellationToken cancellationToken = default) => Task.FromResult(true);
-
         public void Reply(string message, bool rankAware = false) => _recorder.Record($"say {message}");
 
         public void SendMessageIn(string roomId, string message) => _recorder.Record($"say {message}");

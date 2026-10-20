@@ -14,8 +14,13 @@ public class StopRepeatCommand : Command
         _repeatsManager = repeatsManager;
     }
 
+    public override Rank RequiredRank => Rank.Driver;
     public override bool IsAllowedInPrivateMessage => true;
     public override bool IsPrivateMessageOnly => true;
+
+    // Le rang se vérifie dans la room du repeat à arrêter
+    public override string GetTargetRoomId(IContext context) =>
+        Guid.TryParse(context.Target, out var guid) ? _repeatsManager.GetRepeat(guid)?.RoomId : null;
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
@@ -32,12 +37,6 @@ public class StopRepeatCommand : Command
             return;
         }
         
-        if (!await context.HasSufficientRankInRoom(repeat.RoomId, Rank.Driver, cancellationToken))
-        {
-            context.ReplyLocalizedMessage("repeat_stop_rights");
-            return;
-        }
-
         var ended = await _repeatsManager.StopRepeatAsync(guid, cancellationToken);
         if (!ended)
         {

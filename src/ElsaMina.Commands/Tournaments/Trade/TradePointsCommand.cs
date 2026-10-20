@@ -23,6 +23,9 @@ public class TradePointsCommand : Command
     public override bool IsAllowedInPrivateMessage => true;
     public override string HelpMessageKey => "tradepoints_help";
 
+    // Format : origine, destinataire, points[, room]
+    public override string GetTargetRoomId(IContext context) => context.GetRoomIdArgument(3) ?? context.RoomId;
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(context.Target))
@@ -46,7 +49,7 @@ public class TradePointsCommand : Command
             return;
         }
 
-        var roomId = parts.Length >= 4 ? parts[3].Trim().ToLowerAlphaNum() : context.RoomId;
+        var roomId = GetTargetRoomId(context);
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var originRecord = await dbContext.TournamentRecords

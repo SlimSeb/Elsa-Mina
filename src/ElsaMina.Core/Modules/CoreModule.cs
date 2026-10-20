@@ -5,6 +5,7 @@ using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Handlers.DefaultHandlers;
 using ElsaMina.Core.Handlers.DefaultHandlers.Rooms;
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.BattleTracker;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
@@ -55,6 +56,9 @@ public class CoreModule : Module
         builder.RegisterType<ContextFactory>().As<IContextFactory>().SingleInstance();
         builder.RegisterType<CommandRegistry>().As<ICommandRegistry>().SingleInstance();
         builder.RegisterType<CommandExecutor>().As<ICommandExecutor>().As<IBotLifecycleParticipant>().SingleInstance();
+        builder.RegisterType<AuthorizationService>().As<IAuthorizationService>().SingleInstance();
+        builder.RegisterType<PermissionGrantStore>().As<IPermissionGrantStore>().As<IBotLifecycleParticipant>()
+            .SingleInstance();
         builder.RegisterType<RoomsManager>().As<IRoomsManager>().SingleInstance();
         builder.RegisterType<RoomFactory>().As<IRoomFactory>().SingleInstance();
         builder.RegisterType<FormatsManager>().As<IFormatsManager>().SingleInstance();

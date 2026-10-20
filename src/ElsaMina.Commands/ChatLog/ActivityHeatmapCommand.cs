@@ -30,6 +30,9 @@ public class ActivityHeatmapCommand : Command
     public override bool IsAllowedInPrivateMessage => true;
     public override string HelpMessageKey => "activity_heatmap_help";
 
+    public override string GetTargetRoomId(IContext context) =>
+        ParseOptionalArguments(context.Target.Split(',', StringSplitOptions.TrimEntries).Skip(1), context.RoomId).RoomId;
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var parts = context.Target.Split(',', StringSplitOptions.TrimEntries);

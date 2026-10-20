@@ -303,4 +303,18 @@ public class TradePointsCommandTest
         var aliceRecord = await assertContext.TournamentRecords.FindAsync(["alice", "otherroom"]);
         Assert.That(aliceRecord.WinsCount, Is.EqualTo(7));
     }
+
+    [Test]
+    [TestCase(true, "alice, bob, 5", ExpectedResult = "contextroom")]
+    [TestCase(false, "alice, bob, 5, Other Room", ExpectedResult = "otherroom")]
+    public string Test_GetTargetRoomId_ShouldReturnFourthArgumentOrContextRoom(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
+    }
 }

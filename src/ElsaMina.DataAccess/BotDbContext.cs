@@ -49,6 +49,7 @@ public class BotDbContext : DbContext
     public DbSet<SemantixScore> SemantixScores { get; set; }
     public DbSet<SavedRepeat> Repeats { get; set; }
     public DbSet<ChannelAlert> ChannelAlerts { get; set; }
+    public DbSet<SavedPermissionGrant> PermissionGrants { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

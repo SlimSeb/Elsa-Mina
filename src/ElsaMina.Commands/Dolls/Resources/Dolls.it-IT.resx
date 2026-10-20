@@ -69,9 +69,6 @@
     <data name="doll_pm_missing_room" xml:space="preserve">
         <value>In PM, specifica la stanza. Sintassi: -givedoll utente, peluche, stanza</value>
     </data>
-    <data name="doll_pm_insufficient_rank" xml:space="preserve">
-        <value>Non hai permessi sufficienti in questa stanza.</value>
-    </data>
     <data name="doll_list_empty" xml:space="preserve">
         <value>Il catalogo dei peluche è vuoto.</value>
     </data>

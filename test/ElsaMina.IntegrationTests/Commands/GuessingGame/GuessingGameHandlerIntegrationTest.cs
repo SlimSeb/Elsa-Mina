@@ -4,6 +4,7 @@ using ElsaMina.Commands.Games.GuessingGame;
 using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
@@ -82,6 +83,9 @@ public class GuessingGameHandlerIntegrationTest
         builder.RegisterInstance(addedCommandsManager).As<IAddedCommandsManager>();
         builder.RegisterType<PmSendersManager>().As<IPmSendersManager>().SingleInstance();
         builder.RegisterType<ContextFactory>().As<IContextFactory>().SingleInstance();
+        builder.RegisterType<AuthorizationService>().As<IAuthorizationService>().SingleInstance();
+        builder.RegisterType<PermissionGrantStore>().As<IPermissionGrantStore>().SingleInstance();
+        builder.RegisterInstance(Substitute.For<IPermissionGrantRepository>()).As<IPermissionGrantRepository>();
         builder.RegisterHandler<GuessingGameHandler>();
 
         _container = builder.Build();

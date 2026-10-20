@@ -27,6 +27,9 @@ public class BanPollCommand : Command
     public override bool IsAllowedInPrivateMessage => true;
     public override string HelpMessageKey => "banpoll_help";
 
+    // Les suggestions de sondages sont celles de la room par défaut, même quand on lance la commande ailleurs
+    public override string GetTargetRoomId(IContext context) => _configuration.DefaultRoom;
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(context.Target))
@@ -36,7 +39,7 @@ public class BanPollCommand : Command
         }
 
         var userId = context.Target.Trim().ToLowerAlphaNum();
-        var roomId = _configuration.DefaultRoom;
+        var roomId = GetTargetRoomId(context);
 
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var existingBan = await dbContext.PollSuggestionBans

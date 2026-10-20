@@ -87,4 +87,7 @@
     <data name="rank_former_staff" xml:space="preserve">
         <value>Ancien staff</value>
     </data>
+    <data name="command_insufficient_rank" xml:space="preserve">
+        <value>Vous devez être au moins {0} dans la room {1} pour utiliser cette commande.</value>
+    </data>
 </root>

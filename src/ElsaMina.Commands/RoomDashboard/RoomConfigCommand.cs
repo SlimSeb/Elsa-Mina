@@ -38,6 +38,9 @@ public class RoomConfigCommand : Command
     public override Rank RequiredRank => Rank.Driver;
     public override bool IsAllowedInPrivateMessage => true;
 
+    // La room est le 1er argument, suivi des paires paramètre=valeur
+    public override string GetTargetRoomId(IContext context) => context.GetRoomIdArgument(0);
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(context.Target))
@@ -46,17 +49,12 @@ public class RoomConfigCommand : Command
         }
 
         var parts = context.Target.Split(",");
-        var roomId = parts[0].Trim().ToLowerAlphaNum();
+        var roomId = GetTargetRoomId(context) ?? string.Empty;
 
         var room = _roomsManager.GetRoom(roomId);
         if (room == null)
         {
             context.ReplyLocalizedMessage("room_config_room_not_found", roomId);
-            return;
-        }
-
-        if (!await context.HasSufficientRankInRoom(roomId, Rank.Driver, cancellationToken))
-        {
             return;
         }
 

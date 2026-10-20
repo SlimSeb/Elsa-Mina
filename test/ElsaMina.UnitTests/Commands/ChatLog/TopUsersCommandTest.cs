@@ -70,24 +70,26 @@ public class TopUsersCommandTest
         var context = BuildContext("otherroom", "myroom");
         _fileSharingService.ListFilesAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Array.Empty<string>());
-        context.HasSufficientRankInRoom("otherroom", Arg.Any<Rank>(), Arg.Any<CancellationToken>())
-            .Returns(false);
+        var date = new DateTime(2026, 5, 22, 0, 0, 0, DateTimeKind.Utc);
+        _clockService.CurrentUtcDateTime.Returns(date);
 
         await _command.RunAsync(context);
 
-        await _fileSharingService.DidNotReceiveWithAnyArgs().ListFilesAsync(default, default);
+        await _fileSharingService.Received(1).ListFilesAsync(
+            "chatlogs/otherroom/2026-05-",
+            Arg.Any<CancellationToken>());
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldNotListFiles_WhenSenderLacksRankInTargetRoom()
+    [TestCase("otherroom", ExpectedResult = "otherroom")]
+    [TestCase("", ExpectedResult = "myroom")]
+    public string Test_GetTargetRoomId_ShouldReturnTargetOrContextRoom(string target)
     {
-        var context = BuildContext("otherroom", "myroom");
-        context.HasSufficientRankInRoom("otherroom", Arg.Any<Rank>(), Arg.Any<CancellationToken>())
-            .Returns(false);
+        // Arrange
+        var context = BuildContext(target, "myroom");
 
-        await _command.RunAsync(context);
-
-        await _fileSharingService.DidNotReceiveWithAnyArgs().ListFilesAsync(default, default);
+        // Act & Assert
+        return _command.GetTargetRoomId(context);
     }
 
     [Test]
@@ -142,8 +144,6 @@ public class TopUsersCommandTest
         context.Target.Returns(target);
         context.RoomId.Returns(roomId);
         context.Culture.Returns(CultureInfo.InvariantCulture);
-        context.HasSufficientRankInRoom(Arg.Any<string>(), Arg.Any<Rank>(), Arg.Any<CancellationToken>())
-            .Returns(true);
         return context;
     }
 

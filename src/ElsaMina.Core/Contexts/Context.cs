@@ -1,9 +1,8 @@
 using System.Globalization;
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.UserDetails;
-using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Core.Contexts;
 
@@ -12,7 +11,7 @@ public abstract class Context : IContext
     private readonly IConfiguration _configuration;
     private readonly IResourcesService _resourcesService;
     private readonly IRoomsManager _roomsManager;
-    private readonly IUserDetailsManager _userDetailsManager;
+    private readonly IAuthorizationService _authorizationService;
 
     protected Context(ContextDependencies dependencies,
         string message,
@@ -23,7 +22,7 @@ public abstract class Context : IContext
         _configuration = dependencies.Configuration;
         _resourcesService = dependencies.ResourcesService;
         _roomsManager = dependencies.RoomsManager;
-        _userDetailsManager = dependencies.UserDetailsManager;
+        _authorizationService = dependencies.AuthorizationService;
 
         Bot = dependencies.Bot;
         Message = message;
@@ -112,34 +111,10 @@ public abstract class Context : IContext
         Reply($"!code {exception.GetType().FullName}: {exception.Message}\n{exception.StackTrace}");
     }
 
-    public Task<Rank> GetUserRankInRoom(string roomId, CancellationToken cancellationToken = default)
-    {
-        return GetUserRankInRoomAsync(roomId, Sender.UserId, cancellationToken);
-    }
-
-    public async Task<bool> HasSufficientRankInRoom(string roomId, Rank requiredRank,
-        CancellationToken cancellationToken = default)
-    {
-        if (IsSenderWhitelisted)
-        {
-            return true;
-        }
-
-        var rank = await GetUserRankInRoom(roomId, cancellationToken);
-        return rank >= requiredRank;
-    }
-
-    private async Task<Rank> GetUserRankInRoomAsync(string roomId, string userId, CancellationToken cancellationToken)
-    {
-        var userDetails = await _userDetailsManager.GetUserDetailsAsync(userId, cancellationToken);
-        if (userDetails == null)
-        {
-            return Rank.Regular;
-        }
-
-        var room = userDetails.Rooms.Keys.FirstOrDefault(key => key.ToLowerAlphaNum() == roomId);
-        return room == null ? Rank.Regular : User.GetRankFromCharacter(room[0]);
-    }
+    /// <summary>
+    /// Le rang donné au user dans la room du contexte par un droit encore valide
+    /// </summary>
+    protected Rank GrantedRank => _authorizationService.GetGrantedRank(RoomId, Sender.UserId);
 
     public abstract string RoomId { get; }
     public abstract bool IsPrivateMessage { get; }

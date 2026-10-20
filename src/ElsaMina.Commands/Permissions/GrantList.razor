@@ -1,0 +1,25 @@
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Permissions.GrantListViewModel>
+<div style="max-height: 220px; overflow-y: auto;">
+    <b>@GetString("permissions_list_title", Model.RoomName)</b>
+    <table>
+        <thead>
+        <tr>
+            <th>@GetString("permissions_list_user")</th>
+            <th>@GetString("permissions_list_right")</th>
+            <th>@GetString("permissions_list_granted_by")</th>
+            <th>@GetString("permissions_list_expires")</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var row in Model.Rows)
+        {
+            <tr>
+                <td>@row.UserId</td>
+                <td>@row.Right</td>
+                <td>@row.GrantedBy</td>
+                <td>@row.Expires</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -197,4 +197,19 @@ public class GiveBadgeCommandTest
         await _roomUserDataService.DidNotReceive().GiveBadgeToUserAsync(
             Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
     }
+
+    [Test]
+    [TestCase(true, "name, value, French Room", ExpectedResult = "frenchroom")]
+    [TestCase(true, "name, value", ExpectedResult = null)]
+    [TestCase(false, "name, value, otherroom", ExpectedResult = "contextroom")]
+    public string Test_GetTargetRoomId_ShouldReturnThirdArgumentOnlyInPrivateMessage(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
+    }
 }

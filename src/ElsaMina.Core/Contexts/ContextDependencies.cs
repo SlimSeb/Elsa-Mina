@@ -1,7 +1,7 @@
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Services.Resources;
 using ElsaMina.Core.Services.Rooms;
-using ElsaMina.Core.Services.UserDetails;
 
 namespace ElsaMina.Core.Contexts;
 
@@ -13,5 +13,5 @@ public sealed record ContextDependencies(
     IConfiguration Configuration,
     IResourcesService ResourcesService,
     IRoomsManager RoomsManager,
-    IUserDetailsManager UserDetailsManager,
+    IAuthorizationService AuthorizationService,
     IBot Bot);

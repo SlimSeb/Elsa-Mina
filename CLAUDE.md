@@ -76,12 +76,22 @@ Replies → Bot.Send → OutgoingMessageQueue (one queue, messages one cooldown 
 ### Command System
 
 - Commands extend `Command` and are decorated with `[NamedCommand("name", Aliases = ["alias"])]`.
-- Key overridable properties: `RequiredRank`, `IsAllowedInPrivateMessage`, `IsWhitelistOnly`, `IsPrivateMessageOnly`, `HelpMessageKey`, `RoomRestriction`, `RunsInMessageOrder`.
+- Key overridable properties: `RequiredRank`, `RequiredRankInPrivateMessage`, `IsAllowedInPrivateMessage`, `IsWhitelistOnly`, `IsPrivateMessageOnly`, `HelpMessageKey`, `RoomRestriction`, `RunsInMessageOrder`, and the `GetTargetRoomId(context)` method.
 - Commands are singletons indexed by `ICommandRegistry` under their name and aliases: never keep per-call state in fields.
 - `Category` (feature switches, command list) comes from the namespace (`ElsaMina.Commands.{Feature}`, or the project name such as `Battles`), or from `[NamedCommand(Category = ...)]`.
 - Failures are reported to the user by `CommandExecutor` (`context.HandleErrorAsync`); commands do not need to catch everything.
 - Names that are not registered commands go to the `IDynamicCommandProvider`s (custom commands, tour configs), tried in registration order.
 - `context.Target` holds the argument string (everything after the command trigger + name).
+
+### Authorization
+
+`IAuthorizationService` (Core) is the only place that decides whether a user may run a command; `CommandExecutor` calls it before `RunAsync`, inside the command's background task. Commands never check their own rank.
+
+- The rank is checked in the room returned by `ICommand.GetTargetRoomId(context)`: the room of the message by default, the default room in PM. A command that acts on a room passed as an argument overrides it with the same parsing as `RunAsync` (`context.GetRoomIdArgument(index)` helps), otherwise the rank is checked in one room while the command acts in another. Return null only when the command then acts in the context room or refuses to run.
+- In a room the required rank is `RequiredRank`; in PM it is `RequiredRankInPrivateMessage` (same by default). Commands that are personal in PM (info, solo games, images) set `RequiredRankInPrivateMessage => Rank.Regular`: their room rank only prevents spam.
+- Order: whitelisted users always pass, then an active grant on the command or its category, then the effective rank (Showdown rank, or the rank granted by the bot if higher). In PM the Showdown rank comes from the target room's user list when the bot is in it, from `/cmd userdetails` otherwise.
+- Grants (`PermissionGrant`, kinds `Rank`, `Command`, `Category`) are given per room by real room owners with `-grant`, `-revoke` and `-grants` (`ElsaMina.Commands/Permissions`). They can be temporary, are kept in memory by `PermissionGrantStore` (loaded at startup, expiry checked on read) and persisted through `IPermissionGrantRepository` (`EfPermissionGrantRepository`). A granted rank is capped at `PermissionGrant.MAX_RANK` (@), so it never reaches the commands that give rights.
+- In PM a refused user is told the rank and room they need; in a room the refusal stays silent.
 
 ### Context System
 
@@ -90,7 +100,7 @@ Replies → Bot.Send → OutgoingMessageQueue (one queue, messages one cooldown 
 - `context.ReplyLocalizedMessage(key, args...)` - send a localized response
 - `context.GetString(key)` - get a localized string
 - `context.Sender`, `context.Room`, `context.RoomId`, `context.Target`, `context.Command`
-- `context.HasRankOrHigher(rank)` / `context.HasSufficientRankInRoom(roomId, rank)`
+- `context.HasRankOrHigher(rank)` - effective rank in the message's room (Showdown or granted), for choosing how to reply and for checks inside a command; always true in PM
 - `context.HandleErrorAsync(exception)` - standard error reply handling
 
 Two concrete implementations: `RoomContext` and `PmContext`.
@@ -140,7 +150,7 @@ Rooms have configurable parameters. A `Parameter` is identified by the short key
 
 1. Create a class in the relevant subdirectory of `src/ElsaMina.Commands/`.
 2. Decorate with `[NamedCommand("commandname")]` (add aliases as needed).
-3. Extend `Command` (or `GameCommand` for a command that changes a game's state), override `RequiredRank` (default is `Admin`), and implement `RunAsync`.
+3. Extend `Command` (or `GameCommand` for a command that changes a game's state), override `RequiredRank` (default is `Admin`), and implement `RunAsync`. If it works in PM or acts on a room given as an argument, override `GetTargetRoomId` and decide its `RequiredRankInPrivateMessage` (see Authorization).
 4. Register in the feature's module under `ElsaMina.Commands/Modules/`: `builder.RegisterCommand<MyCommand>();`
 5. Add localization keys to `src/ElsaMina.Commands/{Feature}/Resources/{Feature}.{locale}.resx` for all 6 locales (`en-US`, `fr-FR`, `es-ES`, `it-IT`, `pt-BR`, `de-DE`).
 

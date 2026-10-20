@@ -12,6 +12,9 @@ public class RoomInfoCommand : Command
 
     public override bool IsAllowedInPrivateMessage => true;
 
+    public override string GetTargetRoomId(IContext context) =>
+        string.IsNullOrWhiteSpace(context.Target) ? context.RoomId : context.Target;
+
     private readonly IRoomInfoManager _roomInfoManager;
 
     public RoomInfoCommand(IRoomInfoManager roomInfoManager)
@@ -21,7 +24,7 @@ public class RoomInfoCommand : Command
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var roomId = string.IsNullOrWhiteSpace(context.Target) ? context.RoomId : context.Target;
+        var roomId = GetTargetRoomId(context);
         if (string.IsNullOrWhiteSpace(roomId))
         {
             context.ReplyLocalizedMessage("roominfo_no_room");

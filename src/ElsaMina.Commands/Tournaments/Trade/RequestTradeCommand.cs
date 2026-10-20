@@ -24,6 +24,7 @@ public class RequestTradeCommand : Command
 
     public override Rank RequiredRank => Rank.Voiced;
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRankInPrivateMessage => Rank.Regular;
     public override string HelpMessageKey => "requesttrade_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)

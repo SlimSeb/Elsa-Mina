@@ -20,6 +20,7 @@ public class WordleKeyCommand : GameCommand
     }
 
     public override bool IsPrivateMessageOnly => true;
+    public override Rank RequiredRank => Rank.Regular;
     public override bool IsAllowedInPrivateMessage => true;
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)

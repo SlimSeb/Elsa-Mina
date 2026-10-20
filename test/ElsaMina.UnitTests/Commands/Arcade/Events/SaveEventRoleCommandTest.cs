@@ -109,8 +109,6 @@ public class SaveEventRoleCommandTest
     {
         _context.Target.Returns("testroom;;My Event;;987654");
         _roomsManager.GetRoom("testroom").Returns(_room);
-        _context.HasSufficientRankInRoom("testroom", Rank.Driver, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(true));
 
         await _command.RunAsync(_context);
 
@@ -121,15 +119,13 @@ public class SaveEventRoleCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldNotSave_WhenInsufficientRank()
+    [TestCase("testroom;;My Event;;987654", ExpectedResult = "testroom")]
+    public string Test_GetTargetRoomId_ShouldReturnRoomTheCommandActsOn(string target)
     {
-        _context.Target.Returns("testroom;;My Event;;987654");
-        _roomsManager.GetRoom("testroom").Returns(_room);
-        _context.HasSufficientRankInRoom("testroom", Rank.Driver, Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult(false));
+        // Arrange
+        _context.Target.Returns(target);
 
-        await _command.RunAsync(_context);
-
-        await _eventRoleMappingService.DidNotReceive().SaveMappingAsync(Arg.Any<EventRoleMapping>(), Arg.Any<CancellationToken>());
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
     }
 }

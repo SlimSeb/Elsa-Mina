@@ -266,4 +266,19 @@ public class ActivityHeatmapCommandTest
 
     private static MemoryStream ToStream(string content) =>
         new MemoryStream(Encoding.UTF8.GetBytes(content));
+
+    [Test]
+    [TestCase(true, "alice", ExpectedResult = "contextroom")]
+    [TestCase(true, "alice, otherroom", ExpectedResult = "otherroom")]
+    [TestCase(false, "alice, 2026-05, Other Room", ExpectedResult = "otherroom")]
+    public string Test_GetTargetRoomId_ShouldReturnRoomAmongOptionalArguments(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
+    }
 }

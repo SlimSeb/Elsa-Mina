@@ -22,6 +22,7 @@ public class LeaderboardCommand : Command
 
     public override Rank RequiredRank => Rank.Voiced;
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRankInPrivateMessage => Rank.Regular;
     public override string HelpMessageKey => "leaderboard_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)

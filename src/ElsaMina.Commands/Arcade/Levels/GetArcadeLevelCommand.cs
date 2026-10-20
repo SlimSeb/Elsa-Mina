@@ -18,6 +18,7 @@ public class GetArcadeLevelCommand : Command
 
     public override Rank RequiredRank => Rank.Voiced;
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRankInPrivateMessage => Rank.Regular;
     public override string[] RoomRestriction => ["arcade", "botdevelopment"];
     public override string HelpMessageKey => "arcade_level_get_help";
 

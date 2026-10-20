@@ -29,11 +29,12 @@ public class ConfigTourCommand : Command
     public override Rank RequiredRank => Rank.Driver;
     public override bool IsAllowedInPrivateMessage => true;
 
+    public override string GetTargetRoomId(IContext context) =>
+        string.IsNullOrWhiteSpace(context.Target) ? context.RoomId : context.Target.Trim().ToLower();
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var roomId = string.IsNullOrWhiteSpace(context.Target)
-            ? context.RoomId
-            : context.Target.Trim().ToLower();
+        var roomId = GetTargetRoomId(context);
 
         var room = _roomsManager.GetRoom(roomId);
         if (room == null)

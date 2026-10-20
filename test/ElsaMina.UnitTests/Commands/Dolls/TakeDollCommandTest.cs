@@ -89,4 +89,19 @@ public class TakeDollCommandTest
         _context.Received(1).ReplyLocalizedMessage("doll_pm_missing_room");
         await _roomUserDataService.DidNotReceiveWithAnyArgs().TakeDollFromUserAsync(default, default, default);
     }
+
+    [Test]
+    [TestCase(true, "name, value, French Room", ExpectedResult = "frenchroom")]
+    [TestCase(true, "name, value", ExpectedResult = null)]
+    [TestCase(false, "name, value, otherroom", ExpectedResult = "contextroom")]
+    public string Test_GetTargetRoomId_ShouldReturnThirdArgumentOnlyInPrivateMessage(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
+    }
 }

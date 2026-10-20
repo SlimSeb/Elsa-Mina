@@ -1,3 +1,4 @@
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.Rooms.Parameters;
 ﻿using Autofac;
 using ElsaMina.Logging;
@@ -31,6 +32,7 @@ public class DataAccessModule : Module
 
         builder.RegisterType<BotDbContextFactory>().As<IBotDbContextFactory>().SingleInstance();
         builder.RegisterType<EfRoomParameterRepository>().As<IRoomParameterRepository>().SingleInstance();
+        builder.RegisterType<EfPermissionGrantRepository>().As<IPermissionGrantRepository>().SingleInstance();
     }
 
     private static DbContextOptions<BotDbContext> GetDbContextOptions(IComponentContext ctx)

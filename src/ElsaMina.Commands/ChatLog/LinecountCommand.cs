@@ -23,17 +23,20 @@ public class LinecountCommand : Command
     public override bool IsAllowedInPrivateMessage => true;
     public override string HelpMessageKey => "linecount_help";
 
+    // Format : user, room
+    public override string GetTargetRoomId(IContext context) => context.GetRoomIdArgument(1);
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var parts = context.Target.Split(',');
-        if (parts.Length < 2)
+        var roomId = GetTargetRoomId(context);
+        if (roomId == null)
         {
             ReplyLocalizedHelpMessage(context);
             return;
         }
 
         var userId = parts[0].Trim().ToLowerAlphaNum();
-        var roomId = parts[1].Trim().ToLowerAlphaNum();
 
         var now = DateTime.UtcNow;
         var keys = await _fileSharingService.ListFilesAsync(

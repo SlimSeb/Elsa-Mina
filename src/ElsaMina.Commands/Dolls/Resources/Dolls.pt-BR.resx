@@ -69,9 +69,6 @@
     <data name="doll_pm_missing_room" xml:space="preserve">
         <value>No PM, especifique a sala. Sintaxe: -givedoll usuário, boneco, sala</value>
     </data>
-    <data name="doll_pm_insufficient_rank" xml:space="preserve">
-        <value>Você não tem permissões suficientes nesta sala.</value>
-    </data>
     <data name="doll_list_empty" xml:space="preserve">
         <value>O catálogo de bonecos está vazio.</value>
     </data>

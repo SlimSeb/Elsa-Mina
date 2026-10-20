@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="permissions_grant_help" xml:space="preserve">
+        <value>Dà dei diritti a un utente in questa stanza, solo per il bot. Sintassi: -grant utente, diritto[, durata]. In PM, aggiungi la stanza alla fine. Il diritto è un rango (+, % o @), un comando (es. add-badge) o una categoria (es. category:Badges). Durate: 30m, 12h, 3d, 2w. Senza durata, il diritto dura fino a un -revoke.</value>
+    </data>
+    <data name="permissions_revoke_help" xml:space="preserve">
+        <value>Toglie un diritto dato con -grant. Sintassi: -revoke utente, diritto. In PM, aggiungi la stanza alla fine.</value>
+    </data>
+    <data name="permissions_list_help" xml:space="preserve">
+        <value>Elenca i diritti dati in questa stanza. Sintassi: -grants [utente]. In PM: -grants [utente,] stanza.</value>
+    </data>
+    <data name="permissions_room_not_found" xml:space="preserve">
+        <value>Il bot non è nella stanza {0}.</value>
+    </data>
+    <data name="permissions_unknown_target" xml:space="preserve">
+        <value>Diritto sconosciuto: {0}. Usa un rango (+, % o @), il nome di un comando o category:Nome.</value>
+    </data>
+    <data name="permissions_rank_not_grantable" xml:space="preserve">
+        <value>Si possono dare solo i ranghi +, % e @.</value>
+    </data>
+    <data name="permissions_target_not_grantable" xml:space="preserve">
+        <value>Questo diritto non può essere dato: {0}.</value>
+    </data>
+    <data name="permissions_target_already_allowed" xml:space="preserve">
+        <value>Tutti possono già usarlo: {0}.</value>
+    </data>
+    <data name="permissions_target_above_rank" xml:space="preserve">
+        <value>Non puoi dare questo diritto, richiede un rango più alto del tuo: {0}.</value>
+    </data>
+    <data name="permissions_invalid_duration" xml:space="preserve">
+        <value>Durata non valida: {0}. Esempi: 30m, 12h, 3d, 2w (al massimo un anno).</value>
+    </data>
+    <data name="permissions_grant_success" xml:space="preserve">
+        <value>Diritto dato a {0} in {2}: {1} (scade: {3}). Il bot esegue questi comandi con il proprio rango, dai diritti solo a persone di fiducia.</value>
+    </data>
+    <data name="permissions_revoke_success" xml:space="preserve">
+        <value>Diritto tolto a {0} in {2}: {1}.</value>
+    </data>
+    <data name="permissions_revoke_not_found" xml:space="preserve">
+        <value>{0} non ha il diritto {1} in {2}.</value>
+    </data>
+    <data name="permissions_list_empty" xml:space="preserve">
+        <value>Nessun diritto è stato dato in {0}.</value>
+    </data>
+    <data name="permissions_list_title" xml:space="preserve">
+        <value>Diritti dati in {0}</value>
+    </data>
+    <data name="permissions_list_user" xml:space="preserve">
+        <value>Utente</value>
+    </data>
+    <data name="permissions_list_right" xml:space="preserve">
+        <value>Diritto</value>
+    </data>
+    <data name="permissions_list_granted_by" xml:space="preserve">
+        <value>Dato da</value>
+    </data>
+    <data name="permissions_list_expires" xml:space="preserve">
+        <value>Scade</value>
+    </data>
+    <data name="permissions_target_rank" xml:space="preserve">
+        <value>rango {0}</value>
+    </data>
+    <data name="permissions_target_command" xml:space="preserve">
+        <value>comando {0}</value>
+    </data>
+    <data name="permissions_target_category" xml:space="preserve">
+        <value>categoria {0}</value>
+    </data>
+    <data name="permissions_never_expires" xml:space="preserve">
+        <value>mai</value>
+    </data>
+</root>

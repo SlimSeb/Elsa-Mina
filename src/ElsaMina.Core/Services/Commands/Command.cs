@@ -18,10 +18,13 @@ public abstract class Command : ICommand
     public virtual bool IsWhitelistOnly => false;
     public virtual bool IsPrivateMessageOnly => false;
     public virtual Rank RequiredRank => Rank.Admin;
+    public virtual Rank RequiredRankInPrivateMessage => RequiredRank;
     public virtual string HelpMessageKey => string.Empty;
     public virtual bool IsHidden => false;
     public virtual IEnumerable<string> RoomRestriction => [];
     public virtual bool RunsInMessageOrder => false;
+
+    public virtual string GetTargetRoomId(IContext context) => context.RoomId;
 
     protected void ReplyLocalizedHelpMessage(IContext context, bool rankAware = false)
     {

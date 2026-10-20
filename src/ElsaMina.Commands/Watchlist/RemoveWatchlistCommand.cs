@@ -16,6 +16,9 @@ public class RemoveWatchlistCommand : Command
 
     public override Rank RequiredRank => Rank.Driver;
     public override bool IsAllowedInPrivateMessage => true;
+
+    // Format : room, user, rank
+    public override string GetTargetRoomId(IContext context) => context.Target.Split(',', 3)[0].Trim();
     public override string HelpMessageKey => "watchlist_remove_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
@@ -27,14 +30,9 @@ public class RemoveWatchlistCommand : Command
             return;
         }
 
-        var roomId = args[0].Trim();
+        var roomId = GetTargetRoomId(context);
         var user = args[1].Trim();
         var rank = args[2].Trim();
-
-        if (!await context.HasSufficientRankInRoom(roomId, Rank.Driver, cancellationToken))
-        {
-            return;
-        }
 
         var removed = await _watchlistService.RemoveFromWatchlistAsync(roomId, user, rank, cancellationToken);
         if (!removed)

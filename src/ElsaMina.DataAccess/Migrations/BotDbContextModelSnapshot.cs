@@ -472,6 +472,34 @@ namespace ElsaMina.DataAccess.Migrations
                     b.ToTable("RoomUsers");
                 });
 
+            modelBuilder.Entity("ElsaMina.DataAccess.Models.SavedPermissionGrant", b =>
+                {
+                    b.Property<string>("RoomId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Kind")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Target")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("GrantedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("GrantedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("RoomId", "UserId", "Kind", "Target");
+
+                    b.ToTable("PermissionGrants");
+                });
+
             modelBuilder.Entity("ElsaMina.DataAccess.Models.SavedPoll", b =>
                 {
                     b.Property<int>("Id")

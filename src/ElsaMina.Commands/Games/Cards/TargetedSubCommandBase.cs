@@ -27,6 +27,10 @@ public abstract class TargetedSubCommandBase<TGame> : GameCommand where TGame : 
     public override bool IsAllowedInPrivateMessage => true;
     public override Rank RequiredRank => Rank.Regular;
 
+    // En PM la room est avant le joueur (roomid, playerid)
+    public override string GetTargetRoomId(IContext context) =>
+        context.IsPrivateMessage ? context.GetRoomIdArgument(0) : context.RoomId;
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         string targetPlayerId;
@@ -40,7 +44,7 @@ public abstract class TargetedSubCommandBase<TGame> : GameCommand where TGame : 
                 return;
             }
 
-            room = _roomsManager.GetRoom(parts[0].Trim().ToLowerAlphaNum());
+            room = _roomsManager.GetRoom(GetTargetRoomId(context) ?? string.Empty);
             targetPlayerId = parts[1].Trim();
         }
         else

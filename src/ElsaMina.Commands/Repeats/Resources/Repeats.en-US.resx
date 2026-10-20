@@ -33,9 +33,6 @@
     <data name="repeat_start_error" xml:space="preserve">
         <value>Could not start repeat</value>
     </data>
-    <data name="repeat_start_rank" xml:space="preserve">
-        <value>You don't have the right to do that here.</value>
-    </data>
     <data name="repeat_start_success" xml:space="preserve">
         <value>Repeat started.</value>
     </data>
@@ -59,9 +56,6 @@
     </data>
     <data name="repeat_stop_doesntexist" xml:space="preserve">
         <value>This repeat doesn't exist.</value>
-    </data>
-    <data name="repeat_stop_rights" xml:space="preserve">
-        <value>You don't have the rights to do that here.</value>
     </data>
     <data name="repeat_stop_error" xml:space="preserve">
         <value>This repeat could not be stopped.</value>

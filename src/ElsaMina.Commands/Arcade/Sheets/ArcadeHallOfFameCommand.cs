@@ -25,6 +25,7 @@ public class ArcadeHallOfFameCommand : Command
 
     public override Rank RequiredRank => Rank.Voiced;
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRankInPrivateMessage => Rank.Regular;
 
     private const int PAGE_SIZE = 50;
 

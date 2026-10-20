@@ -33,9 +33,6 @@
     <data name="repeat_start_error" xml:space="preserve">
         <value>Não foi possível iniciar a repetição</value>
     </data>
-    <data name="repeat_start_rank" xml:space="preserve">
-        <value>Você não tem permissão para fazer isso aqui.</value>
-    </data>
     <data name="repeat_start_success" xml:space="preserve">
         <value>Repetição iniciada.</value>
     </data>
@@ -59,9 +56,6 @@
     </data>
     <data name="repeat_stop_doesntexist" xml:space="preserve">
         <value>Esta repetição não existe.</value>
-    </data>
-    <data name="repeat_stop_rights" xml:space="preserve">
-        <value>Você não tem permissão para fazer isso aqui.</value>
     </data>
     <data name="repeat_stop_error" xml:space="preserve">
         <value>Esta repetição não pôde ser interrompida.</value>

@@ -5,6 +5,7 @@ using ElsaMina.Commands.Development;
 using ElsaMina.Commands.Economy;
 using ElsaMina.Commands.EventAnnounces;
 using ElsaMina.Commands.JoinPhrases;
+using ElsaMina.Commands.Permissions;
 using ElsaMina.Commands.Polls;
 using ElsaMina.Commands.Polls.Suggestions;
 using ElsaMina.Commands.Repeats;
@@ -68,6 +69,15 @@ public class RoomsModule : Module
         builder.RegisterType<ChatLogService>().As<IChatLogService>().As<IBotLifecycleParticipant>().SingleInstance();
 
         RegisterShopCommands(builder);
+        RegisterPermissionCommands(builder);
+    }
+
+    private static void RegisterPermissionCommands(ContainerBuilder builder)
+    {
+        builder.RegisterType<PermissionTargetResolver>().As<IPermissionTargetResolver>().SingleInstance();
+        builder.RegisterCommand<GrantCommand>();
+        builder.RegisterCommand<RevokeCommand>();
+        builder.RegisterCommand<GrantListCommand>();
     }
 
     private static void RegisterShopCommands(ContainerBuilder builder)

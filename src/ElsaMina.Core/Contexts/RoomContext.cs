@@ -46,7 +46,7 @@ public class RoomContext : Context
 
     public override bool HasRankOrHigher(Rank requiredRank)
     {
-        return IsSenderWhitelisted || Sender.Rank >= requiredRank;
+        return IsSenderWhitelisted || Sender.Rank >= requiredRank || GrantedRank >= requiredRank;
     }
 
     public override void Reply(string message, bool rankAware = false)

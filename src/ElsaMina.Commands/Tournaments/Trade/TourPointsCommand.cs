@@ -19,6 +19,7 @@ public class TourPointsCommand : Command
 
     public override Rank RequiredRank => Rank.Voiced;
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRankInPrivateMessage => Rank.Regular;
     public override string HelpMessageKey => "tour_points_help";
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)

@@ -22,9 +22,14 @@ public interface IContext
     void ReplyHtmlPage(string pageName, string html);
     void SendHtmlPageTo(string userId, string pageName, string html);
     void CloseHtmlPage(string userId, string pageName);
+
+    /// <summary>
+    /// Vrai si le rang effectif du user dans la room du message (son rang Showdown, ou le rang qu'on lui a donné) est
+    /// suffisant. Sert à choisir comment répondre (en room ou en privé) et pour les vérifs à l'intérieur d'une commande.
+    /// Toujours vrai en PM, où tout reste privé : c'est <see cref="Services.Authorization.IAuthorizationService"/> qui
+    /// décide si une commande peut être lancée
+    /// </summary>
     bool HasRankOrHigher(Rank requiredRank);
-    Task<Rank> GetUserRankInRoom(string roomId, CancellationToken cancellationToken = default);
-    Task<bool> HasSufficientRankInRoom(string roomId, Rank requiredRank, CancellationToken cancellationToken = default);
 
     void Reply(string message, bool rankAware = false);
     void SendMessageIn(string roomId, string message);

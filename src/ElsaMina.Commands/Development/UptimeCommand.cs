@@ -16,6 +16,7 @@ public class UptimeCommand : Command
     }
 
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRankInPrivateMessage => Rank.Regular;
     public override Rank RequiredRank => Rank.Voiced;
 
     public override Task RunAsync(IContext context, CancellationToken cancellationToken = default)

@@ -115,4 +115,18 @@ public class RoomInfoCommandTest
         _context.Received(1).Reply(Arg.Is<string>(message =>
             message.StartsWith("!code ") && message.Contains("Test Room")));
     }
+
+    [Test]
+    [TestCase(true, "", ExpectedResult = "contextroom")]
+    [TestCase(true, "someroom", ExpectedResult = "someroom")]
+    public string Test_GetTargetRoomId_ShouldReturnTargetOrContextRoom(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
+    }
 }

@@ -92,4 +92,7 @@
     <data name="rank_former_staff" xml:space="preserve">
         <value>Ex staff</value>
     </data>
+    <data name="command_insufficient_rank" xml:space="preserve">
+        <value>Devi essere almeno {0} nella stanza {1} per usare questo comando.</value>
+    </data>
 </root>

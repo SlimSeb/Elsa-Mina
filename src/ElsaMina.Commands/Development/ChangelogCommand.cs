@@ -12,6 +12,7 @@ public class ChangelogCommand : Command
     private const int MAX_COMMIT_COUNT = 20;
 
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRankInPrivateMessage => Rank.Regular;
     public override Rank RequiredRank => Rank.Voiced;
 
     protected virtual string ChangelogFilePath =>

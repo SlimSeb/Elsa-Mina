@@ -22,11 +22,12 @@ public class RoomOptionsCommand : Command
     public override Rank RequiredRank => Rank.Driver;
     public override bool IsAllowedInPrivateMessage => true;
 
+    public override string GetTargetRoomId(IContext context) =>
+        string.IsNullOrWhiteSpace(context.Target) ? context.RoomId : context.Target.Trim().ToLowerAlphaNum();
+
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
-        var roomId = string.IsNullOrWhiteSpace(context.Target)
-            ? context.RoomId
-            : context.Target.Trim().ToLowerAlphaNum();
+        var roomId = GetTargetRoomId(context);
 
         if (string.IsNullOrEmpty(roomId))
         {
@@ -38,11 +39,6 @@ public class RoomOptionsCommand : Command
         if (room == null)
         {
             context.ReplyLocalizedMessage("dashboard_room_doesnt_exist", roomId);
-            return;
-        }
-
-        if (!await context.HasSufficientRankInRoom(roomId, Rank.Driver, cancellationToken))
-        {
             return;
         }
 

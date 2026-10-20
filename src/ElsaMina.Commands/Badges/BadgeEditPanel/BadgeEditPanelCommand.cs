@@ -32,15 +32,15 @@ public class BadgeEditPanelCommand : Command
     public override Rank RequiredRank => Rank.Driver;
     public override string HelpMessageKey => "badge_edit_panel_help_message";
 
+    // La room est le 1er argument, celle du message s'il manque
+    public override string GetTargetRoomId(IContext context) => context.GetRoomIdArgument(0) ?? context.RoomId;
+
     private const int PAGE_SIZE = 10;
 
     public override async Task RunAsync(IContext context, CancellationToken cancellationToken = default)
     {
         var parts = context.Target.Split(",", 2);
-        var roomIdPart = parts[0].Trim();
-        var roomId = string.IsNullOrWhiteSpace(roomIdPart)
-            ? context.RoomId
-            : roomIdPart.ToLowerAlphaNum();
+        var roomId = GetTargetRoomId(context);
         var page = parts.Length > 1 && int.TryParse(parts[1].Trim(), out var parsedPage)
             ? Math.Max(1, parsedPage)
             : 1;

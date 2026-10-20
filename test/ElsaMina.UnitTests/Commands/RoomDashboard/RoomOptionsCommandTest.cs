@@ -23,8 +23,6 @@ public class RoomOptionsCommandTest
         _command = new RoomOptionsCommand(_roomsManager, _roomDashboardService);
 
         _context.Culture.Returns(CultureInfo.GetCultureInfo("en-US"));
-        _context.HasSufficientRankInRoom(Arg.Any<string>(), Arg.Any<Rank>(), Arg.Any<CancellationToken>())
-            .Returns(true);
     }
 
     [Test]
@@ -40,18 +38,16 @@ public class RoomOptionsCommandTest
     }
 
     [Test]
-    public async Task Test_RoomOptions_ShouldDeny_WhenUserHasInsufficientRank()
+    [TestCase("testroom", ExpectedResult = "testroom")]
+    [TestCase("", ExpectedResult = "contextroom")]
+    public string Test_GetTargetRoomId_ShouldReturnRoomTheCommandActsOn(string target)
     {
-        var room = Substitute.For<IRoom>();
-        _context.Target.Returns("testroom");
-        _roomsManager.GetRoom("testroom").Returns(room);
-        _context.HasSufficientRankInRoom("testroom", Rank.Driver, Arg.Any<CancellationToken>())
-            .Returns(false);
+        // Arrange
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
 
-        await _command.RunAsync(_context);
-
-        await _roomDashboardService.DidNotReceive()
-            .SendOptionsPageAsync(Arg.Any<IContext>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
     }
 
     [Test]
@@ -60,8 +56,6 @@ public class RoomOptionsCommandTest
         var room = Substitute.For<IRoom>();
         _context.Target.Returns("testroom");
         _roomsManager.GetRoom("testroom").Returns(room);
-        _context.HasSufficientRankInRoom("testroom", Rank.Driver, Arg.Any<CancellationToken>())
-            .Returns(true);
 
         await _command.RunAsync(_context);
 

@@ -393,4 +393,19 @@ public class AddBadgeCommandTest
         await using var db = new BotDbContext(_options);
         Assert.That(await db.Badges.CountAsync(), Is.Zero);
     }
+
+    [Test]
+    [TestCase(true, "name, value, French Room", ExpectedResult = "frenchroom")]
+    [TestCase(true, "name, value", ExpectedResult = null)]
+    [TestCase(false, "name, value, otherroom", ExpectedResult = "contextroom")]
+    public string Test_GetTargetRoomId_ShouldReturnThirdArgumentOnlyInPrivateMessage(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return CreateCommand().GetTargetRoomId(_context);
+    }
 }

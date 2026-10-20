@@ -1,4 +1,5 @@
 using ElsaMina.Core.Contexts;
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.FeatureSwitches;
 using ElsaMina.Core.Services.Rooms;
@@ -15,6 +16,7 @@ public class CommandExecutorTest
     private IDynamicCommandProvider _dynamicCommandProvider;
     private ITelemetryService _telemetryService;
     private IFeatureSwitchService _featureSwitchService;
+    private IAuthorizationService _authorizationService;
     private CommandExecutor _commandExecutor;
     private IContext _context;
 
@@ -29,8 +31,11 @@ public class CommandExecutorTest
         _featureSwitchService = Substitute.For<IFeatureSwitchService>();
         _featureSwitchService.IsFeatureEnabled(Arg.Any<string>()).Returns(true);
         _context = Substitute.For<IContext>();
+        _authorizationService = Substitute.For<IAuthorizationService>();
+        _authorizationService.AuthorizeAsync(Arg.Any<IContext>(), Arg.Any<ICommand>(), Arg.Any<CancellationToken>())
+            .Returns(new AuthorizationResult(true, "room", Rank.Regular));
         _commandExecutor = new CommandExecutor(_commandRegistry,
-            [_dynamicCommandProvider], _telemetryService, _featureSwitchService);
+            [_dynamicCommandProvider], _telemetryService, _featureSwitchService, _authorizationService);
     }
 
     [Test]
@@ -85,7 +90,6 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         var runSignal = new TaskCompletionSource<bool>();
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);
         command.When(x => x.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()))
             .Do(_ => runSignal.TrySetResult(true));
@@ -112,7 +116,6 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         var runSignal = new TaskCompletionSource<bool>();
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.RoomRestriction.Returns(["franais"]);
         _context.RoomId.Returns(roomId);
         command.When(x => x.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()))
@@ -168,13 +171,14 @@ public class CommandExecutorTest
     }
 
     [Test]
-    public async Task Test_TryExecuteCommandAsync_ShouldNotRunCommand_WhenRankIsTooLow()
+    public async Task Test_TryExecuteCommandAsync_ShouldNotRunCommandNorReply_WhenRankIsTooLowInRoom()
     {
         // Arrange
         var commandName = "rankedCommand";
         var command = Substitute.For<ICommand>();
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(false);
+        _authorizationService.AuthorizeAsync(_context, command, Arg.Any<CancellationToken>())
+            .Returns(new AuthorizationResult(false, "room", Rank.Driver));
 
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
@@ -182,6 +186,28 @@ public class CommandExecutorTest
 
         // Assert
         await command.DidNotReceive().RunAsync(_context, Arg.Any<CancellationToken>());
+        _context.DidNotReceive().ReplyLocalizedMessage(Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    [Test]
+    public async Task Test_TryExecuteCommandAsync_ShouldTellRequiredRankAndRoom_WhenRankIsTooLowInPrivateMessage()
+    {
+        // Arrange
+        var commandName = "rankedCommand";
+        var command = Substitute.For<ICommand>();
+        _commandRegistry.Find(commandName).Returns(command);
+        _context.IsPrivateMessage.Returns(true);
+        command.IsAllowedInPrivateMessage.Returns(true);
+        _authorizationService.AuthorizeAsync(_context, command, Arg.Any<CancellationToken>())
+            .Returns(new AuthorizationResult(false, "franais", Rank.Driver));
+
+        // Act
+        await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
+        await _commandExecutor.WhenAllCommandsCompletedAsync();
+
+        // Assert
+        await command.DidNotReceive().RunAsync(_context, Arg.Any<CancellationToken>());
+        _context.Received(1).ReplyLocalizedMessage("command_insufficient_rank", '%', "franais");
     }
 
     [Test]
@@ -193,7 +219,6 @@ public class CommandExecutorTest
         var runSignal = new TaskCompletionSource<bool>();
         _commandRegistry.Find(commandName).Returns(command);
         _context.IsPrivateMessage.Returns(true);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);
         command.When(x => x.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()))
             .Do(_ => runSignal.TrySetResult(true));
@@ -215,7 +240,6 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         var expectedException = new InvalidOperationException("boom");
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);
         command.RoomRestriction.Returns(Array.Empty<string>());
         command.Name.Returns(commandName);
@@ -239,7 +263,6 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         var release = new TaskCompletionSource();
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.RoomRestriction.Returns(Array.Empty<string>());
         command.RunsInMessageOrder.Returns(false);
         command.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()).Returns(release.Task);
@@ -262,7 +285,6 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         var release = new TaskCompletionSource();
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.RoomRestriction.Returns(Array.Empty<string>());
         command.RunsInMessageOrder.Returns(true);
         command.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()).Returns(release.Task);
@@ -286,7 +308,6 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         var release = new TaskCompletionSource();
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.RoomRestriction.Returns(Array.Empty<string>());
         command.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()).Returns(release.Task);
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
@@ -456,7 +477,6 @@ public class CommandExecutorTest
         var runSignal = new TaskCompletionSource<bool>();
         _commandRegistry.Find(commandName).Returns(command);
         _context.IsPrivateMessage.Returns(true);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);
         command.RoomRestriction.Returns(["someroom"]);
         _context.RoomId.Returns("otherroom");
@@ -480,7 +500,6 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         _commandRegistry.Find(commandName).Returns(command);
         _context.IsPrivateMessage.Returns(false);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.RoomRestriction.Returns(["someroom"]);
         _context.RoomId.Returns("otherroom");
 
@@ -547,7 +566,6 @@ public class CommandExecutorTest
         _featureSwitchService.IsMaydayActive.Returns(true);
         _context.IsSenderWhitelisted.Returns(true);
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);
         command.When(x => x.RunAsync(Arg.Any<IContext>(), Arg.Any<CancellationToken>()))
             .Do(_ => runSignal.TrySetResult(true));
@@ -569,7 +587,6 @@ public class CommandExecutorTest
         var command = Substitute.For<ICommand>();
         command.Category.Returns("SomeFeature");
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         _context.IsSenderWhitelisted.Returns(false);
         _featureSwitchService.IsFeatureEnabled("SomeFeature").Returns(false);
 
@@ -590,7 +607,6 @@ public class CommandExecutorTest
         var runSignal = new TaskCompletionSource<bool>();
         command.Category.Returns("SomeFeature");
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         _context.IsSenderWhitelisted.Returns(true);
         _featureSwitchService.IsFeatureEnabled("SomeFeature").Returns(false);
         command.IsAllowedInPrivateMessage.Returns(true);
@@ -615,7 +631,6 @@ public class CommandExecutorTest
         var runSignal = new TaskCompletionSource<bool>();
         command.Category.Returns("SomeFeature");
         _commandRegistry.Find(commandName).Returns(command);
-        _context.HasRankOrHigher(command.RequiredRank).Returns(true);
         _context.IsSenderWhitelisted.Returns(false);
         _featureSwitchService.IsFeatureEnabled("SomeFeature").Returns(true);
         command.IsAllowedInPrivateMessage.Returns(true);

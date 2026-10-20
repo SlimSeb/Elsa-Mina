@@ -107,4 +107,18 @@ public class SetLocaleCommandTest
         _roomsManager.Received(1).GetRoom("testroom");
         await room.Received(1).SetParameterValueAsync(Parameter.Locale, "fr-FR", Arg.Any<CancellationToken>());
     }
+
+    [Test]
+    [TestCase(false, "otherroom, fr-FR", ExpectedResult = "otherroom")]
+    [TestCase(false, " otherroom ", ExpectedResult = "otherroom")]
+    public string Test_GetTargetRoomId_ShouldReturnFirstArgument(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
+    }
 }

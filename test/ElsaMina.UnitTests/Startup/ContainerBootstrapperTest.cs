@@ -5,6 +5,7 @@ using ElsaMina.Cloud.GoogleDrive;
 using ElsaMina.Cloud.Sheets;
 using ElsaMina.Console.Startup;
 using ElsaMina.Core;
+using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Dispatch;
@@ -91,6 +92,25 @@ public class ContainerBootstrapperTest
     }
 
     [Test]
+    public void Test_Build_ShouldGetEveryCommandTargetRoom_WithoutThrowing(
+        [Values] bool isPrivateMessage,
+        [Values("", "room", "a, b", "a, b, c, d, e, f", "a;;b;;c", ",,,", ";;;;")] string target)
+    {
+        // Arrange
+        var context = Substitute.For<IContext>();
+        context.IsPrivateMessage.Returns(isPrivateMessage);
+        context.RoomId.Returns("room");
+        context.Target.Returns(target);
+        var commands = _container.Resolve<ICommandRegistry>().Commands;
+
+        // Act & Assert : le rang se vérifie avant RunAsync, donc la room cible doit se lire sur n'importe quels arguments
+        foreach (var command in commands)
+        {
+            Assert.DoesNotThrow(() => command.GetTargetRoomId(context), command.Name);
+        }
+    }
+
+    [Test]
     public void Test_Build_ShouldResolveEveryLifecycleParticipant()
     {
         // Act
@@ -116,7 +136,10 @@ public class ContainerBootstrapperTest
     [TestCase("parameter_name_bucks_enabled")]
     [TestCase("parameter_name_event_announces_type")]
     [TestCase("parameter_value_event_announces_games")]
-    public void Test_Build_ShouldFindRoomParameterStrings_InEveryLocale(string key)
+    [TestCase("command_insufficient_rank")]
+    [TestCase("permissions_grant_help")]
+    [TestCase("permissions_target_category")]
+    public void Test_Build_ShouldFindStrings_InEveryLocale(string key)
     {
         // Arrange
         var resourcesService = _container.Resolve<IResourcesService>();

@@ -22,8 +22,6 @@ public class LaunchTourCommandTest
         _context = Substitute.For<IContext>();
 
         _context.RoomId.Returns("room1");
-        _context.HasSufficientRankInRoom(Arg.Any<string>(), Arg.Any<Rank>(), Arg.Any<CancellationToken>())
-            .Returns(true);
 
         _sut = new LaunchTourCommand(_roomsManager, _tourConfigService);
     }
@@ -88,15 +86,16 @@ public class LaunchTourCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldDoNothing_WhenInsufficientRank()
+    [TestCase("tour1,room1", ExpectedResult = "room1")]
+    [TestCase("tour1", ExpectedResult = "defaultroom")]
+    public string Test_GetTargetRoomId_ShouldReturnRoomTheCommandActsOn(string target)
     {
-        _context.Target.Returns("outils,room1");
-        _roomsManager.GetRoom("room1").Returns(Substitute.For<IRoom>());
-        _context.HasSufficientRankInRoom("room1", Rank.Driver, Arg.Any<CancellationToken>()).Returns(false);
+        // Arrange
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("defaultroom");
 
-        await _sut.RunAsync(_context);
-
-        await _tourConfigService.DidNotReceive().GetTourConfigAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        // Act & Assert
+        return _sut.GetTargetRoomId(_context);
     }
 
     [Test]

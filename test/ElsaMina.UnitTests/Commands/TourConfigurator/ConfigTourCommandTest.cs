@@ -117,4 +117,18 @@ public class ConfigTourCommandTest
 
         _context.Received(1).ReplyHtmlPage("room1tourconfig", Arg.Any<string>());
     }
+
+    [Test]
+    [TestCase(true, "", ExpectedResult = "contextroom")]
+    [TestCase(false, "OtherRoom", ExpectedResult = "otherroom")]
+    public string Test_GetTargetRoomId_ShouldReturnTargetOrContextRoom(bool isPrivateMessage, string target)
+    {
+        // Arrange
+        _context.IsPrivateMessage.Returns(isPrivateMessage);
+        _context.Target.Returns(target);
+        _context.RoomId.Returns("contextroom");
+
+        // Act & Assert
+        return _sut.GetTargetRoomId(_context);
+    }
 }

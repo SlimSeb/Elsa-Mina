@@ -20,8 +20,6 @@ public class RemoveWatchlistCommandTest
         var sender = Substitute.For<IUser>();
         sender.Name.Returns("Staff");
         _context.Sender.Returns(sender);
-        _context.HasSufficientRankInRoom(Arg.Any<string>(), Rank.Driver, Arg.Any<CancellationToken>())
-            .Returns(true);
 
         _command = new RemoveWatchlistCommand(_watchlistService);
     }
@@ -39,14 +37,14 @@ public class RemoveWatchlistCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldDoNothing_WhenSenderHasInsufficientRankInTargetRoom()
+    [TestCase("room, alice, %", ExpectedResult = "room")]
+    public string Test_GetTargetRoomId_ShouldReturnRoomTheCommandActsOn(string target)
     {
-        _context.Target.Returns("room, alice, %");
-        _context.HasSufficientRankInRoom("room", Rank.Driver, Arg.Any<CancellationToken>()).Returns(false);
+        // Arrange
+        _context.Target.Returns(target);
 
-        await _command.RunAsync(_context);
-
-        await _watchlistService.DidNotReceiveWithAnyArgs().RemoveFromWatchlistAsync(default, default, default);
+        // Act & Assert
+        return _command.GetTargetRoomId(_context);
     }
 
     [Test]

@@ -1,9 +1,11 @@
+using System.Globalization;
 using Autofac;
 using ElsaMina.Commands.CustomCommands;
 using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Handlers.DefaultHandlers;
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
@@ -17,6 +19,7 @@ using ElsaMina.Core.Services.System;
 using ElsaMina.Core.Services.Telemetry;
 using ElsaMina.Core.Services.UserDetails;
 using ElsaMina.Core.Utils;
+using ElsaMina.IntegrationTests.Fixtures;
 using NSubstitute;
 
 namespace ElsaMina.IntegrationTests.Core;
@@ -74,11 +77,15 @@ public class BotHandleReceivedMessageIntegrationTest
 
         builder.RegisterType<PmSendersManager>().As<IPmSendersManager>().SingleInstance();
         builder.RegisterType<ContextFactory>().As<IContextFactory>().SingleInstance();
+        builder.RegisterType<AuthorizationService>().As<IAuthorizationService>().SingleInstance();
+        builder.RegisterType<PermissionGrantStore>().As<IPermissionGrantStore>().SingleInstance();
+        builder.RegisterInstance(Substitute.For<IPermissionGrantRepository>()).As<IPermissionGrantRepository>();
         builder.RegisterType<FeatureSwitchService>().As<IFeatureSwitchService>().SingleInstance();
         builder.RegisterType<CommandExecutor>().As<ICommandExecutor>().SingleInstance();
         builder.RegisterType<CommandExecutionProbe>().As<ICommandExecutionProbe>().SingleInstance();
         builder.RegisterHandler<PrivateMessageCommandHandler>();
         builder.RegisterCommand<EchoCommand>();
+        builder.RegisterCommand<StaffEchoCommand>();
 
         _container = builder.Build();
         _bot = _container.Resolve<Bot>();
@@ -108,6 +115,48 @@ public class BotHandleReceivedMessageIntegrationTest
 
         Assert.That(commandOutput, Is.EqualTo("echo:hello world"));
         _client.Received(1).Send("|/pm earth, echo:hello world");
+    }
+
+    [Test]
+    public async Task Test_HandleReceivedMessageAsync_WhenStaffCommandIsSentInPmByUserWithoutRank_ShouldRefuseIt()
+    {
+        // Arrange : voice global, mais aucun rang dans la room par défaut
+        const string receivedMessage = "|pm|+Earth|ElsaMina|!staffecho hello";
+        GivenDefaultRoomWithUsers();
+        _resourcesService.GetString("command_insufficient_rank", Arg.Any<CultureInfo>())
+            .Returns("You need {0} in {1}.");
+
+        // Act
+        await _bot.HandleReceivedMessageAsync(receivedMessage);
+        await _container.Resolve<ICommandExecutor>().WhenAllCommandsCompletedAsync();
+
+        // Assert
+        await Wait.UntilAsync(() => _client.ReceivedCalls().Any(), "the refusal to be sent");
+        _client.Received(1).Send("|/pm earth, You need % in lobby.");
+        _client.DidNotReceive().Send("|/pm earth, staffecho:hello");
+    }
+
+    [Test]
+    public async Task Test_HandleReceivedMessageAsync_WhenStaffCommandIsSentInPmByDriverOfDefaultRoom_ShouldRunIt()
+    {
+        // Arrange
+        const string receivedMessage = "|pm| Earth|ElsaMina|!staffecho hello";
+        GivenDefaultRoomWithUsers(new User("Earth", Rank.Driver));
+
+        // Act
+        await _bot.HandleReceivedMessageAsync(receivedMessage);
+
+        // Assert
+        var probe = _container.Resolve<ICommandExecutionProbe>();
+        Assert.That(await probe.WaitAsync(TimeSpan.FromSeconds(2)), Is.EqualTo("staffecho:hello"));
+    }
+
+    private void GivenDefaultRoomWithUsers(params IUser[] users)
+    {
+        var room = Substitute.For<IRoom>();
+        room.RoomId.Returns("lobby");
+        room.Users.Returns(users.ToDictionary(user => user.UserId));
+        _roomsManager.GetRoom("lobby").Returns(room);
     }
 }
 

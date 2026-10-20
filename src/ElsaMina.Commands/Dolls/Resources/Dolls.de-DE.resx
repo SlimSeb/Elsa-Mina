@@ -69,9 +69,6 @@
     <data name="doll_pm_missing_room" xml:space="preserve">
         <value>Im PM bitte den Raum angeben. Syntax: -givedoll user, doll, room</value>
     </data>
-    <data name="doll_pm_insufficient_rank" xml:space="preserve">
-        <value>Du hast nicht genügend Berechtigungen in diesem Raum.</value>
-    </data>
     <data name="doll_list_empty" xml:space="preserve">
         <value>Der Puppenkatalog ist leer.</value>
     </data>

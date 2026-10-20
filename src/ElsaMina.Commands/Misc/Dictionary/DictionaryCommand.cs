@@ -24,6 +24,7 @@ public class DictionaryCommand : Command
     }
 
     public override bool IsAllowedInPrivateMessage => true;
+    public override Rank RequiredRankInPrivateMessage => Rank.Regular;
     public override Rank RequiredRank => Rank.Voiced;
     public override string HelpMessageKey => "dicoenglish_help";
 

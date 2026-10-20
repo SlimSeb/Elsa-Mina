@@ -4,6 +4,7 @@ using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Handlers;
 using ElsaMina.Core.Handlers.DefaultHandlers;
+using ElsaMina.Core.Services.Authorization;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.Commands;
 using ElsaMina.Core.Services.Config;
@@ -92,6 +93,9 @@ public class BotChatCommandIntegrationTest
         builder.RegisterInstance(telemetry).As<ITelemetryService>();
         builder.RegisterType<PmSendersManager>().As<IPmSendersManager>().SingleInstance();
         builder.RegisterType<ContextFactory>().As<IContextFactory>().SingleInstance();
+        builder.RegisterType<AuthorizationService>().As<IAuthorizationService>().SingleInstance();
+        builder.RegisterType<PermissionGrantStore>().As<IPermissionGrantStore>().SingleInstance();
+        builder.RegisterInstance(Substitute.For<IPermissionGrantRepository>()).As<IPermissionGrantRepository>();
         builder.RegisterType<FeatureSwitchService>().As<IFeatureSwitchService>().SingleInstance();
         builder.RegisterType<CommandExecutor>().As<ICommandExecutor>().SingleInstance();
         builder.RegisterType<CommandExecutionProbe>().As<ICommandExecutionProbe>().SingleInstance();

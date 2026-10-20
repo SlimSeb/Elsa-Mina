@@ -341,32 +341,19 @@ public class EditBadgeCommandTest
     }
 
     [Test]
-    public async Task Test_RunAsync_ShouldReturnEarly_WhenCalledFromPmWithoutSufficientRank()
+    [TestCase("badge1, New Name, img.png, room1", ExpectedResult = "room1")]
+    [TestCase("badge1, New Name, img.png, true, room1", ExpectedResult = "room1")]
+    [TestCase("badge1, New Name, img.png", ExpectedResult = "contextroom")]
+    public string Test_GetTargetRoomId_ShouldReturnLastArgument_WhenThereAreMoreThanThree(string target)
     {
-        var options = CreateOptions();
-        await using (var setup = new BotDbContext(options))
-        {
-            await setup.Database.EnsureCreatedAsync();
-            setup.Badges.Add(new Badge { Id = "badge1", RoomId = "room1", Name = "Name", Image = "img.png" });
-            await setup.SaveChangesAsync();
-        }
-
-        await using var execCtx = new BotDbContext(options);
-        var factory = CreateFactoryReturning(execCtx);
+        // Arrange
         var context = Substitute.For<IContext>();
-        context.Target.Returns("badge1, New Name, img.png, room1");
-        context.RoomId.Returns("room1");
-        context.IsPrivateMessage.Returns(true);
-        context.HasSufficientRankInRoom("room1", Rank.Driver, Arg.Any<CancellationToken>())
-            .Returns(false);
+        context.Target.Returns(target);
+        context.RoomId.Returns("contextroom");
+        var command = new EditBadgeCommand(Substitute.For<IBotDbContextFactory>());
 
-        var command = new EditBadgeCommand(factory);
-        await command.RunAsync(context);
-
-        await using var assertCtx = new BotDbContext(options);
-        var badge = await assertCtx.Badges.FindAsync("badge1", "room1");
-        Assert.That(badge.Name, Is.EqualTo("Name")); // unchanged
-        context.DidNotReceive().ReplyLocalizedMessage(Arg.Any<string>(), Arg.Any<object[]>());
+        // Act & Assert
+        return command.GetTargetRoomId(context);
     }
 
     [Test]
