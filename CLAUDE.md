@@ -13,7 +13,7 @@ Elsa-Mina is a Pokémon Showdown chat bot written in C# (.NET 10.0). It connects
 ./scripts/Build/restore.sh       # Restore NuGet packages
 ./scripts/Build/build.sh         # Build the solution
 ./scripts/Build/test.sh          # Run all tests
-./scripts/Build/code-analysis.sh # Fail on any Sonar rule issue (same check as CI)
+./scripts/Build/code-analysis.sh # Fail on any analyzer issue SonarCloud reports (same check as CI)
 
 # Run a single test project
 dotnet test test/ElsaMina.UnitTests/ElsaMina.UnitTests.csproj --no-restore --verbosity normal
@@ -178,7 +178,7 @@ The `minipokevN` battle strategies play with small transformers trained in `tool
 
 - **One class per file**: every class, record, or interface must live in its own dedicated `.cs` file named after the type. Never define multiple types in a single file.
 - **No single-letter variables**: use descriptive names everywhere. Exception: integer loop indices (`i`, `j`, `k`) are allowed.
-- **Sonar rules**: every project builds with `SonarAnalyzer.CSharp` (`Directory.Build.props`), the rules SonarCloud runs. Sonar warnings fail the `code-analysis` CI job, so fix them; when a rule is wrong for a line, suppress it there with `#pragma warning disable Sxxxx // why`. Rules off for the whole repository are in `.editorconfig` (and in `sonar.yml` for SonarCloud).
+- **Sonar rules**: every project builds with `SonarAnalyzer.CSharp` (`Directory.Build.props`), the rules SonarCloud runs. SonarCloud also imports the other analyzers' diagnostics (CA, NUnit...), info-level ones included, so `code-analysis.sh` reads every diagnostic from the build's SARIF logs, test projects included (Migrations excluded, as on SonarCloud). Any of them fails the `code-analysis` CI job, so fix them (e.g. constant arrays passed as arguments go in `static readonly` fields, independent asserts go in `Assert.EnterMultipleScope()`); when a rule is wrong for a line, suppress it there with `#pragma warning disable <rule> // why`. Rules off for the whole repository are in `.editorconfig` (and in `sonar.yml` for SonarCloud).
 
 ## Testing Conventions
 

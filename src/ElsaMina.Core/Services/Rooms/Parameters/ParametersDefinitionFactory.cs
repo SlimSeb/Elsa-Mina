@@ -11,7 +11,7 @@ public class ParametersDefinitionFactory : IParametersDefinitionFactory
 
     public IReadOnlyDictionary<Parameter, IParameterDefinition> GetParametersDefinitions() => _definitions.Value;
 
-    private static IReadOnlyDictionary<Parameter, IParameterDefinition> BuildDefinitions(
+    private static Dictionary<Parameter, IParameterDefinition> BuildDefinitions(
         IEnumerable<IRoomParameterProvider> providers)
     {
         var definitions = new Dictionary<Parameter, IParameterDefinition>();

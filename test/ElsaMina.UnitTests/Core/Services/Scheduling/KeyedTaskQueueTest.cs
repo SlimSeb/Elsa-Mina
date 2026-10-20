@@ -4,6 +4,8 @@ namespace ElsaMina.UnitTests.Core.Services.Scheduling;
 
 public class KeyedTaskQueueTest
 {
+    private static readonly int[] FIRST_THEN_SECOND = [1, 2];
+
     private static readonly TimeSpan TIMEOUT = TimeSpan.FromSeconds(5);
 
     private KeyedTaskQueue _queue;
@@ -38,8 +40,11 @@ public class KeyedTaskQueueTest
         await Task.WhenAll(first, second).WaitAsync(TIMEOUT);
 
         // Assert
-        Assert.That(secondRanBeforeFirstCompleted, Is.False);
-        Assert.That(executionOrder, Is.EqualTo(new[] { 1, 2 }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(secondRanBeforeFirstCompleted, Is.False);
+            Assert.That(executionOrder, Is.EqualTo(FIRST_THEN_SECOND));
+        }
     }
 
     [Test]
@@ -95,8 +100,11 @@ public class KeyedTaskQueueTest
         await task.WaitAsync(TIMEOUT);
 
         // Assert
-        Assert.That(completedSynchronously, Is.False);
-        Assert.That(ranSynchronously, Is.False);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(completedSynchronously, Is.False);
+            Assert.That(ranSynchronously, Is.False);
+        }
     }
 
     [Test]

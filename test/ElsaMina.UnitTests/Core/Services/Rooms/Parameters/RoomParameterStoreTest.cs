@@ -123,9 +123,13 @@ public class RoomParameterStoreTest
 
         // Act
         var result = await _store.SetValueAsync(ENUMERATION_PARAMETER, "b");
+        var value = await _store.GetValueAsync(ENUMERATION_PARAMETER);
 
         // Assert
-        Assert.That(result, Is.False);
-        Assert.That(await _store.GetValueAsync(ENUMERATION_PARAMETER), Is.EqualTo("a"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.False);
+            Assert.That(value, Is.EqualTo("a"));
+        }
     }
 }
