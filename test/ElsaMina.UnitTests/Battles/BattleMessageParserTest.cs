@@ -1,4 +1,6 @@
 using ElsaMina.Battles;
+using ElsaMina.Battles.Tracking;
+using NSubstitute;
 
 namespace ElsaMina.UnitTests.Battles;
 
@@ -15,7 +17,7 @@ public class BattleMessageParserTest
     [SetUp]
     public void SetUp()
     {
-        _parser = new BattleMessageParser();
+        _parser = new BattleMessageParser(Substitute.For<IBattleDex>());
         _context = new BattleContext(ROOM_ID) { SideId = "p1" };
     }
 
