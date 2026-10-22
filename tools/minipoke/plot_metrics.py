@@ -32,6 +32,9 @@ PANELS = [
     ("Elo (learner; random = 0)", ["elo"], None),
     ("Pool / rewards", ["pool_hardest_wr", "faint_reward"], None),
     ("PPO epochs run", ["epochs"], None),
+    ("Auxiliary heads (accuracy)", ["aux_action_acc", "aux_item_acc", "aux_ability_acc",
+                                    "aux_tera_acc", "aux_moves_recall"], (0, 1)),
+    ("Auxiliary losses / uniform KL", ["aux_action_loss", "aux_set_loss", "uniform_kl"], None),
 ]
 
 
