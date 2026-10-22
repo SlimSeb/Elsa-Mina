@@ -1,0 +1,5 @@
+# Tests, metrics plots and RAM reporting. Not needed to train.
+-r requirements.txt
+pytest>=8
+matplotlib>=3.8
+psutil>=5.9

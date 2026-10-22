@@ -11,6 +11,7 @@ into one forward pass. This replaces ps-ppo's multi-server / Ray setup.
 from __future__ import annotations
 
 import asyncio
+import logging
 import random
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -27,10 +28,13 @@ from encoder import (
     fainted_counts,
     order_to_compact_action,
 )
+from dataset import ShardWriter, discounted_returns
 from model import to_tensors
 
 FAINT_REWARD = 0.1
 WIN_REWARD = 1.0
+
+log = logging.getLogger("minipoke")
 
 
 # --------------------------------------------------------------------------
@@ -54,7 +58,9 @@ class InferenceBatcher:
         # One thread does all torch work so the event loop stays responsive.
         self._executor = ThreadPoolExecutor(max_workers=1)
 
-    async def act(self, obs: Dict[str, np.ndarray], greedy: bool = False) -> Tuple[int, float, float]:
+    async def act(self, obs: Dict[str, np.ndarray], greedy: bool = False
+                  ) -> Tuple[int, float, float, np.ndarray]:
+        """-> (action, log-prob of the action, value, full action distribution)."""
         if self._queue is None:  # lazily bind to poke-env's loop
             self._queue = asyncio.Queue()
             self._worker = asyncio.get_running_loop().create_task(self._run())
@@ -86,7 +92,7 @@ class InferenceBatcher:
                         fut.set_exception(e)
 
     @torch.no_grad()
-    def _forward(self, items) -> List[Tuple[int, float, float]]:
+    def _forward(self, items) -> List[Tuple[int, float, float, np.ndarray]]:
         batch = to_tensors(collate([o for o, _, _ in items]), self.device)
         logits, values = self.model(batch)
         dist = torch.distributions.Categorical(logits=logits)
@@ -94,7 +100,8 @@ class InferenceBatcher:
         greedy = torch.tensor([g for _, g, _ in items], device=logits.device)
         actions = torch.where(greedy, logits.argmax(-1), sampled)
         logps = dist.log_prob(actions)
-        return list(zip(actions.tolist(), logps.tolist(), values.tolist()))
+        probs = dist.probs.float().cpu().numpy()
+        return list(zip(actions.tolist(), logps.tolist(), values.tolist(), probs))
 
 
 # --------------------------------------------------------------------------
@@ -117,9 +124,83 @@ class EpisodeCollector:
 
 
 # --------------------------------------------------------------------------
+# Rewards: win +-1 at the end, +-0.1 per faint (theirs - ours) after each decision
+# --------------------------------------------------------------------------
+class Trajectories:
+    """Per-battle step lists. The reward of a step is the faint delta until the
+    next decision, plus the result on the last step."""
+
+    def __init__(self):
+        self._traj: Dict[str, List[dict]] = {}
+        self._faints: Dict[str, Tuple[int, int]] = {}
+
+    def step(self, battle, record: dict) -> None:
+        tag = battle.battle_tag
+        traj = self._traj.setdefault(tag, [])
+        mine, theirs = fainted_counts(battle)
+        if traj:  # reward for the previous decision = faint delta since then
+            pm, pt = self._faints[tag]
+            traj[-1]["reward"] += FAINT_REWARD * ((theirs - pt) - (mine - pm))
+        self._faints[tag] = (mine, theirs)
+        record["reward"] = 0.0
+        traj.append(record)
+
+    def finish(self, battle) -> List[dict]:
+        tag = battle.battle_tag
+        traj = self._traj.pop(tag, [])
+        if not traj:
+            self._faints.pop(tag, None)
+            return traj
+        mine, theirs = fainted_counts(battle)
+        pm, pt = self._faints.pop(tag, (mine, theirs))
+        traj[-1]["reward"] += FAINT_REWARD * ((theirs - pt) - (mine - pm))
+        if battle.won:
+            traj[-1]["reward"] += WIN_REWARD
+        elif battle.lost:
+            traj[-1]["reward"] -= WIN_REWARD
+        return traj
+
+
+class SafePlayer(Player):
+    """An exception in choose_move would leave the battle waiting forever (poke-env
+    re-raises it in its message task). Log it and play a random move instead."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.n_errors = 0
+        self.n_done = 0   # finished battles (the watchdog's progress signal)
+        self.n_won = 0
+
+    async def choose_move(self, battle):
+        try:
+            return await self._choose(battle)
+        except Exception:
+            self.n_errors += 1
+            if self.n_errors <= 5 or self.n_errors % 100 == 0:
+                log.exception("[%s] choose_move failed in %s (%d errors so far); playing randomly",
+                              self.username, battle.battle_tag, self.n_errors)
+            return self.choose_random_move(battle)
+
+    async def _choose(self, battle):
+        raise NotImplementedError
+
+    def _battle_finished_callback(self, battle) -> None:
+        self.n_done += 1
+        self.n_won += int(bool(battle.won))
+        try:
+            self._on_finished(battle)
+        except Exception:
+            log.exception("[%s] end-of-battle bookkeeping failed in %s",
+                          self.username, battle.battle_tag)
+
+    def _on_finished(self, battle) -> None:
+        pass
+
+
+# --------------------------------------------------------------------------
 # RL player
 # --------------------------------------------------------------------------
-class RLPlayer(Player):
+class RLPlayer(SafePlayer):
     """Plays with the network. If ``collector`` is set, records trajectories."""
 
     def __init__(self, batcher: InferenceBatcher, collector: Optional[EpisodeCollector] = None,
@@ -128,69 +209,83 @@ class RLPlayer(Player):
         self.batcher = batcher
         self.collector = collector
         self.greedy = greedy
-        self._traj: Dict[str, List[dict]] = {}
-        self._faints: Dict[str, Tuple[int, int]] = {}
+        self._trajectories = Trajectories()
 
-    async def choose_move(self, battle):
+    async def _choose(self, battle):
         obs = encode(battle)
         if not obs["mask"].any():
             return self.choose_random_move(battle)
 
-        action, logp, value = await self.batcher.act(obs, self.greedy)
+        action, logp, value, _ = await self.batcher.act(obs, self.greedy)
 
         if self.collector is not None:
-            tag = battle.battle_tag
-            traj = self._traj.setdefault(tag, [])
-            mine, theirs = fainted_counts(battle)
-            if traj:  # reward for the previous decision = faint delta since then
-                pm, pt = self._faints[tag]
-                traj[-1]["reward"] += FAINT_REWARD * ((theirs - pt) - (mine - pm))
-            self._faints[tag] = (mine, theirs)
-            traj.append({"obs": obs, "action": action, "logp": logp,
-                         "value": value, "reward": 0.0})
-
+            self._trajectories.step(battle, {"obs": obs, "action": action, "logp": logp,
+                                             "value": value})
         return action_to_order(action, battle)
 
-    def _battle_finished_callback(self, battle) -> None:
-        if self.collector is None:
-            return
-        tag = battle.battle_tag
-        traj = self._traj.pop(tag, [])
-        if not traj:
-            return
-        mine, theirs = fainted_counts(battle)
-        pm, pt = self._faints.pop(tag, (mine, theirs))
-        traj[-1]["reward"] += FAINT_REWARD * ((theirs - pt) - (mine - pm))
-        if battle.won:
-            traj[-1]["reward"] += WIN_REWARD
-        elif battle.lost:
-            traj[-1]["reward"] -= WIN_REWARD
-        self.collector.add(traj)
+    def _on_finished(self, battle) -> None:
+        if self.collector is not None:
+            self.collector.add(self._trajectories.finish(battle))
 
 
 # --------------------------------------------------------------------------
-# Teacher for behavioural cloning
+# Teachers for behavioural cloning / distillation. Each battle's samples are
+# written once it ends, with the discounted return from every decision.
 # --------------------------------------------------------------------------
-class TeacherPlayer(Player):
-    """Plays SimpleHeuristicsPlayer's moves and records (obs, action) pairs.
+class _RecordingPlayer(SafePlayer):
+    def __init__(self, writer: ShardWriter, gamma: float, epsilon: float, **kwargs):
+        super().__init__(**kwargs)
+        self.writer = writer
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self._trajectories = Trajectories()
+
+    def _record(self, battle, obs, probs, action, value=0.0) -> None:
+        self._trajectories.step(battle, {"obs": obs, "probs": probs, "action": action,
+                                         "value": value})
+
+    def _on_finished(self, battle) -> None:
+        traj = self._trajectories.finish(battle)
+        rets = discounted_returns([s["reward"] for s in traj], self.gamma)
+        for s, r in zip(traj, rets):
+            self.writer.add(s["obs"], s["probs"], s["action"], s["value"], float(r))
+
+
+class TeacherPlayer(_RecordingPlayer):
+    """Plays SimpleHeuristicsPlayer's moves and records (obs, one-hot action).
 
     ``epsilon`` plays a random legal move some of the time so the dataset also
     covers states the heuristic would never reach on its own.
     """
 
-    def __init__(self, dataset: list, lock: threading.Lock, epsilon: float = 0.1, **kwargs):
-        super().__init__(**kwargs)
-        self.dataset = dataset
-        self.lock = lock
-        self.epsilon = epsilon
-
-    def choose_move(self, battle):
+    async def _choose(self, battle):
         order, _ = SimpleHeuristicsPlayer.choose_singles_move(battle)
         obs = encode(battle)
         action = order_to_compact_action(order, battle)
         if action is not None and obs["mask"][action]:
-            with self.lock:
-                self.dataset.append((obs, action))
+            probs = np.zeros(len(obs["mask"]), dtype=np.float32)
+            probs[action] = 1.0
+            self._record(battle, obs, probs, action)
         if random.random() < self.epsilon:
             return self.choose_random_singles_move(battle)
         return order
+
+
+class DistillPlayer(_RecordingPlayer):
+    """Plays a trained model's sampled moves (a uniformly random legal move with
+    probability ``epsilon``) and records the model's full distribution and value."""
+
+    def __init__(self, batcher: InferenceBatcher, writer: ShardWriter, gamma: float,
+                 epsilon: float, **kwargs):
+        super().__init__(writer, gamma, epsilon, **kwargs)
+        self.batcher = batcher
+
+    async def _choose(self, battle):
+        obs = encode(battle)
+        if not obs["mask"].any():
+            return self.choose_random_move(battle)
+        action, _, value, probs = await self.batcher.act(obs)
+        if random.random() < self.epsilon:
+            action = int(random.choice(np.flatnonzero(obs["mask"])))
+        self._record(battle, obs, probs, action, value)
+        return action_to_order(action, battle)
