@@ -13,14 +13,28 @@ poke-env keeps every battle line it parsed, split on "|", in `battle._replay_dat
 
 "The previous turn" is the lines between the last two |turn| lines: a decision
 taken mid-turn (a replacement after a faint) still looks at the last complete turn.
+
+recent_events() turns the log into events for the history tokens: every |move|
+(called and locked moves included, flagged) and every |switch| / |drag|, with the
+results that follow it until the next event or |turn|:
+
+    |-crit| |-miss| |-supereffective| |-resisted| |-immune| |-fail|   flags of the move
+    |faint|pXa: ...       "KO" on the last move of that turn whose user is on the other
+                          side, unless that side brought a Pokémon in after it
+    [miss] [still] [notarget] after a |move| line: miss / fail
 """
 
 from __future__ import annotations
 
-from typing import List, Optional, Sequence
+from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Sequence, Tuple
+
+from poke_env.data import to_id_str
 
 Line = Sequence[str]
 ENTRANCES = ("switch", "drag", "replace")
+RESULT_FLAGS = {"-crit": "crit", "-miss": "miss", "-supereffective": "supereffective",
+                "-resisted": "resisted", "-immune": "immune", "-fail": "fail"}
 
 
 def lines_of(battle) -> List[Line]:
@@ -90,3 +104,59 @@ def active_turns(mon) -> int:
 def opponent_role(battle) -> Optional[str]:
     role = battle.player_role
     return None if role is None else ("p2" if role == "p1" else "p1")
+
+
+@dataclass
+class Event:
+    side: str                      # "p1" / "p2"
+    species: str                   # species id of the Pokémon that moved / came in
+    move: Optional[str]            # move id, None for an entrance
+    turn: int                      # turn number when it happened (0 before turn 1)
+    drag: bool = False             # forced in (|drag|)
+    called: bool = False           # |move| with a [from] tag (locked, called, reflected)
+    flags: Dict[str, bool] = field(default_factory=dict)   # RESULT_FLAGS values + "ko"
+
+
+def _name(ident: str) -> Tuple[str, str]:
+    """"p2a: Iron Valiant" -> ("p2", "Iron Valiant")."""
+    side, _, name = ident.partition(":")
+    return side[:2], name.strip()
+
+
+def recent_events(lines: Sequence[Line], k: int) -> List[Event]:
+    """The last `k` events of the log, oldest first."""
+    species: Dict[Tuple[str, str], str] = {}
+    events: List[Event] = []
+    turn = 0
+    for line in lines:
+        if len(line) < 2:
+            continue
+        kind = line[1]
+        if kind == "turn" and len(line) > 2:
+            turn = int(line[2])
+        elif kind in ENTRANCES and len(line) > 3:
+            side, name = _name(line[2])
+            species[(side, name)] = to_id_str(line[3].split(",")[0])
+            if kind != "replace":  # Illusion ending: a reveal, not an entrance
+                events.append(Event(side, species[(side, name)], None, turn, drag=kind == "drag"))
+        elif kind == "move" and len(line) > 3:
+            side, name = _name(line[2])
+            tags = line[4:]
+            ev = Event(side, species.get((side, name), to_id_str(name)), to_id_str(line[3]), turn,
+                       called=any(t.startswith("[from]") for t in tags))
+            if "[miss]" in tags:
+                ev.flags["miss"] = True
+            if "[still]" in tags or "[notarget]" in tags:
+                ev.flags["fail"] = True
+            events.append(ev)
+        elif kind in RESULT_FLAGS and events and events[-1].move is not None:
+            events[-1].flags[RESULT_FLAGS[kind]] = True
+        elif kind == "faint" and len(line) > 2:
+            fainted_side, _ = _name(line[2])
+            for ev in reversed(events):
+                if ev.turn != turn or (ev.move is None and ev.side == fainted_side):
+                    break  # an earlier turn, or it came in after (hazards...)
+                if ev.move is not None and ev.side != fainted_side:
+                    ev.flags["ko"] = True
+                    break
+    return events[-k:] if k > 0 else []

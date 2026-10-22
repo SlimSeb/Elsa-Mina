@@ -34,8 +34,12 @@ The move head then reads our active Pokémon's move tokens after the transformer
 instead of the move vectors before it. The Pokémon tokens no longer concatenate
 their move vectors.
 
+history_tokens K (encoder v2): the last K battle events (encoder_v2 event_ids /
+event_feats) as K more state tokens after the move tokens, with a learned
+embedding of their position in the window. They replace the `history` features.
+
 typed_ffn: each layer has one feed-forward block per token type ("cls" = actor
-and critic, "field", "mons", "moves"...) instead of one shared by every token.
+and critic, "field", "mons", "moves", "events"...) instead of one shared by every token.
 """
 
 from __future__ import annotations
@@ -48,7 +52,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, VOCAB_SIZES
-from encoder_v2 import F_HIST, F_PRIOR
+from encoder_v2 import F_EVENT, F_HIST, F_PRIOR
 
 N_TOKENS = 3 + N_MONS
 ACTOR, CRITIC, FIELD_TOK = 0, 1, 2
@@ -86,6 +90,8 @@ class ModelConfig:
     history: bool = False
     # One feed-forward block per token type in every layer
     typed_ffn: bool = False
+    # Encoder v2: the last K battle events as tokens (replaces `history`)
+    history_tokens: int = 0
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
@@ -195,18 +201,23 @@ class MiniPokeTransformer(nn.Module):
 
         if cfg.encoder_version not in (1, 2):
             raise ValueError(f"unknown encoder_version {cfg.encoder_version}")
-        if cfg.history and cfg.encoder_version < 2:
-            raise ValueError("history features are part of encoder v2 (--encoder-version 2)")
+        if (cfg.history or cfg.history_tokens) and cfg.encoder_version < 2:
+            raise ValueError("history features and tokens are part of encoder v2 "
+                             "(--encoder-version 2)")
+        self.hist_features = cfg.history and not cfg.history_tokens
         self.v2 = cfg.encoder_version == 2
         self.n_move_tokens = 0
         if cfg.move_tokens:
             self.n_move_tokens = N_MONS * N_MOVES + (N_SLOTS * cfg.cand_moves if self.v2 else 0)
-        self.n_tokens = N_TOKENS + self.n_move_tokens
+        self.event0 = N_TOKENS + self.n_move_tokens
+        self.n_tokens = self.event0 + cfg.history_tokens
         # Token types, in layout order (contiguous ranges)
         self.segments: List[Segment] = [("cls", ACTOR, FIELD_TOK), ("field", FIELD_TOK, MON0),
                                         ("mons", MON0, N_TOKENS)]
         if self.n_move_tokens:
             self.segments.append(("moves", MOVE0, MOVE0 + self.n_move_tokens))
+        if cfg.history_tokens:
+            self.segments.append(("events", self.event0, self.n_tokens))
         # v2: + known/candidate flag and fraction of consistent roles (1 for known moves)
         self.move_net = mlp(cfg.move_dim + F_MOVE + (2 if self.v2 else 0), d)
         moves_in = 0 if cfg.move_tokens else N_MOVES * d   # move tokens: moves are tokens
@@ -218,7 +229,7 @@ class MiniPokeTransformer(nn.Module):
         # observations (saved in checkpoints and exported as set_priors.json).
         self.priors = None
         # history: the field token also reads the last moves and the history features
-        self.field_net = mlp(F_FIELD + (2 * cfg.move_dim + F_HIST if cfg.history else 0), d)
+        self.field_net = mlp(F_FIELD + (2 * cfg.move_dim + F_HIST if self.hist_features else 0), d)
 
         self.side_emb = nn.Parameter(torch.zeros(2, d))       # ours / theirs
         self.actor_tok = nn.Parameter(torch.randn(1, 1, d) * 0.02)
@@ -244,9 +255,13 @@ class MiniPokeTransformer(nn.Module):
         if cfg.move_tokens:
             self.move_owner_emb = nn.Parameter(torch.randn(N_MONS, d) * 0.02)  # owning slot
             self.move_known_emb = nn.Parameter(torch.randn(2, d) * 0.02)       # candidate / known
+            self.register_buffer("move_offsets", torch.arange(N_MOVES), persistent=False)
+        if cfg.history_tokens:
+            self.event_net = mlp(cfg.move_dim + cfg.species_dim + F_EVENT, d)
+            self.event_pos_emb = nn.Parameter(torch.randn(cfg.history_tokens, d) * 0.02)
+        if self.n_tokens > N_TOKENS:  # tokens that can be empty: per-sample key masks
             self.register_buffer("self_attend", torch.eye(self.n_tokens, dtype=torch.bool),
                                  persistent=False)
-            self.register_buffer("move_offsets", torch.arange(N_MOVES), persistent=False)
 
         self.apply(self._init)
 
@@ -338,16 +353,25 @@ class MiniPokeTransformer(nn.Module):
         mons = mons + side
 
         field_in = obs["field"]
-        if self.cfg.history:
+        if self.hist_features:
             field_in = torch.cat([field_in, self.move_emb(obs["hist_ids"]).reshape(B, -1),
                                   obs["hist_feats"]], dim=-1)
         field = self.field_net(field_in).unsqueeze(1)
         tokens = [self.actor_tok.expand(B, 1, d), self.critic_tok.expand(B, 1, d), field, mons]
-        key_present = None
+        present = []
         if self.cfg.move_tokens:
-            moves, present = self._move_tokens(obs, move_vec, cand_vec)
+            moves, moves_present = self._move_tokens(obs, move_vec, cand_vec)
             tokens.append(moves)
-            key_present = torch.cat([present.new_ones(B, N_TOKENS), present], dim=1)
+            present.append(moves_present)
+        if self.cfg.history_tokens:
+            ids, feats = obs["event_ids"], obs["event_feats"]
+            events = self.event_net(torch.cat([self.move_emb(ids[..., 0]),
+                                               self.species_emb(ids[..., 1]), feats], dim=-1))
+            tokens.append(events + self.event_pos_emb)
+            present.append(feats[..., 0] > 0)
+        key_present = None
+        if present:
+            key_present = torch.cat([present[0].new_ones(B, N_TOKENS)] + present, dim=1)
         return torch.cat(tokens, dim=1), key_present, move_vec
 
     def forward(self, obs: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:

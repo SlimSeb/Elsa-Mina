@@ -16,6 +16,7 @@ CONFIGS = {
     "v2-history": dict(encoder_version=2, history=True),
     "v1-typed-ffn": dict(typed_ffn=True),
     "v2-move-tokens-typed-ffn": dict(encoder_version=2, move_tokens=True, typed_ffn=True),
+    "v2-history-tokens": dict(encoder_version=2, history_tokens=8),
 }
 
 

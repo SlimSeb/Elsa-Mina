@@ -100,3 +100,79 @@ def test_history_needs_encoder_v2_and_feeds_the_field_token():
     other["hist_feats"][:, 6:] = 1.0 - other["hist_feats"][:, 6:]
     with torch.no_grad():
         assert not torch.allclose(model(obs)[1], model(other)[1])
+
+
+# --------------------------------------------------------------------------
+# D3: history event tokens
+# --------------------------------------------------------------------------
+EVENT_LINES = [
+    "|switch|p1a: Garchomp|Garchomp, L77|250/250", opponent_switch("Venusaur"), "|turn|1",
+    "|move|p1a: Garchomp|Earthquake|p2a: Venusaur", "|-resisted|p2a: Venusaur",
+    "|-damage|p2a: Venusaur|70/100",
+    "|move|p2a: Venusaur|Sleep Powder|p1a: Garchomp|[miss]", "|-miss|p2a: Venusaur|p1a: Garchomp",
+    "|turn|2",
+    "|switch|p2a: Iron Valiant|Iron Valiant, L79|100/100",
+    "|move|p1a: Garchomp|Outrage|p2a: Iron Valiant", "|-immune|p2a: Iron Valiant", "|turn|3",
+    "|move|p2a: Iron Valiant|Moonblast|p1a: Garchomp", "|-supereffective|p1a: Garchomp",
+    "|-crit|p1a: Garchomp", "|-damage|p1a: Garchomp|0 fnt", "|faint|p1a: Garchomp",
+]
+
+
+def test_recent_events():
+    from history import recent_events
+    events = recent_events(split(*EVENT_LINES), 16)
+    assert [(e.side, e.species, e.move, e.turn) for e in events] == [
+        ("p1", "garchomp", None, 0), ("p2", "venusaur", None, 0),
+        ("p1", "garchomp", "earthquake", 1), ("p2", "venusaur", "sleeppowder", 1),
+        ("p2", "ironvaliant", None, 2), ("p1", "garchomp", "outrage", 2),
+        ("p2", "ironvaliant", "moonblast", 3)]
+    assert events[2].flags == {"resisted": True}
+    assert events[3].flags == {"miss": True}
+    assert events[5].flags == {"immune": True}
+    assert events[6].flags == {"supereffective": True, "crit": True, "ko": True}
+    assert [e.move for e in recent_events(split(*EVENT_LINES), 2)] == ["outrage", "moonblast"]
+    # a hazard KO on entry is not credited to a move of an earlier turn
+    hazard = split(*EVENT_LINES[:12], "|switch|p2a: Venusaur|Venusaur, L84|70/100",
+                   "|-damage|p2a: Venusaur|0 fnt|[from] Stealth Rock", "|faint|p2a: Venusaur")
+    assert not any(e.flags.get("ko") for e in recent_events(hazard, 16))
+    called = split("|move|p2a: Venusaur|Sleep Talk|p2a: Venusaur",
+                   "|move|p2a: Venusaur|Giga Drain|p1a: Garchomp|[from]move: Sleep Talk")
+    assert [e.called for e in recent_events(called, 4)] == [False, True]
+
+
+def test_event_arrays_replace_the_history_features():
+    enc = EncoderV2(hand_priors(), history=True, history_tokens=6)
+    assert "hist_ids" not in enc.layout and enc.layout["event_ids"][0] == (6, 2)
+    battle = make_battle(default_team(), EVENT_LINES[1:-2])     # up to the crit, Garchomp alive
+    obs = enc.encode(battle)
+    ids, feats = obs["event_ids"], obs["event_feats"]
+    assert feats[:, 0].tolist() == [1.0] * 6                  # 7 events, the last 6 kept
+    assert ids[-1].tolist() == [E.MOVE_VOCAB["moonblast"], E.SPECIES_VOCAB["ironvaliant"]]
+    assert ids[3].tolist() == [E.PAD_ID, E.SPECIES_VOCAB["ironvaliant"]]   # an entrance
+    assert feats[3, 3] == 1.0 and feats[3, 2] == 0.0
+    assert feats[-1, 1] == 0.0 and feats[-2, 1] == 1.0        # theirs, ours
+    assert feats[-1, 6] == 1.0 and feats[-1, 8] == 1.0        # crit, super effective
+    assert feats[0, 13] == pytest.approx(0.3)                 # Venusaur came in before turn 1
+    assert feats[1, 13] == pytest.approx(0.2)                 # Earthquake: turn 1, now turn 3
+    short = make_battle(default_team(), [opponent_switch("Venusaur"), "|turn|1"])
+    feats = enc.encode(short)["event_feats"]
+    assert feats[:, 0].tolist() == [0.0] * 4 + [1.0] * 2     # padding first
+
+
+def test_history_tokens_model():
+    import torch
+    from tests.helpers import make_model
+    from tests.test_model import batch_for
+    with pytest.raises(ValueError):
+        MiniPokeTransformer(ModelConfig(history_tokens=8))
+    model = make_model("small", encoder_version=2, history=True, history_tokens=8).eval()
+    assert not model.hist_features and model.n_tokens == 15 + 8
+    assert [t for t, _, _ in model.segments][-1] == "events"
+    obs = batch_for(model)
+    obs["event_feats"][0, :3, 0] = 0.0
+    x, present, _ = model.embed(obs)
+    assert present.shape == (6, 23) and not present[0, 15:18].any()
+    other = {k: v.clone() for k, v in obs.items()}
+    other["event_ids"][:, -1, 0] = (other["event_ids"][:, -1, 0] + 5) % 900 + 2
+    with torch.no_grad():
+        assert not torch.allclose(model(obs)[1], model(other)[1])

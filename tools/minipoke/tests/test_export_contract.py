@@ -115,6 +115,7 @@ V2_MODELS = {
     "v2-move-tokens": dict(size="small", encoder_version=2, move_tokens=True),
     "v2-history": dict(size="small", encoder_version=2, history=True),
     "v2-typed-ffn": dict(size="small", encoder_version=2, move_tokens=True, typed_ffn=True),
+    "v2-history-tokens": dict(size="small", encoder_version=2, history_tokens=8, typed_ffn=True),
 }
 
 
@@ -138,7 +139,9 @@ def test_v2_export_takes_v1s_inputs_then_its_own(exported_v2):
                        for n, (shape, dt) in list(model_encoder(model).layout.items())[6:]]
     assert [n for n, *_ in got[6:11]] == ["cand_ids", "cand_feats", "prior_ids", "prior_w",
                                           "prior_feats"]
-    assert ([n for n, *_ in got[11:]] == ["hist_ids", "hist_feats"]) == model.cfg.history
+    extra = [n for n, *_ in got[11:]]
+    assert ("hist_ids" in extra) == (model.cfg.history and not model.cfg.history_tokens)
+    assert ("event_ids" in extra) == bool(model.cfg.history_tokens)
     assert signature(graph.output) == CONTRACT_OUTPUTS
 
 

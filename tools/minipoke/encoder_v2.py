@@ -17,6 +17,17 @@ V1's slots; unrevealed slots and species without sets stay all zeros):
                                              sets, n consistent / n roles, fallback, Choice
                                              item possible
 
+With `history_tokens` K > 0 (ModelConfig.history_tokens), the last K events of the
+protocol log (history.recent_events), oldest first, padded at the front:
+
+    event_ids    int64 [K, 2]               move id (PAD for an entrance), species id
+    event_feats  f32   [K, F_EVENT]         present, ours, move, entrance, dragged in,
+                                             called / locked, crit, miss, super effective,
+                                             resisted, immune, failed, KO,
+                                             turns ago (min 10) / 10
+
+They replace the `history` arrays below (a model with both only gets the events).
+
 With `history` (ModelConfig.history), two more (history.py reads the protocol log):
 
     hist_ids     int64 [2]                  last move used by our active, by theirs (PAD)
@@ -38,19 +49,21 @@ import numpy as np
 from poke_env.battle import Battle, Move, Pokemon
 
 import encoder as E
-from history import (active_turns, lines_of, opponent_role, previous_turn, same_move_twice,
-                     switched_by_choice)
+from history import (active_turns, lines_of, opponent_role, previous_turn, recent_events,
+                     same_move_twice, switched_by_choice)
 from setpriors import MonPrior, SetPriors
 
 A_PRIOR = 4                              # abilities / items kept per Pokémon
 F_CAND = E.F_MOVE + 1
 F_PRIOR = E.NT + 4
 F_HIST = 8
+F_EVENT = 14
+EVENT_FLAGS = ["crit", "miss", "supereffective", "resisted", "immune", "fail", "ko"]
 TYPE_INDEX = {t.name.lower(): i for i, t in enumerate(E.TYPES)}
 
 Layout = Dict[str, Tuple[Tuple[int, ...], str]]
 # The ModelConfig fields that shape the observation (encoder_spec.json's "model")
-ENCODER_FLAGS = ("encoder_version", "cand_moves", "history")
+ENCODER_FLAGS = ("encoder_version", "cand_moves", "history", "history_tokens")
 
 V1_LAYOUT: Layout = {
     "mon_ids": ((E.N_MONS, 3), "int64"),
@@ -85,11 +98,13 @@ class EncoderV1:
 class EncoderV2(EncoderV1):
     version = 2
 
-    def __init__(self, priors: SetPriors, cand_moves: int = 8, history: bool = False):
+    def __init__(self, priors: SetPriors, cand_moves: int = 8, history: bool = False,
+                 history_tokens: int = 0):
         super().__init__()
         self.priors = priors
         self.k = cand_moves
-        self.history = history
+        self.history_tokens = history_tokens
+        self.history = history and not history_tokens  # events replace the features
         self.layout.update({
             "cand_ids": ((E.N_SLOTS, cand_moves), "int64"),
             "cand_feats": ((E.N_SLOTS, cand_moves, F_CAND), "float32"),
@@ -97,8 +112,11 @@ class EncoderV2(EncoderV1):
             "prior_w": ((E.N_SLOTS, 2, A_PRIOR), "float32"),
             "prior_feats": ((E.N_SLOTS, F_PRIOR), "float32"),
         })
-        if history:
+        if self.history:
             self.layout.update({"hist_ids": ((2,), "int64"), "hist_feats": ((F_HIST,), "float32")})
+        if history_tokens:
+            self.layout.update({"event_ids": ((history_tokens, 2), "int64"),
+                                "event_feats": ((history_tokens, F_EVENT), "float32")})
         self._moves: Dict[str, Optional[Move]] = {}
 
     def _move(self, move_id: str) -> Optional[Move]:
@@ -116,7 +134,29 @@ class EncoderV2(EncoderV1):
             opp = battle.opponent_active_pokemon
             active = [p for mon, p in zip(battle.opponent_team.values(), rows) if mon is opp]
             obs.update(self.encode_history(battle, bool(active) and active[0].choice_possible))
+        if self.history_tokens:
+            obs.update(self.encode_events(battle))
         return obs
+
+    def encode_events(self, battle: Battle) -> Dict[str, np.ndarray]:
+        k = self.history_tokens
+        ids = np.zeros((k, 2), dtype=np.int64)
+        feats = np.zeros((k, F_EVENT), dtype=np.float32)
+        events = recent_events(lines_of(battle), k)
+        for row, ev in zip(range(k - len(events), k), events):
+            ids[row, 0] = E.MOVE_VOCAB.get(ev.move, E.UNK_ID) if ev.move else E.PAD_ID
+            ids[row, 1] = E.SPECIES_VOCAB.get(ev.species, E.UNK_ID)
+            f = feats[row]
+            f[0] = 1.0
+            f[1] = float(ev.side == battle.player_role)
+            f[2] = float(ev.move is not None)
+            f[3] = float(ev.move is None)
+            f[4] = float(ev.drag)
+            f[5] = float(ev.called)
+            for i, flag in enumerate(EVENT_FLAGS):
+                f[6 + i] = float(ev.flags.get(flag, False))
+            f[13] = min(battle.turn - ev.turn, 10) / 10.0
+        return {"event_ids": ids, "event_feats": feats}
 
     def encode_history(self, battle: Battle, opp_choice_possible: bool) -> Dict[str, np.ndarray]:
         me, opp = battle.active_pokemon, battle.opponent_active_pokemon
@@ -200,6 +240,26 @@ class EncoderV2(EncoderV1):
                                 "move name and Struggle skipped, have the same move name",
             }
             out["orderings"]["hist_feats"] = out["history"]["features"]
+        if self.history_tokens:
+            out["history_tokens"] = {
+                "k": self.history_tokens,
+                "layout": "the last K events, oldest first, right-aligned (padding rows first)",
+                "events": "every |move| line (with or without a [from] tag) and every "
+                          "|switch| / |drag| line of the protocol log (poke-env "
+                          "Battle._replay_data); |replace| only updates who is who",
+                "event_ids": "[move id or PAD for an entrance, species id: from the details "
+                             "of the side's last entrance with that name, else the name's id]",
+                "flags": "-crit / -miss / -supereffective / -resisted / -immune / -fail lines "
+                         "after a |move| (until the next event) flag it, as do [miss] and "
+                         "[still] / [notarget] on the |move| line; a |faint| flags KO on the "
+                         "last move of the same turn by the other side, unless the fainted "
+                         "side had an entrance after that move",
+                "turn": "an event's turn is the last |turn| number before it (0 before turn 1); "
+                        "turns ago uses poke-env's battle.turn",
+            }
+            out["orderings"]["event_feats"] = [
+                "present", "ours", "move", "entrance", "dragged", "called_or_locked",
+                *EVENT_FLAGS, "turns ago (min 10) / 10"]
         return out
 
     def _priors_spec(self) -> dict:
@@ -243,7 +303,8 @@ def encoder_for(cfg, priors: Optional[SetPriors] = None):
         return EncoderV1()
     if priors is None:
         raise ValueError("an encoder v2 model needs its set priors (model.priors)")
-    return EncoderV2(priors, cfg.cand_moves, history=cfg.history)
+    return EncoderV2(priors, cfg.cand_moves, history=cfg.history,
+                     history_tokens=cfg.history_tokens)
 
 
 def model_encoder(model):
@@ -258,13 +319,14 @@ def random_obs(layout: Layout, batch: int, seed: int = 0) -> Dict[str, np.ndarra
         if name in V1_LAYOUT:
             continue
         if dtype == "int64":
-            high = E.VOCAB_SIZES["move"] if name in ("cand_ids", "hist_ids") else E.VOCAB_SIZES["ability"]
+            high = E.VOCAB_SIZES["move"] if name in ("cand_ids", "hist_ids", "event_ids") \
+                else E.VOCAB_SIZES["ability"]
             arr = rng.integers(0, high, size=(batch, *shape))
             if name == "prior_ids":
                 arr[..., 1, :] = rng.integers(0, E.VOCAB_SIZES["item"], size=(batch, *shape[:-2], shape[-1]))
         else:
             arr = rng.random(size=(batch, *shape)).astype(np.float32)
-            if name == "cand_feats":
+            if name in ("cand_feats", "event_feats"):
                 arr[..., 0] = (arr[..., 0] > 0.3).astype(np.float32)
         out[name] = arr.astype(np.int64 if dtype == "int64" else np.float32)
     return out
