@@ -1,11 +1,12 @@
 """
-MiniPokeTransformer — a ~1M-parameter take on ps-ppo's PokeTransformer that
-runs on Apple Silicon (MPS), CUDA or CPU.
+MiniPokeTransformer — a small take on ps-ppo's PokeTransformer that runs on
+Apple Silicon (MPS), CUDA or CPU. Presets: "small" (~0.9M parameters, the
+MiniPokeV1 architecture) and "medium" (~3.8M).
 
 Differences from the original:
   * No flex_attention / Triton: plain F.scaled_dot_product_attention with a
     boolean mask (supported on MPS).
-  * d_model 128 instead of 512, 3 layers, FFN x2.
+  * d_model 128 (small) or 256 (medium) instead of 512, FFN x2.
   * No turn history / KV cache and no JEPA auxiliary loss (each decision
     only sees the current state).
   * Pointer-style policy head: switch logits come from our 6 Pokémon tokens,
@@ -20,8 +21,8 @@ Attention mask ("poke-mask", as in the original):
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Dict, Tuple
+from dataclasses import asdict, dataclass, fields, replace
+from typing import Dict, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -36,6 +37,8 @@ MON0 = 3
 
 @dataclass
 class ModelConfig:
+    """Stored in every checkpoint. New fields need a default that rebuilds the
+    old architecture, so older checkpoints keep loading."""
     d_model: int = 128
     n_layers: int = 3
     n_heads: int = 4
@@ -45,6 +48,40 @@ class ModelConfig:
     item_dim: int = 16
     ability_dim: int = 16
     move_dim: int = 32
+    # Value head: 1 = scalar (V1). > 1 = distributional, trained with two-hot
+    # cross-entropy over `value_bins` evenly spaced returns in [value_min, value_max].
+    # forward() always returns the scalar expectation either way.
+    value_bins: int = 1
+    value_min: float = -1.6
+    value_max: float = 1.6
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "ModelConfig":
+        known = {f.name for f in fields(cls)}
+        return cls(**{k: v for k, v in d.items() if k in known})
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+PRESETS: Dict[str, ModelConfig] = {
+    "small": ModelConfig(),
+    "medium": ModelConfig(d_model=256, n_layers=4, n_heads=8, ff_mult=2.0,
+                          species_dim=64, item_dim=32, ability_dim=32, move_dim=64,
+                          value_bins=51),
+}
+
+
+def size_of(cfg: ModelConfig) -> str:
+    """The preset whose transformer shape matches cfg ("small" when none does)."""
+    for name, p in PRESETS.items():
+        if (cfg.d_model, cfg.n_layers, cfg.n_heads) == (p.d_model, p.n_layers, p.n_heads):
+            return name
+    return "small"
+
+
+def preset(name: str, **overrides) -> ModelConfig:
+    return replace(PRESETS[name], **{k: v for k, v in overrides.items() if v is not None})
 
 
 def mlp(in_d: int, out_d: int, hidden_mult: int = 2) -> nn.Sequential:
@@ -96,8 +133,9 @@ class EncoderLayer(nn.Module):
 
 
 class MiniPokeTransformer(nn.Module):
-    def __init__(self, cfg: ModelConfig = ModelConfig()):
+    def __init__(self, cfg: Optional[ModelConfig] = None):
         super().__init__()
+        cfg = cfg or ModelConfig()
         self.cfg = cfg
         d = cfg.d_model
 
@@ -124,8 +162,12 @@ class MiniPokeTransformer(nn.Module):
         # Policy: pointer heads
         self.switch_head = nn.Sequential(nn.Linear(2 * d, d), nn.GELU(), nn.Linear(d, 1))
         self.move_head = nn.Sequential(nn.Linear(3 * d, d), nn.GELU(), nn.Linear(d, 2))
-        # Value
-        self.value_head = nn.Sequential(nn.Linear(d, d), nn.GELU(), nn.Linear(d, 1))
+        # Value: one scalar, or logits over a fixed support of returns
+        self.value_head = nn.Sequential(nn.Linear(d, d), nn.GELU(), nn.Linear(d, cfg.value_bins))
+        if cfg.value_bins > 1:
+            self.register_buffer("value_support",
+                                 torch.linspace(cfg.value_min, cfg.value_max, cfg.value_bins),
+                                 persistent=False)
 
         self.apply(self._init)
 
@@ -137,8 +179,18 @@ class MiniPokeTransformer(nn.Module):
         elif isinstance(m, nn.Embedding):
             nn.init.normal_(m.weight, std=0.02)
 
+    @property
+    def distributional(self) -> bool:
+        return self.cfg.value_bins > 1
+
     def forward(self, obs: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Returns masked policy logits [B, 14] and value [B]."""
+        """Returns masked policy logits [B, 14] and value [B] (a scalar expected return)."""
+        logits, value, _ = self.forward_train(obs)
+        return logits, value
+
+    def forward_train(self, obs: Dict[str, torch.Tensor]
+                      ) -> Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
+        """Like forward(), plus the value logits [B, bins] (None for a scalar head)."""
         mon_ids, move_ids = obs["mon_ids"], obs["move_ids"]
         mon_feats, move_feats = obs["mon_feats"], obs["move_feats"]
         B = mon_ids.shape[0]
@@ -207,8 +259,11 @@ class MiniPokeTransformer(nn.Module):
         mask = mask | ~has_legal
         logits = logits.masked_fill(~mask, -1e9)
 
-        value = self.value_head(critic).squeeze(-1)
-        return logits, value
+        if not self.distributional:
+            return logits, self.value_head(critic).squeeze(-1), None
+        value_logits = self.value_head(critic)
+        value = torch.softmax(value_logits, dim=-1) @ self.value_support
+        return logits, value, value_logits
 
 
 def to_tensors(batch, device) -> Dict[str, torch.Tensor]:
@@ -234,6 +289,23 @@ def pick_device(pref: str = "auto") -> torch.device:
 
 def count_params(model: nn.Module) -> int:
     return sum(p.numel() for p in model.parameters())
+
+
+def describe(model: nn.Module) -> str:
+    """Parameter count, total and per top-level module."""
+    groups: Dict[str, int] = {}
+    for name, p in model.named_parameters():
+        key = name.split(".")[0]
+        groups[key] = groups.get(key, 0) + p.numel()
+    parts = ", ".join(f"{k} {v / 1e3:.0f}k" for k, v in groups.items() if v >= 1000)
+    return f"{count_params(model):,} params ({parts})"
+
+
+def build_model(state: dict) -> MiniPokeTransformer:
+    """Rebuilds a model from a checkpoint dict ({"model": state_dict, "cfg": {...}})."""
+    model = MiniPokeTransformer(ModelConfig.from_dict(state["cfg"]))
+    model.load_state_dict(state["model"])
+    return model
 
 
 assert ACT_DIM == N_SLOTS + 2 * N_MOVES
