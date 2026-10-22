@@ -112,6 +112,7 @@ def test_size_is_recognised_from_a_checkpoint_config():
 V2_MODELS = {
     "v2-small": dict(size="small", encoder_version=2),
     "v2-medium": dict(size="medium", encoder_version=2),
+    "v2-move-tokens": dict(size="small", encoder_version=2, move_tokens=True),
 }
 
 
@@ -173,3 +174,14 @@ def test_v2_checkpoints_round_trip_with_their_priors(tmp_path):
     diff = export_checkpoint(tmp_path / "v2.pt", tmp_path / "export")
     assert diff["logits"] < 1e-4
     assert (tmp_path / "export" / "set_priors.json").exists()
+
+
+def test_v1_move_token_model_keeps_v1s_signature_and_matches_pytorch(tmp_path):
+    from tests.helpers import make_model
+    model = make_model("small", move_tokens=True).eval()
+    onnx_path = export(model, tmp_path)
+    graph = onnx.load(str(onnx_path)).graph
+    assert signature(graph.input) == CONTRACT_INPUTS
+    assert signature(graph.output) == CONTRACT_OUTPUTS
+    diff = parity(model, onnx_path, batch=19)
+    assert diff["logits"] < 1e-4 and diff["value"] < 1e-5

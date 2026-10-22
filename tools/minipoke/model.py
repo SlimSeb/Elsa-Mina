@@ -24,6 +24,15 @@ encoder_version 2 (minipoke-v2) reads encoder_v2.py's set priors: each opponent
 Pokémon's candidate moves go through the same move MLP as known moves (with a
 known/candidate flag and their fraction), and their fraction-weighted mean, the
 ability / item prior embeddings and the prior features join its token's input.
+
+move_tokens: one more token per (Pokémon, move slot), its moves and, with
+encoder v2, the opponents' candidate moves, after the 15 above:
+    [actor, critic, field, 12 mons, 12 x 4 known moves, 6 x K candidate moves]
+plus learned embeddings of the owning Pokémon slot and of known / candidate.
+They are state tokens (same mask rules); empty slots are masked out as keys.
+The move head then reads our active Pokémon's move tokens after the transformer
+instead of the move vectors before it. The Pokémon tokens no longer concatenate
+their move vectors.
 """
 
 from __future__ import annotations
@@ -41,6 +50,7 @@ from encoder_v2 import F_PRIOR
 N_TOKENS = 3 + N_MONS
 ACTOR, CRITIC, FIELD_TOK = 0, 1, 2
 MON0 = 3
+MOVE0 = N_TOKENS        # first move token (move_tokens)
 
 
 @dataclass
@@ -66,6 +76,8 @@ class ModelConfig:
     # set priors), whose opponent Pokémon have up to `cand_moves` candidate moves.
     encoder_version: int = 1
     cand_moves: int = 8
+    # One token per (Pokémon, move slot); the move head reads them after the transformer
+    move_tokens: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
@@ -107,9 +119,10 @@ def mlp(in_d: int, out_d: int, hidden_mult: int = 2) -> nn.Sequential:
     )
 
 
-def build_attention_mask() -> torch.Tensor:
-    """Boolean [T, T] mask, True = may attend."""
-    m = torch.zeros(N_TOKENS, N_TOKENS, dtype=torch.bool)
+def build_attention_mask(n_tokens: int = N_TOKENS) -> torch.Tensor:
+    """Boolean [T, T] mask, True = may attend. Every token from FIELD_TOK on is a
+    state token."""
+    m = torch.zeros(n_tokens, n_tokens, dtype=torch.bool)
     m[FIELD_TOK:, FIELD_TOK:] = True       # state <-> state
     m[ACTOR, FIELD_TOK:] = True            # actor -> state
     m[CRITIC, FIELD_TOK:] = True           # critic -> state
@@ -161,11 +174,16 @@ class MiniPokeTransformer(nn.Module):
         if cfg.encoder_version not in (1, 2):
             raise ValueError(f"unknown encoder_version {cfg.encoder_version}")
         self.v2 = cfg.encoder_version == 2
+        self.n_move_tokens = 0
+        if cfg.move_tokens:
+            self.n_move_tokens = N_MONS * N_MOVES + (N_SLOTS * cfg.cand_moves if self.v2 else 0)
+        self.n_tokens = N_TOKENS + self.n_move_tokens
         # v2: + known/candidate flag and fraction of consistent roles (1 for known moves)
         self.move_net = mlp(cfg.move_dim + F_MOVE + (2 if self.v2 else 0), d)
-        mon_in = cfg.species_dim + cfg.item_dim + cfg.ability_dim + F_MON + N_MOVES * d
+        moves_in = 0 if cfg.move_tokens else N_MOVES * d   # move tokens: moves are tokens
+        mon_in = cfg.species_dim + cfg.item_dim + cfg.ability_dim + F_MON + moves_in
         if self.v2:  # candidate moves' weighted mean, ability / item priors, prior features
-            mon_in += d + cfg.ability_dim + cfg.item_dim + F_PRIOR
+            mon_in += moves_in // N_MOVES + cfg.ability_dim + cfg.item_dim + F_PRIOR
         self.mon_net = mlp(mon_in, d)
         # Shared, not a parameter: what encoder_v2 needs to rebuild this model's
         # observations (saved in checkpoints and exported as set_priors.json).
@@ -180,7 +198,7 @@ class MiniPokeTransformer(nn.Module):
             EncoderLayer(d, cfg.n_heads, cfg.ff_mult, cfg.dropout) for _ in range(cfg.n_layers)
         )
         self.final_norm = nn.LayerNorm(d)
-        self.register_buffer("attn_mask", build_attention_mask(), persistent=False)
+        self.register_buffer("attn_mask", build_attention_mask(self.n_tokens), persistent=False)
 
         # Policy: pointer heads
         self.switch_head = nn.Sequential(nn.Linear(2 * d, d), nn.GELU(), nn.Linear(d, 1))
@@ -191,6 +209,12 @@ class MiniPokeTransformer(nn.Module):
             self.register_buffer("value_support",
                                  torch.linspace(cfg.value_min, cfg.value_max, cfg.value_bins),
                                  persistent=False)
+        if cfg.move_tokens:
+            self.move_owner_emb = nn.Parameter(torch.randn(N_MONS, d) * 0.02)  # owning slot
+            self.move_known_emb = nn.Parameter(torch.randn(2, d) * 0.02)       # candidate / known
+            self.register_buffer("self_attend", torch.eye(self.n_tokens, dtype=torch.bool),
+                                 persistent=False)
+            self.register_buffer("move_offsets", torch.arange(N_MOVES), persistent=False)
 
         self.apply(self._init)
 
@@ -214,24 +238,41 @@ class MiniPokeTransformer(nn.Module):
                        torch.zeros_like(present), cand_feats[..., F_MOVE:]], dim=-1)
         return self.move_net(x) * present
 
-    def _prior_inputs(self, obs: Dict[str, torch.Tensor]) -> torch.Tensor:
-        """Extra token input of the 6 opponent Pokémon: [B, 6, d + ability + item + F_PRIOR]."""
-        cand_vec = self._candidate_vectors(obs)
-        frac = obs["cand_feats"][..., F_MOVE:] * obs["cand_feats"][..., 0:1]   # [B, 6, K, 1]
-        pooled = (cand_vec * frac).sum(2) / frac.sum(2).clamp_min(1e-6)
+    def _prior_inputs(self, obs: Dict[str, torch.Tensor],
+                      cand_vec: Optional[torch.Tensor]) -> torch.Tensor:
+        """Extra token input of the 6 opponent Pokémon: [B, 6, (d) + ability + item +
+        F_PRIOR], with the candidates' weighted mean when they are not tokens."""
+        parts = []
+        if cand_vec is not None:
+            frac = obs["cand_feats"][..., F_MOVE:] * obs["cand_feats"][..., 0:1]  # [B, 6, K, 1]
+            parts.append((cand_vec * frac).sum(2) / frac.sum(2).clamp_min(1e-6))
         ids, w = obs["prior_ids"], obs["prior_w"].unsqueeze(-1)              # [B, 6, 2, A]
-        abilities = (self.ability_emb(ids[:, :, 0]) * w[:, :, 0]).sum(2)
-        items = (self.item_emb(ids[:, :, 1]) * w[:, :, 1]).sum(2)
-        return torch.cat([pooled, abilities, items, obs["prior_feats"]], dim=-1)
+        parts.append((self.ability_emb(ids[:, :, 0]) * w[:, :, 0]).sum(2))
+        parts.append((self.item_emb(ids[:, :, 1]) * w[:, :, 1]).sum(2))
+        return torch.cat(parts + [obs["prior_feats"]], dim=-1)
 
-    def forward(self, obs: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Returns masked policy logits [B, 14] and value [B] (a scalar expected return)."""
-        logits, value, _ = self.forward_train(obs)
-        return logits, value
+    def _move_tokens(self, obs: Dict[str, torch.Tensor], move_vec: torch.Tensor,
+                     cand_vec: Optional[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Move tokens [B, n_move_tokens, d] and whether each slot holds a move [B, n]."""
+        B, d = move_vec.shape[0], self.cfg.d_model
+        known = move_vec + self.move_owner_emb[:, None, :] + self.move_known_emb[1]
+        tokens = [known.reshape(B, N_MONS * N_MOVES, d)]
+        present = [obs["move_feats"][..., 0].reshape(B, N_MONS * N_MOVES) > 0]
+        if cand_vec is not None:
+            cand = cand_vec + self.move_owner_emb[N_SLOTS:, None, :] + self.move_known_emb[0]
+            tokens.append(cand.reshape(B, -1, d))
+            present.append(obs["cand_feats"][..., 0].reshape(B, -1) > 0)
+        return torch.cat(tokens, dim=1), torch.cat(present, dim=1)
 
-    def forward_train(self, obs: Dict[str, torch.Tensor]
-                      ) -> Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
-        """Like forward(), plus the value logits [B, bins] (None for a scalar head)."""
+    def attention_mask(self, key_present: Optional[torch.Tensor]) -> torch.Tensor:
+        """[T, T] (every token present), or [B, 1, T, T] where tokens that are not
+        present are no one's key but their own (so no row is empty)."""
+        if key_present is None:
+            return self.attn_mask
+        return (self.attn_mask & (key_present[:, None, :] | self.self_attend)).unsqueeze(1)
+
+    def embed(self, obs: Dict[str, torch.Tensor]):
+        """-> (tokens [B, T, d], key_present [B, T] or None, move_vec [B, 12, 4, d])."""
         mon_ids, move_ids = obs["mon_ids"], obs["move_ids"]
         mon_feats, move_feats = obs["mon_feats"], obs["move_feats"]
         B = mon_ids.shape[0]
@@ -244,6 +285,7 @@ class MiniPokeTransformer(nn.Module):
             mv += [move_present, move_present]       # known, fraction 1
         move_vec = self.move_net(torch.cat(mv, dim=-1))
         move_vec = move_vec * move_present
+        cand_vec = self._candidate_vectors(obs) if self.v2 else None
 
         # --- Pokémon tokens [B, 12, d]
         parts = [
@@ -251,10 +293,11 @@ class MiniPokeTransformer(nn.Module):
             self.item_emb(mon_ids[..., 1]),
             self.ability_emb(mon_ids[..., 2]),
             mon_feats,
-            move_vec.reshape(B, N_MONS, N_MOVES * d),
         ]
+        if not self.cfg.move_tokens:
+            parts.append(move_vec.reshape(B, N_MONS, N_MOVES * d))
         if self.v2:
-            theirs = self._prior_inputs(obs)
+            theirs = self._prior_inputs(obs, None if self.cfg.move_tokens else cand_vec)
             parts.append(torch.cat([torch.zeros_like(theirs), theirs], dim=1))
         mons = self.mon_net(torch.cat(parts, dim=-1))
         side = torch.cat(
@@ -263,11 +306,28 @@ class MiniPokeTransformer(nn.Module):
         mons = mons + side
 
         field = self.field_net(obs["field"]).unsqueeze(1)
-        x = torch.cat(
-            [self.actor_tok.expand(B, 1, d), self.critic_tok.expand(B, 1, d), field, mons], dim=1
-        )
+        tokens = [self.actor_tok.expand(B, 1, d), self.critic_tok.expand(B, 1, d), field, mons]
+        key_present = None
+        if self.cfg.move_tokens:
+            moves, present = self._move_tokens(obs, move_vec, cand_vec)
+            tokens.append(moves)
+            key_present = torch.cat([present.new_ones(B, N_TOKENS), present], dim=1)
+        return torch.cat(tokens, dim=1), key_present, move_vec
+
+    def forward(self, obs: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Returns masked policy logits [B, 14] and value [B] (a scalar expected return)."""
+        logits, value, _ = self.forward_train(obs)
+        return logits, value
+
+    def forward_train(self, obs: Dict[str, torch.Tensor]
+                      ) -> Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
+        """Like forward(), plus the value logits [B, bins] (None for a scalar head)."""
+        mon_feats = obs["mon_feats"]
+        x, key_present, move_vec = self.embed(obs)
+        B, d = x.shape[0], self.cfg.d_model
+        mask = self.attention_mask(key_present)
         for layer in self.layers:
-            x = layer(x, self.attn_mask)
+            x = layer(x, mask)
         x = self.final_norm(x)
 
         actor = x[:, ACTOR]                              # [B, d]
@@ -282,7 +342,11 @@ class MiniPokeTransformer(nn.Module):
         active_flag = mon_feats[:, :N_SLOTS, 3]               # [B, 6]
         active_idx = active_flag.argmax(dim=-1)               # [B]
         ar = torch.arange(B, device=x.device)
-        act_moves = move_vec[ar, active_idx]                  # [B, 4, d]
+        if self.cfg.move_tokens:  # its move tokens, after the transformer
+            idx = (MOVE0 + active_idx * N_MOVES).unsqueeze(1) + self.move_offsets   # [B, 4]
+            act_moves = torch.gather(x, 1, idx.unsqueeze(-1).expand(-1, -1, d))
+        else:
+            act_moves = move_vec[ar, active_idx]              # [B, 4, d]
         act_tok = our_mons[ar, active_idx]                    # [B, d]
         mv_in = torch.cat(
             [

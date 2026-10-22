@@ -123,7 +123,8 @@ def server_for(args, run_dir: Optional[Path]) -> ShowdownServer:
 
 def new_model(args) -> MiniPokeTransformer:
     cfg = preset(args.size, dropout=args.dropout, value_bins=args.value_bins,
-                 encoder_version=args.encoder_version, cand_moves=args.cand_moves)
+                 encoder_version=args.encoder_version, cand_moves=args.cand_moves,
+                 move_tokens=args.move_tokens or None)
     model = MiniPokeTransformer(cfg)
     if cfg.encoder_version >= 2:
         model.priors = SetPriors.from_showdown(args.sets, args.showdown_cwd)
@@ -526,9 +527,10 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--dropout", type=float, default=None)
         p.add_argument("--value-bins", type=int, default=None,
                        help="1 = scalar value head; default 1 small/wide, 51 medium")
-        v2_args(p)
+        arch_args(p)
 
-    def v2_args(p):
+    def arch_args(p):
+        """Architecture of a new model (--init / --resume keep the checkpoint's)."""
         p.add_argument("--encoder-version", type=int, default=None, choices=[1, 2],
                        help="observation layout of a new model: 1 = encoder.py (default), "
                             "2 = encoder_v2.py (minipoke-v2: random battle set priors)")
@@ -537,6 +539,9 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--sets", default=None,
                        help="v2: Showdown's gen 9 random battle sets file or Showdown clone "
                             "(default: the one in --showdown-cwd)")
+        p.add_argument("--move-tokens", action="store_true",
+                       help="one token per (Pokémon, move slot), candidates included; the move "
+                            "head reads our active's move tokens after the transformer")
 
     def value_ce_arg(p, default="log-bins"):
         p.add_argument("--value-ce-norm", default=default, choices=["log-bins", "none"],
@@ -580,7 +585,7 @@ def build_parser() -> argparse.ArgumentParser:
                    help="for a new model and its defaults; --init/--resume keep their architecture")
     p.add_argument("--dropout", type=float, default=None)
     p.add_argument("--value-bins", type=int, default=None)
-    v2_args(p)
+    arch_args(p)
     p.add_argument("--init", default=None, help="checkpoint to start from (e.g. checkpoints/bc.pt)")
     p.add_argument("--resume", default=None, help="continue a run (e.g. checkpoints/ppo_latest.pt)")
     p.add_argument("--run", default=None, help="name under runs/ (metrics.csv, train.log)")
