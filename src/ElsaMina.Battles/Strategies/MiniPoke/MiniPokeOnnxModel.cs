@@ -6,8 +6,8 @@ namespace ElsaMina.Battles.Strategies.MiniPoke;
 
 /// <summary>
 /// Thin wrapper over an ONNX Runtime session. InferenceSession.Run is thread-safe, so a
-/// single instance serves every battle room concurrently. The ~1M-parameter model runs
-/// in well under a millisecond on CPU.
+/// single instance serves every battle room concurrently. On CPU the ~1M-parameter models
+/// run in under a millisecond, the ~4M-parameter ones in about two.
 /// </summary>
 public sealed class MiniPokeOnnxModel : IMiniPokeModel, IDisposable
 {

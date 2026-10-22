@@ -29,8 +29,9 @@ public class BattlesModule : Module
         builder.RegisterType<LlmBattlePromptBuilder>().As<ILlmBattlePromptBuilder>().SingleInstance();
         builder.RegisterType<LlmBattleDecisionParser>().As<ILlmBattleDecisionParser>().SingleInstance();
         builder.RegisterType<LlmBattleDecisionService>().AsSelf().SingleInstance();
-        // minipoke model versions: one line each (see tools/minipoke/README.md)
-        RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1);
+        // minipoke models: one line each (see tools/minipoke/README.md)
+        RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_1M);
+        RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_4M);
         builder.RegisterType<BattleDecisionManager>().As<IBattleDecisionService>().As<IBattleDecisionManager>().SingleInstance();
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
         builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();
@@ -45,7 +46,7 @@ public class BattlesModule : Module
     }
 
     /// <summary>
-    /// A minipoke model version: the files exported to Models/{strategy}, played by its own decision service
+    /// A minipoke model: the files exported to Models/{strategy}, played by its own decision service
     /// with the encoder matching the encoder.py it was trained with. The decision manager picks up every version.
     /// </summary>
     private static void RegisterMiniPoke<TEncoder>(ContainerBuilder builder, BattleDecisionStrategy strategy)

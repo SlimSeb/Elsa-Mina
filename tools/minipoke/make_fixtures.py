@@ -29,12 +29,13 @@ One gzipped JSON file per battle side, written to ``--out``:
       ]
     }
 
-Usage (with a Showdown server on localhost:8000), for model version N:
+Usage (with a Showdown server on localhost:8000), for model N_SIZE (version N, size
+SIZE in parameters, e.g. 1_4M):
 
-    python make_fixtures.py --version N --battles 20
+    python make_fixtures.py --version N_SIZE --battles 20
 
-reads the model and spec exported to src/ElsaMina.Battles/Models/MiniPokeVN and
-writes the fixtures to test/ElsaMina.UnitTests/Battles/Strategies/MiniPokeVN/Fixtures.
+reads the model and spec exported to src/ElsaMina.Battles/Models/MiniPokeVN_SIZE and
+writes the fixtures to test/ElsaMina.UnitTests/Battles/Strategies/MiniPokeVN_SIZE/Fixtures.
 --model, --spec and --out override those paths. Run it with the encoder.py the
 model was trained with: the fixtures record what that encoder.py produces.
 
@@ -172,7 +173,7 @@ def check_spec(spec_path: Optional[str]) -> None:
 
 async def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--version", type=int, help="model version N: use the MiniPokeVN model, spec and fixtures paths")
+    ap.add_argument("--version", help="model N_SIZE (e.g. 1_4M): use the MiniPokeVN_SIZE model, spec and fixtures paths")
     ap.add_argument("--battles", type=int, default=20)
     ap.add_argument("--out", help="fixtures directory")
     ap.add_argument("--model", help="minipoke.onnx: also record the model's logits")

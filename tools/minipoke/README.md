@@ -3,7 +3,7 @@
 A proof of concept based on [Nebraskinator/ps-ppo](https://github.com/Nebraskinator/ps-ppo),
 shrunk to run on Apple Silicon with [poke-env](https://github.com/hsahovic/poke-env)
 and a **single** local Showdown server. ElsaMina plays with the exported models
-(`-strategy minipokev1`, see [Using a model in ElsaMina](#using-a-model-in-elsamina)).
+(`-strategy minipokev1-4m`, see [Using a model in ElsaMina](#using-a-model-in-elsamina)).
 
 | | ps-ppo | minipoke |
 |---|---|---|
@@ -83,9 +83,11 @@ Showdown and Python together stay under ~2 GB at moderate concurrency.
 
 ## Using a model in ElsaMina
 
-Each exported model is a **version**: `MiniPokeV1`, `MiniPokeV2`... ElsaMina keeps
-every version side by side, so they can be compared with `-strategy minipokevN`
-(`-strategy minipoke` picks the latest one).
+Each exported model is named after its **version** (the `encoder.py` it was trained
+with) and its size in parameters: `MiniPokeV1_1M`, `MiniPokeV1_4M`, later `MiniPokeV2_...`.
+Models of one version share their C# encoder. ElsaMina keeps every model side by side,
+so they can be compared with `-strategy minipokevN-size` (`minipokev1-1m`, `minipokev1-4m`;
+`-strategy minipoke` picks the latest one).
 
 The C# side reproduces what the model sees in training:
 
@@ -94,37 +96,41 @@ The C# side reproduces what the model sees in training:
 | poke-env's battle tracking | `src/ElsaMina.Battles/Tracking` (shared by every version) |
 | `encoder.py`: slots, ids, item hashing, action mask | `Strategies/MiniPoke/MiniPokeEncoder.cs` (shared) |
 | `encoder.py`: feature vectors | `Strategies/MiniPokeVN/MiniPokeVNEncoder.cs` (one per version) |
-| `export_onnx.py` outputs | `src/ElsaMina.Battles/Models/MiniPokeVN/` |
+| `export_onnx.py` outputs | `src/ElsaMina.Battles/Models/MiniPokeVN_SIZE/` (one per model) |
 | ONNX inference, action → `/choose` | `Strategies/MiniPoke/` (shared) |
 
 Any difference between the two encoders is silent: the model still plays legal
 moves, just badly. The parity fixtures catch it.
 
-### Releasing a new version N
+### Releasing a new model N_SIZE
+
+`N_SIZE` is the version and the size, `1_4M` for minipoke v1 with ~4M parameters.
 
 1. Export the checkpoint into its model directory:
    ```bash
-   python export_onnx.py --ckpt checkpoints/ppo_latest.pt --out ../../src/ElsaMina.Battles/Models/MiniPokeVN
+   python export_onnx.py --ckpt checkpoints/ppo_latest.pt --out ../../src/ElsaMina.Battles/Models/MiniPokeVN_SIZE
    ```
 2. Record parity fixtures with the `encoder.py` this model was trained with
    (Showdown running):
    ```bash
-   python make_fixtures.py --version N --battles 20
+   python make_fixtures.py --version N_SIZE --battles 20
    ```
 3. On the C# side:
-   - add `MiniPokeVN` to `BattleDecisionStrategy`;
-   - add `RegisterMiniPoke<...>(builder, BattleDecisionStrategy.MiniPokeVN);` to `BattlesModule`.
+   - add `MiniPokeVN_SIZE` to `BattleDecisionStrategy`;
+   - add `RegisterMiniPoke<...>(builder, BattleDecisionStrategy.MiniPokeVN_SIZE);` to `BattlesModule`.
      If `encoder.py`'s features did not change, reuse the previous version's encoder.
-     If they did, copy it to `Strategies/MiniPokeVN/MiniPokeVNEncoder.cs` and port the changes;
-   - copy `test/.../Battles/Strategies/MiniPokeV1/MiniPokeV1ParityTest.cs` (and its
+     If they did, this is a new version: copy it to `Strategies/MiniPokeVN/MiniPokeVNEncoder.cs`
+     and port the changes;
+   - add the model to `MODELS` in its version's parity test. For a new version, copy
+     `test/.../Battles/Strategies/MiniPokeV1/MiniPokeV1ParityTest.cs` (and its
      `FeatureNames` if the features changed) to `MiniPokeVN`.
-4. Run the tests. `MiniPokeVNParityTest` must pass: every array equal to what
-   `encoder.py` produced, every action mapped to the order poke-env sent, and the
-   same logits in Python's onnxruntime and ElsaMina's.
+4. Run the tests. `MiniPokeVNParityTest` must pass for the model: every array equal
+   to what `encoder.py` produced, every action mapped to the order poke-env sent, and
+   the same logits in Python's onnxruntime and ElsaMina's.
 
-Older versions keep working as long as their encoder stays as it was. Their
+Older models keep working as long as their encoder stays as it was. Their
 fixtures were recorded with their own `encoder.py`: tag the commit of each
-release (`git tag minipoke-vN`) to regenerate them later.
+release (`git tag minipoke-v1-4m`) to regenerate them later.
 
 Upgrading poke-env, or changing what `encoder.py` reads from it, means checking
 the C# tracker against new fixtures too.

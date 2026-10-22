@@ -13,8 +13,8 @@ namespace ElsaMina.UnitTests.Battles.Strategies.MiniPokeV1;
 /// </summary>
 public class MiniPokeV1EncoderTest
 {
-    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV1,
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV1"));
+    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV1_1M,
+        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV1_1M"));
     private static readonly string[] PROTECT_ONLY = ["protect"];
 
     private BattleMessageParser _parser;

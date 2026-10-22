@@ -25,7 +25,7 @@ public class BattleStrategyCommand : Command
         {
             var active = _battleDecisionManager.ActiveStrategy;
             var available = string.Join(", ",
-                _battleDecisionManager.AvailableStrategies.Select(strategy => strategy.ToString().ToLowerInvariant()));
+                _battleDecisionManager.AvailableStrategies.Select(strategy => strategy.GetName()));
             context.Reply(
                 $"Current battle decision strategy: **{active}**. Available strategies: {available}. Use ``-strategy <name>`` to switch.");
             return Task.CompletedTask;
@@ -38,7 +38,7 @@ public class BattleStrategyCommand : Command
         else
         {
             var available = string.Join(", ",
-                _battleDecisionManager.AvailableStrategies.Select(s => s.ToString().ToLowerInvariant()));
+                _battleDecisionManager.AvailableStrategies.Select(strategy => strategy.GetName()));
             context.Reply($"Unknown strategy \"{target}\". Available strategies: {available}.");
         }
 

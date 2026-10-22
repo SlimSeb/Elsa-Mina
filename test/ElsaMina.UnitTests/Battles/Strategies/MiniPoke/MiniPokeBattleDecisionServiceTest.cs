@@ -15,7 +15,7 @@ public class MiniPokeBattleDecisionServiceTest
     // The calc fallback picks a random move: make it pick a move index the model never maps to
     private const int FALLBACK_MOVE_CHOICE = 99;
     private const int ACTION_COUNT = BattleObservation.ActionCount;
-    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV1, "Models/MiniPokeV1");
+    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV1_1M, "Models/MiniPokeV1_1M");
     private static readonly int[] SECOND_CHOICE = [2];
     private static readonly int[] FOURTH_CHOICE = [4];
     private static readonly int[] FIFTH_CHOICE = [5];
@@ -314,7 +314,7 @@ public class MiniPokeBattleDecisionServiceTest
     public void Test_Strategy_ShouldBeTheModelVersionStrategy()
     {
         // Assert
-        Assert.That(_service.Strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV1));
+        Assert.That(_service.Strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV1_1M));
     }
 
     [Test]

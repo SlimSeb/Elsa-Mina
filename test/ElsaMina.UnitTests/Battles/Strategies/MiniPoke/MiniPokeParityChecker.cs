@@ -9,8 +9,9 @@ namespace ElsaMina.UnitTests.Battles.Strategies.MiniPoke;
 
 /// <summary>
 /// Replays battles recorded by tools/minipoke/make_fixtures.py through <see cref="BattleMessageParser"/> and
-/// compares a model version's C# encoder, action mapping and ONNX model with what Python produced on the same
-/// lines. Each version's parity test runs it with its own encoder and fixtures.
+/// compares a minipoke version's C# encoder, action mapping and ONNX model with what Python produced on the same
+/// lines. Each version's parity test runs it for every model of that version, with the version's encoder and the
+/// model's fixtures.
 /// </summary>
 public class MiniPokeParityChecker
 {
@@ -25,7 +26,7 @@ public class MiniPokeParityChecker
     private readonly IMiniPokeEncoder _encoder;
     private readonly Func<string, int, string> _describeFeature;
 
-    /// <param name="fixturesDirectory">Where the version's fixtures are copied in the test output.</param>
+    /// <param name="fixturesDirectory">Where the model's fixtures are copied in the test output.</param>
     /// <param name="encoder">The version's encoder.</param>
     /// <param name="describeFeature">Names a position of an array ("mon_feats", 12) for failure reports.</param>
     public MiniPokeParityChecker(string fixturesDirectory, IMiniPokeEncoder encoder,
@@ -37,14 +38,13 @@ public class MiniPokeParityChecker
     }
 
     /// <summary>
-    /// One test case per recorded battle side.
+    /// The recorded battle sides, one test case each.
     /// </summary>
-    public static IEnumerable<TestCaseData> FixtureCases(string fixturesDirectory)
+    public static IEnumerable<string> FixtureFileNames(string fixturesDirectory)
     {
         return Directory.EnumerateFiles(fixturesDirectory, "*.json.gz")
             .Select(Path.GetFileName)
-            .Order(StringComparer.Ordinal)
-            .Select(fileName => new TestCaseData(fileName).SetArgDisplayNames(fileName));
+            .Order(StringComparer.Ordinal);
     }
 
     public MiniPokeFixture Load(string fileName)
@@ -56,7 +56,7 @@ public class MiniPokeParityChecker
 
     public int CountDecisions()
     {
-        return FixtureCases(_fixturesDirectory).Sum(testCase => Load((string)testCase.Arguments[0]).Decisions.Count);
+        return FixtureFileNames(_fixturesDirectory).Sum(fileName => Load(fileName).Decisions.Count);
     }
 
     /// <summary>

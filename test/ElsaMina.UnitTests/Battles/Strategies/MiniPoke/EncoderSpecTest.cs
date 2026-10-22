@@ -10,7 +10,7 @@ namespace ElsaMina.UnitTests.Battles.Strategies.MiniPoke;
 public class EncoderSpecTest
 {
     private static readonly string SPEC_PATH =
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV1", "encoder_spec.json");
+        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV1_1M", "encoder_spec.json");
 
     private string _tamperedSpecPath;
 

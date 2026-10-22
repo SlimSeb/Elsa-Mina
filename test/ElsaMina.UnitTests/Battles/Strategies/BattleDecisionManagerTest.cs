@@ -17,7 +17,8 @@ public class BattleDecisionManagerTest
     private CalcBasedBattleDecisionService _calcService;
     private TypeMatchupBattleDecisionService _typeMatchupService;
     private RandomBattleDecisionService _randomService;
-    private MiniPokeBattleDecisionService _miniPokeV1Service;
+    private MiniPokeBattleDecisionService _miniPokeV11MService;
+    private MiniPokeBattleDecisionService _miniPokeV14MService;
     private BattleDecisionManager _manager;
 
     [SetUp]
@@ -34,12 +35,15 @@ public class BattleDecisionManagerTest
         _llmService = new LlmBattleDecisionService(languageModelProvider, opponentMovesPredictor, promptBuilder, decisionParser, _calcService);
         _typeMatchupService = new TypeMatchupBattleDecisionService(randomService);
         _randomService = new RandomBattleDecisionService(randomService);
-        _miniPokeV1Service = new MiniPokeBattleDecisionService(Substitute.For<IMiniPokeModel>(),
+        _miniPokeV11MService = new MiniPokeBattleDecisionService(Substitute.For<IMiniPokeModel>(),
             Substitute.For<IMiniPokeEncoder>(), _calcService, randomService,
-            new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV1, "Models/MiniPokeV1"));
+            new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV1_1M, "Models/MiniPokeV1_1M"));
+        _miniPokeV14MService = new MiniPokeBattleDecisionService(Substitute.For<IMiniPokeModel>(),
+            Substitute.For<IMiniPokeEncoder>(), _calcService, randomService,
+            new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV1_4M, "Models/MiniPokeV1_4M"));
 
         _manager = new BattleDecisionManager(_llmService, _calcService, _typeMatchupService, _randomService,
-            [_miniPokeV1Service]);
+            [_miniPokeV11MService, _miniPokeV14MService]);
     }
 
     [Test]
@@ -119,10 +123,9 @@ public class BattleDecisionManagerTest
         }
     }
 
-    [TestCase("minipokev1")]
-    [TestCase(" MiniPokeV1 ")]
-    [TestCase("minipoke")]
-    public void Test_TrySetStrategy_ShouldSwitchToMiniPokeV1_WhenInputNamesIt(string input)
+    [TestCase("minipokev1-1m")]
+    [TestCase(" MiniPokeV1-1M ")]
+    public void Test_TrySetStrategy_ShouldSwitchToMiniPokeV11M_WhenInputNamesIt(string input)
     {
         // Act
         var result = _manager.TrySetStrategy(input, out var strategy);
@@ -131,9 +134,26 @@ public class BattleDecisionManagerTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
-            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV1));
-            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV1));
-            Assert.That(_manager.GetCurrentService(), Is.SameAs(_miniPokeV1Service));
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV1_1M));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV1_1M));
+            Assert.That(_manager.GetCurrentService(), Is.SameAs(_miniPokeV11MService));
+        }
+    }
+
+    [TestCase("minipokev1-4m")]
+    [TestCase("minipoke")]
+    public void Test_TrySetStrategy_ShouldSwitchToMiniPokeV14M_WhenInputNamesItOrAsksForTheLatest(string input)
+    {
+        // Act
+        var result = _manager.TrySetStrategy(input, out var strategy);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV1_4M));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV1_4M));
+            Assert.That(_manager.GetCurrentService(), Is.SameAs(_miniPokeV14MService));
         }
     }
 
@@ -144,13 +164,13 @@ public class BattleDecisionManagerTest
         var manager = new BattleDecisionManager(_llmService, _calcService, _typeMatchupService, _randomService, []);
 
         // Act
-        var result = manager.TrySetStrategy("minipokev1", out _);
+        var result = manager.TrySetStrategy("minipokev1-1m", out _);
 
         // Assert
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.False);
-            Assert.That(manager.AvailableStrategies, Does.Not.Contain(BattleDecisionStrategy.MiniPokeV1));
+            Assert.That(manager.AvailableStrategies, Does.Not.Contain(BattleDecisionStrategy.MiniPokeV1_1M));
             Assert.That(manager.TrySetStrategy("minipoke", out _), Is.False);
         }
     }

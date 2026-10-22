@@ -23,7 +23,7 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
         _calcService = calcService;
         _typeMatchupService = typeMatchupService;
         _randomService = randomService;
-        // One per minipoke model version registered in BattlesModule
+        // One per minipoke model registered in BattlesModule
         _miniPokeServices = miniPokeServices.ToDictionary(service => service.Strategy);
     }
 
@@ -62,7 +62,7 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
                 strategy = BattleDecisionStrategy.Random;
                 break;
             case "minipoke" when _miniPokeServices.Count > 0:
-                // The latest model version
+                // The latest model
                 strategy = _miniPokeServices.Keys.Max();
                 break;
             default:
@@ -81,12 +81,12 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
     }
 
     /// <summary>
-    /// A minipoke model version by its strategy name ("minipokev1").
+    /// A minipoke model by its strategy name ("minipokev1-4m").
     /// </summary>
     private bool TryFindMiniPokeStrategy(string name, out BattleDecisionStrategy strategy)
     {
         var matches = _miniPokeServices.Keys
-            .Where(candidate => candidate.ToString().Equals(name, StringComparison.OrdinalIgnoreCase))
+            .Where(candidate => candidate.GetName() == name)
             .ToList();
         strategy = matches.FirstOrDefault();
         return matches.Count > 0;

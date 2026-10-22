@@ -6,81 +6,97 @@ using ElsaMina.UnitTests.Battles.Strategies.MiniPoke;
 namespace ElsaMina.UnitTests.Battles.Strategies.MiniPokeV1;
 
 /// <summary>
-/// Checks the C# side of minipoke v1 against real battles recorded with the encoder.py v1 was trained with
-/// (tools/minipoke/make_fixtures.py --version 1): our encoder must produce exactly what encoder.py produced,
-/// each action must map to the order poke-env sent, and the ONNX model must give the same output in both runtimes.
+/// Checks the C# side of every minipoke v1 model against real battles recorded with the encoder.py v1 was trained
+/// with (tools/minipoke/make_fixtures.py --version 1_4M for MiniPokeV1_4M): our encoder must produce exactly what
+/// encoder.py produced, each action must map to the order poke-env sent, and the ONNX model must give the same
+/// output in both runtimes.
 /// </summary>
 [TestFixture]
 public class MiniPokeV1ParityTest
 {
-    private static readonly string FIXTURES_DIRECTORY =
-        Path.Join(AppContext.BaseDirectory, "Battles", "Strategies", "MiniPokeV1", "Fixtures");
+    // Every model trained with encoder.py v1, each with its own fixtures
+    private static readonly BattleDecisionStrategy[] MODELS =
+        [BattleDecisionStrategy.MiniPokeV1_1M, BattleDecisionStrategy.MiniPokeV1_4M];
 
-    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV1,
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV1"));
-
-    private MiniPokeParityChecker _checker;
+    private readonly Dictionary<BattleDecisionStrategy, MiniPokeParityChecker> _checkers = [];
 
     [OneTimeSetUp]
     public void OneTimeSetUp()
     {
-        var featureNames = new MiniPokeV1FeatureNames(EncoderSpec.Load(OPTIONS.EncoderSpecPath));
-        _checker = new MiniPokeParityChecker(FIXTURES_DIRECTORY, new MiniPokeV1Encoder(OPTIONS, TestBattleDex.Instance),
-            featureNames.Describe);
+        foreach (var model in MODELS)
+        {
+            var options = GetOptions(model);
+            var featureNames = new MiniPokeV1FeatureNames(EncoderSpec.Load(options.EncoderSpecPath));
+            _checkers[model] = new MiniPokeParityChecker(GetFixturesDirectory(model),
+                new MiniPokeV1Encoder(options, TestBattleDex.Instance), featureNames.Describe);
+        }
     }
 
-    private static IEnumerable<TestCaseData> Fixtures() => MiniPokeParityChecker.FixtureCases(FIXTURES_DIRECTORY);
+    private static MiniPokeModelOptions GetOptions(BattleDecisionStrategy model) =>
+        new(model, Path.Join(AppContext.BaseDirectory, "Models", model.ToString()));
 
-    [Test]
-    public void Test_Fixtures_ShouldCoverEnoughDecisions()
+    private static string GetFixturesDirectory(BattleDecisionStrategy model) =>
+        Path.Join(AppContext.BaseDirectory, "Battles", "Strategies", model.ToString(), "Fixtures");
+
+    private static IEnumerable<TestCaseData> Fixtures() =>
+        MODELS.SelectMany(model => MiniPokeParityChecker.FixtureFileNames(GetFixturesDirectory(model))
+            .Select(fileName => new TestCaseData(model, fileName).SetArgDisplayNames(model.ToString(), fileName)));
+
+    [TestCaseSource(nameof(MODELS))]
+    public void Test_Fixtures_ShouldCoverEnoughDecisions(BattleDecisionStrategy model)
     {
         // Act
-        var decisions = _checker.CountDecisions();
+        var decisions = _checkers[model].CountDecisions();
 
         // Assert
         Assert.That(decisions, Is.GreaterThanOrEqualTo(300));
     }
 
     [TestCaseSource(nameof(Fixtures))]
-    public void Test_Encode_ShouldMatchPythonEncoder_WhenReplayingFixture(string fileName)
+    public void Test_Encode_ShouldMatchPythonEncoder_WhenReplayingFixture(BattleDecisionStrategy model,
+        string fileName)
     {
         // Arrange
-        var fixture = _checker.Load(fileName);
+        var checker = _checkers[model];
+        var fixture = checker.Load(fileName);
 
         // Act
-        var mismatches = _checker.FindEncodingMismatches(fixture);
+        var mismatches = checker.FindEncodingMismatches(fixture);
 
         // Assert
         Assert.That(mismatches, Is.Empty, MiniPokeParityChecker.Report(fixture, mismatches));
     }
 
     [TestCaseSource(nameof(Fixtures))]
-    public void Test_ActionMapping_ShouldSendPokeEnvOrder_WhenReplayingFixture(string fileName)
+    public void Test_ActionMapping_ShouldSendPokeEnvOrder_WhenReplayingFixture(BattleDecisionStrategy model,
+        string fileName)
     {
         // Arrange
-        var fixture = _checker.Load(fileName);
+        var checker = _checkers[model];
+        var fixture = checker.Load(fileName);
 
         // Act
-        var mismatches = _checker.FindOrderMismatches(fixture);
+        var mismatches = checker.FindOrderMismatches(fixture);
 
         // Assert
         Assert.That(mismatches, Is.Empty, MiniPokeParityChecker.Report(fixture, mismatches));
     }
 
     [TestCaseSource(nameof(Fixtures))]
-    public void Test_Evaluate_ShouldMatchPythonOnnxRuntime_WhenGivenFixtureObservations(string fileName)
+    public void Test_Evaluate_ShouldMatchPythonOnnxRuntime_WhenGivenFixtureObservations(BattleDecisionStrategy model,
+        string fileName)
     {
         // Arrange
-        var fixture = _checker.Load(fileName);
-        using var model = new MiniPokeOnnxModel(OPTIONS);
+        var fixture = _checkers[model].Load(fileName);
+        using var onnxModel = new MiniPokeOnnxModel(GetOptions(model));
 
         // Act
-        var mismatches = MiniPokeParityChecker.FindModelMismatches(fixture, model);
+        var mismatches = MiniPokeParityChecker.FindModelMismatches(fixture, onnxModel);
 
         // Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(model.IsLoaded, Is.True);
+            Assert.That(onnxModel.IsLoaded, Is.True);
             Assert.That(mismatches, Is.Empty, MiniPokeParityChecker.Report(fixture, mismatches));
         }
     }
