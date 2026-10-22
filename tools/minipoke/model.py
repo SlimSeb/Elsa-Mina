@@ -1,11 +1,12 @@
 """
-MiniPokeTransformer — a ~1M-parameter take on ps-ppo's PokeTransformer that
+MiniPokeTransformer — a ~4M-parameter take on ps-ppo's PokeTransformer that
 runs on Apple Silicon (MPS), CUDA or CPU.
 
 Differences from the original:
   * No flex_attention / Triton: plain F.scaled_dot_product_attention with a
     boolean mask (supported on MPS).
-  * d_model 128 instead of 512, 3 layers, FFN x2.
+  * d_model 256 instead of 512. Layers (3), heads (8), FFN x4 and the
+    species/item/ability/move embedding sizes match the original.
   * No turn history / KV cache and no JEPA auxiliary loss (each decision
     only sees the current state).
   * Pointer-style policy head: switch logits come from our 6 Pokémon tokens,
@@ -36,15 +37,15 @@ MON0 = 3
 
 @dataclass
 class ModelConfig:
-    d_model: int = 128
+    d_model: int = 256
     n_layers: int = 3
-    n_heads: int = 4
-    ff_mult: float = 2.0
+    n_heads: int = 8
+    ff_mult: float = 4.0
     dropout: float = 0.0
-    species_dim: int = 32
-    item_dim: int = 16
-    ability_dim: int = 16
-    move_dim: int = 32
+    species_dim: int = 64
+    item_dim: int = 32
+    ability_dim: int = 64
+    move_dim: int = 64
 
 
 def mlp(in_d: int, out_d: int, hidden_mult: int = 2) -> nn.Sequential:

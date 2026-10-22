@@ -105,11 +105,20 @@ def cmd_imitate(args) -> None:
 def cmd_ppo(args) -> None:
     device = pick_device(args.device)
     infer_device = torch.device(args.infer_device)
-    model = load_model(args.init, device)
+    model = load_model(args.resume or args.init, device)
     print(f"[ppo] model: {count_params(model) / 1e6:.2f}M params, "
           f"train on {device}, rollouts on {infer_device}")
     cfg = PPOConfig(lr=args.lr, minibatch=args.minibatch)
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=1e-2)
+    start = 1
+    if args.resume:
+        ck = torch.load(args.resume, map_location="cpu")
+        if ck.get("opt"):
+            opt.load_state_dict(ck["opt"])
+            for g in opt.param_groups:
+                g["lr"] = cfg.lr
+        start = ck.get("iteration", 0) + 1
+        print(f"[ppo] resuming {args.resume} at iteration {start}")
 
     infer_model = inference_copy(model, infer_device)
     batcher = InferenceBatcher(infer_model, infer_device, max_batch=args.concurrency * 2)
@@ -119,7 +128,7 @@ def cmd_ppo(args) -> None:
     p2 = RLPlayer(batcher, collector, **make_kwargs(args.concurrency))
 
     total_states = 0
-    for it in range(1, args.iterations + 1):
+    for it in range(start, args.iterations + 1):
         sync(model, infer_model)
         t0 = time.time()
         asyncio.run(p1.battle_against(p2, n_battles=args.battles_per_iter))
@@ -178,6 +187,8 @@ def main() -> None:
     p = sub.add_parser("ppo")
     common(p)
     p.add_argument("--init", default=None, help="checkpoint to start from (e.g. checkpoints/bc.pt)")
+    p.add_argument("--resume", default=None,
+                   help="continue a PPO run: weights, optimizer and iteration (e.g. checkpoints/ppo_latest.pt)")
     p.add_argument("--iterations", type=int, default=300)
     p.add_argument("--battles-per-iter", type=int, default=128)
     p.add_argument("--minibatch", type=int, default=1024)

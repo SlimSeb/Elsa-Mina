@@ -7,14 +7,20 @@ and a **single** local Showdown server. ElsaMina plays with the exported models
 
 | | ps-ppo | minipoke |
 |---|---|---|
-| Parameters | ~16M | ~1M |
-| d_model / layers / heads | 512 / 3 / 8 | 128 / 3 / 4 |
+| Parameters | ~16M | ~4M |
+| d_model / layers / heads | 512 / 3 / 8 | 256 / 3 / 8 |
+| FFN / embeddings (species, item, ability, move) | x4 / 64, 32, 64, 64 | same |
 | Attention | `flex_attention` (Triton, CUDA-only) | `scaled_dot_product_attention` + boolean mask (MPS ok) |
 | Turn history | KV cache, 64 turns | none (current state only) |
 | Policy head | linear on actor token | pointer heads: switch logits from team tokens, move logits from the active Pokémon's move vectors |
 | Value head | 51-bin distributional | scalar |
 | Environment | many Showdown servers + Ray workers | one server, poke-env, asyncio, batched inference |
 | Training | BC → PPO | same: BC → self-play PPO |
+
+The defaults in `model.py` build the ~4M model (`MiniPokeV1_4M` in ElsaMina).
+`MiniPokeV1_1M` was trained with d_model 128, 4 heads, FFN x2 and embeddings
+32, 16, 16, 32: set those in `ModelConfig` to train that size again. Checkpoints
+store their own config, so loading or exporting one works whatever the defaults are.
 
 ## Setup (macOS, Apple Silicon)
 
@@ -50,20 +56,25 @@ python train.py imitate --battles 3000 --epochs 8
 # Phase 2: self-play PPO from the BC checkpoint
 python train.py ppo --init checkpoints/bc.pt --iterations 300 --battles-per-iter 128
 
+# Continue an interrupted PPO run: weights, optimizer and iteration
+python train.py ppo --resume checkpoints/ppo_latest.pt --iterations 300 --battles-per-iter 128
+
 # Evaluate any checkpoint
 python train.py eval --ckpt checkpoints/ppo_latest.pt --opponent heuristic --battles 200
 ```
 
 How it runs:
 - **Training** (BC and PPO updates) uses `--device auto`, which picks MPS on an M3.
-- **Rollout inference** uses `--infer-device cpu` by default. The batches are a
-  few dozen states, and at that size the CPU beats MPS's per-call overhead.
-  Weights are copied to the CPU model after every update.
+- **Rollout inference** uses `--infer-device cpu` by default. Weights are copied
+  to the inference model after every update. At 4M parameters MPS is faster once
+  batches reach ~32 states (about 6 ms vs 12 ms at 64), so try `--infer-device mps`
+  and compare `st/s`; the CPU still wins for very small batches.
 - `--concurrency` sets concurrent battles per player. Start at 32, then try
   64–128 while watching `st/s` in the logs.
 
 Memory is not the limit on a 16 GB machine. The model plus Adam state is about
-20 MB, and one PPO iteration (128 battles ≈ 7k states) needs a few hundred MB.
+50 MB (so is each PPO checkpoint), and one PPO iteration (128 battles ≈ 7k states)
+needs a few hundred MB.
 Showdown and Python together stay under ~2 GB at moderate concurrency.
 
 ## Files

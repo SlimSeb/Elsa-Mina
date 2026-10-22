@@ -57,6 +57,9 @@ def compute_gae(episodes: List[List[dict]], gamma: float, lam: float):
 def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device) -> Dict[str, float]:
     model.train()
     obs, actions, old_logp, adv, ret = compute_gae(episodes, cfg.gamma, cfg.gae_lambda)
+    # Normalise over the whole buffer, not per minibatch: a 1-sample tail
+    # minibatch has a NaN std, which turns every weight into NaN.
+    adv = (adv - adv.mean()) / (adv.std() + 1e-8)
     n = len(obs)
     batch = collate(obs)
     stats = {"pi_loss": 0.0, "v_loss": 0.0, "entropy": 0.0, "kl": 0.0, "clipfrac": 0.0}
@@ -72,7 +75,6 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device) -> Dict[str, 
             olp = torch.from_numpy(old_logp[idx]).to(device)
             A = torch.from_numpy(adv[idx]).to(device)
             R = torch.from_numpy(ret[idx]).to(device)
-            A = (A - A.mean()) / (A.std() + 1e-8)
 
             logits, values = model(mb)
             dist = torch.distributions.Categorical(logits=logits)
@@ -85,7 +87,11 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device) -> Dict[str, 
 
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.max_grad_norm)
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.max_grad_norm)
+            if not torch.isfinite(grad_norm):
+                # Never step on a NaN/inf gradient: one bad minibatch would ruin the model.
+                print("[ppo] warning: non-finite gradient, skipped one minibatch")
+                continue
             optimizer.step()
 
             with torch.no_grad():
