@@ -45,7 +45,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, VOCAB_SIZES
-from encoder_v2 import F_PRIOR
+from encoder_v2 import F_HIST, F_PRIOR
 
 N_TOKENS = 3 + N_MONS
 ACTOR, CRITIC, FIELD_TOK = 0, 1, 2
@@ -78,6 +78,8 @@ class ModelConfig:
     cand_moves: int = 8
     # One token per (Pokémon, move slot); the move head reads them after the transformer
     move_tokens: bool = False
+    # Encoder v2: last moves, switches, protects and a choice-lock flag, into the field token
+    history: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
@@ -173,6 +175,8 @@ class MiniPokeTransformer(nn.Module):
 
         if cfg.encoder_version not in (1, 2):
             raise ValueError(f"unknown encoder_version {cfg.encoder_version}")
+        if cfg.history and cfg.encoder_version < 2:
+            raise ValueError("history features are part of encoder v2 (--encoder-version 2)")
         self.v2 = cfg.encoder_version == 2
         self.n_move_tokens = 0
         if cfg.move_tokens:
@@ -188,7 +192,8 @@ class MiniPokeTransformer(nn.Module):
         # Shared, not a parameter: what encoder_v2 needs to rebuild this model's
         # observations (saved in checkpoints and exported as set_priors.json).
         self.priors = None
-        self.field_net = mlp(F_FIELD, d)
+        # history: the field token also reads the last moves and the history features
+        self.field_net = mlp(F_FIELD + (2 * cfg.move_dim + F_HIST if cfg.history else 0), d)
 
         self.side_emb = nn.Parameter(torch.zeros(2, d))       # ours / theirs
         self.actor_tok = nn.Parameter(torch.randn(1, 1, d) * 0.02)
@@ -305,7 +310,11 @@ class MiniPokeTransformer(nn.Module):
         )
         mons = mons + side
 
-        field = self.field_net(obs["field"]).unsqueeze(1)
+        field_in = obs["field"]
+        if self.cfg.history:
+            field_in = torch.cat([field_in, self.move_emb(obs["hist_ids"]).reshape(B, -1),
+                                  obs["hist_feats"]], dim=-1)
+        field = self.field_net(field_in).unsqueeze(1)
         tokens = [self.actor_tok.expand(B, 1, d), self.critic_tok.expand(B, 1, d), field, mons]
         key_present = None
         if self.cfg.move_tokens:

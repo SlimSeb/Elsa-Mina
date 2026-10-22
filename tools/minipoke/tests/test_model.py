@@ -13,6 +13,7 @@ CONFIGS = {
     "v2": dict(encoder_version=2),
     "v1-move-tokens": dict(move_tokens=True),
     "v2-move-tokens": dict(encoder_version=2, move_tokens=True),
+    "v2-history": dict(encoder_version=2, history=True),
 }
 
 

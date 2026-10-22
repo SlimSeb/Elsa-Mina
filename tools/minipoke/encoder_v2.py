@@ -17,6 +17,15 @@ V1's slots; unrevealed slots and species without sets stay all zeros):
                                              sets, n consistent / n roles, fallback, Choice
                                              item possible
 
+With `history` (ModelConfig.history), two more (history.py reads the protocol log):
+
+    hist_ids     int64 [2]                  last move used by our active, by theirs (PAD)
+    hist_feats   f32   [F_HIST]             turns since their / our active came in (/10,
+                                             max 1), they / we switched by choice last turn,
+                                             their / our consecutive protects (/3, max 1),
+                                             they chose the same move twice in a row,
+                                             that and a Choice item is possible (lock)
+
 The action space and its mapping onto poke-env orders are V1's (encoder.py).
 """
 
@@ -29,14 +38,19 @@ import numpy as np
 from poke_env.battle import Battle, Move, Pokemon
 
 import encoder as E
-from setpriors import SetPriors
+from history import (active_turns, lines_of, opponent_role, previous_turn, same_move_twice,
+                     switched_by_choice)
+from setpriors import MonPrior, SetPriors
 
 A_PRIOR = 4                              # abilities / items kept per Pokémon
 F_CAND = E.F_MOVE + 1
 F_PRIOR = E.NT + 4
+F_HIST = 8
 TYPE_INDEX = {t.name.lower(): i for i, t in enumerate(E.TYPES)}
 
 Layout = Dict[str, Tuple[Tuple[int, ...], str]]
+# The ModelConfig fields that shape the observation (encoder_spec.json's "model")
+ENCODER_FLAGS = ("encoder_version", "cand_moves", "history")
 
 V1_LAYOUT: Layout = {
     "mon_ids": ((E.N_MONS, 3), "int64"),
@@ -71,10 +85,11 @@ class EncoderV1:
 class EncoderV2(EncoderV1):
     version = 2
 
-    def __init__(self, priors: SetPriors, cand_moves: int = 8):
+    def __init__(self, priors: SetPriors, cand_moves: int = 8, history: bool = False):
         super().__init__()
         self.priors = priors
         self.k = cand_moves
+        self.history = history
         self.layout.update({
             "cand_ids": ((E.N_SLOTS, cand_moves), "int64"),
             "cand_feats": ((E.N_SLOTS, cand_moves, F_CAND), "float32"),
@@ -82,6 +97,8 @@ class EncoderV2(EncoderV1):
             "prior_w": ((E.N_SLOTS, 2, A_PRIOR), "float32"),
             "prior_feats": ((E.N_SLOTS, F_PRIOR), "float32"),
         })
+        if history:
+            self.layout.update({"hist_ids": ((2,), "int64"), "hist_feats": ((F_HIST,), "float32")})
         self._moves: Dict[str, Optional[Move]] = {}
 
     def _move(self, move_id: str) -> Optional[Move]:
@@ -92,10 +109,35 @@ class EncoderV2(EncoderV1):
 
     def encode(self, battle: Battle) -> Dict[str, np.ndarray]:
         obs = E.encode(battle)
-        obs.update(self.encode_priors(battle))
+        rows = [self.priors.infer_mon(mon, self.k)
+                for mon in list(battle.opponent_team.values())[:E.N_SLOTS]]
+        obs.update(self.encode_priors(battle, rows))
+        if self.history:
+            opp = battle.opponent_active_pokemon
+            active = [p for mon, p in zip(battle.opponent_team.values(), rows) if mon is opp]
+            obs.update(self.encode_history(battle, bool(active) and active[0].choice_possible))
         return obs
 
-    def encode_priors(self, battle: Battle) -> Dict[str, np.ndarray]:
+    def encode_history(self, battle: Battle, opp_choice_possible: bool) -> Dict[str, np.ndarray]:
+        me, opp = battle.active_pokemon, battle.opponent_active_pokemon
+        lines = lines_of(battle)
+        my_role, opp_role = battle.player_role, opponent_role(battle)
+        last_turn = previous_turn(lines)
+        ids = np.array([E.move_id(me.last_move if me else None),
+                        E.move_id(opp.last_move if opp else None)], dtype=np.int64)
+        f = np.zeros(F_HIST, dtype=np.float32)
+        f[0] = min(active_turns(opp), 10) / 10.0
+        f[1] = min(active_turns(me), 10) / 10.0
+        f[2] = float(switched_by_choice(last_turn, opp_role))
+        f[3] = float(switched_by_choice(last_turn, my_role))
+        f[4] = min(opp.protect_counter, 3) / 3.0 if opp else 0.0
+        f[5] = min(me.protect_counter, 3) / 3.0 if me else 0.0
+        twice = same_move_twice(lines, opp_role)
+        f[6] = float(twice)
+        f[7] = float(twice and opp_choice_possible)
+        return {"hist_ids": ids, "hist_feats": f}
+
+    def encode_priors(self, battle: Battle, rows: List[MonPrior]) -> Dict[str, np.ndarray]:
         k = self.k
         cand_ids = np.zeros((E.N_SLOTS, k), dtype=np.int64)
         cand_feats = np.zeros((E.N_SLOTS, k, F_CAND), dtype=np.float32)
@@ -103,8 +145,7 @@ class EncoderV2(EncoderV1):
         prior_w = np.zeros((E.N_SLOTS, 2, A_PRIOR), dtype=np.float32)
         prior_feats = np.zeros((E.N_SLOTS, F_PRIOR), dtype=np.float32)
         my_active = battle.active_pokemon
-        for row, mon in enumerate(list(battle.opponent_team.values())[:E.N_SLOTS]):
-            p = self.priors.infer_mon(mon, k)
+        for row, (mon, p) in enumerate(zip(battle.opponent_team.values(), rows)):
             if not p.found:
                 continue
             for j, (move_id, frac) in enumerate(p.candidates):
@@ -133,6 +174,35 @@ class EncoderV2(EncoderV1):
 
     def spec(self) -> dict:
         """encoder_spec.json's description of the v2 additions."""
+        out = self._priors_spec()
+        if self.history:
+            out["history"] = {
+                "features": ["opponent active turns on field (min 10) / 10",
+                             "our active turns on field (min 10) / 10",
+                             "opponent switched by choice in the previous turn",
+                             "we switched by choice in the previous turn",
+                             "opponent protect counter (min 3) / 3",
+                             "our protect counter (min 3) / 3",
+                             "opponent chose the same move twice in a row",
+                             "that and choice_possible for the opponent's active"],
+                "hist_ids": "move id of Pokemon.last_move of our active, then theirs (PAD if none)",
+                "tracker_state": "poke-env Pokemon.last_move (the move flagged last used, "
+                                 "flags cleared on switch-out), Pokemon._active_turns (+1 at "
+                                 "every |turn|, 0 on switch-out; V1's first_turn), "
+                                 "Pokemon.protect_counter",
+                "protocol_log": "the battle's parsed lines in order (poke-env "
+                                "Battle._replay_data, |request| excluded): the C# tracker must "
+                                "keep them. previous turn = lines between the last two |turn| "
+                                "lines; switched by choice = a |switch| of that side before any "
+                                "|move| or |faint| of that side in the previous turn; same move "
+                                "twice = the side's last two |move| lines since its last "
+                                "|switch|/|drag|/|replace|, lines with a [from] tag after the "
+                                "move name and Struggle skipped, have the same move name",
+            }
+            out["orderings"]["hist_feats"] = out["history"]["features"]
+        return out
+
+    def _priors_spec(self) -> dict:
         return {
             "set_priors": {
                 "file": "set_priors.json",
@@ -173,7 +243,7 @@ def encoder_for(cfg, priors: Optional[SetPriors] = None):
         return EncoderV1()
     if priors is None:
         raise ValueError("an encoder v2 model needs its set priors (model.priors)")
-    return EncoderV2(priors, cfg.cand_moves)
+    return EncoderV2(priors, cfg.cand_moves, history=cfg.history)
 
 
 def model_encoder(model):
@@ -188,7 +258,7 @@ def random_obs(layout: Layout, batch: int, seed: int = 0) -> Dict[str, np.ndarra
         if name in V1_LAYOUT:
             continue
         if dtype == "int64":
-            high = E.VOCAB_SIZES["move"] if name == "cand_ids" else E.VOCAB_SIZES["ability"]
+            high = E.VOCAB_SIZES["move"] if name in ("cand_ids", "hist_ids") else E.VOCAB_SIZES["ability"]
             arr = rng.integers(0, high, size=(batch, *shape))
             if name == "prior_ids":
                 arr[..., 1, :] = rng.integers(0, E.VOCAB_SIZES["item"], size=(batch, *shape[:-2], shape[-1]))

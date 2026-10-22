@@ -27,7 +27,7 @@ import torch
 import torch.nn as nn
 
 import encoder as E
-from encoder_v2 import model_encoder, random_obs
+from encoder_v2 import ENCODER_FLAGS, model_encoder, random_obs
 from model import MiniPokeTransformer, build_model, describe
 
 INPUTS = ["mon_ids", "move_ids", "mon_feats", "move_feats", "field", "mask"]
@@ -114,7 +114,7 @@ def write_spec(path: Path, model: MiniPokeTransformer = None) -> None:
                 "inputs": [{"name": n, "shape": ["batch", *shape], "dtype": dt}
                            for n, (shape, dt) in encoder.layout.items()],
                 "model": {k: v for k, v in model.cfg.to_dict().items()
-                          if k in ("encoder_version", "cand_moves")},
+                          if k in ENCODER_FLAGS},
                 **{k: v for k, v in extra.items() if k != "orderings"}}
         spec["orderings"].update(extra.get("orderings", {}))
     # "\n" on every OS: ElsaMina's copy must stay byte-identical (write_text would emit CRLF on Windows)

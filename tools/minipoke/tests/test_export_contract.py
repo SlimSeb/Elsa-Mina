@@ -113,6 +113,7 @@ V2_MODELS = {
     "v2-small": dict(size="small", encoder_version=2),
     "v2-medium": dict(size="medium", encoder_version=2),
     "v2-move-tokens": dict(size="small", encoder_version=2, move_tokens=True),
+    "v2-history": dict(size="small", encoder_version=2, history=True),
 }
 
 
@@ -134,8 +135,9 @@ def test_v2_export_takes_v1s_inputs_then_its_own(exported_v2):
     dtypes = {"int64": I64, "float32": F, "bool": B}
     assert got[6:] == [(n, dtypes[dt], ["batch", *shape])
                        for n, (shape, dt) in list(model_encoder(model).layout.items())[6:]]
-    assert [n for n, *_ in got[6:]] == ["cand_ids", "cand_feats", "prior_ids", "prior_w",
-                                        "prior_feats"]
+    assert [n for n, *_ in got[6:11]] == ["cand_ids", "cand_feats", "prior_ids", "prior_w",
+                                          "prior_feats"]
+    assert ([n for n, *_ in got[11:]] == ["hist_ids", "hist_feats"]) == model.cfg.history
     assert signature(graph.output) == CONTRACT_OUTPUTS
 
 
@@ -161,6 +163,11 @@ def test_v2_spec_documents_the_encoder_and_ships_the_priors(exported_v2):
     data = (out / "set_priors.json").read_bytes()
     assert hashlib.sha256(data).hexdigest() == priors["sha256"] == model.priors.sha256
     assert priors["source_sha256"] == model.priors.source_sha256
+    assert spec["model"]["history"] == model.cfg.history
+    assert ("history" in spec) == model.cfg.history
+    if model.cfg.history:  # what the C# tracker needs on top of poke-env's state
+        assert "_replay_data" in spec["history"]["protocol_log"]
+        assert len(spec["orderings"]["hist_feats"]) == 8
 
 
 def test_v2_checkpoints_round_trip_with_their_priors(tmp_path):
