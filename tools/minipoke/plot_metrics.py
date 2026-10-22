@@ -17,7 +17,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
 PANELS = [
-    ("Win rate (greedy eval)", ["eval_wr_heuristic", "eval_wr_pool"], (0, 1)),
+    ("Win rate (greedy eval)", ["eval_wr_heuristic", "confirm_wr", "eval_wr_pool"], (0, 1)),
     ("Win rate (training battles)", ["train_wr_heuristic", "train_wr_pool"], (0, 1)),
     ("Throughput (states/s)", ["states_per_s"], None),
     ("Policy loss", ["pi_loss"], None),

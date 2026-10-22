@@ -29,6 +29,27 @@ class PPOConfig:
 
 
 @dataclass
+class Budget:
+    """A run's budget: whichever of iterations, hours of training time and
+    training states runs out first (None = no limit on that one). Its progress
+    in [0, 1] also drives the LR and entropy schedules, so two runs with the
+    same `states` budget anneal at the same states whatever their speed."""
+    iterations: Optional[int] = None
+    hours: Optional[float] = None
+    states: Optional[int] = None
+
+    def progress(self, iteration: int, seconds: float, states: int) -> float:
+        p = 0.0
+        if self.iterations:
+            p = max(p, iteration / self.iterations)
+        if self.hours:
+            p = max(p, seconds / (3600 * self.hours))
+        if self.states:
+            p = max(p, states / self.states)
+        return p
+
+
+@dataclass
 class Schedule:
     """LR: linear warmup over `warmup_iters`, then cosine from `lr` down to
     `lr * lr_min_ratio` over the run's progress (lr_min_ratio 1.0 = constant).

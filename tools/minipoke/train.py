@@ -5,7 +5,9 @@ Entry point.
     python train.py distill --teacher checkpoints/ppo_latest.pt --size medium --battles 3000
     python train.py ppo --init checkpoints/bc.pt --hours 24
     python train.py ppo --resume checkpoints/ppo_latest.pt
-    python train.py eval --ckpt checkpoints/best.pt --battles 200
+    python train.py ppo --init checkpoints/bc.pt --states 2000000
+    python train.py eval --ckpt checkpoints/best.pt
+    python train.py eval --ckpt checkpoints/best.pt --vs-ckpt checkpoints/other.pt
 
 Needs one local Showdown server (see README), or --showdown-cmd to start it:
     node pokemon-showdown start --no-security
@@ -39,10 +41,10 @@ from export_onnx import export_checkpoint, random_inputs, INPUTS
 from league import OpponentPool, split_battles
 from model import (PRESETS, MiniPokeTransformer, ModelConfig, build_model, describe, pick_device,
                    preset, size_of)
-from players import DistillPlayer, InferenceBatcher, TeacherPlayer
-from ppo import PPOConfig, Schedule, distill_train, ppo_update
+from players import DistillPlayer, InferenceBatcher, RLPlayer, TeacherPlayer
+from ppo import Budget, PPOConfig, Schedule, distill_train, ppo_update
 from rollout import (RolloutConfig, Rollouts, SafeHeuristicsPlayer, close_players, evaluate,
-                     frozen_copy, load_into, make_kwargs, play_recording_pairs)
+                     frozen_copy, load_into, make_kwargs, play_recording_pairs, wilson_interval)
 from runtime import (MetricsLogger, ShowdownServer, StopController, peak_rss_mb,
                      pick_infer_device, prune_checkpoints, rss_mb)
 
@@ -66,7 +68,7 @@ DEFAULTS: Dict[str, Dict[str, object]] = {
 }
 DEFAULTS["wide"] = DEFAULTS["small"]  # MiniPokeV1_4M was trained with the V1 recipe
 COMMON_DEFAULTS = dict(
-    iterations=None, hours=None, minibatch=1024, eval_every=10, eval_battles=200,
+    iterations=None, hours=None, states=None, confirm_battles=400, minibatch=1024, eval_every=10, eval_battles=200,
     eval_pool_battles=100, min_eval_battles=150, snapshot_every=10, pool_cap=20, pool_slots=2,
     save_every=10, stall_timeout=180.0, infer_device="auto", seed=None,
     max_infer_batch=64,
@@ -118,9 +120,22 @@ def eval_vs(model, infer_device, n: int, concurrency: int, opponent: str = "heur
     return evaluate(batcher, lambda: opp_cls(**make_kwargs(concurrency)), n, concurrency)
 
 
+def head_to_head(model, other, infer_device, n: int, concurrency: int):
+    """Greedy `model` vs greedy `other`. -> (model's win rate, finished battles)."""
+    batcher, other_batcher = (InferenceBatcher(frozen_copy(m, infer_device), infer_device,
+                                               max_batch=concurrency * 2) for m in (model, other))
+    return evaluate(batcher, lambda: RLPlayer(other_batcher, None, greedy=True,
+                                              **make_kwargs(concurrency)), n, concurrency)
+
+
+def with_ci(wr: float, n: int) -> str:
+    lo, hi = wilson_interval(wr * n, n)
+    return f"{wr:.1%} over {n} battles (95% CI [{lo:.1%}, {hi:.1%}])"
+
+
 def eval_heuristic(model, infer_device, n: int, concurrency: int) -> float:
     wr, n_done = eval_vs(model, infer_device, n, concurrency)
-    log.info("win rate vs SimpleHeuristicsPlayer: %.1f%% over %d battles", 100 * wr, n_done)
+    log.info("win rate vs SimpleHeuristicsPlayer: %s", with_ci(wr, n_done))
     return wr
 
 
@@ -217,7 +232,8 @@ PPO_KEYS = list(DEFAULTS["small"]) + list(COMMON_DEFAULTS)
 METRICS = ["iteration", "time", "hours", "states", "total_states", "battles", "play_s", "learn_s",
            "states_per_s", "lr", "ent_coef", "pi_loss", "v_loss", "v_mse", "entropy", "kl",
            "clipfrac", "explained_var", "train_wr_pool", "train_wr_heuristic",
-           "eval_wr_heuristic", "eval_n_heuristic", "eval_wr_pool", "eval_n_pool", "best_wr",
+           "eval_wr_heuristic", "eval_n_heuristic", "eval_wr_pool", "eval_n_pool", "confirm_wr",
+           "confirm_n", "best_wr",
            "pool_size", "stalled", "rebuilds", "rss_mb"]
 
 
@@ -246,7 +262,7 @@ def cmd_ppo(args) -> None:
     size = args.size or "small"
     args.size = size
     resolve(args, size, PPO_KEYS)
-    if args.iterations is None and args.hours is None:
+    if args.iterations is None and args.hours is None and args.states is None:
         args.iterations = 300  # the V1 recipe
     args.run = args.run or f"{size}-{time.strftime('%Y%m%d-%H%M%S')}"
     run_dir = Path("runs") / args.run
@@ -289,10 +305,10 @@ def cmd_ppo(args) -> None:
     pool_rng = random.Random((args.seed or 0) + st["iteration"])
 
     log.info("[ppo] run %s, size %s: %s, train on %s", args.run, size, describe(model), device)
-    log.info("[ppo] budget: %s iterations, %s hours; battles/iter %d (mirror %.0f%% / pool %.0f%% / "
-             "heuristic %.0f%%), concurrency %d", args.iterations, args.hours, args.battles_per_iter,
-             100 * args.mirror_share, 100 * args.pool_share, 100 * args.heuristic_share,
-             args.concurrency)
+    log.info("[ppo] budget: %s iterations, %s hours, %s states; battles/iter %d (mirror %.0f%% / "
+             "pool %.0f%% / heuristic %.0f%%), concurrency %d", args.iterations, args.hours,
+             args.states, args.battles_per_iter, 100 * args.mirror_share, 100 * args.pool_share,
+             100 * args.heuristic_share, args.concurrency)
     runtime.mps_self_check(model, device, sample_batch(8))
     infer_device = choose_infer_device(args, model, device)
     model.to(device)
@@ -308,13 +324,10 @@ def cmd_ppo(args) -> None:
     def sync() -> None:
         load_into(infer_model, model.state_dict())
 
+    budget = Budget(args.iterations, args.hours, args.states)
+
     def progress() -> float:
-        p = 0.0
-        if args.iterations:
-            p = max(p, st["iteration"] / args.iterations)
-        if args.hours:
-            p = max(p, st["active_seconds"] / (3600 * args.hours))
-        return p
+        return budget.progress(st["iteration"], st["active_seconds"], st["total_states"])
 
     def save_all(periodic: bool) -> None:
         extra = dict(args={k: getattr(args, k) for k in PPO_KEYS + RUN_KEYS},
@@ -383,7 +396,7 @@ def cmd_ppo(args) -> None:
             sync()
             wr, n_done = rollouts.evaluate(args.eval_battles, "heuristic")
             row.update(eval_wr_heuristic=wr, eval_n_heuristic=n_done)
-            msg = f"[ppo] it {it}: greedy win rate vs SimpleHeuristicsPlayer = {wr:.1%} ({n_done})"
+            msg = f"[ppo] it {it}: greedy win rate vs SimpleHeuristicsPlayer = {with_ci(wr, n_done)}"
             if use_pool:
                 wins = total = 0
                 for snap in [s for s in pool.recent(4) if s.iteration != it][:3]:
@@ -395,10 +408,21 @@ def cmd_ppo(args) -> None:
                     row.update(eval_wr_pool=wins / total, eval_n_pool=total)
             log.info(msg)
             if n_done >= args.min_eval_battles and wr > st["best_wr"]:
-                st["best_wr"], st["best_iteration"] = wr, it
-                save_checkpoint(ckpt_dir / "best.pt", model, None, iteration=it, eval_wr_heuristic=wr)
-                log.info("[ppo] new best: %.1f%% at iteration %d -> %s", 100 * wr, it,
-                         ckpt_dir / "best.pt")
+                # The best of many noisy evaluations is optimistic (winner's curse): a
+                # candidate only becomes best.pt on its win rate over fresh battles.
+                score, n_score = wr, n_done
+                if args.confirm_battles:
+                    score, n_score = rollouts.evaluate(args.confirm_battles, "heuristic")
+                    row.update(confirm_wr=score, confirm_n=n_score)
+                    log.info("[ppo] it %d: candidate (%.1f%%) confirmed at %s", it, 100 * wr,
+                             with_ci(score, n_score))
+                if (n_score >= min(args.min_eval_battles, args.confirm_battles or n_done)
+                        and score > st["best_wr"]):
+                    st["best_wr"], st["best_iteration"] = score, it
+                    save_checkpoint(ckpt_dir / "best.pt", model, None, iteration=it,
+                                    eval_wr_heuristic=wr, confirm_wr=row.get("confirm_wr"))
+                    log.info("[ppo] new best: %.1f%% at iteration %d -> %s", 100 * score, it,
+                             ckpt_dir / "best.pt")
 
         st["active_seconds"] += time.time() - t_iter
         row.update(hours=st["active_seconds"] / 3600, best_wr=max(st["best_wr"], 0.0),
@@ -423,12 +447,19 @@ def cmd_eval(args) -> None:
     model = build_model(load_checkpoint(args.ckpt))
     log.info("%s: %s", args.ckpt, describe(model))
     server = server_for(args, None)
-    wr, n = eval_vs(model, infer, args.battles, args.concurrency, args.opponent)
+    if args.vs_ckpt:
+        other = build_model(load_checkpoint(args.vs_ckpt))
+        log.info("%s: %s", args.vs_ckpt, describe(other))
+        wr, n = head_to_head(model, other, infer, args.battles, args.concurrency)
+        label = f"{args.vs_ckpt} (greedy)"
+    else:
+        wr, n = eval_vs(model, infer, args.battles, args.concurrency, args.opponent)
+        label = args.opponent
     server.stop()
-    print(f"win rate vs {args.opponent}: {wr:.1%} over {n} battles")
+    print(f"win rate vs {label}: {with_ci(wr, n)}")
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
 
@@ -499,6 +530,9 @@ def main() -> None:
                    help="total iteration budget (default 300 when --hours is not set)")
     p.add_argument("--hours", type=float, default=None,
                    help="total training-time budget; resuming counts the time already spent")
+    p.add_argument("--states", type=int, default=None,
+                   help="total training-states budget (compare runs at matched states); the "
+                        "run stops at whichever of --iterations / --hours / --states ends first")
     p.add_argument("--battles-per-iter", type=int, default=None)
     p.add_argument("--minibatch", type=int, default=None)
     p.add_argument("--lr", type=float, default=None, help="peak learning rate")
@@ -520,20 +554,28 @@ def main() -> None:
     p.add_argument("--eval-pool-battles", type=int, default=None)
     p.add_argument("--min-eval-battles", type=int, default=None,
                    help="finished eval battles needed before best.pt can change")
+    p.add_argument("--confirm-battles", type=int, default=None,
+                   help="re-evaluate a best.pt candidate over this many fresh battles and keep "
+                        "it only if that confirmed win rate beats the best (default 400, 0 = off)")
     p.add_argument("--save-every", type=int, default=None)
     p.add_argument("--max-infer-batch", type=int, default=None,
                    help="largest rollout inference batch (default 64)")
     p.add_argument("--export-dir", default=None, help="default export/ (or the resumed run's)")
     p.set_defaults(fn=cmd_ppo)
 
-    p = sub.add_parser("eval")
+    p = sub.add_parser("eval", help="greedy win rate (with a 95%% Wilson interval)")
     common(p)
     p.add_argument("--ckpt", required=True)
-    p.add_argument("--battles", type=int, default=200)
+    p.add_argument("--battles", type=int, default=1000)
     p.add_argument("--opponent", default="heuristic", choices=["heuristic", "random", "maxpower"])
+    p.add_argument("--vs-ckpt", default=None,
+                   help="play another checkpoint instead (both greedy), e.g. V1 vs medium")
     p.set_defaults(fn=cmd_eval)
+    return ap
 
-    args = ap.parse_args()
+
+def main() -> None:
+    args = build_parser().parse_args()
     if args.cmd != "ppo" and args.concurrency is None:
         args.concurrency = 32
     args.fn(args)

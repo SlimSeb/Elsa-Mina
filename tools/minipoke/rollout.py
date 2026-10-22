@@ -17,6 +17,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import logging
+import math
 import statistics
 import time
 from dataclasses import dataclass, field
@@ -276,6 +277,17 @@ def evaluate(batcher: InferenceBatcher, make_opponent: Callable[[], Player], n_b
             server.ensure_up()
     close_players([me, opp])
     return me.n_won / max(me.n_done, 1), me.n_done
+
+
+def wilson_interval(wins: float, n: int, z: float = 1.96) -> Tuple[float, float]:
+    """95% (z = 1.96) Wilson score interval of a win rate. (0, 1) without battles."""
+    if n <= 0:
+        return 0.0, 1.0
+    p = wins / n
+    denom = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return max(0.0, centre - half), min(1.0, centre + half)
 
 
 def _win_rate(players: Sequence[SafePlayer]) -> Optional[float]:
