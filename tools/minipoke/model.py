@@ -33,12 +33,15 @@ They are state tokens (same mask rules); empty slots are masked out as keys.
 The move head then reads our active Pokémon's move tokens after the transformer
 instead of the move vectors before it. The Pokémon tokens no longer concatenate
 their move vectors.
+
+typed_ffn: each layer has one feed-forward block per token type ("cls" = actor
+and critic, "field", "mons", "moves"...) instead of one shared by every token.
 """
 
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, fields, replace
-from typing import Dict, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import torch
 import torch.nn as nn
@@ -51,6 +54,7 @@ N_TOKENS = 3 + N_MONS
 ACTOR, CRITIC, FIELD_TOK = 0, 1, 2
 MON0 = 3
 MOVE0 = N_TOKENS        # first move token (move_tokens)
+Segment = Tuple[str, int, int]   # token type, first token, end (exclusive)
 
 
 @dataclass
@@ -80,6 +84,8 @@ class ModelConfig:
     move_tokens: bool = False
     # Encoder v2: last moves, switches, protects and a choice-lock flag, into the field token
     history: bool = False
+    # One feed-forward block per token type in every layer
+    typed_ffn: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
@@ -134,23 +140,37 @@ def build_attention_mask(n_tokens: int = N_TOKENS) -> torch.Tensor:
 
 
 class EncoderLayer(nn.Module):
-    """Pre-LN transformer block using SDPA (works on MPS)."""
+    """Pre-LN transformer block using SDPA (works on MPS). With `token_types`, one
+    feed-forward block per type, applied to that type's (contiguous) tokens."""
 
-    def __init__(self, d: int, n_heads: int, ff_mult: float, dropout: float):
+    def __init__(self, d: int, n_heads: int, ff_mult: float, dropout: float,
+                 token_types: Optional[List[str]] = None):
         super().__init__()
         self.n_heads = n_heads
         self.norm1 = nn.LayerNorm(d)
         self.qkv = nn.Linear(d, 3 * d)
         self.proj = nn.Linear(d, d)
         self.norm2 = nn.LayerNorm(d)
-        self.ff = nn.Sequential(
-            nn.Linear(d, int(d * ff_mult)),
-            nn.GELU(),
-            nn.Linear(int(d * ff_mult), d),
-        )
+
+        def ffn():
+            return nn.Sequential(
+                nn.Linear(d, int(d * ff_mult)),
+                nn.GELU(),
+                nn.Linear(int(d * ff_mult), d),
+            )
+        if token_types:
+            self.ffs = nn.ModuleDict({t: ffn() for t in token_types})
+        else:
+            self.ff = ffn()
         self.drop = nn.Dropout(dropout)
 
-    def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    def feed_forward(self, h: torch.Tensor, segments: Optional[Sequence[Segment]]) -> torch.Tensor:
+        if not hasattr(self, "ffs"):
+            return self.ff(h)
+        return torch.cat([self.ffs[t](h[:, start:end]) for t, start, end in segments], dim=1)
+
+    def forward(self, x: torch.Tensor, mask: torch.Tensor,
+                segments: Optional[Sequence[Segment]] = None) -> torch.Tensor:
         B, T, D = x.shape
         h = self.norm1(x)
         q, k, v = (
@@ -158,7 +178,7 @@ class EncoderLayer(nn.Module):
         )
         a = F.scaled_dot_product_attention(q, k, v, attn_mask=mask)
         x = x + self.drop(self.proj(a.transpose(1, 2).reshape(B, T, D)))
-        return x + self.drop(self.ff(self.norm2(x)))
+        return x + self.drop(self.feed_forward(self.norm2(x), segments))
 
 
 class MiniPokeTransformer(nn.Module):
@@ -182,6 +202,11 @@ class MiniPokeTransformer(nn.Module):
         if cfg.move_tokens:
             self.n_move_tokens = N_MONS * N_MOVES + (N_SLOTS * cfg.cand_moves if self.v2 else 0)
         self.n_tokens = N_TOKENS + self.n_move_tokens
+        # Token types, in layout order (contiguous ranges)
+        self.segments: List[Segment] = [("cls", ACTOR, FIELD_TOK), ("field", FIELD_TOK, MON0),
+                                        ("mons", MON0, N_TOKENS)]
+        if self.n_move_tokens:
+            self.segments.append(("moves", MOVE0, MOVE0 + self.n_move_tokens))
         # v2: + known/candidate flag and fraction of consistent roles (1 for known moves)
         self.move_net = mlp(cfg.move_dim + F_MOVE + (2 if self.v2 else 0), d)
         moves_in = 0 if cfg.move_tokens else N_MOVES * d   # move tokens: moves are tokens
@@ -199,8 +224,10 @@ class MiniPokeTransformer(nn.Module):
         self.actor_tok = nn.Parameter(torch.randn(1, 1, d) * 0.02)
         self.critic_tok = nn.Parameter(torch.randn(1, 1, d) * 0.02)
 
+        types = [t for t, _, _ in self.segments] if cfg.typed_ffn else None
         self.layers = nn.ModuleList(
-            EncoderLayer(d, cfg.n_heads, cfg.ff_mult, cfg.dropout) for _ in range(cfg.n_layers)
+            EncoderLayer(d, cfg.n_heads, cfg.ff_mult, cfg.dropout, types)
+            for _ in range(cfg.n_layers)
         )
         self.final_norm = nn.LayerNorm(d)
         self.register_buffer("attn_mask", build_attention_mask(self.n_tokens), persistent=False)
@@ -336,7 +363,7 @@ class MiniPokeTransformer(nn.Module):
         B, d = x.shape[0], self.cfg.d_model
         mask = self.attention_mask(key_present)
         for layer in self.layers:
-            x = layer(x, mask)
+            x = layer(x, mask, self.segments)
         x = self.final_norm(x)
 
         actor = x[:, ACTOR]                              # [B, d]

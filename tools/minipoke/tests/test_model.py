@@ -14,6 +14,8 @@ CONFIGS = {
     "v1-move-tokens": dict(move_tokens=True),
     "v2-move-tokens": dict(encoder_version=2, move_tokens=True),
     "v2-history": dict(encoder_version=2, history=True),
+    "v1-typed-ffn": dict(typed_ffn=True),
+    "v2-move-tokens-typed-ffn": dict(encoder_version=2, move_tokens=True, typed_ffn=True),
 }
 
 
@@ -132,3 +134,22 @@ def test_forward_and_backward_on_mps(name):
     legal = obs["mask"].cpu()
     torch.testing.assert_close(logits.detach().cpu()[legal], cpu_logits[legal], atol=1e-3, rtol=1e-3)
     assert len(runtime.mps_fallback_ops) == before, runtime.mps_fallback_ops
+
+
+# --------------------------------------------------------------------------
+# Typed FFN
+# --------------------------------------------------------------------------
+def test_typed_ffn_applies_each_types_block_to_its_tokens():
+    model = make_model("small", move_tokens=True, typed_ffn=True).eval()
+    assert [t for t, _, _ in model.segments] == ["cls", "field", "mons", "moves"]
+    assert model.segments[-1][2] == model.n_tokens
+    assert all(a[2] == b[1] for a, b in zip(model.segments, model.segments[1:]))  # contiguous
+    layer = model.layers[0]
+    assert set(layer.ffs) == {"cls", "field", "mons", "moves"} and not hasattr(layer, "ff")
+    h = torch.randn(2, model.n_tokens, model.cfg.d_model)
+    out = layer.feed_forward(h, model.segments)
+    for t, start, end in model.segments:
+        torch.testing.assert_close(out[:, start:end], layer.ffs[t](h[:, start:end]))
+    # V1 layers keep their single block (and their checkpoint keys)
+    assert hasattr(make_model("small").layers[0], "ff")
+    assert "layers.0.ff.0.weight" in make_model("small").state_dict()

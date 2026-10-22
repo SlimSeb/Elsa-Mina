@@ -114,6 +114,7 @@ V2_MODELS = {
     "v2-medium": dict(size="medium", encoder_version=2),
     "v2-move-tokens": dict(size="small", encoder_version=2, move_tokens=True),
     "v2-history": dict(size="small", encoder_version=2, history=True),
+    "v2-typed-ffn": dict(size="small", encoder_version=2, move_tokens=True, typed_ffn=True),
 }
 
 
