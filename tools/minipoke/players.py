@@ -15,6 +15,7 @@ import logging
 import random
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -126,11 +127,29 @@ class EpisodeCollector:
 # --------------------------------------------------------------------------
 # Rewards: win +-1 at the end, +-0.1 per faint (theirs - ours) after each decision
 # --------------------------------------------------------------------------
+@dataclass
+class Rewards:
+    """The defaults are V1's. Players share one instance, so changing `faint`
+    between iterations (faint annealing) applies to every learner seat."""
+    win: float = WIN_REWARD
+    loss: float = -WIN_REWARD
+    faint: float = FAINT_REWARD
+
+
+def faint_reward(total_states: int, anneal_states: Optional[int]) -> float:
+    """FAINT_REWARD, taken linearly to 0 over `anneal_states` training states (None or
+    0: constant, as in V1)."""
+    if not anneal_states:
+        return FAINT_REWARD
+    return FAINT_REWARD * max(0.0, 1.0 - total_states / anneal_states)
+
+
 class Trajectories:
     """Per-battle step lists. The reward of a step is the faint delta until the
     next decision, plus the result on the last step."""
 
-    def __init__(self):
+    def __init__(self, rewards: Optional[Rewards] = None):
+        self.rewards = rewards or Rewards()
         self._traj: Dict[str, List[dict]] = {}
         self._faints: Dict[str, Tuple[int, int]] = {}
 
@@ -140,7 +159,7 @@ class Trajectories:
         mine, theirs = fainted_counts(battle)
         if traj:  # reward for the previous decision = faint delta since then
             pm, pt = self._faints[tag]
-            traj[-1]["reward"] += FAINT_REWARD * ((theirs - pt) - (mine - pm))
+            traj[-1]["reward"] += self.rewards.faint * ((theirs - pt) - (mine - pm))
         self._faints[tag] = (mine, theirs)
         record["reward"] = 0.0
         traj.append(record)
@@ -153,11 +172,11 @@ class Trajectories:
             return traj
         mine, theirs = fainted_counts(battle)
         pm, pt = self._faints.pop(tag, (mine, theirs))
-        traj[-1]["reward"] += FAINT_REWARD * ((theirs - pt) - (mine - pm))
+        traj[-1]["reward"] += self.rewards.faint * ((theirs - pt) - (mine - pm))
         if battle.won:
-            traj[-1]["reward"] += WIN_REWARD
+            traj[-1]["reward"] += self.rewards.win
         elif battle.lost:
-            traj[-1]["reward"] -= WIN_REWARD
+            traj[-1]["reward"] += self.rewards.loss
         return traj
 
 
@@ -204,12 +223,12 @@ class RLPlayer(SafePlayer):
     """Plays with the network. If ``collector`` is set, records trajectories."""
 
     def __init__(self, batcher: InferenceBatcher, collector: Optional[EpisodeCollector] = None,
-                 greedy: bool = False, **kwargs):
+                 greedy: bool = False, rewards: Optional[Rewards] = None, **kwargs):
         super().__init__(**kwargs)
         self.batcher = batcher
         self.collector = collector
         self.greedy = greedy
-        self._trajectories = Trajectories()
+        self._trajectories = Trajectories(rewards)
 
     async def _choose(self, battle):
         obs = encode(battle)

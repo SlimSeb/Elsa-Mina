@@ -41,7 +41,7 @@ from export_onnx import export_checkpoint, random_inputs, INPUTS
 from league import OpponentPool, split_battles
 from model import (PRESETS, MiniPokeTransformer, ModelConfig, build_model, describe, pick_device,
                    preset, size_of)
-from players import DistillPlayer, InferenceBatcher, RLPlayer, TeacherPlayer
+from players import DistillPlayer, InferenceBatcher, Rewards, RLPlayer, TeacherPlayer, faint_reward
 from ppo import Budget, PPOConfig, Schedule, distill_train, ppo_update
 from rollout import (RolloutConfig, Rollouts, SafeHeuristicsPlayer, close_players, evaluate,
                      frozen_copy, load_into, make_kwargs, play_recording_pairs, wilson_interval)
@@ -56,22 +56,30 @@ DEFAULTS: Dict[str, Dict[str, object]] = {
     "small": dict(
         concurrency=32, battles_per_iter=128, lr=2e-4, warmup_iters=0, lr_min_ratio=1.0,
         ent_start=0.01, ent_end=0.01, mirror_share=1.0, pool_share=0.0, heuristic_share=0.0,
-        bc_value_coef=0.0, vf_coef=0.5,
+        bc_value_coef=0.0, value_ce_norm="log-bins", vf_coef=0.5, kl_stop="last",
+        pool_sampling="uniform",
     ),
     "medium": dict(
-        # lr 1e-4 / vf_coef 0.1: at 2e-4 / 0.5 the 51-bin value loss dominated the shared
-        # trunk's gradient and PPO stalled around 43% vs the heuristic (55% with these)
+        # lr 1e-4: at 2e-4 (with the raw two-hot loss at 0.5) PPO stalled around 43% vs the
+        # heuristic. vf_coef 0.5 on the normalized two-hot loss weighs about as much as the
+        # 0.1 on the raw loss that took that run to 55% (see --value-ce-norm).
         concurrency=48, battles_per_iter=192, lr=1e-4, warmup_iters=10, lr_min_ratio=0.1,
         ent_start=0.01, ent_end=0.003, mirror_share=0.7, pool_share=0.2, heuristic_share=0.1,
-        bc_value_coef=0.5, vf_coef=0.1,
+        bc_value_coef=0.5, value_ce_norm="log-bins", vf_coef=0.5, kl_stop="mean",
+        pool_sampling="pfsp",
     ),
 }
 DEFAULTS["wide"] = DEFAULTS["small"]  # MiniPokeV1_4M was trained with the V1 recipe
+# --value-ce-norm none is the two-hot loss before it was divided by log(bins); medium's
+# value weight was 0.1 then, so that setting also brings back the old medium default.
+RAW_CE_VF_COEF = {"medium": 0.1}
+# Options added after a run was started: resuming it keeps what it was trained with
+LEGACY = dict(value_ce_norm="none", kl_stop="last", pool_sampling="uniform")
 COMMON_DEFAULTS = dict(
     iterations=None, hours=None, states=None, confirm_battles=400, minibatch=1024, eval_every=10, eval_battles=200,
     eval_pool_battles=100, min_eval_battles=150, snapshot_every=10, pool_cap=20, pool_slots=2,
     save_every=10, stall_timeout=180.0, infer_device="auto", seed=None,
-    max_infer_batch=64,
+    max_infer_batch=64, faint_anneal_states=None, pfsp_floor=0.1, pool_ema=0.05,
 )
 
 
@@ -79,6 +87,9 @@ def resolve(args: argparse.Namespace, size: str, keys) -> None:
     """Fill options left at None from the size's defaults."""
     for k in keys:
         if getattr(args, k, None) is None:
+            if k == "vf_coef" and getattr(args, "value_ce_norm", None) == "none":
+                setattr(args, k, RAW_CE_VF_COEF.get(size, DEFAULTS[size][k]))
+                continue
             setattr(args, k, DEFAULTS[size].get(k, COMMON_DEFAULTS.get(k)))
 
 
@@ -162,7 +173,8 @@ def train_on_dataset(args, model, device, data: ShardDataset, vf_coef: float,
     runtime.mps_self_check(model, device, sample_batch(8))
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-2)
     distill_train(model, opt, data, args.epochs, args.minibatch, device, vf_coef=vf_coef,
-                  value_target=value_target, seed=args.seed or 0, log_prefix=f"[{tag}]")
+                  value_target=value_target, seed=args.seed or 0, log_prefix=f"[{tag}]",
+                  value_ce_norm=args.value_ce_norm == "log-bins")
     save_checkpoint(out, model)
     log.info("[%s] saved %s; peak RSS %.0f MB", tag, out, peak_rss_mb() or -1)
 
@@ -233,8 +245,8 @@ METRICS = ["iteration", "time", "hours", "states", "total_states", "battles", "p
            "states_per_s", "lr", "ent_coef", "pi_loss", "v_loss", "v_mse", "entropy", "kl",
            "clipfrac", "explained_var", "train_wr_pool", "train_wr_heuristic",
            "eval_wr_heuristic", "eval_n_heuristic", "eval_wr_pool", "eval_n_pool", "confirm_wr",
-           "confirm_n", "best_wr",
-           "pool_size", "stalled", "rebuilds", "rss_mb"]
+           "confirm_n", "best_wr", "epochs", "faint_reward", "pool_size", "pool_hardest_wr",
+           "stalled", "rebuilds", "rss_mb"]
 
 
 RUN_KEYS = ["run", "size", "ckpt_dir", "export_dir"]
@@ -248,7 +260,8 @@ def cmd_ppo(args) -> None:
     resumed = load_checkpoint(args.resume) if args.resume else None
     if resumed:
         # Saved options, overridden by anything given on this command line
-        for k, v in resumed.get("args", {}).items():
+        saved = {**LEGACY, **(resumed.get("args") or {})}
+        for k, v in saved.items():
             if getattr(args, k, None) is None and k in PPO_KEYS + RUN_KEYS:
                 setattr(args, k, v)
         # Keep writing where the run lives (checkpoints saved before these were stored)
@@ -286,11 +299,13 @@ def cmd_ppo(args) -> None:
     if args.seed is not None and not resumed:
         seed_everything(args.seed)
     model = model.to(device)
-    cfg = PPOConfig(lr=args.lr, minibatch=args.minibatch, vf_coef=args.vf_coef)
+    cfg = PPOConfig(lr=args.lr, minibatch=args.minibatch, vf_coef=args.vf_coef,
+                    kl_stop=args.kl_stop, value_ce_norm=args.value_ce_norm == "log-bins")
     sched = Schedule(lr=args.lr, warmup_iters=args.warmup_iters, lr_min_ratio=args.lr_min_ratio,
                      ent_start=args.ent_start, ent_end=args.ent_end)
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=1e-2)
-    pool = OpponentPool(ckpt_dir / "pool", cap=args.pool_cap)
+    pool = OpponentPool(ckpt_dir / "pool", cap=args.pool_cap, sampling=args.pool_sampling,
+                        floor=args.pfsp_floor, ema=args.pool_ema)
     st = {"iteration": 0, "total_states": 0, "active_seconds": 0.0, "best_wr": -1.0,
           "best_iteration": None}
     if resumed:
@@ -306,17 +321,19 @@ def cmd_ppo(args) -> None:
 
     log.info("[ppo] run %s, size %s: %s, train on %s", args.run, size, describe(model), device)
     log.info("[ppo] budget: %s iterations, %s hours, %s states; battles/iter %d (mirror %.0f%% / "
-             "pool %.0f%% / heuristic %.0f%%), concurrency %d", args.iterations, args.hours,
+             "pool %.0f%% %s / heuristic %.0f%%), concurrency %d", args.iterations, args.hours,
              args.states, args.battles_per_iter, 100 * args.mirror_share, 100 * args.pool_share,
-             100 * args.heuristic_share, args.concurrency)
+             args.pool_sampling, 100 * args.heuristic_share, args.concurrency)
     runtime.mps_self_check(model, device, sample_batch(8))
     infer_device = choose_infer_device(args, model, device)
     model.to(device)
     infer_model = frozen_copy(model, infer_device)
+    rewards = Rewards()
     rollouts = Rollouts(infer_model, infer_device, RolloutConfig(
         concurrency=args.concurrency, mirror_share=args.mirror_share, pool_share=args.pool_share,
         heuristic_share=args.heuristic_share, pool_slots=args.pool_slots,
-        max_infer_batch=args.max_infer_batch, stall_timeout=args.stall_timeout), server)
+        max_infer_batch=args.max_infer_batch, stall_timeout=args.stall_timeout), server,
+        rewards=rewards)
     metrics = MetricsLogger(run_dir / "metrics.csv", METRICS)
     if use_pool and len(pool) == 0:
         pool.add(model, st["iteration"])  # the starting policy (BC / distill) is the first opponent
@@ -349,12 +366,16 @@ def cmd_ppo(args) -> None:
 
         # ---- play
         sync()
+        rewards.faint = faint_reward(st["total_states"], args.faint_anneal_states)
         n_mirror, n_pool, n_heur = split_battles(args.battles_per_iter, args.mirror_share,
                                                  args.pool_share if use_pool else 0.0,
                                                  args.heuristic_share)
-        if use_pool:
-            rollouts.load_slots([pool.load_weights(s) for s in pool.sample(args.pool_slots, pool_rng)])
+        sampled = pool.sample(args.pool_slots, pool_rng) if use_pool else []
+        if sampled:
+            rollouts.load_slots([pool.load_weights(s) for s in sampled])
         res = rollouts.play_iteration(n_mirror, n_pool, n_heur)
+        for i, (wins, n_done) in enumerate(res.slot_results if sampled else []):
+            pool.record(sampled[i % len(sampled)].iteration, wins, n_done)
         t_play = time.time() - t_iter
         episodes = res.episodes
         consecutive_failures = 0 if res.play.ok else consecutive_failures + 1
@@ -379,6 +400,8 @@ def cmd_ppo(args) -> None:
                    learn_s=t_learn, states_per_s=stats["samples"] / (t_play + t_learn), lr=lr,
                    ent_coef=ent, train_wr_pool=res.win_rates.get("pool"),
                    train_wr_heuristic=res.win_rates.get("heuristic"), pool_size=len(pool),
+                   pool_hardest_wr=min((s.win_rate for s in pool.snapshots), default=None),
+                   faint_reward=rewards.faint, epochs=stats["epochs"],
                    stalled=int(not res.play.ok), rebuilds=rollouts.rebuilds,
                    **{k: stats[k] for k in ("pi_loss", "v_loss", "v_mse", "entropy", "kl",
                                             "clipfrac", "explained_var")})
@@ -488,6 +511,11 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--value-bins", type=int, default=None,
                        help="1 = scalar value head; default 1 small/wide, 51 medium")
 
+    def value_ce_arg(p, default="log-bins"):
+        p.add_argument("--value-ce-norm", default=default, choices=["log-bins", "none"],
+                       help="divide the two-hot value cross-entropy by log(bins) (~1 at init, "
+                            "like the scalar head's MSE); none = the raw cross-entropy")
+
     def data_args(p, battles, epsilon):
         p.add_argument("--battles", type=int, default=battles)
         p.add_argument("--epochs", type=int, default=8)
@@ -505,6 +533,7 @@ def build_parser() -> argparse.ArgumentParser:
     data_args(p, 3000, 0.1)
     p.add_argument("--bc-value-coef", type=float, default=None,
                    help="also fit the value head to battle returns (default 0 small/wide, 0.5 medium)")
+    value_ce_arg(p)
     p.set_defaults(fn=cmd_imitate)
 
     p = sub.add_parser("distill", help="clone a trained model's full action distribution")
@@ -514,6 +543,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--teacher", required=True)
     p.add_argument("--vf-coef", type=float, default=0.5)
     p.add_argument("--value-target", default="teacher", choices=["teacher", "return"])
+    value_ce_arg(p)
     p.set_defaults(fn=cmd_distill)
 
     p = sub.add_parser("ppo")
@@ -537,7 +567,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--minibatch", type=int, default=None)
     p.add_argument("--lr", type=float, default=None, help="peak learning rate")
     p.add_argument("--vf-coef", type=float, default=None,
-                   help="value loss weight (default 0.5 small/wide, 0.1 medium)")
+                   help="value loss weight (default 0.5; 0.1 for medium with --value-ce-norm none)")
+    value_ce_arg(p, default=None)
+    p.add_argument("--kl-stop", default=None, choices=["mean", "last"],
+                   help="stop the PPO epochs when the epoch's mean approx KL (default medium) "
+                        "or its last minibatch's (V1, default small/wide) exceeds 0.03")
+    p.add_argument("--faint-anneal-states", type=int, default=None,
+                   help="take the faint reward linearly from 0.1 to 0 over this many training "
+                        "states (default off)")
     p.add_argument("--warmup-iters", type=int, default=None)
     p.add_argument("--lr-min-ratio", type=float, default=None,
                    help="final LR / peak LR of the cosine decay (1 = constant)")
@@ -549,6 +586,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--pool-cap", type=int, default=None)
     p.add_argument("--pool-slots", type=int, default=None,
                    help="pool snapshots played per iteration (one model + batcher each)")
+    p.add_argument("--pool-sampling", default=None, choices=["pfsp", "uniform"],
+                   help="pfsp (default medium): favour the snapshots the learner beats least, "
+                        "weight max(1 - EMA win rate, --pfsp-floor); uniform: V1's draw")
+    p.add_argument("--pfsp-floor", type=float, default=None,
+                   help="smallest pfsp weight, so every snapshot keeps being played (0.1)")
+    p.add_argument("--pool-ema", type=float, default=None,
+                   help="weight of one training game in a snapshot's win-rate EMA (0.05)")
     p.add_argument("--snapshot-every", type=int, default=None)
     p.add_argument("--eval-every", type=int, default=None)
     p.add_argument("--eval-pool-battles", type=int, default=None)

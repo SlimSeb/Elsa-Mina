@@ -26,8 +26,9 @@ class FakeRollouts:
     evaluation the next scripted win rate."""
     eval_results = []
 
-    def __init__(self, learner, device, cfg, server=None):
+    def __init__(self, learner, device, cfg, server=None, rewards=None):
         self.cfg = cfg
+        self.rewards = rewards
         self.rebuilds = 0
         self.players = []
         self.evals = []
@@ -38,8 +39,9 @@ class FakeRollouts:
 
     def play_iteration(self, n_mirror, n_pool, n_heuristic):
         self.seed += 1
+        slots = [(2, 10), (8, 10)][:self.cfg.pool_slots] if n_pool else []
         return IterationResult(random_episodes(4, 25, seed=self.seed), PlayResult(True, 0.01),
-                               {"mirror": None, "pool": None, "heuristic": None})
+                               {"mirror": None, "pool": None, "heuristic": None}, slots)
 
     def evaluate(self, n_battles, opponent="heuristic", snapshot_state=None):
         self.evals.append((opponent, n_battles))
@@ -117,3 +119,29 @@ def test_wilson_interval():
     assert wilson_interval(0, 0) == (0.0, 1.0)
     lo, hi = wilson_interval(0, 50)
     assert lo == 0.0 and 0.05 < hi < 0.1
+
+
+def test_medium_records_the_pool_win_rates_and_resume_keeps_old_runs_on_their_settings(
+        run_ppo, tmp_path):
+    rows, ck = run_ppo("--size", "medium", "--iterations", "2", "--eval-every", "1000",
+                       "--snapshot-every", "1", "--faint-anneal-states", "200")
+    assert ck["args"]["pool_sampling"] == "pfsp" and ck["args"]["kl_stop"] == "mean"
+    games = sum(s["games"] for s in ck["pool"]["snapshots"])
+    assert games == 2 * 20                       # 2 iterations x 2 slots x 10 battles
+    assert float(rows[-1]["pool_hardest_wr"]) < 0.5
+    assert [float(r["faint_reward"]) for r in rows] == pytest.approx([0.1, 0.05])
+
+    # A checkpoint saved before these options existed resumes on the old behaviour
+    path = tmp_path / "checkpoints" / "ppo_latest.pt"
+    for k in ("value_ce_norm", "kl_stop", "pool_sampling", "vf_coef"):
+        ck["args"].pop(k)
+    ck["args"]["vf_coef"] = 0.1
+    torch.save(ck, path)
+    args = train.build_parser().parse_args(["ppo", "--device", "cpu", "--resume", str(path),
+                                            "--iterations", "3"])
+    args.fn(args)
+    resumed = load_checkpoint(path)
+    assert (resumed["args"]["value_ce_norm"], resumed["args"]["kl_stop"],
+            resumed["args"]["pool_sampling"], resumed["args"]["vf_coef"]) == (
+        "none", "last", "uniform", 0.1)
+    assert resumed["state"]["iteration"] == 3

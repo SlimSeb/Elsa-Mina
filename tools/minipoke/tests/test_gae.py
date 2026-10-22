@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pytest
 import torch
@@ -70,10 +72,23 @@ def test_distributional_value_loss_is_minimised_by_the_two_hot_target():
     worse = torch.zeros_like(good)
     values = (dist @ model.value_support)
     assert value_loss(model, values, good, targets) < value_loss(model, values, worse, targets)
-    # gradient of CE wrt logits = softmax - target
+    # gradient of the raw CE wrt logits = softmax - target
     logits = torch.zeros(2, 51, requires_grad=True)
-    value_loss(model, values, logits, targets).backward()
+    value_loss(model, values, logits, targets, ce_norm=False).backward()
     torch.testing.assert_close(logits.grad, (torch.softmax(logits, -1) - dist).detach() / 2)
+
+
+def test_normalized_two_hot_loss_is_one_at_init_like_the_mse_scale():
+    model = MiniPokeTransformer(PRESETS["medium"])
+    targets = torch.tensor([0.37, -0.8, 1.0, -1.0])
+    uniform = torch.zeros(4, 51)  # a fresh head's logits are ~equal
+    values = torch.zeros(4)
+    assert value_loss(model, values, uniform, targets).item() == pytest.approx(1.0, abs=1e-6)
+    assert value_loss(model, values, uniform, targets, ce_norm=False).item() == pytest.approx(
+        math.log(51), abs=1e-5)
+    # the scalar head is unaffected: MSE either way
+    assert value_loss(model, values, None, targets) == value_loss(model, values, None, targets,
+                                                                 ce_norm=False)
 
 
 def test_explained_variance():

@@ -27,7 +27,7 @@ import torch
 from poke_env.player import Player, SimpleHeuristicsPlayer
 
 from league import split_evenly
-from players import EpisodeCollector, InferenceBatcher, RLPlayer, SafePlayer
+from players import EpisodeCollector, InferenceBatcher, Rewards, RLPlayer, SafePlayer
 
 log = logging.getLogger("minipoke")
 FORMAT = "gen9randombattle"
@@ -163,15 +163,18 @@ class IterationResult:
     episodes: list
     play: PlayResult
     win_rates: Dict[str, Optional[float]] = field(default_factory=dict)
+    # Learner (wins, finished battles) against each pool slot, in slot order
+    slot_results: List[Tuple[int, int]] = field(default_factory=list)
 
 
 class Rollouts:
     def __init__(self, learner: torch.nn.Module, device: torch.device, cfg: RolloutConfig,
-                 server=None):
+                 server=None, rewards: Optional[Rewards] = None):
         self.cfg = cfg
         self.device = device
         self.server = server
         self.learner = learner
+        self.rewards = rewards or Rewards()  # shared by every learner seat
         self.batcher = InferenceBatcher(learner, device,
                                         max_batch=min(cfg.concurrency * 2, cfg.max_infer_batch))
         self.collector = EpisodeCollector()
@@ -191,18 +194,21 @@ class Rollouts:
         total = self.cfg.mirror_share + self.cfg.pool_share + self.cfg.heuristic_share
         return max(1, round(self.cfg.concurrency * share / total))
 
+    def _learner(self, concurrency: int) -> RLPlayer:
+        return RLPlayer(self.batcher, self.collector, rewards=self.rewards,
+                        **make_kwargs(concurrency))
+
     def _build(self) -> None:
         c = self.cfg
-        self.mirror = (RLPlayer(self.batcher, self.collector, **make_kwargs(self._conc(c.mirror_share))),
-                       RLPlayer(self.batcher, self.collector, **make_kwargs(self._conc(c.mirror_share))))
+        self.mirror = (self._learner(self._conc(c.mirror_share)),
+                       self._learner(self._conc(c.mirror_share)))
         slot_conc = self._conc(c.pool_share / max(len(self.slot_models), 1))
-        self.pool_pairs = [(RLPlayer(self.batcher, self.collector, **make_kwargs(slot_conc)),
-                            RLPlayer(b, None, **make_kwargs(slot_conc))) for b in self.slot_batchers]
+        self.pool_pairs = [(self._learner(slot_conc), RLPlayer(b, None, **make_kwargs(slot_conc)))
+                           for b in self.slot_batchers]
         self.heuristic_pair = None
         if c.heuristic_share > 0:
             hc = self._conc(c.heuristic_share)
-            self.heuristic_pair = (RLPlayer(self.batcher, self.collector, **make_kwargs(hc)),
-                                   SafeHeuristicsPlayer(**make_kwargs(hc)))
+            self.heuristic_pair = (self._learner(hc), SafeHeuristicsPlayer(**make_kwargs(hc)))
 
     @property
     def players(self) -> List[Player]:
@@ -240,6 +246,7 @@ class Rollouts:
         win_rates = {"mirror": None,
                      "pool": _win_rate([a for a, _ in self.pool_pairs]),
                      "heuristic": _win_rate([self.heuristic_pair[0]] if self.heuristic_pair else [])}
+        slot_results = [(a.n_won, a.n_done) for a, _ in self.pool_pairs]
         if res.ok:
             self.play_times.append(res.seconds)
         if not res.ok:
@@ -248,7 +255,7 @@ class Rollouts:
         episodes = self.collector.drain()
         if not res.ok or not reset_all(self.players):
             self.rebuild()
-        return IterationResult(episodes, res, win_rates)
+        return IterationResult(episodes, res, win_rates, slot_results)
 
     # ----------------------------------------------------------------------
     def evaluate(self, n_battles: int, opponent: str = "heuristic",

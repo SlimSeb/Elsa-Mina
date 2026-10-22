@@ -26,6 +26,12 @@ class PPOConfig:
     ent_coef: float = 0.01
     max_grad_norm: float = 0.5
     target_kl: float = 0.03
+    # "last": stop the epochs when the last minibatch's approx KL exceeds target_kl (V1).
+    # "mean": when the epoch's mean approx KL does (a single minibatch is noisy).
+    kl_stop: str = "last"
+    # Two-hot cross-entropy divided by log(value_bins): ~1 at init, like the MSE of a
+    # scalar head, so vf_coef means the same for both heads. False = the raw CE.
+    value_ce_norm: bool = True
 
 
 @dataclass
@@ -86,12 +92,23 @@ def two_hot(targets: torch.Tensor, support: torch.Tensor) -> torch.Tensor:
 
 
 def value_loss(model, values: torch.Tensor, value_logits: Optional[torch.Tensor],
-               targets: torch.Tensor) -> torch.Tensor:
-    """MSE for a scalar head, two-hot cross-entropy for a distributional one."""
+               targets: torch.Tensor, ce_norm: bool = True) -> torch.Tensor:
+    """MSE for a scalar head, two-hot cross-entropy for a distributional one. With
+    `ce_norm`, the cross-entropy is divided by log(bins): uniform logits (a fresh
+    head) then score exactly 1, the scale of the MSE of +-1 returns."""
     if value_logits is None:
         return F.mse_loss(values, targets)
     target_dist = two_hot(targets, model.value_support)
-    return -(target_dist * F.log_softmax(value_logits, dim=-1)).sum(-1).mean()
+    ce = -(target_dist * F.log_softmax(value_logits, dim=-1)).sum(-1).mean()
+    return ce / math.log(value_logits.shape[-1]) if ce_norm else ce
+
+
+def kl_early_stop(minibatch_kls: List[float], target_kl: float, mode: str = "last") -> bool:
+    """Whether to stop the PPO epochs after an epoch with these minibatch approx KLs."""
+    if not target_kl or not minibatch_kls:
+        return False
+    kl = float(np.mean(minibatch_kls)) if mode == "mean" else minibatch_kls[-1]
+    return kl > target_kl
 
 
 def compute_gae(episodes: List[List[dict]], gamma: float, lam: float):
@@ -144,10 +161,11 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
     stats = {"pi_loss": 0.0, "v_loss": 0.0, "v_mse": 0.0, "entropy": 0.0, "kl": 0.0,
              "clipfrac": 0.0}
     n_updates = 0
+    epochs_run = 0
 
     for _ in range(cfg.epochs):
         perm = np.random.permutation(n)
-        approx_kl = 0.0
+        epoch_kls: List[float] = []
         for start in range(0, n, cfg.minibatch):
             idx = perm[start : start + cfg.minibatch]
             mb = to_tensors({k: v[idx] for k, v in batch.items()}, device)
@@ -161,7 +179,7 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
             logp = dist.log_prob(a)
             ratio = torch.exp(logp - olp)
             pi_loss = -torch.min(ratio * A, ratio.clamp(1 - cfg.clip, 1 + cfg.clip) * A).mean()
-            v_loss = value_loss(model, values, value_logits, R)
+            v_loss = value_loss(model, values, value_logits, R, cfg.value_ce_norm)
             entropy = dist.entropy().mean()
             loss = pi_loss + cfg.vf_coef * v_loss - ent_coef * entropy
             if not torch.isfinite(loss):  # never let one bad minibatch poison the weights
@@ -180,6 +198,7 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
 
             with torch.no_grad():
                 approx_kl = ((ratio - 1) - torch.log(ratio)).mean().item()
+                epoch_kls.append(approx_kl)
                 stats["pi_loss"] += pi_loss.item()
                 stats["v_loss"] += v_loss.item()
                 stats["v_mse"] += F.mse_loss(values, R).item()
@@ -187,20 +206,23 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
                 stats["kl"] += approx_kl
                 stats["clipfrac"] += ((ratio - 1).abs() > cfg.clip).float().mean().item()
             n_updates += 1
-        if cfg.target_kl and approx_kl > cfg.target_kl:
+        epochs_run += 1
+        if kl_early_stop(epoch_kls, cfg.target_kl, cfg.kl_stop):
             break
 
     skipped = stats.pop("skipped", 0)
     out = {k: v / max(n_updates, 1) for k, v in stats.items()}
     out["samples"] = n
     out["skipped"] = skipped
+    out["epochs"] = epochs_run
     out["explained_var"] = explained_variance(old_values, ret)
     return out
 
 
 def distill_train(model, optimizer, dataset, epochs: int, minibatch: int, device,
                   vf_coef: float = 0.0, value_target: str = "teacher",
-                  seed: int = 0, log_prefix: str = "[bc]") -> Dict[str, float]:
+                  seed: int = 0, log_prefix: str = "[bc]",
+                  value_ce_norm: bool = True) -> Dict[str, float]:
     """Trains the policy on the stored teacher distributions (cross-entropy to
     the teacher's softmax, i.e. KL(teacher || student) up to a constant), plus
     `vf_coef` x value loss toward the teacher's value or the battle's return.
@@ -223,7 +245,7 @@ def distill_train(model, optimizer, dataset, epochs: int, minibatch: int, device
             loss = pol
             if vf_coef:
                 target = torch.from_numpy(mb[value_key]).to(device)
-                v = value_loss(model, values, value_logits, target)
+                v = value_loss(model, values, value_logits, target, value_ce_norm)
                 loss = loss + vf_coef * v
                 tot["value"] += v.item() * len(probs)
             optimizer.zero_grad(set_to_none=True)
