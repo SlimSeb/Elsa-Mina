@@ -234,20 +234,25 @@ def cmd_distill(args) -> None:
     log.info("[distill] teacher %s: %s", args.teacher, describe(teacher))
     root = data_dir(args, "distill")
     server = server_for(args, None)
+    model = new_model(args)
+    student = model_encoder(model)
     if not (root / "meta.json").exists():
         batcher = InferenceBatcher(frozen_copy(teacher, infer), infer,
                                    max_batch=args.concurrency * 2)
-        writer = ShardWriter(root, args.shard_size, info={"teacher": str(args.teacher),
-                                                          "epsilon": args.epsilon},
-                             obs_layout=batcher.encoder.layout)
+        # The teacher plays from its own encoding; the samples hold the student's
+        writer = ShardWriter(root, args.shard_size, info={
+            "teacher": str(args.teacher), "epsilon": args.epsilon,
+            "teacher_encoder_version": batcher.encoder.version,
+            "student_encoder_version": student.version}, obs_layout=student.layout)
         gamma = PPOConfig().gamma
-        log.info("[distill] playing %d teacher-vs-teacher battles into %s...", args.battles, root)
+        log.info("[distill] playing %d teacher-vs-teacher battles into %s (teacher encoder v%d, "
+                 "student v%d)...", args.battles, root, batcher.encoder.version, student.version)
         collect(args, writer, lambda: tuple(
-            DistillPlayer(batcher, writer, gamma, args.epsilon, **make_kwargs(args.concurrency))
+            DistillPlayer(batcher, writer, gamma, args.epsilon, encoder=student,
+                          **make_kwargs(args.concurrency))
             for _ in range(2)), server)
     else:
         log.info("[distill] reusing the dataset in %s", root)
-    model = new_model(args)
     train_on_dataset(args, model, device, ShardDataset(root), args.vf_coef, args.value_target,
                      CKPT_DIR(args) / "distill.pt", "distill")
     eval_heuristic(model, infer, args.eval_battles, args.concurrency)
@@ -571,7 +576,8 @@ def build_parser() -> argparse.ArgumentParser:
     value_ce_arg(p)
     p.set_defaults(fn=cmd_imitate)
 
-    p = sub.add_parser("distill", help="clone a trained model's full action distribution")
+    p = sub.add_parser("distill", help="clone a trained model's full action distribution (the "
+                                        "student may use another encoder, e.g. V1 -> v2)")
     common(p)
     model_args(p, "medium")
     data_args(p, 3000, 0.05)

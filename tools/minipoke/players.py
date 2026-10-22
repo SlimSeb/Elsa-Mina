@@ -298,11 +298,16 @@ class TeacherPlayer(_RecordingPlayer):
 
 class DistillPlayer(_RecordingPlayer):
     """Plays a trained model's sampled moves (a uniformly random legal move with
-    probability ``epsilon``) and records the model's full distribution and value."""
+    probability ``epsilon``) and records the model's full distribution and value.
+
+    The teacher (``batcher``'s model) sees the battle through its own encoder, the
+    recorded sample is the student's ``encoder``'s view of the same state: a V1
+    teacher can train a v2 student. Every encoder shares V1's action space and mask.
+    """
 
     def __init__(self, batcher: InferenceBatcher, writer: ShardWriter, gamma: float,
-                 epsilon: float, **kwargs):
-        super().__init__(writer, gamma, epsilon, encoder=batcher.encoder, **kwargs)
+                 epsilon: float, encoder=None, **kwargs):
+        super().__init__(writer, gamma, epsilon, encoder=encoder or batcher.encoder, **kwargs)
         self.batcher = batcher
 
     async def _choose(self, battle):
@@ -312,5 +317,6 @@ class DistillPlayer(_RecordingPlayer):
         action, _, value, probs = await self.batcher.act(obs)
         if random.random() < self.epsilon:
             action = int(random.choice(np.flatnonzero(obs["mask"])))
-        self._record(battle, obs, probs, action, value)
+        student = obs if self.encoder is self.batcher.encoder else self.encoder.encode(battle)
+        self._record(battle, student, probs, action, value)
         return action_to_order(action, battle)
