@@ -40,13 +40,16 @@ class FakeRollouts:
     def play_iteration(self, n_mirror, n_pool, n_heuristic):
         self.seed += 1
         slots = [(2, 10), (8, 10)][:self.cfg.pool_slots] if n_pool else []
+        heuristic = (7, 10) if n_heuristic else None
         return IterationResult(random_episodes(4, 25, seed=self.seed), PlayResult(True, 0.01),
-                               {"mirror": None, "pool": None, "heuristic": None}, slots)
+                               {"mirror": None, "pool": None, "heuristic": None}, slots,
+                               heuristic)
 
     def evaluate(self, n_battles, opponent="heuristic", snapshot_state=None):
+        """Heuristic evaluations return the scripted win rates, pool ones 0.5."""
         self.evals.append((opponent, n_battles))
-        wr = FakeRollouts.eval_results.pop(0) if FakeRollouts.eval_results else 0.5
-        return wr, n_battles
+        scripted = opponent == "heuristic" and FakeRollouts.eval_results
+        return (FakeRollouts.eval_results.pop(0) if scripted else 0.5), n_battles
 
 
 @pytest.fixture
@@ -145,3 +148,20 @@ def test_medium_records_the_pool_win_rates_and_resume_keeps_old_runs_on_their_se
             resumed["args"]["pool_sampling"], resumed["args"]["vf_coef"]) == (
         "none", "last", "uniform", 0.1)
     assert resumed["state"]["iteration"] == 3
+
+
+def test_elo_table_follows_training_and_eval_games(run_ppo, tmp_path):
+    import json
+    from elo import ANCHORS
+    FakeRollouts.eval_results = [0.8, 0.8]          # eval and confirmation vs the heuristic
+    rows, ck = run_ppo("--size", "medium", "--iterations", "2", "--eval-every", "2",
+                       "--eval-pool-battles", "50", "--snapshot-every", "1")
+    elo = json.loads((tmp_path / "runs" / "test" / "elo.json").read_text())
+    ratings = elo["ratings"]
+    assert ratings["heuristic"] == ANCHORS["heuristic"] and ratings["random"] == 0.0
+    assert {"learner", "it00000", "it00001"} <= set(ratings)
+    assert ratings["learner"] > ANCHORS["heuristic"]       # 70% in training, 80% in eval
+    assert float(rows[-1]["elo"]) == pytest.approx(ratings["learner"], abs=0.1)
+    assert elo["results"]["heuristic|learner"][1] == 2 * 10 + 200 + 400
+    assert elo["results"]["it00001|learner"][1] == 10 + 50   # training slot + eval
+    assert ck["elo"]["ratings"] == ratings

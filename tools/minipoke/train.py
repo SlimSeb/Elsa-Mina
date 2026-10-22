@@ -8,6 +8,7 @@ Entry point.
     python train.py ppo --init checkpoints/bc.pt --states 2000000
     python train.py eval --ckpt checkpoints/best.pt
     python train.py eval --ckpt checkpoints/best.pt --vs-ckpt checkpoints/other.pt
+    python train.py elo --ckpts a.pt b.pt --scripted heuristic maxpower random
 
 Needs one local Showdown server (see README), or --showdown-cmd to start it:
     node pokemon-showdown start --no-security
@@ -21,6 +22,7 @@ entropy annealing, the opponent pool and a distributional value head.
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 import random
@@ -31,12 +33,12 @@ from typing import Dict, Optional
 os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")  # must precede torch import
 
 import torch
-from poke_env.player import MaxBasePowerPlayer, RandomPlayer
 
 import runtime
 from checkpoint import (load_checkpoint, rng_state, save_checkpoint, seed_everything,
                         set_rng_state)
 from dataset import ShardDataset, ShardWriter
+from elo import LEARNER, EloTable, fit_ratings, parse_anchors, round_robin_pairs, snapshot_name
 from encoder_v2 import model_encoder
 from export_onnx import export_checkpoint, model_inputs, random_inputs
 from league import OpponentPool, split_battles
@@ -44,8 +46,8 @@ from model import (PRESETS, MiniPokeTransformer, ModelConfig, build_model, descr
                    preset, size_of)
 from players import DistillPlayer, InferenceBatcher, Rewards, RLPlayer, TeacherPlayer, faint_reward
 from ppo import Budget, PPOConfig, Schedule, distill_train, ppo_update
-from rollout import (RolloutConfig, Rollouts, SafeHeuristicsPlayer, close_players, evaluate,
-                     frozen_copy, load_into, make_kwargs, play_recording_pairs, wilson_interval)
+from rollout import (SCRIPTED, RolloutConfig, Rollouts, close_players, evaluate, frozen_copy,
+                     load_into, make_kwargs, play_match, play_recording_pairs, wilson_interval)
 from setpriors import SetPriors
 from runtime import (MetricsLogger, ShowdownServer, StopController, peak_rss_mb,
                      pick_infer_device, prune_checkpoints, rss_mb)
@@ -82,6 +84,7 @@ COMMON_DEFAULTS = dict(
     eval_pool_battles=100, min_eval_battles=150, snapshot_every=10, pool_cap=20, pool_slots=2,
     save_every=10, stall_timeout=180.0, infer_device="auto", seed=None,
     max_infer_batch=64, faint_anneal_states=None, pfsp_floor=0.1, pool_ema=0.05,
+    elo_anchors=None, elo_k=16.0,
 )
 
 
@@ -134,8 +137,7 @@ def new_model(args) -> MiniPokeTransformer:
 
 
 def eval_vs(model, infer_device, n: int, concurrency: int, opponent: str = "heuristic"):
-    opp_cls = {"heuristic": SafeHeuristicsPlayer, "random": RandomPlayer,
-               "maxpower": MaxBasePowerPlayer}[opponent]
+    opp_cls = SCRIPTED[opponent]
     batcher = InferenceBatcher(frozen_copy(model, infer_device), infer_device,
                                max_batch=concurrency * 2)
     return evaluate(batcher, lambda: opp_cls(**make_kwargs(concurrency)), n, concurrency)
@@ -267,8 +269,8 @@ METRICS = ["iteration", "time", "hours", "states", "total_states", "battles", "p
            "states_per_s", "lr", "ent_coef", "pi_loss", "v_loss", "v_mse", "entropy", "kl",
            "clipfrac", "explained_var", "train_wr_pool", "train_wr_heuristic",
            "eval_wr_heuristic", "eval_n_heuristic", "eval_wr_pool", "eval_n_pool", "confirm_wr",
-           "confirm_n", "best_wr", "epochs", "faint_reward", "pool_size", "pool_hardest_wr",
-           "stalled", "rebuilds", "rss_mb"]
+           "confirm_n", "best_wr", "elo", "epochs", "faint_reward", "pool_size",
+           "pool_hardest_wr", "stalled", "rebuilds", "rss_mb"]
 
 
 RUN_KEYS = ["run", "size", "ckpt_dir", "export_dir"]
@@ -340,6 +342,10 @@ def cmd_ppo(args) -> None:
                  st["iteration"], f"{st['total_states']:,}", st["active_seconds"] / 3600)
     use_pool = args.pool_share > 0
     pool_rng = random.Random((args.seed or 0) + st["iteration"])
+    elo = EloTable(parse_anchors(args.elo_anchors), k=args.elo_k)
+    elo.add_player(LEARNER, elo.rating("heuristic"))
+    if resumed:
+        elo.load_state_dict(resumed.get("elo"))
 
     log.info("[ppo] run %s, size %s: %s, train on %s", args.run, size, describe(model), device)
     log.info("[ppo] budget: %s iterations, %s hours, %s states; battles/iter %d (mirror %.0f%% / "
@@ -359,6 +365,7 @@ def cmd_ppo(args) -> None:
     metrics = MetricsLogger(run_dir / "metrics.csv", METRICS)
     if use_pool and len(pool) == 0:
         pool.add(model, st["iteration"])  # the starting policy (BC / distill) is the first opponent
+        elo.add_player(snapshot_name(st["iteration"]))
 
     def sync() -> None:
         load_into(infer_model, model.state_dict())
@@ -371,7 +378,7 @@ def cmd_ppo(args) -> None:
     def save_all(periodic: bool) -> None:
         extra = dict(args={k: getattr(args, k) for k in PPO_KEYS + RUN_KEYS},
                      state=dict(st), pool=pool.state_dict(), rng=rng_state(),
-                     iteration=st["iteration"])
+                     iteration=st["iteration"], elo=elo.state_dict())
         save_checkpoint(ckpt_dir / "ppo_latest.pt", model, opt, **extra)
         if periodic:
             save_checkpoint(ckpt_dir / f"ppo_{st['iteration']:05d}.pt", model, opt, **extra)
@@ -397,7 +404,11 @@ def cmd_ppo(args) -> None:
             rollouts.load_slots([pool.load_weights(s) for s in sampled])
         res = rollouts.play_iteration(n_mirror, n_pool, n_heur)
         for i, (wins, n_done) in enumerate(res.slot_results if sampled else []):
-            pool.record(sampled[i % len(sampled)].iteration, wins, n_done)
+            snap = sampled[i % len(sampled)]
+            pool.record(snap.iteration, wins, n_done)
+            elo.record(LEARNER, snapshot_name(snap.iteration), wins, n_done)
+        if res.heuristic_result:
+            elo.record(LEARNER, "heuristic", *res.heuristic_result)
         t_play = time.time() - t_iter
         episodes = res.episodes
         consecutive_failures = 0 if res.play.ok else consecutive_failures + 1
@@ -435,17 +446,20 @@ def cmd_ppo(args) -> None:
 
         if use_pool and it % args.snapshot_every == 0:
             pool.add(model, it)
+            elo.add_player(snapshot_name(it))
 
         # ---- evaluate
         if it % args.eval_every == 0:
             sync()
             wr, n_done = rollouts.evaluate(args.eval_battles, "heuristic")
             row.update(eval_wr_heuristic=wr, eval_n_heuristic=n_done)
+            elo.record(LEARNER, "heuristic", wr * n_done, n_done)
             msg = f"[ppo] it {it}: greedy win rate vs SimpleHeuristicsPlayer = {with_ci(wr, n_done)}"
             if use_pool:
                 wins = total = 0
                 for snap in [s for s in pool.recent(4) if s.iteration != it][:3]:
                     pwr, pn = rollouts.evaluate(args.eval_pool_battles, "pool", pool.load_weights(snap))
+                    elo.record(LEARNER, snapshot_name(snap.iteration), pwr * pn, pn)
                     wins += pwr * pn
                     total += pn
                     msg += f", vs it {snap.iteration} = {pwr:.1%}"
@@ -459,6 +473,7 @@ def cmd_ppo(args) -> None:
                 if args.confirm_battles:
                     score, n_score = rollouts.evaluate(args.confirm_battles, "heuristic")
                     row.update(confirm_wr=score, confirm_n=n_score)
+                    elo.record(LEARNER, "heuristic", score * n_score, n_score)
                     log.info("[ppo] it %d: candidate (%.1f%%) confirmed at %s", it, 100 * wr,
                              with_ci(score, n_score))
                 if (n_score >= min(args.min_eval_battles, args.confirm_battles or n_done)
@@ -471,8 +486,9 @@ def cmd_ppo(args) -> None:
 
         st["active_seconds"] += time.time() - t_iter
         row.update(hours=st["active_seconds"] / 3600, best_wr=max(st["best_wr"], 0.0),
-                   rss_mb=rss_mb())
+                   rss_mb=rss_mb(), elo=elo.rating(LEARNER))
         metrics.append(row)
+        elo.save(run_dir / "elo.json")
         save_all(periodic=it % args.save_every == 0)
 
     # ---- end of run
@@ -502,6 +518,42 @@ def cmd_eval(args) -> None:
         label = args.opponent
     server.stop()
     print(f"win rate vs {label}: {with_ci(wr, n)}")
+
+
+def cmd_elo(args) -> None:
+    """Round-robin between checkpoints and scripted players, rated by maximum
+    likelihood with the scripted players as anchors."""
+    setup(args)
+    infer = torch.device(args.infer_device or "cpu")
+    makers = {}
+    for path in args.ckpts:
+        model = build_model(load_checkpoint(path))
+        name = Path(path).stem if sum(Path(p).stem == Path(path).stem for p in args.ckpts) == 1 \
+            else str(path)
+        log.info("%s: %s", name, describe(model))
+        batcher = InferenceBatcher(frozen_copy(model, infer), infer, max_batch=args.concurrency * 2)
+        makers[name] = (lambda b: lambda: RLPlayer(b, None, greedy=True,
+                                                   **make_kwargs(args.concurrency)))(batcher)
+    for name in args.scripted:
+        makers[name] = (lambda cls: lambda: cls(**make_kwargs(args.concurrency)))(SCRIPTED[name])
+    anchors = {k: v for k, v in parse_anchors(args.anchors).items() if k in makers}
+    server = server_for(args, None)
+    results = {}
+    for a, b in round_robin_pairs(makers):
+        score, n = play_match(makers[a], makers[b], args.battles, args.stall_timeout, server)
+        results[(a, b)] = (score, n)
+        print(f"{a} vs {b}: {with_ci(score / max(n, 1), n)}", flush=True)
+    server.stop()
+    ratings = fit_ratings(results, anchors)
+    print(f"\nratings (anchors {anchors or 'none: centred on 0'}):")
+    for name, r in sorted(ratings.items(), key=lambda kv: -kv[1]):
+        print(f"  {name:30s} {r:7.1f}{'  (anchor)' if name in anchors else ''}")
+    if args.out:
+        Path(args.out).write_text(json.dumps({
+            "anchors": anchors, "ratings": ratings,
+            "results": [{"a": a, "b": b, "score_a": s, "games": n} for (a, b), (s, n)
+                        in results.items()]}, indent=1))
+        print(f"wrote {args.out}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -647,6 +699,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--max-infer-batch", type=int, default=None,
                    help="largest rollout inference batch (default 64)")
     p.add_argument("--export-dir", default=None, help="default export/ (or the resumed run's)")
+    p.add_argument("--elo-anchors", default=None,
+                   help="fixed ratings of the scripted players, e.g. "
+                        "random=0,maxpower=300,heuristic=600 (default: elo.ANCHORS)")
+    p.add_argument("--elo-k", type=float, default=None, help="Elo k-factor per game (16)")
     p.set_defaults(fn=cmd_ppo)
 
     p = sub.add_parser("eval", help="greedy win rate (with a 95%% Wilson interval)")
@@ -657,6 +713,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--vs-ckpt", default=None,
                    help="play another checkpoint instead (both greedy), e.g. V1 vs medium")
     p.set_defaults(fn=cmd_eval)
+
+    p = sub.add_parser("elo", help="round-robin between checkpoints and scripted players")
+    common(p)
+    p.add_argument("--ckpts", nargs="*", default=[])
+    p.add_argument("--scripted", nargs="*", default=["heuristic", "maxpower", "random"],
+                   choices=list(SCRIPTED))
+    p.add_argument("--battles", type=int, default=200, help="battles per pair")
+    p.add_argument("--anchors", default=None,
+                   help="fixed ratings, e.g. random=0 (default: elo.ANCHORS, for the scripted "
+                        "players taking part)")
+    p.add_argument("--out", default=None, help="write the results and ratings to this JSON file")
+    p.set_defaults(fn=cmd_elo)
     return ap
 
 

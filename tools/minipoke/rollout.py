@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 import torch
-from poke_env.player import Player, SimpleHeuristicsPlayer
+from poke_env.player import MaxBasePowerPlayer, Player, RandomPlayer, SimpleHeuristicsPlayer
 
 from league import split_evenly
 from players import EpisodeCollector, InferenceBatcher, Rewards, RLPlayer, SafePlayer
@@ -42,9 +42,9 @@ def make_kwargs(concurrency: int) -> dict:
     )
 
 
-class SafeHeuristicsPlayer(SimpleHeuristicsPlayer):
-    """SimpleHeuristicsPlayer that never stalls a battle on an exception and
-    reports finished battles to the watchdog."""
+class _Scripted:
+    """A scripted player that never stalls a battle on an exception and reports
+    finished battles to the watchdog."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -55,12 +55,30 @@ class SafeHeuristicsPlayer(SimpleHeuristicsPlayer):
         try:
             return super().choose_move(battle)
         except Exception:
-            log.exception("heuristic choose_move failed in %s; playing randomly", battle.battle_tag)
+            log.exception("%s choose_move failed in %s; playing randomly", type(self).__name__,
+                          battle.battle_tag)
             return self.choose_random_move(battle)
 
     def _battle_finished_callback(self, battle) -> None:
         self.n_done += 1
         self.n_won += int(bool(battle.won))
+
+
+class SafeHeuristicsPlayer(_Scripted, SimpleHeuristicsPlayer):
+    pass
+
+
+class SafeMaxPowerPlayer(_Scripted, MaxBasePowerPlayer):
+    pass
+
+
+class SafeRandomPlayer(_Scripted, RandomPlayer):
+    pass
+
+
+# The scripted players, by the names Elo tables and `eval --opponent` use
+SCRIPTED = {"heuristic": SafeHeuristicsPlayer, "maxpower": SafeMaxPowerPlayer,
+            "random": SafeRandomPlayer}
 
 
 def frozen_copy(model: torch.nn.Module, device) -> torch.nn.Module:
@@ -165,6 +183,8 @@ class IterationResult:
     win_rates: Dict[str, Optional[float]] = field(default_factory=dict)
     # Learner (wins, finished battles) against each pool slot, in slot order
     slot_results: List[Tuple[int, int]] = field(default_factory=list)
+    # Learner (wins, finished battles) against the heuristic
+    heuristic_result: Optional[Tuple[int, int]] = None
 
 
 class Rollouts:
@@ -247,6 +267,8 @@ class Rollouts:
                      "pool": _win_rate([a for a, _ in self.pool_pairs]),
                      "heuristic": _win_rate([self.heuristic_pair[0]] if self.heuristic_pair else [])}
         slot_results = [(a.n_won, a.n_done) for a, _ in self.pool_pairs]
+        heuristic_result = ((self.heuristic_pair[0].n_won, self.heuristic_pair[0].n_done)
+                            if self.heuristic_pair else None)
         if res.ok:
             self.play_times.append(res.seconds)
         if not res.ok:
@@ -255,7 +277,7 @@ class Rollouts:
         episodes = self.collector.drain()
         if not res.ok or not reset_all(self.players):
             self.rebuild()
-        return IterationResult(episodes, res, win_rates, slot_results)
+        return IterationResult(episodes, res, win_rates, slot_results, heuristic_result)
 
     # ----------------------------------------------------------------------
     def evaluate(self, n_battles: int, opponent: str = "heuristic",
@@ -284,6 +306,22 @@ def evaluate(batcher: InferenceBatcher, make_opponent: Callable[[], Player], n_b
             server.ensure_up()
     close_players([me, opp])
     return me.n_won / max(me.n_done, 1), me.n_done
+
+
+def play_match(make_a: Callable[[], Player], make_b: Callable[[], Player], n_battles: int,
+               stall_timeout: float = 180.0, server=None) -> Tuple[float, int]:
+    """Any two counting players (RLPlayer, the SCRIPTED ones) against each other.
+    -> (a's score: wins + ties / 2, finished battles)."""
+    a, b = make_a(), make_b()
+    res = asyncio.run(_play_pairs([(a, b, n_battles)], [a, b], stall_timeout,
+                                  max(600.0, n_battles * 10.0)))
+    if not res.ok:
+        log.error("match stalled: %s", res.reason)
+        if server is not None:
+            server.ensure_up()
+    close_players([a, b])
+    ties = max(0, a.n_done - a.n_won - b.n_won)
+    return a.n_won + ties / 2, a.n_done
 
 
 def wilson_interval(wins: float, n: int, z: float = 1.96) -> Tuple[float, float]:
