@@ -104,3 +104,72 @@ def test_size_is_recognised_from_a_checkpoint_config():
     assert size_of(PRESETS["medium"]) == "medium"
     assert size_of(replace(PRESETS["medium"], value_bins=1, dropout=0.05)) == "medium"
     assert size_of(ModelConfig.from_dict({"d_model": 128, "n_layers": 3})) == "small"
+
+
+# --------------------------------------------------------------------------
+# minipoke-v2 (encoder_version 2): its own inputs and spec, same outputs
+# --------------------------------------------------------------------------
+V2_MODELS = {
+    "v2-small": dict(size="small", encoder_version=2),
+    "v2-medium": dict(size="medium", encoder_version=2),
+}
+
+
+@pytest.fixture(scope="module", params=list(V2_MODELS))
+def exported_v2(request, tmp_path_factory):
+    from tests.helpers import make_model
+    cfg = dict(V2_MODELS[request.param])
+    model = make_model(cfg.pop("size"), **cfg).eval()
+    out = tmp_path_factory.mktemp(request.param)
+    return model, export(model, out), out
+
+
+def test_v2_export_takes_v1s_inputs_then_its_own(exported_v2):
+    from encoder_v2 import model_encoder
+    model, onnx_path, _ = exported_v2
+    graph = onnx.load(str(onnx_path)).graph
+    got = signature(graph.input)
+    assert got[:6] == CONTRACT_INPUTS
+    dtypes = {"int64": I64, "float32": F, "bool": B}
+    assert got[6:] == [(n, dtypes[dt], ["batch", *shape])
+                       for n, (shape, dt) in list(model_encoder(model).layout.items())[6:]]
+    assert [n for n, *_ in got[6:]] == ["cand_ids", "cand_feats", "prior_ids", "prior_w",
+                                        "prior_feats"]
+    assert signature(graph.output) == CONTRACT_OUTPUTS
+
+
+def test_v2_export_matches_pytorch(exported_v2):
+    model, onnx_path, _ = exported_v2
+    diff = parity(model, onnx_path, batch=37)
+    assert diff["logits"] < 1e-4 and diff["value"] < 1e-5
+
+
+def test_v2_spec_documents_the_encoder_and_ships_the_priors(exported_v2):
+    import hashlib
+    import json
+    model, _, out = exported_v2
+    spec = json.loads((out / "encoder_spec.json").read_text())
+    v1 = json.loads((DEPLOYED_V1 / "encoder_spec.json").read_text())
+    assert spec["encoder_version"] == 2
+    assert {k: spec[k] for k in v1 if k != "orderings"} == {k: v for k, v in v1.items()
+                                                            if k != "orderings"}
+    assert all(spec["orderings"][k] == v for k, v in v1["orderings"].items())
+    assert [i["name"] for i in spec["inputs"]][:6] == [n for n, *_ in CONTRACT_INPUTS]
+    priors = spec["set_priors"]
+    assert priors["candidate_moves_k"] == 8 and "ties by move id" in priors["candidate_ranking"]
+    data = (out / "set_priors.json").read_bytes()
+    assert hashlib.sha256(data).hexdigest() == priors["sha256"] == model.priors.sha256
+    assert priors["source_sha256"] == model.priors.source_sha256
+
+
+def test_v2_checkpoints_round_trip_with_their_priors(tmp_path):
+    from checkpoint import load_checkpoint, save_checkpoint
+    from export_onnx import export_checkpoint
+    from tests.helpers import make_model
+    model = make_model("small", encoder_version=2)
+    save_checkpoint(tmp_path / "v2.pt", model)
+    again = build_model(load_checkpoint(tmp_path / "v2.pt"))
+    assert again.cfg.encoder_version == 2 and again.priors.sha256 == model.priors.sha256
+    diff = export_checkpoint(tmp_path / "v2.pt", tmp_path / "export")
+    assert diff["logits"] < 1e-4
+    assert (tmp_path / "export" / "set_priors.json").exists()

@@ -17,6 +17,8 @@ from typing import List, Optional, Tuple
 
 import torch
 
+from checkpoint import model_extras
+
 
 @dataclass
 class Snapshot:
@@ -51,8 +53,8 @@ class OpponentPool:
         self.dir.mkdir(parents=True, exist_ok=True)
         snap = Snapshot(iteration, f"snap_{iteration:05d}.pt")
         state = {k: v.detach().cpu() for k, v in model.state_dict().items()}
-        torch.save({"model": state, "cfg": model.cfg.to_dict(), "iteration": iteration},
-                   self.dir / snap.file)
+        torch.save({"model": state, "cfg": model.cfg.to_dict(), "iteration": iteration,
+                    **model_extras(model)}, self.dir / snap.file)
         self.snapshots = [s for s in self.snapshots if s.iteration != iteration] + [snap]
         self.snapshots.sort(key=lambda s: s.iteration)
         while len(self.snapshots) > self.cap:

@@ -37,7 +37,8 @@ import runtime
 from checkpoint import (load_checkpoint, rng_state, save_checkpoint, seed_everything,
                         set_rng_state)
 from dataset import ShardDataset, ShardWriter
-from export_onnx import export_checkpoint, random_inputs, INPUTS
+from encoder_v2 import model_encoder
+from export_onnx import export_checkpoint, model_inputs, random_inputs
 from league import OpponentPool, split_battles
 from model import (PRESETS, MiniPokeTransformer, ModelConfig, build_model, describe, pick_device,
                    preset, size_of)
@@ -45,6 +46,7 @@ from players import DistillPlayer, InferenceBatcher, Rewards, RLPlayer, TeacherP
 from ppo import Budget, PPOConfig, Schedule, distill_train, ppo_update
 from rollout import (RolloutConfig, Rollouts, SafeHeuristicsPlayer, close_players, evaluate,
                      frozen_copy, load_into, make_kwargs, play_recording_pairs, wilson_interval)
+from setpriors import SetPriors
 from runtime import (MetricsLogger, ShowdownServer, StopController, peak_rss_mb,
                      pick_infer_device, prune_checkpoints, rss_mb)
 
@@ -100,14 +102,15 @@ def setup(args, run_dir: Optional[Path] = None) -> torch.device:
     return pick_device(args.device)
 
 
-def sample_batch(n: int) -> Dict[str, torch.Tensor]:
-    return dict(zip(INPUTS, random_inputs(n)))
+def sample_batch(n: int, model) -> Dict[str, torch.Tensor]:
+    return dict(zip(model_inputs(model), random_inputs(n, model=model)))
 
 
 def choose_infer_device(args, model, train_device) -> torch.device:
     if args.infer_device != "auto":
         return torch.device(args.infer_device)
-    return pick_infer_device(model.to("cpu"), sample_batch, train_device, args.concurrency)
+    return pick_infer_device(model.to("cpu"), lambda n: sample_batch(n, model), train_device,
+                             args.concurrency)
 
 
 def server_for(args, run_dir: Optional[Path]) -> ShowdownServer:
@@ -119,8 +122,14 @@ def server_for(args, run_dir: Optional[Path]) -> ShowdownServer:
 
 
 def new_model(args) -> MiniPokeTransformer:
-    cfg = preset(args.size, dropout=args.dropout, value_bins=args.value_bins)
-    return MiniPokeTransformer(cfg)
+    cfg = preset(args.size, dropout=args.dropout, value_bins=args.value_bins,
+                 encoder_version=args.encoder_version, cand_moves=args.cand_moves)
+    model = MiniPokeTransformer(cfg)
+    if cfg.encoder_version >= 2:
+        model.priors = SetPriors.from_showdown(args.sets, args.showdown_cwd)
+        log.info("set priors: %d species from %s (sha256 %s)", len(model.priors.species),
+                 model.priors.source, model.priors.source_sha256[:12])
+    return model
 
 
 def eval_vs(model, infer_device, n: int, concurrency: int, opponent: str = "heuristic"):
@@ -164,13 +173,16 @@ def collect(args, writer: ShardWriter, make_pair, server) -> None:
 
 def train_on_dataset(args, model, device, data: ShardDataset, vf_coef: float,
                      value_target: str, out: Path, tag: str) -> None:
+    if data.obs_layout != model_encoder(model).layout:
+        raise SystemExit(f"{data.root} holds observations of another encoder than the model's "
+                         f"(encoder_version {model.cfg.encoder_version}): use another --data dir")
     log.info("[%s] dataset %s: %d samples (%d train / %d val), %.1f MB on disk "
              "(%.0f bytes/sample), process RSS %.0f MB",
              tag, data.root, len(data), data.n_samples("train"), data.n_samples("val"),
              data.bytes_on_disk() / 2**20, data.bytes_on_disk() / max(len(data), 1), rss_mb() or -1)
     model = model.to(device)
     log.info("[%s] model: %s on %s", tag, describe(model), device)
-    runtime.mps_self_check(model, device, sample_batch(8))
+    runtime.mps_self_check(model, device, sample_batch(8, model))
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=1e-2)
     distill_train(model, opt, data, args.epochs, args.minibatch, device, vf_coef=vf_coef,
                   value_target=value_target, seed=args.seed or 0, log_prefix=f"[{tag}]",
@@ -190,17 +202,20 @@ def cmd_imitate(args) -> None:
         seed_everything(args.seed)
     root = data_dir(args, "bc")
     server = server_for(args, None)
+    model = new_model(args)
+    encoder = model_encoder(model)
     if not (root / "meta.json").exists():
         writer = ShardWriter(root, args.shard_size, info={"teacher": "SimpleHeuristicsPlayer",
-                                                          "epsilon": args.epsilon})
+                                                          "epsilon": args.epsilon},
+                             obs_layout=encoder.layout)
         gamma = PPOConfig().gamma
         log.info("[bc] playing %d heuristic-vs-heuristic battles into %s...", args.battles, root)
         collect(args, writer, lambda: tuple(
-            TeacherPlayer(writer, gamma, args.epsilon, **make_kwargs(args.concurrency))
+            TeacherPlayer(writer, gamma, args.epsilon, encoder=encoder,
+                          **make_kwargs(args.concurrency))
             for _ in range(2)), server)
     else:
         log.info("[bc] reusing the dataset in %s", root)
-    model = new_model(args)
     train_on_dataset(args, model, device, ShardDataset(root), args.bc_value_coef, "return",
                      CKPT_DIR(args) / "bc.pt", "bc")
     infer = torch.device(args.infer_device if args.infer_device != "auto" else "cpu")
@@ -219,10 +234,11 @@ def cmd_distill(args) -> None:
     root = data_dir(args, "distill")
     server = server_for(args, None)
     if not (root / "meta.json").exists():
-        writer = ShardWriter(root, args.shard_size, info={"teacher": str(args.teacher),
-                                                          "epsilon": args.epsilon})
         batcher = InferenceBatcher(frozen_copy(teacher, infer), infer,
                                    max_batch=args.concurrency * 2)
+        writer = ShardWriter(root, args.shard_size, info={"teacher": str(args.teacher),
+                                                          "epsilon": args.epsilon},
+                             obs_layout=batcher.encoder.layout)
         gamma = PPOConfig().gamma
         log.info("[distill] playing %d teacher-vs-teacher battles into %s...", args.battles, root)
         collect(args, writer, lambda: tuple(
@@ -324,7 +340,7 @@ def cmd_ppo(args) -> None:
              "pool %.0f%% %s / heuristic %.0f%%), concurrency %d", args.iterations, args.hours,
              args.states, args.battles_per_iter, 100 * args.mirror_share, 100 * args.pool_share,
              args.pool_sampling, 100 * args.heuristic_share, args.concurrency)
-    runtime.mps_self_check(model, device, sample_batch(8))
+    runtime.mps_self_check(model, device, sample_batch(8, model))
     infer_device = choose_infer_device(args, model, device)
     model.to(device)
     infer_model = frozen_copy(model, infer_device)
@@ -510,6 +526,17 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--dropout", type=float, default=None)
         p.add_argument("--value-bins", type=int, default=None,
                        help="1 = scalar value head; default 1 small/wide, 51 medium")
+        v2_args(p)
+
+    def v2_args(p):
+        p.add_argument("--encoder-version", type=int, default=None, choices=[1, 2],
+                       help="observation layout of a new model: 1 = encoder.py (default), "
+                            "2 = encoder_v2.py (minipoke-v2: random battle set priors)")
+        p.add_argument("--cand-moves", type=int, default=None,
+                       help="v2: candidate move slots per opponent Pokémon (default 8)")
+        p.add_argument("--sets", default=None,
+                       help="v2: Showdown's gen 9 random battle sets file or Showdown clone "
+                            "(default: the one in --showdown-cwd)")
 
     def value_ce_arg(p, default="log-bins"):
         p.add_argument("--value-ce-norm", default=default, choices=["log-bins", "none"],
@@ -553,6 +580,7 @@ def build_parser() -> argparse.ArgumentParser:
                    help="for a new model and its defaults; --init/--resume keep their architecture")
     p.add_argument("--dropout", type=float, default=None)
     p.add_argument("--value-bins", type=int, default=None)
+    v2_args(p)
     p.add_argument("--init", default=None, help="checkpoint to start from (e.g. checkpoints/bc.pt)")
     p.add_argument("--resume", default=None, help="continue a run (e.g. checkpoints/ppo_latest.pt)")
     p.add_argument("--run", default=None, help="name under runs/ (metrics.csv, train.log)")

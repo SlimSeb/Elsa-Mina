@@ -19,6 +19,11 @@ Tokens: [actor, critic, field, 6 x ours, 6 x theirs] = 15
 Attention mask ("poke-mask", as in the original):
   * state tokens (field + 12 mons) only attend to each other
   * actor / critic attend to the state and to themselves, not to each other
+
+encoder_version 2 (minipoke-v2) reads encoder_v2.py's set priors: each opponent
+Pokémon's candidate moves go through the same move MLP as known moves (with a
+known/candidate flag and their fraction), and their fraction-weighted mean, the
+ability / item prior embeddings and the prior features join its token's input.
 """
 
 from __future__ import annotations
@@ -31,6 +36,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, VOCAB_SIZES
+from encoder_v2 import F_PRIOR
 
 N_TOKENS = 3 + N_MONS
 ACTOR, CRITIC, FIELD_TOK = 0, 1, 2
@@ -56,6 +62,10 @@ class ModelConfig:
     value_bins: int = 1
     value_min: float = -1.6
     value_max: float = 1.6
+    # Observation layout: 1 = encoder.py (V1), 2 = encoder_v2.py (V1 + random battle
+    # set priors), whose opponent Pokémon have up to `cand_moves` candidate moves.
+    encoder_version: int = 1
+    cand_moves: int = 8
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
@@ -148,9 +158,18 @@ class MiniPokeTransformer(nn.Module):
         self.ability_emb = nn.Embedding(VOCAB_SIZES["ability"], cfg.ability_dim, padding_idx=0)
         self.move_emb = nn.Embedding(VOCAB_SIZES["move"], cfg.move_dim, padding_idx=0)
 
-        self.move_net = mlp(cfg.move_dim + F_MOVE, d)
+        if cfg.encoder_version not in (1, 2):
+            raise ValueError(f"unknown encoder_version {cfg.encoder_version}")
+        self.v2 = cfg.encoder_version == 2
+        # v2: + known/candidate flag and fraction of consistent roles (1 for known moves)
+        self.move_net = mlp(cfg.move_dim + F_MOVE + (2 if self.v2 else 0), d)
         mon_in = cfg.species_dim + cfg.item_dim + cfg.ability_dim + F_MON + N_MOVES * d
+        if self.v2:  # candidate moves' weighted mean, ability / item priors, prior features
+            mon_in += d + cfg.ability_dim + cfg.item_dim + F_PRIOR
         self.mon_net = mlp(mon_in, d)
+        # Shared, not a parameter: what encoder_v2 needs to rebuild this model's
+        # observations (saved in checkpoints and exported as set_priors.json).
+        self.priors = None
         self.field_net = mlp(F_FIELD, d)
 
         self.side_emb = nn.Parameter(torch.zeros(2, d))       # ours / theirs
@@ -187,6 +206,24 @@ class MiniPokeTransformer(nn.Module):
     def distributional(self) -> bool:
         return self.cfg.value_bins > 1
 
+    def _candidate_vectors(self, obs: Dict[str, torch.Tensor]) -> torch.Tensor:
+        """Opponent candidate moves through the move MLP: [B, 6, K, d], 0 when empty."""
+        cand_feats = obs["cand_feats"]
+        present = cand_feats[..., 0:1]
+        x = torch.cat([self.move_emb(obs["cand_ids"]), cand_feats[..., :F_MOVE],
+                       torch.zeros_like(present), cand_feats[..., F_MOVE:]], dim=-1)
+        return self.move_net(x) * present
+
+    def _prior_inputs(self, obs: Dict[str, torch.Tensor]) -> torch.Tensor:
+        """Extra token input of the 6 opponent Pokémon: [B, 6, d + ability + item + F_PRIOR]."""
+        cand_vec = self._candidate_vectors(obs)
+        frac = obs["cand_feats"][..., F_MOVE:] * obs["cand_feats"][..., 0:1]   # [B, 6, K, 1]
+        pooled = (cand_vec * frac).sum(2) / frac.sum(2).clamp_min(1e-6)
+        ids, w = obs["prior_ids"], obs["prior_w"].unsqueeze(-1)              # [B, 6, 2, A]
+        abilities = (self.ability_emb(ids[:, :, 0]) * w[:, :, 0]).sum(2)
+        items = (self.item_emb(ids[:, :, 1]) * w[:, :, 1]).sum(2)
+        return torch.cat([pooled, abilities, items, obs["prior_feats"]], dim=-1)
+
     def forward(self, obs: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
         """Returns masked policy logits [B, 14] and value [B] (a scalar expected return)."""
         logits, value, _ = self.forward_train(obs)
@@ -201,23 +238,25 @@ class MiniPokeTransformer(nn.Module):
         d = self.cfg.d_model
 
         # --- Move vectors [B, 12, 4, d]
-        mv = torch.cat([self.move_emb(move_ids), move_feats], dim=-1)
-        move_vec = self.move_net(mv)
         move_present = move_feats[..., 0:1]          # zero out empty move slots
+        mv = [self.move_emb(move_ids), move_feats]
+        if self.v2:
+            mv += [move_present, move_present]       # known, fraction 1
+        move_vec = self.move_net(torch.cat(mv, dim=-1))
         move_vec = move_vec * move_present
 
         # --- Pokémon tokens [B, 12, d]
-        mon_in = torch.cat(
-            [
-                self.species_emb(mon_ids[..., 0]),
-                self.item_emb(mon_ids[..., 1]),
-                self.ability_emb(mon_ids[..., 2]),
-                mon_feats,
-                move_vec.reshape(B, N_MONS, N_MOVES * d),
-            ],
-            dim=-1,
-        )
-        mons = self.mon_net(mon_in)
+        parts = [
+            self.species_emb(mon_ids[..., 0]),
+            self.item_emb(mon_ids[..., 1]),
+            self.ability_emb(mon_ids[..., 2]),
+            mon_feats,
+            move_vec.reshape(B, N_MONS, N_MOVES * d),
+        ]
+        if self.v2:
+            theirs = self._prior_inputs(obs)
+            parts.append(torch.cat([torch.zeros_like(theirs), theirs], dim=1))
+        mons = self.mon_net(torch.cat(parts, dim=-1))
         side = torch.cat(
             [self.side_emb[0].expand(N_SLOTS, d), self.side_emb[1].expand(N_SLOTS, d)], dim=0
         )
@@ -306,9 +345,13 @@ def describe(model: nn.Module) -> str:
 
 
 def build_model(state: dict) -> MiniPokeTransformer:
-    """Rebuilds a model from a checkpoint dict ({"model": state_dict, "cfg": {...}})."""
+    """Rebuilds a model from a checkpoint dict ({"model": state_dict, "cfg": {...}},
+    plus "set_priors" for an encoder v2 model)."""
     model = MiniPokeTransformer(ModelConfig.from_dict(state["cfg"]))
     model.load_state_dict(state["model"])
+    if state.get("set_priors") is not None:
+        from setpriors import SetPriors
+        model.priors = SetPriors.from_dict(state["set_priors"])
     return model
 
 

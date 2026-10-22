@@ -25,10 +25,10 @@ from poke_env.player import Player, SimpleHeuristicsPlayer
 from encoder import (
     action_to_order,
     collate,
-    encode,
     fainted_counts,
     order_to_compact_action,
 )
+from encoder_v2 import EncoderV1, model_encoder
 from dataset import ShardWriter, discounted_returns
 from model import to_tensors
 
@@ -46,11 +46,14 @@ class InferenceBatcher:
 
     The model here is the *inference copy* (usually on CPU: for batches of a
     few dozen states, CPU beats MPS dispatch overhead on an M-series chip).
+    `encoder` builds that model's observations (V1 or v2): players feeding this
+    batcher encode with it.
     """
 
     def __init__(self, model: torch.nn.Module, device: torch.device,
                  max_batch: int = 256, max_wait_ms: float = 2.0):
         self.model = model.eval()
+        self.encoder = model_encoder(model)
         self.device = device
         self.max_batch = max_batch
         self.max_wait = max_wait_ms / 1000.0
@@ -231,7 +234,7 @@ class RLPlayer(SafePlayer):
         self._trajectories = Trajectories(rewards)
 
     async def _choose(self, battle):
-        obs = encode(battle)
+        obs = self.batcher.encoder.encode(battle)
         if not obs["mask"].any():
             return self.choose_random_move(battle)
 
@@ -252,11 +255,14 @@ class RLPlayer(SafePlayer):
 # written once it ends, with the discounted return from every decision.
 # --------------------------------------------------------------------------
 class _RecordingPlayer(SafePlayer):
-    def __init__(self, writer: ShardWriter, gamma: float, epsilon: float, **kwargs):
+    """`encoder` builds the recorded observations: the student's."""
+
+    def __init__(self, writer: ShardWriter, gamma: float, epsilon: float, encoder=None, **kwargs):
         super().__init__(**kwargs)
         self.writer = writer
         self.gamma = gamma
         self.epsilon = epsilon
+        self.encoder = encoder or EncoderV1()
         self._trajectories = Trajectories()
 
     def _record(self, battle, obs, probs, action, value=0.0) -> None:
@@ -279,7 +285,7 @@ class TeacherPlayer(_RecordingPlayer):
 
     async def _choose(self, battle):
         order, _ = SimpleHeuristicsPlayer.choose_singles_move(battle)
-        obs = encode(battle)
+        obs = self.encoder.encode(battle)
         action = order_to_compact_action(order, battle)
         if action is not None and obs["mask"][action]:
             probs = np.zeros(len(obs["mask"]), dtype=np.float32)
@@ -296,11 +302,11 @@ class DistillPlayer(_RecordingPlayer):
 
     def __init__(self, batcher: InferenceBatcher, writer: ShardWriter, gamma: float,
                  epsilon: float, **kwargs):
-        super().__init__(writer, gamma, epsilon, **kwargs)
+        super().__init__(writer, gamma, epsilon, encoder=batcher.encoder, **kwargs)
         self.batcher = batcher
 
     async def _choose(self, battle):
-        obs = encode(battle)
+        obs = self.batcher.encoder.encode(battle)
         if not obs["mask"].any():
             return self.choose_random_move(battle)
         action, _, value, probs = await self.batcher.act(obs)
