@@ -38,6 +38,11 @@ history_tokens K (encoder v2): the last K battle events (encoder_v2 event_ids /
 event_feats) as K more state tokens after the move tokens, with a learned
 embedding of their position in the window. They replace the `history` features.
 
+matchup_tokens (encoder v2): 12 tokens from damage.py's estimates (encoder_v2
+matchup_feats: each of our Pokémon against their active, our active against each
+of theirs), injected into the residual stream after the first n_layers // 2
+layers: the later layers see them as state tokens, appended after the others.
+
 typed_ffn: each layer has one feed-forward block per token type ("cls" = actor
 and critic, "field", "mons", "moves", "events"...) instead of one shared by every token.
 """
@@ -52,7 +57,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, VOCAB_SIZES
-from encoder_v2 import F_EVENT, F_HIST, F_PRIOR
+from encoder_v2 import F_EVENT, F_HIST, F_MATCH, F_PRIOR
 
 N_TOKENS = 3 + N_MONS
 ACTOR, CRITIC, FIELD_TOK = 0, 1, 2
@@ -92,6 +97,8 @@ class ModelConfig:
     typed_ffn: bool = False
     # Encoder v2: the last K battle events as tokens (replaces `history`)
     history_tokens: int = 0
+    # Encoder v2: 12 damage-calc matchup tokens, injected after layer n_layers // 2
+    matchup_tokens: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
@@ -201,9 +208,9 @@ class MiniPokeTransformer(nn.Module):
 
         if cfg.encoder_version not in (1, 2):
             raise ValueError(f"unknown encoder_version {cfg.encoder_version}")
-        if (cfg.history or cfg.history_tokens) and cfg.encoder_version < 2:
-            raise ValueError("history features and tokens are part of encoder v2 "
-                             "(--encoder-version 2)")
+        if (cfg.history or cfg.history_tokens or cfg.matchup_tokens) and cfg.encoder_version < 2:
+            raise ValueError("history features, history and matchup tokens are part of "
+                             "encoder v2 (--encoder-version 2)")
         self.hist_features = cfg.history and not cfg.history_tokens
         self.v2 = cfg.encoder_version == 2
         self.n_move_tokens = 0
@@ -218,6 +225,10 @@ class MiniPokeTransformer(nn.Module):
             self.segments.append(("moves", MOVE0, MOVE0 + self.n_move_tokens))
         if cfg.history_tokens:
             self.segments.append(("events", self.event0, self.n_tokens))
+        # Matchup tokens join after the first `inject_at` layers, at the end
+        self.inject_at = cfg.n_layers // 2 if cfg.matchup_tokens else None
+        self.segments_full = self.segments + ([("matchups", self.n_tokens, self.n_tokens + N_MONS)]
+                                              if cfg.matchup_tokens else [])
         # v2: + known/candidate flag and fraction of consistent roles (1 for known moves)
         self.move_net = mlp(cfg.move_dim + F_MOVE + (2 if self.v2 else 0), d)
         moves_in = 0 if cfg.move_tokens else N_MOVES * d   # move tokens: moves are tokens
@@ -235,10 +246,13 @@ class MiniPokeTransformer(nn.Module):
         self.actor_tok = nn.Parameter(torch.randn(1, 1, d) * 0.02)
         self.critic_tok = nn.Parameter(torch.randn(1, 1, d) * 0.02)
 
-        types = [t for t, _, _ in self.segments] if cfg.typed_ffn else None
+        def types(i):
+            segs = self.segments_full if self.inject_at is not None and i >= self.inject_at \
+                else self.segments
+            return [t for t, _, _ in segs] if cfg.typed_ffn else None
         self.layers = nn.ModuleList(
-            EncoderLayer(d, cfg.n_heads, cfg.ff_mult, cfg.dropout, types)
-            for _ in range(cfg.n_layers)
+            EncoderLayer(d, cfg.n_heads, cfg.ff_mult, cfg.dropout, types(i))
+            for i in range(cfg.n_layers)
         )
         self.final_norm = nn.LayerNorm(d)
         self.register_buffer("attn_mask", build_attention_mask(self.n_tokens), persistent=False)
@@ -261,6 +275,13 @@ class MiniPokeTransformer(nn.Module):
             self.event_pos_emb = nn.Parameter(torch.randn(cfg.history_tokens, d) * 0.02)
         if self.n_tokens > N_TOKENS:  # tokens that can be empty: per-sample key masks
             self.register_buffer("self_attend", torch.eye(self.n_tokens, dtype=torch.bool),
+                                 persistent=False)
+        if cfg.matchup_tokens:
+            n_full = self.n_tokens + N_MONS
+            self.matchup_net = mlp(F_MATCH, d)
+            self.matchup_pos_emb = nn.Parameter(torch.randn(N_MONS, d) * 0.02)  # which pair
+            self.register_buffer("attn_mask_full", build_attention_mask(n_full), persistent=False)
+            self.register_buffer("self_attend_full", torch.eye(n_full, dtype=torch.bool),
                                  persistent=False)
 
         self.apply(self._init)
@@ -311,12 +332,24 @@ class MiniPokeTransformer(nn.Module):
             present.append(obs["cand_feats"][..., 0].reshape(B, -1) > 0)
         return torch.cat(tokens, dim=1), torch.cat(present, dim=1)
 
-    def attention_mask(self, key_present: Optional[torch.Tensor]) -> torch.Tensor:
+    def attention_mask(self, key_present: Optional[torch.Tensor], full: bool = False) -> torch.Tensor:
         """[T, T] (every token present), or [B, 1, T, T] where tokens that are not
-        present are no one's key but their own (so no row is empty)."""
+        present are no one's key but their own (so no row is empty). `full`: with
+        the matchup tokens."""
+        base = self.attn_mask_full if full else self.attn_mask
         if key_present is None:
-            return self.attn_mask
-        return (self.attn_mask & (key_present[:, None, :] | self.self_attend)).unsqueeze(1)
+            return base
+        eye = self.self_attend_full if full else self.self_attend
+        return (base & (key_present[:, None, :] | eye)).unsqueeze(1)
+
+    def _inject_matchups(self, obs: Dict[str, torch.Tensor], x: torch.Tensor,
+                         key_present: Optional[torch.Tensor]):
+        feats = obs["matchup_feats"]
+        matchups = self.matchup_net(feats) + self.matchup_pos_emb
+        present = feats[..., 0] > 0
+        if key_present is None:
+            key_present = present.new_ones(x.shape[0], x.shape[1])
+        return torch.cat([x, matchups], dim=1), torch.cat([key_present, present], dim=1)
 
     def embed(self, obs: Dict[str, torch.Tensor]):
         """-> (tokens [B, T, d], key_present [B, T] or None, move_vec [B, 12, 4, d])."""
@@ -386,8 +419,12 @@ class MiniPokeTransformer(nn.Module):
         x, key_present, move_vec = self.embed(obs)
         B, d = x.shape[0], self.cfg.d_model
         mask = self.attention_mask(key_present)
-        for layer in self.layers:
-            x = layer(x, mask, self.segments)
+        segments = self.segments
+        for i, layer in enumerate(self.layers):
+            if i == self.inject_at:
+                x, key_present = self._inject_matchups(obs, x, key_present)
+                mask, segments = self.attention_mask(key_present, full=True), self.segments_full
+            x = layer(x, mask, segments)
         x = self.final_norm(x)
 
         actor = x[:, ACTOR]                              # [B, d]

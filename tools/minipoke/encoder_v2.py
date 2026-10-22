@@ -28,6 +28,17 @@ protocol log (history.recent_events), oldest first, padded at the front:
 
 They replace the `history` arrays below (a model with both only gets the events).
 
+With `matchup_tokens` (ModelConfig.matchup_tokens), damage.py's estimates:
+
+    matchup_feats f32  [12, F_MATCH]        rows 0-5: our mon i vs their active; rows 6-11:
+                                             our active vs their mon j (V1 slot orders).
+                                             present, expected damage fraction of each of
+                                             our known moves (V1 order) on them, of each of
+                                             their revealed moves on us, the max each way,
+                                             we can KO, they can KO, we move first, speed
+                                             tie, they move first. Rows with a missing or
+                                             fainted Pokémon stay 0.
+
 With `history` (ModelConfig.history), two more (history.py reads the protocol log):
 
     hist_ids     int64 [2]                  last move used by our active, by theirs (PAD)
@@ -49,6 +60,7 @@ import numpy as np
 from poke_env.battle import Battle, Move, Pokemon
 
 import encoder as E
+from damage import Fighter, expected_fraction, move_order
 from history import (active_turns, lines_of, opponent_role, previous_turn, recent_events,
                      same_move_twice, switched_by_choice)
 from setpriors import MonPrior, SetPriors
@@ -58,12 +70,13 @@ F_CAND = E.F_MOVE + 1
 F_PRIOR = E.NT + 4
 F_HIST = 8
 F_EVENT = 14
+F_MATCH = 16
 EVENT_FLAGS = ["crit", "miss", "supereffective", "resisted", "immune", "fail", "ko"]
 TYPE_INDEX = {t.name.lower(): i for i, t in enumerate(E.TYPES)}
 
 Layout = Dict[str, Tuple[Tuple[int, ...], str]]
 # The ModelConfig fields that shape the observation (encoder_spec.json's "model")
-ENCODER_FLAGS = ("encoder_version", "cand_moves", "history", "history_tokens")
+ENCODER_FLAGS = ("encoder_version", "cand_moves", "history", "history_tokens", "matchup_tokens")
 
 V1_LAYOUT: Layout = {
     "mon_ids": ((E.N_MONS, 3), "int64"),
@@ -99,8 +112,9 @@ class EncoderV2(EncoderV1):
     version = 2
 
     def __init__(self, priors: SetPriors, cand_moves: int = 8, history: bool = False,
-                 history_tokens: int = 0):
+                 history_tokens: int = 0, matchups: bool = False):
         super().__init__()
+        self.matchups = matchups
         self.priors = priors
         self.k = cand_moves
         self.history_tokens = history_tokens
@@ -117,6 +131,8 @@ class EncoderV2(EncoderV1):
         if history_tokens:
             self.layout.update({"event_ids": ((history_tokens, 2), "int64"),
                                 "event_feats": ((history_tokens, F_EVENT), "float32")})
+        if matchups:
+            self.layout["matchup_feats"] = ((E.N_MONS, F_MATCH), "float32")
         self._moves: Dict[str, Optional[Move]] = {}
 
     def _move(self, move_id: str) -> Optional[Move]:
@@ -136,7 +152,44 @@ class EncoderV2(EncoderV1):
             obs.update(self.encode_history(battle, bool(active) and active[0].choice_possible))
         if self.history_tokens:
             obs.update(self.encode_events(battle))
+        if self.matchups:
+            obs["matchup_feats"] = self.encode_matchups(battle)
         return obs
+
+    def encode_matchups(self, battle: Battle) -> np.ndarray:
+        feats = np.zeros((E.N_MONS, F_MATCH), dtype=np.float32)
+        mine = list(battle.team.values())[:E.N_SLOTS]
+        theirs = list(battle.opponent_team.values())[:E.N_SLOTS]
+        me, opp = battle.active_pokemon, battle.opponent_active_pokemon
+        fighters: Dict[int, Fighter] = {}
+
+        def fighter(mon, ours):
+            if id(mon) not in fighters:
+                fighters[id(mon)] = Fighter.of(mon, ours)
+            return fighters[id(mon)]
+
+        alive = lambda mon: mon is not None and not mon.fainted
+        pairs = [(i, m, opp) for i, m in enumerate(mine)]
+        pairs += [(E.N_SLOTS + j, me, t) for j, t in enumerate(theirs)]
+        for row, ours, their in pairs:
+            if not (alive(ours) and alive(their)):
+                continue
+            a, b = fighter(ours, True), fighter(their, False)
+            f = feats[row]
+            f[0] = 1.0
+            ko = [False, False]
+            for col, (att, dfn, side, owner) in enumerate([
+                    (a, b, battle.opponent_side_conditions, ours),
+                    (b, a, battle.side_conditions, their)]):
+                for j, move in enumerate(list(owner.moves.values())[:E.N_MOVES]):
+                    frac, can_ko = expected_fraction(att, dfn, move, battle, side)
+                    f[1 + 4 * col + j] = frac
+                    ko[col] = ko[col] or can_ko
+            f[9], f[10] = f[1:5].max(), f[5:9].max()
+            f[11], f[12] = float(ko[0]), float(ko[1])
+            order = move_order(a, b, battle)
+            f[13], f[14], f[15] = float(order == 1), float(order == 0), float(order == -1)
+        return feats
 
     def encode_events(self, battle: Battle) -> Dict[str, np.ndarray]:
         k = self.history_tokens
@@ -260,6 +313,18 @@ class EncoderV2(EncoderV1):
             out["orderings"]["event_feats"] = [
                 "present", "ours", "move", "entrance", "dragged", "called_or_locked",
                 *EVENT_FLAGS, "turns ago (min 10) / 10"]
+        if self.matchups:
+            import damage
+            out["matchup_tokens"] = {
+                "rows": "0-5: (our team slot i, their active), 6-11: (our active, their "
+                        "revealed slot j); 0 when either Pokémon is missing or fainted",
+                "damage_calc": damage.__doc__.strip(),
+            }
+            out["orderings"]["matchup_feats"] = [
+                "present", "ours->theirs expected fraction x4 (our move order)",
+                "theirs->ours expected fraction x4 (their revealed move order)",
+                "max ours->theirs", "max theirs->ours", "we can KO", "they can KO",
+                "we move first", "speed tie", "they move first"]
         return out
 
     def _priors_spec(self) -> dict:
@@ -304,7 +369,7 @@ def encoder_for(cfg, priors: Optional[SetPriors] = None):
     if priors is None:
         raise ValueError("an encoder v2 model needs its set priors (model.priors)")
     return EncoderV2(priors, cfg.cand_moves, history=cfg.history,
-                     history_tokens=cfg.history_tokens)
+                     history_tokens=cfg.history_tokens, matchups=cfg.matchup_tokens)
 
 
 def model_encoder(model):

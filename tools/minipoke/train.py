@@ -128,7 +128,8 @@ def new_model(args) -> MiniPokeTransformer:
     cfg = preset(args.size, dropout=args.dropout, value_bins=args.value_bins,
                  encoder_version=args.encoder_version, cand_moves=args.cand_moves,
                  move_tokens=args.move_tokens or None, history=args.history or None,
-                 typed_ffn=args.typed_ffn or None, history_tokens=args.history_tokens)
+                 typed_ffn=args.typed_ffn or None, history_tokens=args.history_tokens,
+                 matchup_tokens=args.matchup_tokens or None)
     model = MiniPokeTransformer(cfg)
     if cfg.encoder_version >= 2:
         model.priors = SetPriors.from_showdown(args.sets, args.showdown_cwd)
@@ -607,6 +608,9 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--history-tokens", type=int, default=None,
                        help="v2: the last K battle events (moves, switches and their results) "
                             "as tokens; replaces --history (default 0)")
+        p.add_argument("--matchup-tokens", action="store_true",
+                       help="v2: damage-calc matchup tokens (each of ours vs their active, our "
+                            "active vs each of theirs), injected after layer n_layers // 2")
         p.add_argument("--typed-ffn", action="store_true",
                        help="one feed-forward block per token type in every layer")
         p.add_argument("--move-tokens", action="store_true",

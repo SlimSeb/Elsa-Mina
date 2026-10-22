@@ -116,6 +116,9 @@ V2_MODELS = {
     "v2-history": dict(size="small", encoder_version=2, history=True),
     "v2-typed-ffn": dict(size="small", encoder_version=2, move_tokens=True, typed_ffn=True),
     "v2-history-tokens": dict(size="small", encoder_version=2, history_tokens=8, typed_ffn=True),
+    "v2-matchups": dict(size="small", encoder_version=2, matchup_tokens=True),
+    "v2-everything": dict(size="medium", encoder_version=2, move_tokens=True, history_tokens=8,
+                          matchup_tokens=True, typed_ffn=True),
 }
 
 
@@ -142,6 +145,7 @@ def test_v2_export_takes_v1s_inputs_then_its_own(exported_v2):
     extra = [n for n, *_ in got[11:]]
     assert ("hist_ids" in extra) == (model.cfg.history and not model.cfg.history_tokens)
     assert ("event_ids" in extra) == bool(model.cfg.history_tokens)
+    assert ("matchup_feats" in extra) == model.cfg.matchup_tokens
     assert signature(graph.output) == CONTRACT_OUTPUTS
 
 
