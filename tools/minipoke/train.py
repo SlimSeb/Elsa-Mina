@@ -84,7 +84,7 @@ COMMON_DEFAULTS = dict(
     eval_pool_battles=100, min_eval_battles=150, snapshot_every=10, pool_cap=20, pool_slots=2,
     save_every=10, stall_timeout=180.0, infer_device="auto", seed=None,
     max_infer_batch=64, faint_anneal_states=None, pfsp_floor=0.1, pool_ema=0.05,
-    elo_anchors=None, elo_k=16.0,
+    elo_anchors=None, elo_k=16.0, reward="shaped", uniform_kl_coef=0.0,
 )
 
 
@@ -267,7 +267,7 @@ def cmd_distill(args) -> None:
 PPO_KEYS = list(DEFAULTS["small"]) + list(COMMON_DEFAULTS)
 METRICS = ["iteration", "time", "hours", "states", "total_states", "battles", "play_s", "learn_s",
            "states_per_s", "lr", "ent_coef", "pi_loss", "v_loss", "v_mse", "entropy", "kl",
-           "clipfrac", "explained_var", "train_wr_pool", "train_wr_heuristic",
+           "clipfrac", "explained_var", "uniform_kl", "train_wr_pool", "train_wr_heuristic",
            "eval_wr_heuristic", "eval_n_heuristic", "eval_wr_pool", "eval_n_pool", "confirm_wr",
            "confirm_n", "best_wr", "elo", "epochs", "faint_reward", "pool_size",
            "pool_hardest_wr", "stalled", "rebuilds", "rss_mb"]
@@ -324,7 +324,10 @@ def cmd_ppo(args) -> None:
         seed_everything(args.seed)
     model = model.to(device)
     cfg = PPOConfig(lr=args.lr, minibatch=args.minibatch, vf_coef=args.vf_coef,
-                    kl_stop=args.kl_stop, value_ce_norm=args.value_ce_norm == "log-bins")
+                    kl_stop=args.kl_stop, value_ce_norm=args.value_ce_norm == "log-bins",
+                    uniform_kl_coef=args.uniform_kl_coef)
+    if args.reward == "winloss":
+        cfg.gamma = 1.0  # undiscounted: the value is the win probability
     sched = Schedule(lr=args.lr, warmup_iters=args.warmup_iters, lr_min_ratio=args.lr_min_ratio,
                      ent_start=args.ent_start, ent_end=args.ent_end)
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=1e-2)
@@ -356,7 +359,7 @@ def cmd_ppo(args) -> None:
     infer_device = choose_infer_device(args, model, device)
     model.to(device)
     infer_model = frozen_copy(model, infer_device)
-    rewards = Rewards()
+    rewards = Rewards.named(args.reward)
     rollouts = Rollouts(infer_model, infer_device, RolloutConfig(
         concurrency=args.concurrency, mirror_share=args.mirror_share, pool_share=args.pool_share,
         heuristic_share=args.heuristic_share, pool_slots=args.pool_slots,
@@ -395,7 +398,8 @@ def cmd_ppo(args) -> None:
 
         # ---- play
         sync()
-        rewards.faint = faint_reward(st["total_states"], args.faint_anneal_states)
+        if args.reward == "shaped":
+            rewards.faint = faint_reward(st["total_states"], args.faint_anneal_states)
         n_mirror, n_pool, n_heur = split_battles(args.battles_per_iter, args.mirror_share,
                                                  args.pool_share if use_pool else 0.0,
                                                  args.heuristic_share)
@@ -437,7 +441,7 @@ def cmd_ppo(args) -> None:
                    faint_reward=rewards.faint, epochs=stats["epochs"],
                    stalled=int(not res.play.ok), rebuilds=rollouts.rebuilds,
                    **{k: stats[k] for k in ("pi_loss", "v_loss", "v_mse", "entropy", "kl",
-                                            "clipfrac", "explained_var")})
+                                            "clipfrac", "explained_var", "uniform_kl")})
         log.info("[ppo] it %4d  states %6d (total %s)  play %5.1fs  learn %4.1fs  %5.0f st/s  "
                  "lr %.2e  ent_c %.4f  pi %+.3f  v %.3f  ent %.2f  kl %.4f  clip %.3f  ev %.2f",
                  it, stats["samples"], f"{st['total_states']:,}", t_play, t_learn,
@@ -666,6 +670,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--kl-stop", default=None, choices=["mean", "last"],
                    help="stop the PPO epochs when the epoch's mean approx KL (default medium) "
                         "or its last minibatch's (V1, default small/wide) exceeds 0.03")
+    p.add_argument("--reward", default=None, choices=["shaped", "winloss"],
+                   help="shaped (default, V1): +-1 at the end, +-0.1 per faint, gamma 0.995; "
+                        "winloss: 1 for a win, 0 otherwise, no shaping, gamma 1")
+    p.add_argument("--uniform-kl-coef", type=float, default=None,
+                   help="weight of KL(uniform over the legal actions || policy) added to the "
+                        "loss (default 0)")
     p.add_argument("--faint-anneal-states", type=int, default=None,
                    help="take the faint reward linearly from 0.1 to 0 over this many training "
                         "states (default off)")

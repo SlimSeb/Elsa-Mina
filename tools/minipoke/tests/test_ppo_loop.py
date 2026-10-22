@@ -165,3 +165,18 @@ def test_elo_table_follows_training_and_eval_games(run_ppo, tmp_path):
     assert elo["results"]["heuristic|learner"][1] == 2 * 10 + 200 + 400
     assert elo["results"]["it00001|learner"][1] == 10 + 50   # training slot + eval
     assert ck["elo"]["ratings"] == ratings
+
+
+def test_winloss_reward_is_undiscounted_and_unshaped(run_ppo, monkeypatch):
+    import ppo
+    gammas = []
+    real = ppo.compute_gae
+    monkeypatch.setattr(ppo, "compute_gae", lambda eps, gamma, lam: gammas.append(gamma) or
+                        real(eps, gamma, lam))
+    rows, ck = run_ppo("--size", "small", "--iterations", "2", "--eval-every", "1000",
+                       "--reward", "winloss", "--uniform-kl-coef", "0.01",
+                       "--faint-anneal-states", "1000")
+    assert gammas == [1.0, 1.0]
+    assert [float(r["faint_reward"]) for r in rows] == [0.0, 0.0]
+    assert all(float(r["uniform_kl"]) > 0 for r in rows)
+    assert ck["args"]["reward"] == "winloss"

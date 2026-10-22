@@ -82,3 +82,57 @@ def test_small_keeps_the_v1_recipe_and_medium_gets_the_fixes():
     raw = resolved("--size", "medium", "--value-ce-norm", "none")
     assert raw.vf_coef == 0.1
     assert resolved("--size", "medium", "--value-ce-norm", "none", "--vf-coef", "0.3").vf_coef == 0.3
+
+
+# --------------------------------------------------------------------------
+# D5: win/loss reward and the uniform-KL exploration term
+# --------------------------------------------------------------------------
+def test_winloss_rewards():
+    class Mon:
+        def __init__(self, fainted):
+            self.fainted = fainted
+    traj = Trajectories(Rewards.named("winloss"))
+    b = FakeBattle()
+    traj.step(b, {})
+    b.opponent_team = {"x": Mon(True)}
+    traj.step(b, {})
+    b.lost = True
+    assert [s["reward"] for s in traj.finish(b)] == [0.0, 0.0]
+    traj.step(b, {})
+    b.lost, b.won = False, True
+    assert [s["reward"] for s in traj.finish(b)] == [1.0]
+    assert Rewards.named("shaped") == Rewards()
+
+
+def test_uniform_kl():
+    from ppo import uniform_kl
+    mask = torch.tensor([[True, True, False, True], [True, False, False, False]])
+    flat = torch.zeros(2, 4).masked_fill(~mask, -1e9)
+    assert uniform_kl(flat, mask).item() == pytest.approx(0.0, abs=1e-6)
+    peaked = torch.tensor([[5.0, 0.0, 0.0, 0.0], [3.0, 0.0, 0.0, 0.0]]).masked_fill(~mask, -1e9)
+    logq = torch.log_softmax(peaked[0], -1)[[0, 1, 3]]
+    expected = (-logq.mean() - np.log(3)).item() / 2   # row 2 has one legal action: KL 0
+    assert uniform_kl(peaked, mask).item() == pytest.approx(expected, rel=1e-5)
+
+
+def test_uniform_kl_term_raises_the_policy_entropy():
+    episodes = random_episodes(8, 20, seed=7)
+    entropies = []
+    for coef in (0.0, 1.0):
+        torch.manual_seed(0)
+        np.random.seed(0)
+        model = MiniPokeTransformer(PRESETS["small"])
+        opt = torch.optim.AdamW(model.parameters(), lr=1e-3)
+        for _ in range(3):
+            stats = ppo_update(model, opt, episodes, PPOConfig(minibatch=64, epochs=2,
+                                                               target_kl=0.0,
+                                                               uniform_kl_coef=coef), "cpu")
+        entropies.append(stats["entropy"])
+        assert (stats["uniform_kl"] > 0) == (coef > 0)
+    assert entropies[1] > entropies[0]
+
+
+def test_reward_defaults_keep_v1():
+    args = train.build_parser().parse_args(["ppo", "--size", "small"])
+    train.resolve(args, "small", train.PPO_KEYS)
+    assert args.reward == "shaped" and args.uniform_kl_coef == 0.0

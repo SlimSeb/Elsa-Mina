@@ -138,6 +138,12 @@ class Rewards:
     loss: float = -WIN_REWARD
     faint: float = FAINT_REWARD
 
+    @classmethod
+    def named(cls, name: str) -> "Rewards":
+        """"shaped": V1's (+-1, +-0.1 per faint). "winloss": 1 for a win, 0 otherwise,
+        nothing else (trained with gamma 1, undiscounted)."""
+        return cls() if name == "shaped" else cls(win=1.0, loss=0.0, faint=0.0)
+
 
 def faint_reward(total_states: int, anneal_states: Optional[int]) -> float:
     """FAINT_REWARD, taken linearly to 0 over `anneal_states` training states (None or

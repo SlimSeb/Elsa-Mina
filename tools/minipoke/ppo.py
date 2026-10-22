@@ -32,6 +32,9 @@ class PPOConfig:
     # Two-hot cross-entropy divided by log(value_bins): ~1 at init, like the MSE of a
     # scalar head, so vf_coef means the same for both heads. False = the raw CE.
     value_ce_norm: bool = True
+    # Weight of KL(uniform over the legal actions || policy), an exploration bonus that,
+    # unlike entropy, grows without bound as a legal action's probability goes to 0
+    uniform_kl_coef: float = 0.0
 
 
 @dataclass
@@ -103,6 +106,15 @@ def value_loss(model, values: torch.Tensor, value_logits: Optional[torch.Tensor]
     return ce / math.log(value_logits.shape[-1]) if ce_norm else ce
 
 
+def uniform_kl(logits: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    """Mean over the batch of KL(U || pi), U uniform over each row's legal actions:
+    -log(n_legal) - mean over the legal actions of log pi(a). 0 for a uniform policy."""
+    legal = mask.float()
+    n_legal = legal.sum(-1).clamp_min(1.0)
+    logq = F.log_softmax(logits, dim=-1).masked_fill(~mask, 0.0)
+    return (-(logq * legal).sum(-1) / n_legal - torch.log(n_legal)).mean()
+
+
 def kl_early_stop(minibatch_kls: List[float], target_kl: float, mode: str = "last") -> bool:
     """Whether to stop the PPO epochs after an epoch with these minibatch approx KLs."""
     if not target_kl or not minibatch_kls:
@@ -159,7 +171,7 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
     n = len(obs)
     batch = collate(obs)
     stats = {"pi_loss": 0.0, "v_loss": 0.0, "v_mse": 0.0, "entropy": 0.0, "kl": 0.0,
-             "clipfrac": 0.0}
+             "clipfrac": 0.0, "uniform_kl": 0.0}
     n_updates = 0
     epochs_run = 0
 
@@ -182,6 +194,9 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
             v_loss = value_loss(model, values, value_logits, R, cfg.value_ce_norm)
             entropy = dist.entropy().mean()
             loss = pi_loss + cfg.vf_coef * v_loss - ent_coef * entropy
+            ukl = uniform_kl(logits, mb["mask"]) if cfg.uniform_kl_coef else None
+            if ukl is not None:
+                loss = loss + cfg.uniform_kl_coef * ukl
             if not torch.isfinite(loss):  # never let one bad minibatch poison the weights
                 stats["skipped"] = stats.get("skipped", 0) + 1
                 continue
@@ -205,6 +220,7 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
                 stats["entropy"] += entropy.item()
                 stats["kl"] += approx_kl
                 stats["clipfrac"] += ((ratio - 1).abs() > cfg.clip).float().mean().item()
+                stats["uniform_kl"] += ukl.item() if ukl is not None else 0.0
             n_updates += 1
         epochs_run += 1
         if kl_early_stop(epoch_kls, cfg.target_kl, cfg.kl_stop):
