@@ -180,3 +180,21 @@ def test_winloss_reward_is_undiscounted_and_unshaped(run_ppo, monkeypatch):
     assert [float(r["faint_reward"]) for r in rows] == [0.0, 0.0]
     assert all(float(r["uniform_kl"]) > 0 for r in rows)
     assert ck["args"]["reward"] == "winloss"
+
+
+def test_aux_coefs_add_aux_heads_and_label_the_rollouts(run_ppo):
+    configs = []
+    real_init = FakeRollouts.__init__
+
+    def spy(self, learner, device, cfg, server=None, rewards=None):
+        configs.append(cfg)
+        real_init(self, learner, device, cfg, server, rewards)
+    FakeRollouts.__init__ = spy
+    try:
+        rows, ck = run_ppo("--size", "small", "--iterations", "1", "--eval-every", "1000",
+                           "--aux-action-coef", "0.5", "--aux-set-coef", "0.2")
+    finally:
+        FakeRollouts.__init__ = real_init
+    assert ck["cfg"]["aux_heads"] and configs[0].aux_labels
+    assert any(k.startswith("aux_") for k in ck["model"])
+    assert "aux_action_acc" in rows[0]

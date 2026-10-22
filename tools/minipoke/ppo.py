@@ -35,6 +35,9 @@ class PPOConfig:
     # Weight of KL(uniform over the legal actions || policy), an exploration bonus that,
     # unlike entropy, grows without bound as a legal action's probability goes to 0
     uniform_kl_coef: float = 0.0
+    # Auxiliary losses (model.cfg.aux_heads, labels from aux_labels.AuxLabeler)
+    aux_action_coef: float = 0.0
+    aux_set_coef: float = 0.0
 
 
 @dataclass
@@ -115,6 +118,47 @@ def uniform_kl(logits: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
     return (-(logq * legal).sum(-1) / n_legal - torch.log(n_legal)).mean()
 
 
+AUX_STATS = ["aux_action_loss", "aux_action_acc", "aux_set_loss", "aux_item_acc",
+             "aux_ability_acc", "aux_tera_acc", "aux_moves_recall"]
+
+
+def aux_losses(out: Dict[str, torch.Tensor], labels: Dict[str, torch.Tensor]
+               ) -> Dict[str, torch.Tensor]:
+    """Losses and accuracies of the auxiliary heads on the labelled rows (missing
+    keys: nothing labelled in this minibatch).
+      action: cross-entropy over the opponent's mapped legal actions
+      item / ability / tera: cross-entropy per labelled opponent Pokémon
+      moves: multi-label, cross-entropy to the uniform distribution over its true
+             moves; reported as recall of the top 4"""
+    res: Dict[str, torch.Tensor] = {}
+    action, ok = labels["aux_action"], labels["aux_action"] >= 0
+    if ok.any():
+        logits = out["action"][ok].masked_fill(~labels["aux_action_mask"][ok], -1e9)
+        res["aux_action_loss"] = F.cross_entropy(logits, action[ok])
+        res["aux_action_acc"] = (logits.argmax(-1) == action[ok]).float().mean()
+    set_loss = []
+    for name in ("item", "ability", "tera"):
+        target = labels[f"aux_{name}"]
+        ok = target >= 0
+        if ok.any():
+            logits = out[name][ok]
+            set_loss.append(F.cross_entropy(logits, target[ok]))
+            res[f"aux_{name}_acc"] = (logits.argmax(-1) == target[ok]).float().mean()
+    moves = labels["aux_moves"]                                          # [B, 6, 4]
+    ok = (moves > 0).any(-1)
+    if ok.any():
+        logits, ids = out["moves"][ok], moves[ok]                       # [n, V], [n, 4]
+        target = torch.zeros_like(logits).scatter_(1, ids, (ids > 0).float())
+        target[:, 0] = 0.0
+        n_true = target.sum(-1).clamp_min(1.0)
+        set_loss.append(-(target / n_true[:, None] * F.log_softmax(logits, -1)).sum(-1).mean())
+        top = logits.topk(ids.shape[1], dim=-1).indices
+        res["aux_moves_recall"] = (target.gather(1, top).sum(-1) / n_true).mean()
+    if set_loss:
+        res["aux_set_loss"] = torch.stack(set_loss).sum()
+    return res
+
+
 def kl_early_stop(minibatch_kls: List[float], target_kl: float, mode: str = "last") -> bool:
     """Whether to stop the PPO epochs after an epoch with these minibatch approx KLs."""
     if not target_kl or not minibatch_kls:
@@ -165,6 +209,13 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
     model.train()
     ent_coef = cfg.ent_coef if ent_coef is None else ent_coef
     obs, actions, old_logp, adv, ret, old_values = compute_gae(episodes, cfg.gamma, cfg.gae_lambda)
+    use_aux = bool(cfg.aux_action_coef or cfg.aux_set_coef)
+    aux_labels = None
+    if use_aux:  # same order as compute_gae's flattening
+        from aux_labels import empty_labels
+        aux_labels = collate([s.get("aux") or empty_labels() for ep in episodes for s in ep])
+    aux_sums: Dict[str, float] = {}
+    aux_counts: Dict[str, int] = {}
     # Normalise over the whole buffer, not per minibatch: a 1-sample tail
     # minibatch has a NaN std, which turns every weight into NaN.
     adv = (adv - adv.mean()) / (adv.std() + 1e-8)
@@ -186,7 +237,13 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
             A = torch.from_numpy(adv[idx]).to(device)
             R = torch.from_numpy(ret[idx]).to(device)
 
-            logits, values, value_logits = model.forward_train(mb)
+            if use_aux:
+                logits, values, value_logits, aux_out = model.forward_train(mb, aux=True)
+                aux = aux_losses(aux_out, to_tensors({k: v[idx] for k, v in aux_labels.items()},
+                                                     device))
+            else:
+                logits, values, value_logits = model.forward_train(mb)
+                aux = {}
             dist = torch.distributions.Categorical(logits=logits)
             logp = dist.log_prob(a)
             ratio = torch.exp(logp - olp)
@@ -197,6 +254,10 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
             ukl = uniform_kl(logits, mb["mask"]) if cfg.uniform_kl_coef else None
             if ukl is not None:
                 loss = loss + cfg.uniform_kl_coef * ukl
+            if "aux_action_loss" in aux:
+                loss = loss + cfg.aux_action_coef * aux["aux_action_loss"]
+            if "aux_set_loss" in aux:
+                loss = loss + cfg.aux_set_coef * aux["aux_set_loss"]
             if not torch.isfinite(loss):  # never let one bad minibatch poison the weights
                 stats["skipped"] = stats.get("skipped", 0) + 1
                 continue
@@ -221,6 +282,9 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
                 stats["kl"] += approx_kl
                 stats["clipfrac"] += ((ratio - 1).abs() > cfg.clip).float().mean().item()
                 stats["uniform_kl"] += ukl.item() if ukl is not None else 0.0
+                for k, v in aux.items():
+                    aux_sums[k] = aux_sums.get(k, 0.0) + v.item()
+                    aux_counts[k] = aux_counts.get(k, 0) + 1
             n_updates += 1
         epochs_run += 1
         if kl_early_stop(epoch_kls, cfg.target_kl, cfg.kl_stop):
@@ -231,6 +295,8 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
     out["samples"] = n
     out["skipped"] = skipped
     out["epochs"] = epochs_run
+    for k in AUX_STATS:
+        out[k] = aux_sums[k] / aux_counts[k] if k in aux_counts else float("nan")
     out["explained_var"] = explained_variance(old_values, ret)
     return out
 

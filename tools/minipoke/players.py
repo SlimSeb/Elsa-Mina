@@ -232,11 +232,12 @@ class RLPlayer(SafePlayer):
     """Plays with the network. If ``collector`` is set, records trajectories."""
 
     def __init__(self, batcher: InferenceBatcher, collector: Optional[EpisodeCollector] = None,
-                 greedy: bool = False, rewards: Optional[Rewards] = None, **kwargs):
+                 greedy: bool = False, rewards: Optional[Rewards] = None, labeler=None, **kwargs):
         super().__init__(**kwargs)
         self.batcher = batcher
         self.collector = collector
         self.greedy = greedy
+        self.labeler = labeler   # aux_labels.AuxLabeler: report decisions and sets to it
         self._trajectories = Trajectories(rewards)
 
     async def _choose(self, battle):
@@ -246,9 +247,12 @@ class RLPlayer(SafePlayer):
 
         action, logp, value, _ = await self.batcher.act(obs, self.greedy)
 
+        ctx = self.labeler.decision(battle, action, obs["mask"]) if self.labeler else None
         if self.collector is not None:
-            self._trajectories.step(battle, {"obs": obs, "action": action, "logp": logp,
-                                             "value": value})
+            record = {"obs": obs, "action": action, "logp": logp, "value": value}
+            if ctx is not None:
+                record["aux_ctx"] = ctx
+            self._trajectories.step(battle, record)
         return action_to_order(action, battle)
 
     def _on_finished(self, battle) -> None:

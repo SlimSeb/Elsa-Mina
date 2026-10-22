@@ -43,9 +43,9 @@ from encoder_v2 import model_encoder
 from export_onnx import export_checkpoint, model_inputs, random_inputs
 from league import OpponentPool, split_battles
 from model import (PRESETS, MiniPokeTransformer, ModelConfig, build_model, describe, pick_device,
-                   preset, size_of)
+                   preset, size_of, with_aux_heads)
 from players import DistillPlayer, InferenceBatcher, Rewards, RLPlayer, TeacherPlayer, faint_reward
-from ppo import Budget, PPOConfig, Schedule, distill_train, ppo_update
+from ppo import AUX_STATS, Budget, PPOConfig, Schedule, distill_train, ppo_update
 from rollout import (SCRIPTED, RolloutConfig, Rollouts, close_players, evaluate, frozen_copy,
                      load_into, make_kwargs, play_match, play_recording_pairs, wilson_interval)
 from setpriors import SetPriors
@@ -85,6 +85,7 @@ COMMON_DEFAULTS = dict(
     save_every=10, stall_timeout=180.0, infer_device="auto", seed=None,
     max_infer_batch=64, faint_anneal_states=None, pfsp_floor=0.1, pool_ema=0.05,
     elo_anchors=None, elo_k=16.0, reward="shaped", uniform_kl_coef=0.0,
+    aux_action_coef=0.0, aux_set_coef=0.0,
 )
 
 
@@ -269,7 +270,9 @@ def cmd_distill(args) -> None:
 PPO_KEYS = list(DEFAULTS["small"]) + list(COMMON_DEFAULTS)
 METRICS = ["iteration", "time", "hours", "states", "total_states", "battles", "play_s", "learn_s",
            "states_per_s", "lr", "ent_coef", "pi_loss", "v_loss", "v_mse", "entropy", "kl",
-           "clipfrac", "explained_var", "uniform_kl", "train_wr_pool", "train_wr_heuristic",
+           "clipfrac", "explained_var", "uniform_kl", "aux_labelled", "aux_action_loss",
+           "aux_action_acc", "aux_set_loss", "aux_item_acc", "aux_ability_acc", "aux_tera_acc",
+           "aux_moves_recall", "train_wr_pool", "train_wr_heuristic",
            "eval_wr_heuristic", "eval_n_heuristic", "eval_wr_pool", "eval_n_pool", "confirm_wr",
            "confirm_n", "best_wr", "elo", "epochs", "faint_reward", "pool_size",
            "pool_hardest_wr", "stalled", "rebuilds", "rss_mb"]
@@ -324,10 +327,17 @@ def cmd_ppo(args) -> None:
         model = new_model(args)
     if args.seed is not None and not resumed:
         seed_everything(args.seed)
+    use_aux = bool(args.aux_action_coef or args.aux_set_coef)
+    if use_aux and not model.cfg.aux_heads:
+        if resumed:
+            raise SystemExit("this run has no auxiliary heads: start a new run (--init) to "
+                             "use --aux-action-coef / --aux-set-coef")
+        model = with_aux_heads(model)
     model = model.to(device)
     cfg = PPOConfig(lr=args.lr, minibatch=args.minibatch, vf_coef=args.vf_coef,
                     kl_stop=args.kl_stop, value_ce_norm=args.value_ce_norm == "log-bins",
-                    uniform_kl_coef=args.uniform_kl_coef)
+                    uniform_kl_coef=args.uniform_kl_coef, aux_action_coef=args.aux_action_coef,
+                    aux_set_coef=args.aux_set_coef)
     if args.reward == "winloss":
         cfg.gamma = 1.0  # undiscounted: the value is the win probability
     sched = Schedule(lr=args.lr, warmup_iters=args.warmup_iters, lr_min_ratio=args.lr_min_ratio,
@@ -365,8 +375,8 @@ def cmd_ppo(args) -> None:
     rollouts = Rollouts(infer_model, infer_device, RolloutConfig(
         concurrency=args.concurrency, mirror_share=args.mirror_share, pool_share=args.pool_share,
         heuristic_share=args.heuristic_share, pool_slots=args.pool_slots,
-        max_infer_batch=args.max_infer_batch, stall_timeout=args.stall_timeout), server,
-        rewards=rewards)
+        max_infer_batch=args.max_infer_batch, stall_timeout=args.stall_timeout,
+        aux_labels=use_aux), server, rewards=rewards)
     metrics = MetricsLogger(run_dir / "metrics.csv", METRICS)
     if use_pool and len(pool) == 0:
         pool.add(model, st["iteration"])  # the starting policy (BC / distill) is the first opponent
@@ -441,6 +451,7 @@ def cmd_ppo(args) -> None:
                    train_wr_heuristic=res.win_rates.get("heuristic"), pool_size=len(pool),
                    pool_hardest_wr=min((s.win_rate for s in pool.snapshots), default=None),
                    faint_reward=rewards.faint, epochs=stats["epochs"],
+                   aux_labelled=res.aux_labelled, **{k: stats[k] for k in AUX_STATS},
                    stalled=int(not res.play.ok), rebuilds=rollouts.rebuilds,
                    **{k: stats[k] for k in ("pi_loss", "v_loss", "v_mse", "entropy", "kl",
                                             "clipfrac", "explained_var", "uniform_kl")})
@@ -686,6 +697,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--uniform-kl-coef", type=float, default=None,
                    help="weight of KL(uniform over the legal actions || policy) added to the "
                         "loss (default 0)")
+    p.add_argument("--aux-action-coef", type=float, default=None,
+                   help="weight of the auxiliary loss predicting the opponent's action, "
+                        "labelled from the other seat of mirror / pool games (default 0)")
+    p.add_argument("--aux-set-coef", type=float, default=None,
+                   help="weight of the auxiliary losses predicting each opponent Pokémon's "
+                        "item, ability, tera type and moves (default 0)")
     p.add_argument("--faint-anneal-states", type=int, default=None,
                    help="take the faint reward linearly from 0.1 to 0 over this many training "
                         "states (default off)")

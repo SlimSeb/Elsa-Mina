@@ -43,6 +43,11 @@ matchup_feats: each of our Pokémon against their active, our active against eac
 of theirs), injected into the residual stream after the first n_layers // 2
 layers: the later layers see them as state tokens, appended after the others.
 
+aux_heads: training-only heads read the final tokens: the opponent's next action
+(from the critic and their active's token) and, per opponent Pokémon token, its
+item, ability and moves (logits tied to the input embeddings) and tera type.
+forward() never runs them, so they are not part of the ONNX export.
+
 typed_ffn: each layer has one feed-forward block per token type ("cls" = actor
 and critic, "field", "mons", "moves", "events"...) instead of one shared by every token.
 """
@@ -56,7 +61,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, VOCAB_SIZES
+from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, NT, VOCAB_SIZES
 from encoder_v2 import F_EVENT, F_HIST, F_MATCH, F_PRIOR
 
 N_TOKENS = 3 + N_MONS
@@ -99,6 +104,8 @@ class ModelConfig:
     history_tokens: int = 0
     # Encoder v2: 12 damage-calc matchup tokens, injected after layer n_layers // 2
     matchup_tokens: bool = False
+    # Training-only heads (opponent's next action, opponent sets); never exported
+    aux_heads: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
@@ -283,6 +290,11 @@ class MiniPokeTransformer(nn.Module):
             self.register_buffer("attn_mask_full", build_attention_mask(n_full), persistent=False)
             self.register_buffer("self_attend_full", torch.eye(n_full, dtype=torch.bool),
                                  persistent=False)
+        if cfg.aux_heads:
+            self.aux_action_head = nn.Sequential(nn.Linear(2 * d, d), nn.GELU(),
+                                                 nn.Linear(d, ACT_DIM))
+            self.aux_set_proj = nn.Linear(d, cfg.item_dim + cfg.ability_dim + cfg.move_dim)
+            self.aux_tera_head = nn.Linear(d, NT)
 
         self.apply(self._init)
 
@@ -412,9 +424,10 @@ class MiniPokeTransformer(nn.Module):
         logits, value, _ = self.forward_train(obs)
         return logits, value
 
-    def forward_train(self, obs: Dict[str, torch.Tensor]
-                      ) -> Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
-        """Like forward(), plus the value logits [B, bins] (None for a scalar head)."""
+    def forward_train(self, obs: Dict[str, torch.Tensor], aux: bool = False):
+        """Like forward(), plus the value logits [B, bins] (None for a scalar head).
+        With `aux`, also a dict of the auxiliary heads' logits: "action" [B, 14],
+        "item" / "ability" / "moves" [B, 6, vocab] and "tera" [B, 6, types]."""
         mon_feats = obs["mon_feats"]
         x, key_present, move_vec = self.embed(obs)
         B, d = x.shape[0], self.cfg.d_model
@@ -464,10 +477,38 @@ class MiniPokeTransformer(nn.Module):
         logits = logits.masked_fill(~mask, -1e9)
 
         if not self.distributional:
-            return logits, self.value_head(critic).squeeze(-1), None
-        value_logits = self.value_head(critic)
-        value = torch.softmax(value_logits, dim=-1) @ self.value_support
-        return logits, value, value_logits
+            value, value_logits = self.value_head(critic).squeeze(-1), None
+        else:
+            value_logits = self.value_head(critic)
+            value = torch.softmax(value_logits, dim=-1) @ self.value_support
+        if not aux:
+            return logits, value, value_logits
+        return logits, value, value_logits, self._aux_heads(x, critic, mon_feats)
+
+    def _aux_heads(self, x: torch.Tensor, critic: torch.Tensor,
+                   mon_feats: torch.Tensor) -> Dict[str, torch.Tensor]:
+        cfg = self.cfg
+        theirs = x[:, MON0 + N_SLOTS: MON0 + N_MONS]                         # [B, 6, d]
+        opp_active = mon_feats[:, N_SLOTS:, 3].argmax(dim=-1)
+        opp_tok = theirs[torch.arange(x.shape[0], device=x.device), opp_active]
+        item, ability, moves = self.aux_set_proj(theirs).split(
+            [cfg.item_dim, cfg.ability_dim, cfg.move_dim], dim=-1)
+        return {"action": self.aux_action_head(torch.cat([critic, opp_tok], dim=-1)),
+                "item": item @ self.item_emb.weight.T,
+                "ability": ability @ self.ability_emb.weight.T,
+                "moves": moves @ self.move_emb.weight.T,
+                "tera": self.aux_tera_head(theirs)}
+
+
+def with_aux_heads(model: MiniPokeTransformer) -> MiniPokeTransformer:
+    """The same model plus fresh auxiliary heads."""
+    if model.cfg.aux_heads:
+        return model
+    new = MiniPokeTransformer(replace(model.cfg, aux_heads=True))
+    missing, unexpected = new.load_state_dict(model.state_dict(), strict=False)
+    assert not unexpected and all(k.startswith("aux_") for k in missing), (missing, unexpected)
+    new.priors = model.priors
+    return new
 
 
 def to_tensors(batch, device) -> Dict[str, torch.Tensor]:

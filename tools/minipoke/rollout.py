@@ -26,6 +26,7 @@ from typing import Callable, Dict, List, Optional, Sequence, Tuple
 import torch
 from poke_env.player import MaxBasePowerPlayer, Player, RandomPlayer, SimpleHeuristicsPlayer
 
+from aux_labels import AuxLabeler
 from league import split_evenly
 from players import EpisodeCollector, InferenceBatcher, Rewards, RLPlayer, SafePlayer
 
@@ -174,6 +175,7 @@ class RolloutConfig:
     stall_timeout: float = 180.0
     min_iter_timeout: float = 600.0
     iter_timeout_factor: float = 4.0
+    aux_labels: bool = False    # label the learner's steps from the other seat (aux heads)
 
 
 @dataclass
@@ -185,6 +187,8 @@ class IterationResult:
     slot_results: List[Tuple[int, int]] = field(default_factory=list)
     # Learner (wins, finished battles) against the heuristic
     heuristic_result: Optional[Tuple[int, int]] = None
+    # Share of the learner's steps with an opponent-action label (aux heads)
+    aux_labelled: Optional[float] = None
 
 
 class Rollouts:
@@ -195,6 +199,7 @@ class Rollouts:
         self.server = server
         self.learner = learner
         self.rewards = rewards or Rewards()  # shared by every learner seat
+        self.labeler = AuxLabeler() if cfg.aux_labels else None
         self.batcher = InferenceBatcher(learner, device,
                                         max_batch=min(cfg.concurrency * 2, cfg.max_infer_batch))
         self.collector = EpisodeCollector()
@@ -216,14 +221,15 @@ class Rollouts:
 
     def _learner(self, concurrency: int) -> RLPlayer:
         return RLPlayer(self.batcher, self.collector, rewards=self.rewards,
-                        **make_kwargs(concurrency))
+                        labeler=self.labeler, **make_kwargs(concurrency))
 
     def _build(self) -> None:
         c = self.cfg
         self.mirror = (self._learner(self._conc(c.mirror_share)),
                        self._learner(self._conc(c.mirror_share)))
         slot_conc = self._conc(c.pool_share / max(len(self.slot_models), 1))
-        self.pool_pairs = [(self._learner(slot_conc), RLPlayer(b, None, **make_kwargs(slot_conc)))
+        self.pool_pairs = [(self._learner(slot_conc),
+                            RLPlayer(b, None, labeler=self.labeler, **make_kwargs(slot_conc)))
                            for b in self.slot_batchers]
         self.heuristic_pair = None
         if c.heuristic_share > 0:
@@ -275,9 +281,14 @@ class Rollouts:
             log.error("iteration stalled: %s", res.reason)
         # Finished battles are complete episodes: keep them even after a stall.
         episodes = self.collector.drain()
+        aux_labelled = None
+        if self.labeler is not None:
+            aux_labelled = self.labeler.label_episodes(episodes)
+            self.labeler.clear()
         if not res.ok or not reset_all(self.players):
             self.rebuild()
-        return IterationResult(episodes, res, win_rates, slot_results, heuristic_result)
+        return IterationResult(episodes, res, win_rates, slot_results, heuristic_result,
+                               aux_labelled)
 
     # ----------------------------------------------------------------------
     def evaluate(self, n_battles: int, opponent: str = "heuristic",
