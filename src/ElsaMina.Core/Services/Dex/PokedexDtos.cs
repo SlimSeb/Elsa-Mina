@@ -68,6 +68,13 @@ public sealed class PokedexEntry
     [JsonPropertyName("formeOrder")]
     public string[] FormeOrder { get; set; }
 
+    /// <summary>
+    /// The formes an in-battle forme comes from (Palafin-Hero: Palafin), or null for a forme a team can hold.
+    /// </summary>
+    [JsonPropertyName("battleOnly")]
+    [JsonConverter(typeof(StringOrArrayJsonConverter))]
+    public string[] BattleOnly { get; set; }
+
     [JsonPropertyName("gender")]
     public string Gender { get; set; }
 
