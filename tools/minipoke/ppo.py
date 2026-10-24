@@ -122,6 +122,12 @@ AUX_STATS = ["aux_action_loss", "aux_action_acc", "aux_set_loss", "aux_item_acc"
              "aux_ability_acc", "aux_tera_acc", "aux_moves_recall"]
 
 
+def _labelled_mean(x: torch.Tensor, labelled: torch.Tensor) -> torch.Tensor:
+    """Mean of `x` over the labelled entries (`labelled`: bool, same shape)."""
+    w = labelled.float()
+    return (x * w).sum() / w.sum().clamp_min(1.0)
+
+
 def aux_losses(out: Dict[str, torch.Tensor], labels: Dict[str, torch.Tensor]
                ) -> Dict[str, torch.Tensor]:
     """Losses and accuracies of the auxiliary heads on the labelled rows (missing
@@ -129,31 +135,38 @@ def aux_losses(out: Dict[str, torch.Tensor], labels: Dict[str, torch.Tensor]
       action: cross-entropy over the opponent's mapped legal actions
       item / ability / tera: cross-entropy per labelled opponent Pokémon
       moves: multi-label, cross-entropy to the uniform distribution over its true
-             moves; reported as recall of the top 4"""
+             moves; reported as recall of the top 4
+    Every row is computed and the unlabelled ones weigh 0: selecting the labelled
+    rows would give each minibatch tensors of a new shape, and the MPS backend
+    compiles and keeps one graph per shape (~75 MB more per PPO iteration)."""
     res: Dict[str, torch.Tensor] = {}
     action, ok = labels["aux_action"], labels["aux_action"] >= 0
     if ok.any():
-        logits = out["action"][ok].masked_fill(~labels["aux_action_mask"][ok], -1e9)
-        res["aux_action_loss"] = F.cross_entropy(logits, action[ok])
-        res["aux_action_acc"] = (logits.argmax(-1) == action[ok]).float().mean()
+        # unlabelled rows keep every action legal, so their (unused) loss stays finite
+        legal = labels["aux_action_mask"] | ~ok[:, None]
+        logits = out["action"].masked_fill(~legal, -1e9)
+        target = action.clamp_min(0)
+        res["aux_action_loss"] = _labelled_mean(F.cross_entropy(logits, target, reduction="none"), ok)
+        res["aux_action_acc"] = _labelled_mean((logits.argmax(-1) == target).float(), ok)
     set_loss = []
     for name in ("item", "ability", "tera"):
-        target = labels[f"aux_{name}"]
+        target = labels[f"aux_{name}"].flatten()                         # [B * 6]
         ok = target >= 0
         if ok.any():
-            logits = out[name][ok]
-            set_loss.append(F.cross_entropy(logits, target[ok]))
-            res[f"aux_{name}_acc"] = (logits.argmax(-1) == target[ok]).float().mean()
+            logits, target = out[name].flatten(0, 1), target.clamp_min(0)
+            set_loss.append(_labelled_mean(F.cross_entropy(logits, target, reduction="none"), ok))
+            res[f"aux_{name}_acc"] = _labelled_mean((logits.argmax(-1) == target).float(), ok)
     moves = labels["aux_moves"]                                          # [B, 6, 4]
-    ok = (moves > 0).any(-1)
+    ok = (moves > 0).any(-1)                                             # [B, 6]
     if ok.any():
-        logits, ids = out["moves"][ok], moves[ok]                       # [n, V], [n, 4]
-        target = torch.zeros_like(logits).scatter_(1, ids, (ids > 0).float())
-        target[:, 0] = 0.0
+        logits = out["moves"]                                            # [B, 6, V]
+        target = torch.zeros_like(logits).scatter_(-1, moves, (moves > 0).float())
+        target[..., 0] = 0.0
         n_true = target.sum(-1).clamp_min(1.0)
-        set_loss.append(-(target / n_true[:, None] * F.log_softmax(logits, -1)).sum(-1).mean())
-        top = logits.topk(ids.shape[1], dim=-1).indices
-        res["aux_moves_recall"] = (target.gather(1, top).sum(-1) / n_true).mean()
+        ce = -(target / n_true[..., None] * F.log_softmax(logits, -1)).sum(-1)
+        set_loss.append(_labelled_mean(ce, ok))
+        top = logits.topk(moves.shape[-1], dim=-1).indices
+        res["aux_moves_recall"] = _labelled_mean(target.gather(-1, top).sum(-1) / n_true, ok)
     if set_loss:
         res["aux_set_loss"] = torch.stack(set_loss).sum()
     return res

@@ -109,6 +109,95 @@ def test_aux_losses():
     assert 0.0 <= res["aux_moves_recall"].item() <= 1.0
 
 
+def _row_selection_losses(out, labels):
+    """aux_losses as first written: on the labelled rows only (variable shapes)."""
+    import torch.nn.functional as F
+    res, set_loss = {}, []
+    ok = labels["aux_action"] >= 0
+    logits = out["action"][ok].masked_fill(~labels["aux_action_mask"][ok], -1e9)
+    res["aux_action_loss"] = F.cross_entropy(logits, labels["aux_action"][ok])
+    res["aux_action_acc"] = (logits.argmax(-1) == labels["aux_action"][ok]).float().mean()
+    for name in ("item", "ability", "tera"):
+        target = labels[f"aux_{name}"]
+        logits = out[name][target >= 0]
+        set_loss.append(F.cross_entropy(logits, target[target >= 0]))
+        res[f"aux_{name}_acc"] = (logits.argmax(-1) == target[target >= 0]).float().mean()
+    ok = (labels["aux_moves"] > 0).any(-1)
+    logits, ids = out["moves"][ok], labels["aux_moves"][ok]
+    target = torch.zeros_like(logits).scatter_(1, ids, (ids > 0).float())
+    target[:, 0] = 0.0
+    n_true = target.sum(-1).clamp_min(1.0)
+    set_loss.append(-(target / n_true[:, None] * torch.log_softmax(logits, -1)).sum(-1).mean())
+    top = logits.topk(ids.shape[1], dim=-1).indices
+    res["aux_moves_recall"] = (target.gather(1, top).sum(-1) / n_true).mean()
+    res["aux_set_loss"] = torch.stack(set_loss).sum()
+    return res
+
+
+def _random_labels(b, seed, share):
+    """Labels for a batch of `b`, each row / Pokémon labelled with probability `share`."""
+    g = torch.Generator().manual_seed(seed)
+    labelled = lambda *shape: torch.rand(*shape, generator=g) < share
+    vocab = lambda name, *shape: torch.randint(1, E.VOCAB_SIZES[name], shape, generator=g)
+    action = torch.randint(0, 14, (b,), generator=g)
+    mask = (torch.rand(b, 14, generator=g) < 0.5) | (torch.arange(14) == action[:, None])
+    moves = vocab("move", b, 6, 4) * (torch.rand(b, 6, 4, generator=g) < 0.8)
+    moves[..., 0] = vocab("move", b, 6)                       # at least one known move
+    return {"aux_action": torch.where(labelled(b), action, NO_LABEL),
+            "aux_action_mask": mask,
+            "aux_item": torch.where(labelled(b, 6), vocab("item", b, 6), NO_LABEL),
+            "aux_ability": torch.where(labelled(b, 6), vocab("ability", b, 6), NO_LABEL),
+            "aux_tera": torch.where(labelled(b, 6), torch.randint(0, E.NT, (b, 6), generator=g),
+                                    NO_LABEL),
+            "aux_moves": moves * labelled(b, 6)[..., None]}
+
+
+def _aux_out(b, seed):
+    g = torch.Generator().manual_seed(seed)
+    shapes = {"action": (b, 14), "item": (b, 6, E.VOCAB_SIZES["item"]),
+              "ability": (b, 6, E.VOCAB_SIZES["ability"]),
+              "moves": (b, 6, E.VOCAB_SIZES["move"]), "tera": (b, 6, E.NT)}
+    return {k: torch.randn(*s, generator=g).requires_grad_() for k, s in shapes.items()}
+
+
+def test_aux_losses_match_the_labelled_rows_and_their_gradients():
+    out, labels = _aux_out(32, seed=1), _random_labels(32, seed=2, share=0.4)
+    res, ref = aux_losses(out, labels), _row_selection_losses(out, labels)
+    assert res.keys() == ref.keys()
+    for k in ref:
+        assert res[k].item() == pytest.approx(ref[k].item(), rel=1e-5, abs=1e-6), k
+    loss = res["aux_action_loss"] + res["aux_set_loss"]
+    grads = torch.autograd.grad(loss, list(out.values()))
+    ref_grads = torch.autograd.grad(ref["aux_action_loss"] + ref["aux_set_loss"], list(out.values()))
+    for g, r in zip(grads, ref_grads):
+        assert torch.allclose(g, r, atol=1e-6)
+
+
+def test_aux_losses_shapes_do_not_depend_on_the_labels():
+    """The MPS leak: every op must see the same shapes whatever is labelled."""
+    from torch.overrides import TorchFunctionMode
+
+    class Shapes(TorchFunctionMode):
+        def __init__(self):
+            super().__init__()
+            self.seen = []
+
+        def __torch_function__(self, func, types, args=(), kwargs=None):
+            result = func(*args, **(kwargs or {}))
+            for t in result if isinstance(result, (tuple, list)) else [result]:
+                if isinstance(t, torch.Tensor):
+                    self.seen.append(tuple(t.shape))
+            return result
+
+    def shapes(labels):
+        with Shapes() as mode:
+            aux_losses(_aux_out(32, seed=1), labels)
+        return mode.seen
+
+    assert shapes(_random_labels(32, seed=2, share=0.3)) == \
+        shapes(_random_labels(32, seed=3, share=0.7))
+
+
 def test_ppo_update_trains_the_aux_heads():
     model = make_model("small", aux_heads=True)
     episodes = random_episodes(4, 20, seed=3)
