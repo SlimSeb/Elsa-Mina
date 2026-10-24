@@ -117,4 +117,22 @@ public class DexJsonDeserializationTest
 
         Assert.That(json, Does.Contain("\"accuracy\":true"));
     }
+
+    [TestCase("""{ "name": "Palafin-Hero", "battleOnly": "Palafin" }""", "Palafin")]
+    [TestCase("""{ "name": "Necrozma-Ultra", "battleOnly": ["Necrozma-Dawn-Wings", "Necrozma-Dusk-Mane"] }""",
+        "Necrozma-Dawn-Wings", "Necrozma-Dusk-Mane")]
+    public void Test_Deserialize_ShouldReadBattleOnlyAsList_WhenOneNameOrSeveral(string json, params string[] expected)
+    {
+        var entry = JsonSerializer.Deserialize<PokedexEntry>(json, JSON_OPTIONS);
+
+        Assert.That(entry.BattleOnly, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void Test_Deserialize_ShouldLeaveBattleOnlyNull_WhenFormeIsNotBattleOnly()
+    {
+        var entry = JsonSerializer.Deserialize<PokedexEntry>("""{ "name": "Palafin" }""", JSON_OPTIONS);
+
+        Assert.That(entry.BattleOnly, Is.Null);
+    }
 }

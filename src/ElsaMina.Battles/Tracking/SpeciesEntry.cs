@@ -9,9 +9,12 @@ namespace ElsaMina.Battles.Tracking;
 /// poke-env (a few non-standard entries have types such as "Bird").</param>
 /// <param name="BaseStats">Base stats keyed "hp", "atk", "def", "spa", "spd", "spe".</param>
 /// <param name="Abilities">Ability names in pokedex order (slots "0", "1", "H", "S").</param>
+/// <param name="BattleOnly">Names of the formes an in-battle forme comes from ("Palafin" for Palafin-Hero), empty
+/// for the others.</param>
 public record SpeciesEntry(
     string BaseSpecies,
     string Forme,
     IReadOnlyList<string> Types,
     IReadOnlyDictionary<string, int> BaseStats,
-    IReadOnlyList<string> Abilities);
+    IReadOnlyList<string> Abilities,
+    IReadOnlyList<string> BattleOnly);

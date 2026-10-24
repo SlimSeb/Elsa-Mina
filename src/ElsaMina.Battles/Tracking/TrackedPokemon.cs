@@ -78,6 +78,12 @@ public sealed class TrackedPokemon
     /// </summary>
     public int ActiveTurns { get; private set; }
 
+    /// <summary>
+    /// Protect-like moves used in a row (poke-env's protect_counter): reset by any other move, a failed one, being
+    /// unable to move, a protect-breaking effect and switching out.
+    /// </summary>
+    public int ProtectCounter { get; private set; }
+
     public bool Terastallized { get; private set; }
 
     /// <summary>
@@ -111,6 +117,11 @@ public sealed class TrackedPokemon
     /// </summary>
     public string Ability => _temporaryAbility ?? _formeChangeAbility ?? InnateAbility;
 
+    /// <summary>
+    /// poke-env's base_ability: the ability without temporary changes (Trace, Skill Swap...), or null when unknown.
+    /// </summary>
+    public string BaseAbility => _formeChangeAbility ?? InnateAbility;
+
     public bool HasIllusionAbility => InnateAbility == ILLUSION;
 
     public bool Fainted => Status == PokeEnvNames.FAINTED;
@@ -118,6 +129,12 @@ public sealed class TrackedPokemon
     public bool Preparing => _hasPreparingTarget || _preparingMove != null;
     public bool Transformed => MoveSet.TransformMoves != null;
     public OrderedDictionary<string, TrackedMove> Moves => MoveSet.Moves;
+
+    /// <summary>
+    /// poke-env's last_move: the known move flagged as used last, or null.
+    /// </summary>
+    public TrackedMove LastMove => Moves.Values.FirstOrDefault(move => move.IsLastUsed);
+
     public IReadOnlyDictionary<string, int> BaseStats => _temporaryBaseStats ?? _baseStats;
     public double CurrentHpFraction => CurrentHp != 0 ? (double)CurrentHp / MaxHp : 0;
 
@@ -242,6 +259,7 @@ public sealed class TrackedPokemon
     public void CantMove()
     {
         Dancing = false;
+        ProtectCounter = 0;
     }
 
     public void ClearBoosts()
@@ -295,6 +313,11 @@ public sealed class TrackedPokemon
     {
         var effect = PokeEnvNames.EffectFromMessage(effectMessage);
         Effects.Add(effect);
+
+        if (PokeEnvNames.ProtectBreakingEffects.Contains(effect))
+        {
+            ProtectCounter = 0;
+        }
 
         if (effect == "TYPECHANGE" && typeChangeDetails != null)
         {
@@ -384,9 +407,9 @@ public sealed class TrackedPokemon
     }
 
     /// <summary>
-    /// The Pokémon used a move. poke-env's failed flag only feeds the protect counter, which no feature reads.
+    /// The Pokémon used a move. <paramref name="failed"/> only matters to the protect counter.
     /// </summary>
-    public void Moved(string moveId, bool use = true, bool reveal = true, bool pressure = false)
+    public void Moved(string moveId, bool use = true, bool reveal = true, bool pressure = false, bool failed = false)
     {
         MustRecharge = false;
         _preparingMove = null;
@@ -395,7 +418,15 @@ public sealed class TrackedPokemon
         if (use)
         {
             move?.Use(pressure);
+            foreach (var knownMove in Moves.Values)
+            {
+                knownMove.IsLastUsed = knownMove == move;
+            }
         }
+
+        ProtectCounter = move != null && PokeEnvNames.ProtectCounterMoves.Contains(move.Id) && !failed
+            ? ProtectCounter + 1
+            : 0;
 
         // Effects that silently end when the Pokémon moves
         if (Effects.Contains("GLAIVE_RUSH"))
@@ -495,11 +526,16 @@ public sealed class TrackedPokemon
         MustRecharge = false;
         _preparingMove = null;
         _hasPreparingTarget = false;
+        ProtectCounter = 0;
         TemporaryAbility = null;
         _temporaryBaseStats = null;
         MoveSet.TransformMoves = null;
         MoveSet.MimicMove = null;
         _temporaryTypes = [];
+        foreach (var move in Moves.Values)
+        {
+            move.IsLastUsed = false;
+        }
     }
 
     public void Terastallize(string type)

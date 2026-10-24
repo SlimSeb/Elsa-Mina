@@ -25,6 +25,14 @@ public class UserDataService : IUserDataService
         {
             return cachedUserData;
         }
+
+        return await GetLatestUserDataAsync(userName, cancellationToken);
+    }
+
+    public async Task<UserDataDto> GetLatestUserDataAsync(string userName,
+        CancellationToken cancellationToken = default)
+    {
+        var userId = userName.ToLowerAlphaNum();
         var uri = string.Format(USER_DATA_URL, userId);
         try
         {

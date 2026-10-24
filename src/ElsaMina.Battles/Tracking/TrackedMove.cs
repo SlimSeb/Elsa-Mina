@@ -23,6 +23,11 @@ public sealed class TrackedMove
     public int MaxPp { get; }
     public int CurrentPp { get; set; }
 
+    /// <summary>
+    /// poke-env's Move._is_last_used: the last move its Pokémon used since it switched in (Pokemon.last_move).
+    /// </summary>
+    public bool IsLastUsed { get; set; }
+
     public void Use(bool pressure = false, bool overridden = false)
     {
         var decrement = 1;

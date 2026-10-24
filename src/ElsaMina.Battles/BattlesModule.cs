@@ -1,9 +1,12 @@
 using Autofac;
 using ElsaMina.Battles.Commands;
+using ElsaMina.Battles.Replays;
+using ElsaMina.Battles.Results;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.Llm;
 using ElsaMina.Battles.Strategies.MiniPoke;
 using ElsaMina.Battles.Strategies.MiniPokeV1;
+using ElsaMina.Battles.Strategies.MiniPokeV2;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
 using ElsaMina.Battles.Tracking;
@@ -32,17 +35,25 @@ public class BattlesModule : Module
         // minipoke models: one line each (see tools/minipoke/README.md)
         RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_1M);
         RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_4M);
+        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_1M);
         builder.RegisterType<BattleDecisionManager>().As<IBattleDecisionService>().As<IBattleDecisionManager>().SingleInstance();
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
         builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();
         builder.RegisterType<LadderingService>().As<ILadderingService>().SingleInstance();
+        builder.RegisterType<LadderRatingService>().As<ILadderRatingService>().SingleInstance();
+        builder.RegisterType<BattleResultsService>().As<IBattleResultsService>().SingleInstance();
+        builder.RegisterType<ReplaySavingService>().As<IReplaySavingService>().SingleInstance();
 
         builder.RegisterHandler<BattleHandler>();
+        builder.RegisterHandler<UpdateSearchHandler>();
+        builder.RegisterHandler<ReplayUploadedHandler>();
 
         builder.RegisterCommand<SearchCommand>();
         builder.RegisterCommand<UseTeamCommand>();
         builder.RegisterCommand<LadderingCommand>();
         builder.RegisterCommand<BattleStrategyCommand>();
+        builder.RegisterCommand<SaveReplaysCommand>();
+        builder.RegisterCommand<BattleStatusCommand>();
     }
 
     /// <summary>

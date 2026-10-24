@@ -11,6 +11,12 @@ public sealed class BattleObservation
     public const int MoveCount = 4;
     public const int ActionCount = 14;
 
+    /// <summary>
+    /// The inputs every model version reads, in the ONNX model's order.
+    /// </summary>
+    public static readonly IReadOnlyList<string> BaseInputNames =
+        ["mon_ids", "move_ids", "mon_feats", "move_feats", "field", "mask"];
+
     public BattleObservation(int monFeatureSize, int moveFeatureSize, int fieldFeatureSize)
     {
         MonFeatureSize = monFeatureSize;
@@ -45,6 +51,17 @@ public sealed class BattleObservation
 
     /// <summary>[14]: legal actions (0-5 switch, 6-9 move, 10-13 tera + move).</summary>
     public bool[] Mask { get; }
+
+    /// <summary>
+    /// The int64 inputs a model version adds after the six above (minipoke-v2's cand_ids, prior_ids...), by ONNX
+    /// input name. Their shapes are the model's.
+    /// </summary>
+    public Dictionary<string, long[]> ExtraIds { get; } = [];
+
+    /// <summary>
+    /// The float32 inputs a model version adds after the six above (minipoke-v2's cand_feats, hist_feats...).
+    /// </summary>
+    public Dictionary<string, float[]> ExtraFeatures { get; } = [];
 
     /// <summary>
     /// Maps the model's team slot (stable, first-seen order, like poke-env's battle.team)

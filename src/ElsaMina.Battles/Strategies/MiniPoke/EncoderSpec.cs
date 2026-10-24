@@ -54,6 +54,36 @@ public sealed class EncoderSpec
     [JsonPropertyName("orderings")]
     public EncoderSpecOrderings Orderings { get; set; } = new();
 
+    /// <summary>
+    /// The encoder a model reads: 1 for encoder.py (V1 specs don't say), 2 for minipoke-v2's encoder_v2.py.
+    /// </summary>
+    [JsonPropertyName("encoder_version")]
+    public int EncoderVersion { get; set; } = 1;
+
+    /// <summary>
+    /// Every ONNX input in order: listed by minipoke-v2 specs, empty for V1's six.
+    /// </summary>
+    [JsonPropertyName("inputs")]
+    public List<EncoderSpecInput> Inputs { get; set; } = [];
+
+    /// <summary>
+    /// The model flags that shape a minipoke-v2 observation, null for V1.
+    /// </summary>
+    [JsonPropertyName("model")]
+    public EncoderSpecModel Model { get; set; }
+
+    /// <summary>
+    /// The random battle set priors of a minipoke-v2 model, null for V1.
+    /// </summary>
+    [JsonPropertyName("set_priors")]
+    public EncoderSpecSetPriors SetPriors { get; set; }
+
+    /// <summary>
+    /// The inputs a version adds after the six every version shares.
+    /// </summary>
+    public IEnumerable<EncoderSpecInput> ExtraInputs =>
+        Inputs.Where(input => !BattleObservation.BaseInputNames.Contains(input.Name));
+
     public static EncoderSpec Load(string path)
     {
         var spec = JsonSerializer.Deserialize<EncoderSpec>(File.ReadAllText(path))
@@ -88,6 +118,13 @@ public sealed class EncoderSpec
         if (ItemHash.Algorithm != ITEM_HASH_ALGORITHM || ItemHash.Buckets <= 0)
         {
             errors.Add($"unsupported item hash '{ItemHash.Algorithm}' with {ItemHash.Buckets} buckets");
+        }
+
+        var baseInputs = Inputs.Take(BattleObservation.BaseInputNames.Count).Select(input => input.Name);
+        if (Inputs.Count > 0 && !baseInputs.SequenceEqual(BattleObservation.BaseInputNames))
+        {
+            errors.Add($"inputs [{string.Join(", ", Inputs.Select(input => input.Name))}] don't start with " +
+                       $"[{string.Join(", ", BattleObservation.BaseInputNames)}]");
         }
 
         if (errors.Count > 0)

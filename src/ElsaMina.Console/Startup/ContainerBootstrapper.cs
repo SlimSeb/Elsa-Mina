@@ -22,6 +22,7 @@ public static class ContainerBootstrapper
             .As<IDatabaseConfiguration>()
             .As<IS3CredentialsProvider>()
             .As<IGoogleServiceAccountConfiguration>()
+            .As<IBattlesConfiguration>()
             .SingleInstance();
         builder.RegisterModule<DataAccessModule>();
         builder.RegisterModule<CloudModule>();

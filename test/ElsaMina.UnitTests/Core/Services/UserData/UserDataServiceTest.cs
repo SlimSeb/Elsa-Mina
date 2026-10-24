@@ -66,4 +66,27 @@ public class UserDataServiceTest
         // Assert
         Assert.That(result, Is.EqualTo(DateTimeOffset.Parse("07/08/2021 16:00:00Z", CultureInfo.InvariantCulture)));
     }
+
+    [Test]
+    public async Task Test_GetLatestUserDataAsync_ShouldFetchAgain_WhenUserDataIsCached()
+    {
+        // Arrange: ratings change after every battle
+        var before = new UserDataDto { UserId = "elsamina" };
+        var after = new UserDataDto { UserId = "elsamina" };
+        _httpService.SendAsync<UserDataDto>(Arg.Any<HttpRequest>()).Returns(
+            new HttpResponse<UserDataDto> { Data = before, StatusCode = HttpStatusCode.OK },
+            new HttpResponse<UserDataDto> { Data = after, StatusCode = HttpStatusCode.OK });
+        await _userDataService.GetUserData("Elsa Mina");
+
+        // Act
+        var latest = await _userDataService.GetLatestUserDataAsync("Elsa Mina");
+        var cached = await _userDataService.GetUserData("Elsa Mina");
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(latest, Is.SameAs(after));
+            Assert.That(cached, Is.SameAs(after));
+        }
+    }
 }

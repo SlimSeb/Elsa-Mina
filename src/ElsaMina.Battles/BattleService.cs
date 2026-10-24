@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using ElsaMina.Battles.Replays;
+using ElsaMina.Battles.Results;
 using ElsaMina.Core;
 using ElsaMina.Core.Services.Config;
 using ElsaMina.Core.Utils;
@@ -12,20 +14,31 @@ public class BattleService : IBattleService
     private readonly IBot _bot;
     private readonly IConfiguration _configuration;
     private readonly ILadderingService _ladderingService;
+    private readonly IBattleResultsService _battleResultsService;
+    private readonly IReplaySavingService _replaySavingService;
     private readonly ConcurrentDictionary<string, BattleContext> _contexts = new();
 
     public BattleService(IBattleMessageParser messageParser,
         IBattleDecisionService decisionService,
         IBot bot,
         IConfiguration configuration,
-        ILadderingService ladderingService)
+        ILadderingService ladderingService,
+        IBattleResultsService battleResultsService,
+        IReplaySavingService replaySavingService)
     {
         _messageParser = messageParser;
         _decisionService = decisionService;
         _bot = bot;
         _configuration = configuration;
         _ladderingService = ladderingService;
+        _battleResultsService = battleResultsService;
+        _replaySavingService = replaySavingService;
     }
+
+    public IReadOnlyList<BattleContext> GetBattlesInProgress() => _contexts.Values
+        .Where(context => !string.IsNullOrEmpty(context.SideId) && !context.IsBattleOver)
+        .OrderBy(context => context.RoomId, StringComparer.Ordinal)
+        .ToList();
 
     public async Task HandleMessageAsync(string[] parts, string roomId, CancellationToken cancellationToken = default)
     {
@@ -35,6 +48,7 @@ public class BattleService : IBattleService
         }
 
         var context = _contexts.GetOrAdd(roomId, id => new BattleContext(id));
+        context.Lines.Add(string.Join("|", parts));
         if (!_messageParser.TryApplyMessage(parts, roomId, context, out var result))
         {
             return;
@@ -45,19 +59,38 @@ public class BattleService : IBattleService
             _bot.Say(roomId, "/timer on");
             _bot.Say(roomId, "Battle started. Good luck!");
             context.HasAnnouncedStart = true;
+            _battleResultsService.OnBattleStarted(context);
         }
 
         if (result.Type == BattleMessageType.BattleEnded)
         {
+            // Spectated battles end too (and replay their |win| when joined late), only ours count
+            var isOurBattle = !string.IsNullOrEmpty(context.SideId);
+            var outcome = GetOutcome(result);
             if (!context.HasAnnouncedEnd)
             {
-                AnnounceBattleEnd(roomId, result);
+                AnnounceBattleEnd(roomId, outcome);
                 context.HasAnnouncedEnd = true;
+            }
+
+            if (isOurBattle)
+            {
+                if (outcome != null)
+                {
+                    _battleResultsService.OnBattleEnded(context, outcome.Value);
+                }
+
+                // Its /savereplay goes to the battle room, so before /leave
+                await _replaySavingService.OnBattleEndedAsync(context, cancellationToken);
             }
 
             _bot.Say(roomId, "/leave");
             _contexts.TryRemove(roomId, out _);
-            _ladderingService.OnBattleEnded();
+            if (isOurBattle)
+            {
+                _ladderingService.OnBattleEnded();
+            }
+
             return;
         }
 
@@ -77,23 +110,35 @@ public class BattleService : IBattleService
         }
     }
 
-    private void AnnounceBattleEnd(string roomId, BattleMessageResult result)
+    /// <summary>
+    /// Null when the server did not name the winner.
+    /// </summary>
+    private BattleOutcome? GetOutcome(BattleMessageResult result)
     {
         if (result.IsTie)
         {
-            _bot.Say(roomId, "Battle ended in a tie. GG!");
-            return;
+            return BattleOutcome.Tied;
         }
 
         if (string.IsNullOrWhiteSpace(result.WinnerName))
         {
-            _bot.Say(roomId, "Battle ended. GG!");
-            return;
+            return null;
         }
 
-        var winnerId = result.WinnerName.ToLowerAlphaNum();
-        var botId = _configuration.Name.ToLowerAlphaNum();
-        var message = winnerId == botId ? "GG! I won." : "GG! I lost.";
+        return result.WinnerName.ToLowerAlphaNum() == _configuration.Name.ToLowerAlphaNum()
+            ? BattleOutcome.Won
+            : BattleOutcome.Lost;
+    }
+
+    private void AnnounceBattleEnd(string roomId, BattleOutcome? outcome)
+    {
+        var message = outcome switch
+        {
+            BattleOutcome.Tied => "Battle ended in a tie. GG!",
+            BattleOutcome.Won => "GG! I won.",
+            BattleOutcome.Lost => "GG! I lost.",
+            _ => "Battle ended. GG!"
+        };
         _bot.Say(roomId, message);
     }
 

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using ElsaMina.Battles;
 using ElsaMina.Cloud;
 using ElsaMina.Cloud.S3;
 using ElsaMina.Commands;
@@ -12,7 +13,7 @@ namespace ElsaMina.Console.Startup;
 /// Les paramètres lus depuis config.json. Chaque projet voit que l'interface de paramètres qu'il définit lui-même
 /// </summary>
 public class Configuration : ICommandsConfiguration, IDatabaseConfiguration, IS3CredentialsProvider,
-    IGoogleServiceAccountConfiguration
+    IGoogleServiceAccountConfiguration, IBattlesConfiguration
 {
     public LogLevel LogLevel { get; set; } = LogLevel.Info;
     public string Host { get; set; }
@@ -70,4 +71,5 @@ public class Configuration : ICommandsConfiguration, IDatabaseConfiguration, IS3
     public string LokiApiKey { get; set; } = string.Empty;
     public string OtlpEndpoint { get; set; } = string.Empty;
     public string OltpHeaders { get; set; } = string.Empty;
+    public string ReplaysDirectory { get; set; } = string.Empty;
 }

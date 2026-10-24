@@ -88,6 +88,7 @@ public abstract class MiniPokeEncoder : IMiniPokeEncoder
 
         WriteField(observation.Field, state);
         WriteMask(observation.Mask, state);
+        WriteExtraInputs(observation, state);
         MapTeamSlots(observation, context);
         MapMoveSlots(observation, context);
         return observation;
@@ -108,6 +109,15 @@ public abstract class MiniPokeEncoder : IMiniPokeEncoder
     /// The field vector: weather, terrains, side conditions, counters.
     /// </summary>
     protected abstract void WriteField(float[] field, TrackedBattleState state);
+
+    /// <summary>
+    /// The inputs a version adds after the six every version shares (<see cref="BattleObservation.ExtraIds"/>,
+    /// <see cref="BattleObservation.ExtraFeatures"/>): minipoke-v2's set priors and history.
+    /// </summary>
+    protected virtual void WriteExtraInputs(BattleObservation observation, TrackedBattleState state)
+    {
+        // V1 models read the six shared inputs only
+    }
 
     /// <summary>
     /// Fails loudly at startup when the spec's feature sizes aren't the ones this encoder writes: a mismatch would
@@ -136,12 +146,15 @@ public abstract class MiniPokeEncoder : IMiniPokeEncoder
             return Spec.UnknownId;
         }
 
-        if (string.IsNullOrEmpty(pokemon.Item))
-        {
-            return Spec.PadId;
-        }
+        return string.IsNullOrEmpty(pokemon.Item) ? Spec.PadId : HashedItemId(pokemon.Item);
+    }
 
-        var hash = Crc32.HashToUInt32(Encoding.UTF8.GetBytes(pokemon.Item));
+    /// <summary>
+    /// The id of a known item: items have no vocabulary, only hash buckets.
+    /// </summary>
+    protected long HashedItemId(string item)
+    {
+        var hash = Crc32.HashToUInt32(Encoding.UTF8.GetBytes(item));
         return _firstHashedItemId + hash % (uint)Spec.ItemHash.Buckets;
     }
 
@@ -161,7 +174,7 @@ public abstract class MiniPokeEncoder : IMiniPokeEncoder
         return ability == null ? Spec.UnknownId : VocabularyId(Spec.Vocabularies.Ability, ability);
     }
 
-    private long VocabularyId(Dictionary<string, long> vocabulary, string name)
+    protected long VocabularyId(Dictionary<string, long> vocabulary, string name)
     {
         return vocabulary.TryGetValue(ShowdownId.ToId(name), out var id) ? id : Spec.UnknownId;
     }

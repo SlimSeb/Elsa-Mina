@@ -12,6 +12,7 @@ namespace ElsaMina.Battles.Strategies.MiniPoke;
 public sealed class MiniPokeOnnxModel : IMiniPokeModel, IDisposable
 {
     private readonly InferenceSession _session;
+    private readonly Dictionary<string, int[]> _inputShapes = [];
 
     public MiniPokeOnnxModel(MiniPokeModelOptions options)
     {
@@ -26,6 +27,12 @@ public sealed class MiniPokeOnnxModel : IMiniPokeModel, IDisposable
         // Tiny model: one thread per call beats thread-pool overhead
         sessionOptions.IntraOpNumThreads = 1;
         _session = new InferenceSession(options.ModelPath, sessionOptions);
+        foreach (var (name, metadata) in _session.InputMetadata)
+        {
+            // One observation: the batch dimension is dynamic
+            _inputShapes[name] = [1, ..metadata.Dimensions.Skip(1)];
+        }
+
         Log.Information("{Strategy} battle model loaded from {Path}", options.Strategy, options.ModelPath);
     }
 
@@ -49,6 +56,10 @@ public sealed class MiniPokeOnnxModel : IMiniPokeModel, IDisposable
             NamedOnnxValue.CreateFromTensor("mask",
                 new DenseTensor<bool>(observation.Mask, [1, BattleObservation.ActionCount]))
         };
+        inputs.AddRange(observation.ExtraIds.Select(pair =>
+            NamedOnnxValue.CreateFromTensor(pair.Key, new DenseTensor<long>(pair.Value, _inputShapes[pair.Key]))));
+        inputs.AddRange(observation.ExtraFeatures.Select(pair =>
+            NamedOnnxValue.CreateFromTensor(pair.Key, new DenseTensor<float>(pair.Value, _inputShapes[pair.Key]))));
 
         using var results = _session.Run(inputs);
         var logits = results.First(result => result.Name == "logits").AsEnumerable<float>().ToArray();

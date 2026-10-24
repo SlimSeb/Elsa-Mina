@@ -12,4 +12,8 @@ public class UserDataRankingDto
     public double Rpr { get; set; }
     [JsonPropertyName("rprd")]
     public double Rprd { get; set; }
+    [JsonPropertyName("w")]
+    public int Wins { get; set; }
+    [JsonPropertyName("l")]
+    public int Losses { get; set; }
 }

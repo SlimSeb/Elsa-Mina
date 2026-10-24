@@ -102,6 +102,7 @@ public class BattleDex : IBattleDex
             entry.Forme,
             entry.Types,
             baseStats,
-            entry.Abilities?.Values.ToList() ?? []);
+            entry.Abilities?.Values.ToList() ?? [],
+            entry.BattleOnly ?? []);
     }
 }

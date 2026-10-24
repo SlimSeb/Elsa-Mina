@@ -15,6 +15,7 @@ import logging
 import random
 import threading
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
@@ -24,10 +25,10 @@ from poke_env.player import Player, SimpleHeuristicsPlayer
 from encoder import (
     action_to_order,
     collate,
-    encode,
     fainted_counts,
     order_to_compact_action,
 )
+from encoder_v2 import EncoderV1, model_encoder
 from dataset import ShardWriter, discounted_returns
 from model import to_tensors
 
@@ -45,11 +46,14 @@ class InferenceBatcher:
 
     The model here is the *inference copy* (usually on CPU: for batches of a
     few dozen states, CPU beats MPS dispatch overhead on an M-series chip).
+    `encoder` builds that model's observations (V1 or v2): players feeding this
+    batcher encode with it.
     """
 
     def __init__(self, model: torch.nn.Module, device: torch.device,
                  max_batch: int = 256, max_wait_ms: float = 2.0):
         self.model = model.eval()
+        self.encoder = model_encoder(model)
         self.device = device
         self.max_batch = max_batch
         self.max_wait = max_wait_ms / 1000.0
@@ -126,11 +130,35 @@ class EpisodeCollector:
 # --------------------------------------------------------------------------
 # Rewards: win +-1 at the end, +-0.1 per faint (theirs - ours) after each decision
 # --------------------------------------------------------------------------
+@dataclass
+class Rewards:
+    """The defaults are V1's. Players share one instance, so changing `faint`
+    between iterations (faint annealing) applies to every learner seat."""
+    win: float = WIN_REWARD
+    loss: float = -WIN_REWARD
+    faint: float = FAINT_REWARD
+
+    @classmethod
+    def named(cls, name: str) -> "Rewards":
+        """"shaped": V1's (+-1, +-0.1 per faint). "winloss": 1 for a win, 0 otherwise,
+        nothing else (trained with gamma 1, undiscounted)."""
+        return cls() if name == "shaped" else cls(win=1.0, loss=0.0, faint=0.0)
+
+
+def faint_reward(total_states: int, anneal_states: Optional[int]) -> float:
+    """FAINT_REWARD, taken linearly to 0 over `anneal_states` training states (None or
+    0: constant, as in V1)."""
+    if not anneal_states:
+        return FAINT_REWARD
+    return FAINT_REWARD * max(0.0, 1.0 - total_states / anneal_states)
+
+
 class Trajectories:
     """Per-battle step lists. The reward of a step is the faint delta until the
     next decision, plus the result on the last step."""
 
-    def __init__(self):
+    def __init__(self, rewards: Optional[Rewards] = None):
+        self.rewards = rewards or Rewards()
         self._traj: Dict[str, List[dict]] = {}
         self._faints: Dict[str, Tuple[int, int]] = {}
 
@@ -140,7 +168,7 @@ class Trajectories:
         mine, theirs = fainted_counts(battle)
         if traj:  # reward for the previous decision = faint delta since then
             pm, pt = self._faints[tag]
-            traj[-1]["reward"] += FAINT_REWARD * ((theirs - pt) - (mine - pm))
+            traj[-1]["reward"] += self.rewards.faint * ((theirs - pt) - (mine - pm))
         self._faints[tag] = (mine, theirs)
         record["reward"] = 0.0
         traj.append(record)
@@ -153,11 +181,11 @@ class Trajectories:
             return traj
         mine, theirs = fainted_counts(battle)
         pm, pt = self._faints.pop(tag, (mine, theirs))
-        traj[-1]["reward"] += FAINT_REWARD * ((theirs - pt) - (mine - pm))
+        traj[-1]["reward"] += self.rewards.faint * ((theirs - pt) - (mine - pm))
         if battle.won:
-            traj[-1]["reward"] += WIN_REWARD
+            traj[-1]["reward"] += self.rewards.win
         elif battle.lost:
-            traj[-1]["reward"] -= WIN_REWARD
+            traj[-1]["reward"] += self.rewards.loss
         return traj
 
 
@@ -204,23 +232,27 @@ class RLPlayer(SafePlayer):
     """Plays with the network. If ``collector`` is set, records trajectories."""
 
     def __init__(self, batcher: InferenceBatcher, collector: Optional[EpisodeCollector] = None,
-                 greedy: bool = False, **kwargs):
+                 greedy: bool = False, rewards: Optional[Rewards] = None, labeler=None, **kwargs):
         super().__init__(**kwargs)
         self.batcher = batcher
         self.collector = collector
         self.greedy = greedy
-        self._trajectories = Trajectories()
+        self.labeler = labeler   # aux_labels.AuxLabeler: report decisions and sets to it
+        self._trajectories = Trajectories(rewards)
 
     async def _choose(self, battle):
-        obs = encode(battle)
+        obs = self.batcher.encoder.encode(battle)
         if not obs["mask"].any():
             return self.choose_random_move(battle)
 
         action, logp, value, _ = await self.batcher.act(obs, self.greedy)
 
+        ctx = self.labeler.decision(battle, action, obs["mask"]) if self.labeler else None
         if self.collector is not None:
-            self._trajectories.step(battle, {"obs": obs, "action": action, "logp": logp,
-                                             "value": value})
+            record = {"obs": obs, "action": action, "logp": logp, "value": value}
+            if ctx is not None:
+                record["aux_ctx"] = ctx
+            self._trajectories.step(battle, record)
         return action_to_order(action, battle)
 
     def _on_finished(self, battle) -> None:
@@ -233,11 +265,14 @@ class RLPlayer(SafePlayer):
 # written once it ends, with the discounted return from every decision.
 # --------------------------------------------------------------------------
 class _RecordingPlayer(SafePlayer):
-    def __init__(self, writer: ShardWriter, gamma: float, epsilon: float, **kwargs):
+    """`encoder` builds the recorded observations: the student's."""
+
+    def __init__(self, writer: ShardWriter, gamma: float, epsilon: float, encoder=None, **kwargs):
         super().__init__(**kwargs)
         self.writer = writer
         self.gamma = gamma
         self.epsilon = epsilon
+        self.encoder = encoder or EncoderV1()
         self._trajectories = Trajectories()
 
     def _record(self, battle, obs, probs, action, value=0.0) -> None:
@@ -260,7 +295,7 @@ class TeacherPlayer(_RecordingPlayer):
 
     async def _choose(self, battle):
         order, _ = SimpleHeuristicsPlayer.choose_singles_move(battle)
-        obs = encode(battle)
+        obs = self.encoder.encode(battle)
         action = order_to_compact_action(order, battle)
         if action is not None and obs["mask"][action]:
             probs = np.zeros(len(obs["mask"]), dtype=np.float32)
@@ -273,19 +308,25 @@ class TeacherPlayer(_RecordingPlayer):
 
 class DistillPlayer(_RecordingPlayer):
     """Plays a trained model's sampled moves (a uniformly random legal move with
-    probability ``epsilon``) and records the model's full distribution and value."""
+    probability ``epsilon``) and records the model's full distribution and value.
+
+    The teacher (``batcher``'s model) sees the battle through its own encoder, the
+    recorded sample is the student's ``encoder``'s view of the same state: a V1
+    teacher can train a v2 student. Every encoder shares V1's action space and mask.
+    """
 
     def __init__(self, batcher: InferenceBatcher, writer: ShardWriter, gamma: float,
-                 epsilon: float, **kwargs):
-        super().__init__(writer, gamma, epsilon, **kwargs)
+                 epsilon: float, encoder=None, **kwargs):
+        super().__init__(writer, gamma, epsilon, encoder=encoder or batcher.encoder, **kwargs)
         self.batcher = batcher
 
     async def _choose(self, battle):
-        obs = encode(battle)
+        obs = self.batcher.encoder.encode(battle)
         if not obs["mask"].any():
             return self.choose_random_move(battle)
         action, _, value, probs = await self.batcher.act(obs)
         if random.random() < self.epsilon:
             action = int(random.choice(np.flatnonzero(obs["mask"])))
-        self._record(battle, obs, probs, action, value)
+        student = obs if self.encoder is self.batcher.encoder else self.encoder.encode(battle)
+        self._record(battle, student, probs, action, value)
         return action_to_order(action, battle)

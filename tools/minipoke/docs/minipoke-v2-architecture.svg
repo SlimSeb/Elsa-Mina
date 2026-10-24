@@ -1,0 +1,458 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="1431" viewBox="0 0 1140 1431">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8c959f"/></marker></defs>
+<rect width="1140" height="1431" rx="14" fill="#ffffff"/>
+<text x="30.0" y="50.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="28" font-weight="700" fill="#1f2328" text-anchor="start">minipoke-v2</text>
+<text x="30.0" y="78.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#59636e" text-anchor="start">MiniPokeV2_1M (strategy minipokev2-1m) · 974,980 parameters · one forward pass per decision</text>
+<rect x="834.0" y="34.0" width="14.0" height="14.0" rx="3" fill="#fff5df" stroke="#d4a72c" stroke-width="1.2"/>
+<text x="856.0" y="46.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">added by v2 (set priors, history)</text>
+<rect x="834.0" y="58.0" width="22.0" height="0.1" rx="0" fill="none" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="864.0" y="66.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">move vectors skipping the transformer</text>
+<text x="30.0" y="112.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#59636e" text-anchor="start" letter-spacing="1.2">INPUTS · ENCODER_V2.PY</text>
+<rect x="30.0" y="124.0" width="330.0" height="247.0" rx="10" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.2"/>
+<text x="46.0" y="152.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="start">Field &amp; history</text>
+<text x="46.0" y="171.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">one token</text>
+<rect x="38.0" y="239.0" width="314.0" height="99.0" rx="6" fill="#fff5df" stroke="#d4a72c" stroke-width="1.2"/>
+<text x="46.0" y="200.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2328" text-anchor="start">field</text>
+<text x="344.0" y="200.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[81]</text>
+<text x="46.0" y="217.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">weather, terrain, hazards, screens,</text>
+<text x="46.0" y="234.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">turn, tera used, Pokémon left</text>
+<text x="46.0" y="256.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#9a6700" text-anchor="start">hist_ids</text>
+<text x="344.0" y="256.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[2]</text>
+<text x="46.0" y="273.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">last move of each active Pokémon</text>
+<text x="46.0" y="295.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#9a6700" text-anchor="start">hist_feats</text>
+<text x="344.0" y="295.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[8]</text>
+<text x="46.0" y="312.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">turns on the field, switches by choice,</text>
+<text x="46.0" y="329.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">protect counters, same move twice</text>
+<rect x="385.0" y="124.0" width="330.0" height="247.0" rx="10" fill="#f6f8fa" stroke="#d1d9e0" stroke-width="1.2"/>
+<text x="401.0" y="152.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#1f2328" text-anchor="start">Pokémon &amp; moves</text>
+<text x="401.0" y="171.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">12 Pokémon: our 6, then their 6</text>
+<text x="401.0" y="200.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2328" text-anchor="start">mon_ids</text>
+<text x="699.0" y="200.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[12, 3]</text>
+<text x="401.0" y="217.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">species, item, ability</text>
+<text x="401.0" y="239.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2328" text-anchor="start">mon_feats</text>
+<text x="699.0" y="239.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[12, 84]</text>
+<text x="401.0" y="256.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">HP, status, boosts, types, tera,</text>
+<text x="401.0" y="273.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">base stats, level, volatile effects</text>
+<text x="401.0" y="295.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2328" text-anchor="start">move_ids</text>
+<text x="699.0" y="295.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[12, 4]</text>
+<text x="401.0" y="317.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#1f2328" text-anchor="start">move_feats</text>
+<text x="699.0" y="317.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[12, 4, 39]</text>
+<text x="401.0" y="334.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">power, accuracy, PP, type, category,</text>
+<text x="401.0" y="351.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">effectiveness against their active</text>
+<rect x="740.0" y="124.0" width="330.0" height="247.0" rx="10" fill="#fff5df" stroke="#d4a72c" stroke-width="1.2"/>
+<text x="756.0" y="152.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" font-weight="700" fill="#9a6700" text-anchor="start">Set priors</text>
+<text x="756.0" y="171.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">their 6, from gen 9 random battle sets</text>
+<text x="756.0" y="200.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#9a6700" text-anchor="start">cand_ids</text>
+<text x="1054.0" y="200.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[6, 8]</text>
+<text x="756.0" y="222.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#9a6700" text-anchor="start">cand_feats</text>
+<text x="1054.0" y="222.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[6, 8, 40]</text>
+<text x="756.0" y="239.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">8 likeliest moves not revealed yet, each</text>
+<text x="756.0" y="256.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">with the share of possible sets having it</text>
+<text x="756.0" y="278.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#9a6700" text-anchor="start">prior_ids</text>
+<text x="1054.0" y="278.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[6, 2, 4]</text>
+<text x="756.0" y="300.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#9a6700" text-anchor="start">prior_w</text>
+<text x="1054.0" y="300.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[6, 2, 4]</text>
+<text x="756.0" y="317.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">ability and item weights</text>
+<text x="756.0" y="339.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" font-weight="600" fill="#9a6700" text-anchor="start">prior_feats</text>
+<text x="1054.0" y="339.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="end">[6, 24]</text>
+<text x="756.0" y="356.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">tera types, sets left, Choice item possible</text>
+<line x1="195.0" y1="373.0" x2="195.0" y2="395.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="550.0" y1="373.0" x2="550.0" y2="395.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="905.0" y1="373.0" x2="905.0" y2="395.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="30.0" y="397.0" width="1040.0" height="40.0" rx="8" fill="#eef6ff" stroke="#8fc1f2" stroke-width="1.2"/>
+<text x="46.0" y="422.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" text-anchor="start"><tspan fill="#0550ae" font-weight="700">Embedding tables</tspan><tspan fill="#59636e" font-weight="400">  ·  103k</tspan></text>
+<text x="1054.0" y="422.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#1f2328" text-anchor="end">species 1,602 × 32 · item 1,026 × 16 (hashed) · ability 322 × 16 · move 956 × 32</text>
+<line x1="195.0" y1="439.0" x2="195.0" y2="461.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="550.0" y1="439.0" x2="550.0" y2="461.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="905.0" y1="439.0" x2="905.0" y2="461.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="30.0" y="463.0" width="330.0" height="160.0" rx="10" fill="#eef6ff" stroke="#8fc1f2" stroke-width="1.2"/>
+<text x="46.0" y="491.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" text-anchor="start"><tspan fill="#0550ae" font-weight="700">Field MLP</tspan><tspan fill="#59636e" font-weight="400">  ·  73k</tspan></text>
+<text x="46.0" y="513.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#1f2328" text-anchor="start">153 → 256 → 128, LayerNorm</text>
+<rect x="38.0" y="548.0" width="314.0" height="50.0" rx="6" fill="#fff5df" stroke="#d4a72c" stroke-width="1.2"/>
+<text x="46.0" y="541.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#1f2328" text-anchor="start">field</text>
+<text x="344.0" y="541.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#59636e" text-anchor="end">81</text>
+<text x="46.0" y="561.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#9a6700" text-anchor="start">last move embeddings</text>
+<text x="344.0" y="561.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#59636e" text-anchor="end">2 × 32</text>
+<text x="46.0" y="581.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#9a6700" text-anchor="start">hist_feats</text>
+<text x="344.0" y="581.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#59636e" text-anchor="end">8</text>
+<rect x="385.0" y="463.0" width="685.0" height="104.0" rx="10" fill="#eef6ff" stroke="#8fc1f2" stroke-width="1.2"/>
+<text x="401.0" y="491.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" text-anchor="start"><tspan fill="#0550ae" font-weight="700">Move MLP, shared by every move</tspan><tspan fill="#59636e" font-weight="400">  ·  52k</tspan></text>
+<text x="401.0" y="513.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#1f2328" text-anchor="start">73 → 256 → 128, LayerNorm</text>
+<text x="401.0" y="535.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" text-anchor="start"><tspan fill="#1f2328" font-weight="400">in: move embedding 32 + move_feats 39</tspan><tspan fill="#9a6700" font-weight="400"> + known / candidate flag + share of sets</tspan></text>
+<text x="401.0" y="555.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" text-anchor="start"><tspan fill="#1f2328" font-weight="400">on the 48 known moves (12 Pokémon × 4)</tspan><tspan fill="#9a6700" font-weight="400"> and their 48 candidate moves (6 × 8)</tspan></text>
+<line x1="555.0" y1="569.0" x2="555.0" y2="601.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="565.0" y="590.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#59636e" text-anchor="start">move vectors</text>
+<line x1="910.0" y1="569.0" x2="910.0" y2="601.0" stroke="#d4a72c" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="920.0" y="590.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9a6700" text-anchor="start">candidate vectors</text>
+<rect x="385.0" y="603.0" width="685.0" height="164.0" rx="10" fill="#eef6ff" stroke="#8fc1f2" stroke-width="1.2"/>
+<text x="401.0" y="631.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" text-anchor="start"><tspan fill="#0550ae" font-weight="700">Pokémon MLP</tspan><tspan fill="#59636e" font-weight="400">  ·  249k</tspan></text>
+<text x="401.0" y="653.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#1f2328" text-anchor="start">844 → 256 → 128, LayerNorm, then + a side embedding (ours / theirs)</text>
+<text x="401.0" y="683.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#1f2328" text-anchor="start">species, item, ability embeddings</text>
+<text x="701.0" y="683.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#59636e" text-anchor="end">64</text>
+<text x="401.0" y="703.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#1f2328" text-anchor="start">mon_feats</text>
+<text x="701.0" y="703.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#59636e" text-anchor="end">84</text>
+<text x="401.0" y="723.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#1f2328" text-anchor="start">its 4 move vectors</text>
+<text x="701.0" y="723.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#59636e" text-anchor="end">4 × 128</text>
+<rect x="728.0" y="665.0" width="334.0" height="92.0" rx="6" fill="#fff5df" stroke="#d4a72c" stroke-width="1.2"/>
+<text x="740.0" y="683.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#9a6700" text-anchor="start">their Pokémon only (zeros for ours):</text>
+<text x="740.0" y="703.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#9a6700" text-anchor="start">candidates' mean, weighted by share</text>
+<text x="1050.0" y="703.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#59636e" text-anchor="end">128</text>
+<text x="740.0" y="723.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#9a6700" text-anchor="start">ability and item prior embeddings</text>
+<text x="1050.0" y="723.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#59636e" text-anchor="end">16 + 16</text>
+<text x="740.0" y="743.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#9a6700" text-anchor="start">prior_feats</text>
+<text x="1050.0" y="743.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#59636e" text-anchor="end">24</text>
+<rect x="30.0" y="813.0" width="63.7" height="36.0" rx="7" fill="#effbf2" stroke="#8fd9a3" stroke-width="1.2"/>
+<text x="61.9" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">actor</text>
+<rect x="99.7" y="813.0" width="63.7" height="36.0" rx="7" fill="#effbf2" stroke="#8fd9a3" stroke-width="1.2"/>
+<text x="131.6" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">critic</text>
+<rect x="169.5" y="813.0" width="63.7" height="36.0" rx="7" fill="#eaeef2" stroke="#afb8c1" stroke-width="1.2"/>
+<text x="201.3" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">field</text>
+<rect x="239.2" y="813.0" width="63.7" height="36.0" rx="7" fill="#d8ecff" stroke="#54aeff" stroke-width="1.2"/>
+<text x="271.1" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">our 1</text>
+<rect x="308.9" y="813.0" width="63.7" height="36.0" rx="7" fill="#d8ecff" stroke="#54aeff" stroke-width="1.2"/>
+<text x="340.8" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">our 2</text>
+<rect x="378.7" y="813.0" width="63.7" height="36.0" rx="7" fill="#d8ecff" stroke="#54aeff" stroke-width="1.2"/>
+<text x="410.5" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">our 3</text>
+<rect x="448.4" y="813.0" width="63.7" height="36.0" rx="7" fill="#d8ecff" stroke="#54aeff" stroke-width="1.2"/>
+<text x="480.3" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">our 4</text>
+<rect x="518.1" y="813.0" width="63.7" height="36.0" rx="7" fill="#d8ecff" stroke="#54aeff" stroke-width="1.2"/>
+<text x="550.0" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">our 5</text>
+<rect x="587.9" y="813.0" width="63.7" height="36.0" rx="7" fill="#d8ecff" stroke="#54aeff" stroke-width="1.2"/>
+<text x="619.7" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">our 6</text>
+<rect x="657.6" y="813.0" width="63.7" height="36.0" rx="7" fill="#ffe6ea" stroke="#ff8f9c" stroke-width="1.2"/>
+<text x="689.5" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">their 1</text>
+<rect x="727.3" y="813.0" width="63.7" height="36.0" rx="7" fill="#ffe6ea" stroke="#ff8f9c" stroke-width="1.2"/>
+<text x="759.2" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">their 2</text>
+<rect x="797.1" y="813.0" width="63.7" height="36.0" rx="7" fill="#ffe6ea" stroke="#ff8f9c" stroke-width="1.2"/>
+<text x="828.9" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">their 3</text>
+<rect x="866.8" y="813.0" width="63.7" height="36.0" rx="7" fill="#ffe6ea" stroke="#ff8f9c" stroke-width="1.2"/>
+<text x="898.7" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">their 4</text>
+<rect x="936.5" y="813.0" width="63.7" height="36.0" rx="7" fill="#ffe6ea" stroke="#ff8f9c" stroke-width="1.2"/>
+<text x="968.4" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">their 5</text>
+<rect x="1006.3" y="813.0" width="63.7" height="36.0" rx="7" fill="#ffe6ea" stroke="#ff8f9c" stroke-width="1.2"/>
+<text x="1038.1" y="836.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1f2328" text-anchor="middle">their 6</text>
+<line x1="201.3" y1="625.0" x2="201.3" y2="810.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<path d="M243.2,807.0 L243.2,801.0 L1066.0,801.0 L1066.0,807.0" fill="none" stroke="#8c959f" stroke-width="1.3"/>
+<line x1="727.5" y1="769.0" x2="727.5" y2="800.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="96.7" y="803.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#59636e" text-anchor="middle">learned</text>
+<line x1="61.9" y1="851.0" x2="61.9" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="131.6" y1="851.0" x2="131.6" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="201.3" y1="851.0" x2="201.3" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="271.1" y1="851.0" x2="271.1" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="340.8" y1="851.0" x2="340.8" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="410.5" y1="851.0" x2="410.5" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="480.3" y1="851.0" x2="480.3" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="550.0" y1="851.0" x2="550.0" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="619.7" y1="851.0" x2="619.7" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="689.5" y1="851.0" x2="689.5" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="759.2" y1="851.0" x2="759.2" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="828.9" y1="851.0" x2="828.9" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="898.7" y1="851.0" x2="898.7" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="968.4" y1="851.0" x2="968.4" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="1038.1" y1="851.0" x2="1038.1" y2="881.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="30.0" y="883.0" width="1040.0" height="178.0" rx="10" fill="#f6f1ff" stroke="#c8a6ff" stroke-width="1.2"/>
+<text x="48.0" y="917.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" text-anchor="start"><tspan fill="#6639ba" font-weight="700">Transformer encoder × 3</tspan><tspan fill="#59636e" font-weight="400">  ·  398k</tspan></text>
+<text x="48.0" y="945.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12.5" font-weight="400" fill="#1f2328" text-anchor="start">15 tokens × 128 · pre-LayerNorm · 4 heads · feed-forward 256, GELU</text>
+<text x="48.0" y="979.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1f2328" text-anchor="start">The field and Pokémon tokens attend to each other.</text>
+<text x="48.0" y="1000.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1f2328" text-anchor="start">The actor and the critic read them and themselves, never each other.</text>
+<text x="48.0" y="1021.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#1f2328" text-anchor="start">A final LayerNorm follows the last layer.</text>
+<text x="1046.0" y="903.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#59636e" text-anchor="end">attention mask: row attends to column</text>
+<rect x="911.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="920.0" y="923.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="923.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="932.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="929.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="932.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="941.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="941.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="941.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="950.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="950.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="950.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="959.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="959.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="959.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="968.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="968.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="968.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="977.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="977.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="977.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="986.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="986.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="986.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="995.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="995.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="995.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="1004.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="1004.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="1004.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="1013.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="1013.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="1013.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="1022.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="1022.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="1022.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="1031.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="1031.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="1031.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="1040.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="1040.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="1040.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="911.0" y="1049.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="920.0" y="1049.0" width="8" height="8" rx="1.5" fill="#e7e1f2" fill-opacity="1"/>
+<rect x="929.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="938.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="947.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="956.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="965.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="974.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="983.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="992.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1001.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1010.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1019.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1028.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<rect x="1037.0" y="1049.0" width="8" height="8" rx="1.5" fill="#8250df" fill-opacity="0.85"/>
+<text x="915.0" y="918.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#59636e" text-anchor="middle">A</text>
+<text x="906.0" y="930.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#59636e" text-anchor="end">A</text>
+<text x="924.0" y="918.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#59636e" text-anchor="middle">C</text>
+<text x="906.0" y="939.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#59636e" text-anchor="end">C</text>
+<text x="933.0" y="918.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#59636e" text-anchor="middle">F</text>
+<text x="906.0" y="948.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#59636e" text-anchor="end">F</text>
+<text x="964.5" y="918.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#59636e" text-anchor="middle">ours</text>
+<text x="906.0" y="980.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#59636e" text-anchor="end">ours</text>
+<text x="1018.5" y="918.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#59636e" text-anchor="middle">theirs</text>
+<text x="906.0" y="1034.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#59636e" text-anchor="end">theirs</text>
+<line x1="195.0" y1="1063.0" x2="195.0" y2="1099.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="205.0" y="1086.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#59636e" text-anchor="start">critic</text>
+<line x1="550.0" y1="1063.0" x2="550.0" y2="1099.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="560.0" y="1086.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#59636e" text-anchor="start">actor + our 6 Pokémon</text>
+<line x1="905.0" y1="1063.0" x2="905.0" y2="1099.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="915.0" y="1086.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#59636e" text-anchor="start">actor + our active Pokémon</text>
+<rect x="30.0" y="1101.0" width="330.0" height="118.0" rx="10" fill="#effbf2" stroke="#8fd9a3" stroke-width="1.2"/>
+<text x="46.0" y="1129.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" text-anchor="start"><tspan fill="#1a7f37" font-weight="700">Value head</tspan><tspan fill="#59636e" font-weight="400">  ·  17k</tspan></text>
+<text x="46.0" y="1153.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#1f2328" text-anchor="start">critic → 128 → 1</text>
+<text x="46.0" y="1177.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">PPO's critic during training;</text>
+<text x="46.0" y="1195.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">ElsaMina only logs it</text>
+<rect x="385.0" y="1101.0" width="330.0" height="118.0" rx="10" fill="#effbf2" stroke="#8fd9a3" stroke-width="1.2"/>
+<text x="401.0" y="1129.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" text-anchor="start"><tspan fill="#1a7f37" font-weight="700">Switch head (pointer)</tspan><tspan fill="#59636e" font-weight="400">  ·  33k</tspan></text>
+<text x="401.0" y="1153.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#1f2328" text-anchor="start">[actor ; our Pokémon i] 256 → 128 → 1</text>
+<text x="401.0" y="1177.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">one logit per team slot i = 1 to 6</text>
+<rect x="740.0" y="1101.0" width="330.0" height="118.0" rx="10" fill="#effbf2" stroke="#8fd9a3" stroke-width="1.2"/>
+<text x="756.0" y="1129.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="15" text-anchor="start"><tspan fill="#1a7f37" font-weight="700">Move head (pointer)</tspan><tspan fill="#59636e" font-weight="400">  ·  50k</tspan></text>
+<text x="756.0" y="1153.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#1f2328" text-anchor="start">[actor ; active ; move j] 384 → 128 → 2</text>
+<text x="756.0" y="1177.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">logits for move j and tera + move j,</text>
+<text x="756.0" y="1195.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">j = 1 to 4</text>
+<path d="M1072.0,515.0 L1104.0,515.0 L1104.0,1171.0 L1073.0,1171.0" fill="none" stroke="#8c959f" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+<text x="1118.0" y="817.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" fill="#59636e" text-anchor="middle" transform="rotate(90 1118.0 817.0)">the active Pokémon's 4 move vectors</text>
+<line x1="195.0" y1="1221.0" x2="195.0" y2="1253.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<rect x="30.0" y="1255.0" width="330.0" height="44.0" rx="8" fill="#effbf2" stroke="#8fd9a3" stroke-width="1.2"/>
+<text x="195.0" y="1283.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13.5" text-anchor="middle"><tspan fill="#1f2328" font-weight="700">value</tspan><tspan fill="#59636e" font-weight="400">  one scalar</tspan></text>
+<rect x="386.0" y="1255.0" width="46.9" height="44.0" rx="5" fill="#dafbe1" stroke="#4ac26b" stroke-width="1.2"/>
+<text x="409.5" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">1</text>
+<rect x="434.9" y="1255.0" width="46.9" height="44.0" rx="5" fill="#dafbe1" stroke="#4ac26b" stroke-width="1.2"/>
+<text x="458.4" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">2</text>
+<rect x="483.9" y="1255.0" width="46.9" height="44.0" rx="5" fill="#dafbe1" stroke="#4ac26b" stroke-width="1.2"/>
+<text x="507.3" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">3</text>
+<rect x="532.8" y="1255.0" width="46.9" height="44.0" rx="5" fill="#dafbe1" stroke="#4ac26b" stroke-width="1.2"/>
+<text x="556.2" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">4</text>
+<rect x="581.7" y="1255.0" width="46.9" height="44.0" rx="5" fill="#dafbe1" stroke="#4ac26b" stroke-width="1.2"/>
+<text x="605.2" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">5</text>
+<rect x="630.6" y="1255.0" width="46.9" height="44.0" rx="5" fill="#dafbe1" stroke="#4ac26b" stroke-width="1.2"/>
+<text x="654.1" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">6</text>
+<text x="531.8" y="1319.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#59636e" text-anchor="middle">switch to slot 1-6</text>
+<rect x="679.6" y="1255.0" width="46.9" height="44.0" rx="5" fill="#d8ecff" stroke="#54aeff" stroke-width="1.2"/>
+<text x="703.0" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">1</text>
+<rect x="728.5" y="1255.0" width="46.9" height="44.0" rx="5" fill="#d8ecff" stroke="#54aeff" stroke-width="1.2"/>
+<text x="752.0" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">2</text>
+<rect x="777.4" y="1255.0" width="46.9" height="44.0" rx="5" fill="#d8ecff" stroke="#54aeff" stroke-width="1.2"/>
+<text x="800.9" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">3</text>
+<rect x="826.4" y="1255.0" width="46.9" height="44.0" rx="5" fill="#d8ecff" stroke="#54aeff" stroke-width="1.2"/>
+<text x="849.8" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">4</text>
+<text x="776.4" y="1319.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#59636e" text-anchor="middle">move 1-4</text>
+<rect x="875.3" y="1255.0" width="46.9" height="44.0" rx="5" fill="#efe4ff" stroke="#c8a6ff" stroke-width="1.2"/>
+<text x="898.8" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">1</text>
+<rect x="924.2" y="1255.0" width="46.9" height="44.0" rx="5" fill="#efe4ff" stroke="#c8a6ff" stroke-width="1.2"/>
+<text x="947.7" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">2</text>
+<rect x="973.1" y="1255.0" width="46.9" height="44.0" rx="5" fill="#efe4ff" stroke="#c8a6ff" stroke-width="1.2"/>
+<text x="996.6" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">3</text>
+<rect x="1022.1" y="1255.0" width="46.9" height="44.0" rx="5" fill="#efe4ff" stroke="#c8a6ff" stroke-width="1.2"/>
+<text x="1045.5" y="1282.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#1f2328" text-anchor="middle">4</text>
+<text x="972.1" y="1319.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#59636e" text-anchor="middle">tera + move 1-4</text>
+<line x1="550.0" y1="1221.0" x2="531.8" y2="1253.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<line x1="905.0" y1="1221.0" x2="874.3" y2="1253.0" stroke="#8c959f" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="727.5" y="1345.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#1f2328" text-anchor="middle">14 logits; illegal actions are masked with mask [14] and ElsaMina plays the best legal one</text>
+<line x1="30" y1="1365" x2="1070" y2="1365" stroke="#d1d9e0" stroke-width="1"/>
+<text x="30.0" y="1391.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12.5" font-weight="400" fill="#59636e" text-anchor="start">974,980 parameters: embeddings 103k · input MLPs 374k · transformer 398k · heads 99k</text>
+<text x="30.0" y="1411.0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" font-weight="400" fill="#59636e" text-anchor="start">tools/minipoke/model.py, small preset with encoder_version 2, history, cand_moves 8</text>
+</svg>
