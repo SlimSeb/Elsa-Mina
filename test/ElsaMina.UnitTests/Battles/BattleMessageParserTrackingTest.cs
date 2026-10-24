@@ -24,6 +24,12 @@ public class BattleMessageParserTrackingTest
     private static readonly string[] GARCHOMP_THEN_ZOROARK = ["p2: Garchomp", "p2: Zoroark"];
     private static readonly string[] GARCHOMP_MOVES = ["earthquake", "outrage", "stealthrock", "swordsdance"];
 
+    private static readonly string[] PROTOCOL_LINES =
+    [
+        "|switch|p1a: Garchomp|Garchomp, L80, M|280/280", "|switch|p2a: Tinkaton|Tinkaton, L82, F|100/100", "|turn|1",
+        "|move|p1a: Garchomp|Earthquake|p2a: Tinkaton", "|faint|p2a: Tinkaton"
+    ];
+
     private static readonly Dictionary<string, Dictionary<string, object>> OUR_TEAM = new()
     {
         [GARCHOMP] = SidePokemon(GARCHOMP, "Garchomp, L80, M", "280/280", "roughskin", "leftovers",
@@ -544,6 +550,80 @@ public class BattleMessageParserTrackingTest
 
         // Assert
         Assert.That(Garchomp.Moves["outrage"].CurrentPp, Is.EqualTo(15));
+    }
+
+    [Test]
+    public void Test_TryApplyMessage_ShouldRememberLastMoveUsed_UntilPokemonSwitchesOut()
+    {
+        // Arrange: a locked move is neither used nor revealed, so Earthquake stays the last one
+        StartBattle();
+        Apply("|move|p1a: Garchomp|Swords Dance|p1a: Garchomp");
+        Apply("|move|p1a: Garchomp|Earthquake|p2a: Tinkaton");
+        Apply("|move|p1a: Garchomp|Outrage|p2a: Tinkaton|[from]lockedmove");
+        var lastMove = Garchomp.LastMove?.Id;
+
+        // Act
+        Apply("|switch|p1a: Pelipper|Pelipper, L86, F|250/250");
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(lastMove, Is.EqualTo("earthquake"));
+            Assert.That(Garchomp.LastMove, Is.Null);
+        }
+    }
+
+    [Test]
+    public void Test_TryApplyMessage_ShouldCountProtects_WhenUsedInARow()
+    {
+        // Arrange
+        StartBattle();
+
+        // Act
+        Apply("|move|p2a: Tinkaton|Protect|p2a: Tinkaton");
+        Apply("|turn|2");
+        Apply("|move|p2a: Tinkaton|Protect|p2a: Tinkaton");
+
+        // Assert
+        Assert.That(Opponent("Tinkaton").ProtectCounter, Is.EqualTo(2));
+    }
+
+    [TestCase("|move|p2a: Tinkaton|Gigaton Hammer|p1a: Garchomp")]
+    [TestCase("|move|p2a: Tinkaton|Protect||[still]")]
+    [TestCase("|cant|p2a: Tinkaton|par")]
+    [TestCase("|-activate|p2a: Tinkaton|move: Feint")]
+    [TestCase("|switch|p2a: Zapdos|Zapdos, L80|100/100")]
+    public void Test_TryApplyMessage_ShouldResetProtectCounter_WhenProtectChainBreaks(string line)
+    {
+        // Arrange
+        StartBattle();
+        Apply("|move|p2a: Tinkaton|Protect|p2a: Tinkaton");
+        var counter = Opponent("Tinkaton").ProtectCounter;
+
+        // Act
+        Apply(line);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(counter, Is.EqualTo(1));
+            Assert.That(Opponent("Tinkaton").ProtectCounter, Is.Zero);
+        }
+    }
+
+    [Test]
+    public void Test_TryApplyMessage_ShouldKeepProtocolLines_WhenHistoryReadsThem()
+    {
+        // Arrange
+        StartBattle();
+
+        // Act
+        Apply("|move|p1a: Garchomp|Earthquake|p2a: Tinkaton");
+        Apply("|-damage|p2a: Tinkaton|40/100");
+        Apply("|faint|p2a: Tinkaton");
+
+        // Assert: the first turn's lines too, replayed in order once the request told us our side
+        Assert.That(Tracked.ProtocolLines.Select(line => string.Join('|', line)), Is.EqualTo(PROTOCOL_LINES));
     }
 
     [Test]

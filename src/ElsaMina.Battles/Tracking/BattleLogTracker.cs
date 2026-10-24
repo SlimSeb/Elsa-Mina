@@ -24,6 +24,7 @@ public class BattleLogTracker
     private static readonly HashSet<string> NON_REVEALING_CALLERS = ["Copycat", "Metronome", "Nature Power", "Round"];
     private static readonly HashSet<string> PLEDGES = ["Grass Pledge", "Water Pledge", "Fire Pledge"];
     private static readonly string[] FAILED_MOVE_SUFFIXES = ["[miss]", "[still]", "[notarget]"];
+    private static readonly HashSet<string> PROTOCOL_LOG_TYPES = ["turn", "move", "switch", "drag", "replace", "faint"];
 
     private readonly IBattleDex _dex;
     private readonly TrackedPokemonResolver _resolver;
@@ -36,6 +37,12 @@ public class BattleLogTracker
 
     public void Apply(string[] parts, TrackedBattleState state)
     {
+        // poke-env logs every line before parsing it, even one it then raises on
+        if (parts.Length > 1 && PROTOCOL_LOG_TYPES.Contains(parts[1]))
+        {
+            state.ProtocolLines.Add([..parts]);
+        }
+
         try
         {
             ApplyMessage([..parts], state);
@@ -363,7 +370,7 @@ public class BattleLogTracker
         mon = _resolver.Get(state, pokemon);
         if (!string.IsNullOrEmpty(overriddenMove))
         {
-            mon.Moved(move, use: false, reveal: reveal);
+            mon.Moved(move, use: false, reveal: reveal, failed: failed);
             if (!mon.Moves.TryGetValue(ShowdownId.ToMoveId(overriddenMove), out var overridden))
             {
                 throw new BattleTrackingException($"Unknown calling move {overriddenMove}");
@@ -374,11 +381,11 @@ public class BattleLogTracker
         else if (!failed && MOVES_CALLING_OTHERS.Contains(move))
         {
             // Pressure is only counted once the called move is known
-            mon.Moved(move, use, reveal);
+            mon.Moved(move, use, reveal, failed: failed);
         }
         else
         {
-            mon.Moved(move, use, reveal, pressure);
+            mon.Moved(move, use, reveal, pressure, failed);
         }
     }
 

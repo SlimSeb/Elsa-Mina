@@ -74,6 +74,21 @@ public static class PokeEnvNames
     };
 
     /// <summary>
+    /// poke-env's _PROTECT_COUNTER_MOVES (Move.is_protect_counter): the moves that raise Pokemon.protect_counter.
+    /// </summary>
+    public static readonly IReadOnlySet<string> ProtectCounterMoves =
+        new HashSet<string>(ProtectMoves) { "wideguard", "quickguard" };
+
+    /// <summary>
+    /// poke-env's _PROTECT_BREAKING_EFFECTS (Effect.breaks_protect): starting one resets the protect counter.
+    /// </summary>
+    public static readonly IReadOnlySet<string> ProtectBreakingEffects = new HashSet<string>
+    {
+        "FEINT", "G_MAX_ONE_BLOW", "G_MAX_RAPID_FLOW", "SHADOW_FORCE", "PHANTOM_FORCE", "HYPERSPACE_FURY",
+        "HYPERSPACE_HOLE"
+    };
+
+    /// <summary>
     /// Effects removed at the end of each turn (poke-env's _ENDS_ON_TURN_EFFECTS).
     /// </summary>
     public static readonly IReadOnlySet<string> EffectsEndingOnTurn = new HashSet<string>
