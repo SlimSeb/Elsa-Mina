@@ -108,16 +108,17 @@ def test_states_budget_drives_the_schedules(run_ppo):
 
 def test_best_needs_a_confirmed_win_rate(run_ppo):
     # it 1: candidate 0.9, confirmed 0.55 -> best; it 2: candidate 0.8, confirmed 0.50, and
-    # best.pt measured again at 0.53 -> not better; it 3: 0.52 does not beat best.pt's 0.53
-    FakeRollouts.eval_results = [0.9, 0.55, 0.8, 0.50, 0.52]
-    FakeRollouts.best_results = [0.53]
+    # best.pt measured again at 0.53 -> not better; it 3: 0.52 does not beat best.pt's 0.53;
+    # end: the final policy wins 0.45, best.pt 0.54 more -> (0.53 + 0.54) / 2 over 800
+    FakeRollouts.eval_results = [0.9, 0.55, 0.8, 0.50, 0.52, 0.45]
+    FakeRollouts.best_results = [0.53, 0.54]
     rows, ck = run_ppo("--size", "small", "--iterations", "3", "--eval-every", "1",
                        "--eval-battles", "200", "--confirm-battles", "400")
     assert [r["confirm_wr"] for r in rows] == ["0.55", "0.5", ""]
     assert [r["incumbent_wr"] for r in rows] == ["", "0.53", ""]
-    assert ck["state"]["best_iteration"] == 1
-    assert ck["state"]["best_wr"] == pytest.approx(0.53) and ck["state"]["best_n"] == 400
     assert [float(r["best_wr"]) for r in rows] == [0.55, 0.53, 0.53]
+    assert ck["state"]["best_iteration"] == 1 and ck["state"]["final_wr"] == 0.45
+    assert ck["state"]["best_wr"] == pytest.approx(0.535) and ck["state"]["best_n"] == 800
 
 
 def test_a_lucky_best_is_measured_again_and_replaced(run_ppo, tmp_path):
@@ -130,6 +131,19 @@ def test_a_lucky_best_is_measured_again_and_replaced(run_ppo, tmp_path):
     assert ck["state"]["best_iteration"] == 2
     assert (ck["state"]["best_wr"], ck["state"]["best_n"]) == (0.62, 0)
     assert load_checkpoint(tmp_path / "checkpoints" / "best.pt")["iteration"] == 2
+
+
+@pytest.mark.parametrize("final, best_iteration", [(0.65, 3), (0.50, 2)])
+def test_the_final_policy_challenges_best_pt(run_ppo, tmp_path, final, best_iteration):
+    # it 2 becomes best.pt at 0.6; the final policy (it 3) plays 400 battles, and so does
+    # best.pt again (0.55)
+    FakeRollouts.eval_results = [0.6, 0.6, final]
+    FakeRollouts.best_results = [0.55]
+    rows, ck = run_ppo("--size", "small", "--iterations", "3", "--eval-every", "2",
+                       "--confirm-battles", "400")
+    assert (ck["state"]["final_iteration"], ck["state"]["final_wr"]) == (3, final)
+    assert ck["state"]["best_iteration"] == best_iteration
+    assert load_checkpoint(tmp_path / "checkpoints" / "best.pt")["iteration"] == best_iteration
 
 
 def test_resume_measures_the_saved_best_pt(run_ppo, tmp_path):

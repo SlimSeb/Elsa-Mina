@@ -532,7 +532,18 @@ def cmd_ppo(args) -> None:
         elo.save(run_dir / "elo.json")
         save_all(periodic=it % args.save_every == 0)
 
-    # ---- end of run
+    # ---- end of run: the last policy challenges best.pt too (candidates otherwise only
+    # come from evaluations every --eval-every iterations that beat best.pt's win rate)
+    it = st["iteration"]
+    if it and it not in (st["best_iteration"], st.get("final_iteration")):
+        sync()
+        score, n_score = rollouts.evaluate(args.confirm_battles or args.eval_battles, "heuristic")
+        elo.record(LEARNER, "heuristic", score * n_score, n_score)
+        elo.save(run_dir / "elo.json")
+        st["final_iteration"], st["final_wr"], st["final_n"] = it, score, n_score
+        log.info("[ppo] final policy (it %d): greedy win rate vs SimpleHeuristicsPlayer = %s",
+                 it, with_ci(score, n_score))
+        challenge(it, score, n_score, {}, final_wr=score)
     save_all(periodic=True)
     log.info("[ppo] stopped at iteration %d (%s): %s states in %.2f h, peak RSS %.0f MB",
              st["iteration"], stop.reason or "budget reached", f"{st['total_states']:,}",

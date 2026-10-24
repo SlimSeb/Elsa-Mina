@@ -185,8 +185,9 @@ tokens and typed FFN do not change the encoding, history and matchups do).
   fresh battles add up across challenges; `incumbent_wr` in metrics.csv). Without
   that, a lucky early `best.pt` outlived every later policy (one ablation run kept
   iteration 10 of 377).
-  `--confirm-battles 0` turns both off. At the end, `best.pt` (or the latest
-  checkpoint if there is none) is exported to `export/`.
+  `--confirm-battles 0` turns both off. At the end of the run, the final policy
+  challenges `best.pt` the same way (unless it is `best.pt` already), then `best.pt`
+  (or the latest checkpoint if there is none) is exported to `export/`.
 - **Elo.** See [Elo league table](#elo-league-table): `runs/<run>/elo.json`, `elo` in
   metrics.csv.
 - **Robustness.** A battle that raises in `choose_move` plays a random move and the
