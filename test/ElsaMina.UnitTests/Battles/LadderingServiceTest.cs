@@ -283,4 +283,88 @@ public class LadderingServiceTest
         // Assert
         _bot.Received(LadderingService.MAX_SEARCHES_PER_WINDOW + 1).Say(string.Empty, SEARCH);
     }
+
+    [Test]
+    public void Test_Status_ShouldTellFormatAndStart_WhenLaddering()
+    {
+        // Arrange
+        _ladderingService.Start(FORMAT);
+        _now += TimeSpan.FromMinutes(5);
+
+        // Act
+        _ladderingService.Start(FORMAT);
+        var status = _ladderingService.Status;
+
+        // Assert: starting the same format again keeps when it started
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(status.IsLaddering, Is.True);
+            Assert.That(status.Format, Is.EqualTo(FORMAT));
+            Assert.That(status.Since, Is.EqualTo(START));
+            Assert.That(status.IsWaitingForConfirmation, Is.True);
+        }
+    }
+
+    [Test]
+    public void Test_Status_ShouldBeOff_WhenStopped()
+    {
+        // Arrange
+        _ladderingService.Start(FORMAT);
+
+        // Act
+        _ladderingService.Stop();
+        var status = _ladderingService.Status;
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(status.IsLaddering, Is.False);
+            Assert.That(status.Since, Is.Null);
+            Assert.That(status.NextSearchAt, Is.Null);
+        }
+    }
+
+    [Test]
+    public void Test_Status_ShouldTellServerSearchState_WhenUpdated()
+    {
+        // Arrange
+        _ladderingService.Start(FORMAT);
+
+        // Act
+        _ladderingService.OnSearchStateUpdated(false, true);
+        var status = _ladderingService.Status;
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(status.IsInGame, Is.True);
+            Assert.That(status.IsSearching, Is.False);
+            Assert.That(status.IsWaitingForConfirmation, Is.False);
+        }
+    }
+
+    [Test]
+    public async Task Test_Status_ShouldTellNextSearch_WhenRetrying()
+    {
+        // Arrange
+        _ladderingService.Start(FORMAT);
+
+        // Act
+        await ElapseLastSleepAsync();
+        var status = _ladderingService.Status;
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(status.NextSearchAt, Is.EqualTo(_now + LadderingService.FIRST_RETRY_DELAY));
+            Assert.That(status.FailedSearchCount, Is.EqualTo(1));
+            Assert.That(status.IsWaitingForConfirmation, Is.False);
+        }
+
+        // Act
+        await ElapseLastSleepAsync();
+
+        // Assert: the retry was sent
+        Assert.That(_ladderingService.Status.NextSearchAt, Is.Null);
+    }
 }

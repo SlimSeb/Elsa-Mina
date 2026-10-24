@@ -27,9 +27,13 @@ public class LadderingService : ILadderingService
     private readonly Queue<DateTimeOffset> _recentSearchTimes = new();
 
     private string _format;
+    private DateTimeOffset? _since;
     private bool _isSearchUnconfirmed;
     private int _failedSearchCount;
     private CancellationTokenSource _scheduledStep;
+    private DateTimeOffset? _nextSearchAt;
+    private bool _isSearching;
+    private bool _isInGame;
 
     public LadderingService(IBot bot, IBattleTeamsService battleTeamsService, IClockService clockService,
         ISystemService systemService)
@@ -71,12 +75,29 @@ public class LadderingService : ILadderingService
         }
     }
 
+    public LadderingStatus Status
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return new LadderingStatus(_format, _since, _isSearching, _isInGame, _isSearchUnconfirmed,
+                    _nextSearchAt, _failedSearchCount);
+            }
+        }
+    }
+
     private bool IsSearchInProgress => _isSearchUnconfirmed || _scheduledStep != null;
 
     public void Start(string format)
     {
         lock (_lock)
         {
+            if (_format != format)
+            {
+                _since = _clockService.CurrentUtcDateTimeOffset;
+            }
+
             _format = format;
             _failedSearchCount = 0;
             RequestSearch();
@@ -88,6 +109,7 @@ public class LadderingService : ILadderingService
         lock (_lock)
         {
             _format = null;
+            _since = null;
             _isSearchUnconfirmed = false;
             CancelScheduledStep();
         }
@@ -109,6 +131,8 @@ public class LadderingService : ILadderingService
     {
         lock (_lock)
         {
+            _isSearching = isSearching;
+            _isInGame = isInGame;
             if (_format == null)
             {
                 return;
@@ -138,15 +162,22 @@ public class LadderingService : ILadderingService
         {
             Log.Information("Next ladder search in {Format} in {Delay}, to stay under Showdown's rate limit",
                 _format, delay);
-            ScheduleStep(delay, SendSearch);
+            ScheduleSearch(delay);
             return;
         }
 
         SendSearch();
     }
 
+    private void ScheduleSearch(TimeSpan delay)
+    {
+        ScheduleStep(delay, SendSearch);
+        _nextSearchAt = _clockService.CurrentUtcDateTimeOffset + delay;
+    }
+
     private void SendSearch()
     {
+        _nextSearchAt = null;
         _recentSearchTimes.Enqueue(_clockService.CurrentUtcDateTimeOffset);
         _isSearchUnconfirmed = true;
         _bot.Say(string.Empty, $"/search {_format}");
@@ -162,7 +193,7 @@ public class LadderingService : ILadderingService
         var delay = retryDelay > rateLimitDelay ? retryDelay : rateLimitDelay;
         Log.Warning("Ladder search in {Format} was not accepted by the server (attempt {Attempt}), retrying in {Delay}",
             _format, _failedSearchCount, delay);
-        ScheduleStep(delay, SendSearch);
+        ScheduleSearch(delay);
     }
 
     private TimeSpan GetRateLimitDelay(DateTimeOffset now)
@@ -199,6 +230,7 @@ public class LadderingService : ILadderingService
 
     private void CancelScheduledStep()
     {
+        _nextSearchAt = null;
         if (_scheduledStep == null)
         {
             return;

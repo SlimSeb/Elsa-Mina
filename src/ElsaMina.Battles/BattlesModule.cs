@@ -1,5 +1,7 @@
 using Autofac;
 using ElsaMina.Battles.Commands;
+using ElsaMina.Battles.Replays;
+using ElsaMina.Battles.Results;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.Llm;
 using ElsaMina.Battles.Strategies.MiniPoke;
@@ -38,14 +40,20 @@ public class BattlesModule : Module
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
         builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();
         builder.RegisterType<LadderingService>().As<ILadderingService>().SingleInstance();
+        builder.RegisterType<LadderRatingService>().As<ILadderRatingService>().SingleInstance();
+        builder.RegisterType<BattleResultsService>().As<IBattleResultsService>().SingleInstance();
+        builder.RegisterType<ReplaySavingService>().As<IReplaySavingService>().SingleInstance();
 
         builder.RegisterHandler<BattleHandler>();
         builder.RegisterHandler<UpdateSearchHandler>();
+        builder.RegisterHandler<ReplayUploadedHandler>();
 
         builder.RegisterCommand<SearchCommand>();
         builder.RegisterCommand<UseTeamCommand>();
         builder.RegisterCommand<LadderingCommand>();
         builder.RegisterCommand<BattleStrategyCommand>();
+        builder.RegisterCommand<SaveReplaysCommand>();
+        builder.RegisterCommand<BattleStatusCommand>();
     }
 
     /// <summary>

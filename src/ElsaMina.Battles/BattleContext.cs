@@ -1,3 +1,4 @@
+using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Tracking;
 
 namespace ElsaMina.Battles;
@@ -66,4 +67,15 @@ public class BattleContext
     /// The battle as poke-env tracks it, for the minipoke strategies (see <see cref="TrackedBattleState"/>).
     /// </summary>
     public TrackedBattleState Tracked { get; } = new();
+
+    /// <summary>
+    /// Every line received in the battle room, as received: what -savereplays keeps of our side, |request| lines
+    /// included.
+    /// </summary>
+    public List<string> Lines { get; } = [];
+
+    /// <summary>
+    /// The strategy playing when the battle started, which its result is counted for.
+    /// </summary>
+    public BattleDecisionStrategy? Strategy { get; set; }
 }

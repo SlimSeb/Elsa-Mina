@@ -33,6 +33,7 @@
   "TwitterBearerToken": "",
   "PlayTimeUpdatesInterval": "01:00:00",
   "LoginRetryDelay": "00:00:30",
+  "ReplaysDirectory": "",
   "S3BucketName": "",
   "S3EndpointUrl": "",
   "S3AccessKey": "",
