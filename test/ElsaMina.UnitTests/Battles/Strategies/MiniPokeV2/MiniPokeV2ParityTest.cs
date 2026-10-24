@@ -1,0 +1,103 @@
+using ElsaMina.Battles.Strategies;
+using ElsaMina.Battles.Strategies.MiniPoke;
+using ElsaMina.Battles.Strategies.MiniPokeV2;
+using ElsaMina.UnitTests.Battles.Strategies.MiniPoke;
+
+namespace ElsaMina.UnitTests.Battles.Strategies.MiniPokeV2;
+
+/// <summary>
+/// Checks the C# side of every minipoke-v2 model against real battles recorded with the encoder_v2.py it was trained
+/// with (tools/minipoke/make_fixtures.py --version 2_1M for MiniPokeV2_1M): our encoder must produce exactly what
+/// encoder_v2.py produced, V1's arrays and the set priors and history ones, each action must map to the order
+/// poke-env sent, and the ONNX model must give the same output in both runtimes.
+/// </summary>
+[TestFixture]
+public class MiniPokeV2ParityTest
+{
+    // Every model trained with encoder_v2.py, each with its own fixtures
+    private static readonly BattleDecisionStrategy[] MODELS = [BattleDecisionStrategy.MiniPokeV2_1M];
+
+    private readonly Dictionary<BattleDecisionStrategy, MiniPokeParityChecker> _checkers = [];
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
+    {
+        foreach (var model in MODELS)
+        {
+            var options = GetOptions(model);
+            var spec = EncoderSpec.Load(options.EncoderSpecPath);
+            _checkers[model] = new MiniPokeParityChecker(GetFixturesDirectory(model),
+                new MiniPokeV2Encoder(options, TestBattleDex.Instance), spec, new MiniPokeV2FeatureNames(spec).Describe);
+        }
+    }
+
+    private static MiniPokeModelOptions GetOptions(BattleDecisionStrategy model) =>
+        new(model, Path.Join(AppContext.BaseDirectory, "Models", model.ToString()));
+
+    private static string GetFixturesDirectory(BattleDecisionStrategy model) =>
+        Path.Join(AppContext.BaseDirectory, "Battles", "Strategies", model.ToString(), "Fixtures");
+
+    private static IEnumerable<TestCaseData> Fixtures() =>
+        MODELS.SelectMany(model => MiniPokeParityChecker.FixtureFileNames(GetFixturesDirectory(model))
+            .Select(fileName => new TestCaseData(model, fileName).SetArgDisplayNames(model.ToString(), fileName)));
+
+    [TestCaseSource(nameof(MODELS))]
+    public void Test_Fixtures_ShouldCoverEnoughDecisions(BattleDecisionStrategy model)
+    {
+        // Act
+        var decisions = _checkers[model].CountDecisions();
+
+        // Assert
+        Assert.That(decisions, Is.GreaterThanOrEqualTo(300));
+    }
+
+    [TestCaseSource(nameof(Fixtures))]
+    public void Test_Encode_ShouldMatchPythonEncoder_WhenReplayingFixture(BattleDecisionStrategy model,
+        string fileName)
+    {
+        // Arrange
+        var checker = _checkers[model];
+        var fixture = checker.Load(fileName);
+
+        // Act
+        var mismatches = checker.FindEncodingMismatches(fixture);
+
+        // Assert
+        Assert.That(mismatches, Is.Empty, MiniPokeParityChecker.Report(fixture, mismatches));
+    }
+
+    [TestCaseSource(nameof(Fixtures))]
+    public void Test_ActionMapping_ShouldSendPokeEnvOrder_WhenReplayingFixture(BattleDecisionStrategy model,
+        string fileName)
+    {
+        // Arrange
+        var checker = _checkers[model];
+        var fixture = checker.Load(fileName);
+
+        // Act
+        var mismatches = checker.FindOrderMismatches(fixture);
+
+        // Assert
+        Assert.That(mismatches, Is.Empty, MiniPokeParityChecker.Report(fixture, mismatches));
+    }
+
+    [TestCaseSource(nameof(Fixtures))]
+    public void Test_Evaluate_ShouldMatchPythonOnnxRuntime_WhenGivenFixtureObservations(BattleDecisionStrategy model,
+        string fileName)
+    {
+        // Arrange
+        var checker = _checkers[model];
+        var fixture = checker.Load(fileName);
+        using var onnxModel = new MiniPokeOnnxModel(GetOptions(model));
+
+        // Act
+        var mismatches = checker.FindModelMismatches(fixture, onnxModel);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(onnxModel.IsLoaded, Is.True);
+            Assert.That(mismatches, Is.Empty, MiniPokeParityChecker.Report(fixture, mismatches));
+        }
+    }
+}

@@ -21,19 +21,23 @@ public class MiniPokeParityChecker
     private const int MAX_REPORTED_MISMATCHES = 30;
     private const string RECHARGE_ORDER = "/choose move 1";
     private const string TEAM_ORDER = "team order";
+    private const string INT64 = "int64";
 
     private readonly string _fixturesDirectory;
     private readonly IMiniPokeEncoder _encoder;
+    private readonly EncoderSpec _spec;
     private readonly Func<string, int, string> _describeFeature;
 
     /// <param name="fixturesDirectory">Where the model's fixtures are copied in the test output.</param>
     /// <param name="encoder">The version's encoder.</param>
+    /// <param name="spec">The model's spec, which lists the inputs a version adds after the six shared ones.</param>
     /// <param name="describeFeature">Names a position of an array ("mon_feats", 12) for failure reports.</param>
-    public MiniPokeParityChecker(string fixturesDirectory, IMiniPokeEncoder encoder,
+    public MiniPokeParityChecker(string fixturesDirectory, IMiniPokeEncoder encoder, EncoderSpec spec,
         Func<string, int, string> describeFeature)
     {
         _fixturesDirectory = fixturesDirectory;
         _encoder = encoder;
+        _spec = spec;
         _describeFeature = describeFeature;
     }
 
@@ -60,7 +64,7 @@ public class MiniPokeParityChecker
     }
 
     /// <summary>
-    /// Every difference between the six arrays (and the team order) encoder.py and our encoder produced.
+    /// Every difference between the arrays (and the team order) the Python encoder and ours produced.
     /// </summary>
     public List<string> FindEncodingMismatches(MiniPokeFixture fixture)
     {
@@ -83,6 +87,10 @@ public class MiniPokeParityChecker
             CompareExactly(mismatches, where, "mask", decision.Mask, observation.Mask);
             CompareExactly(mismatches, where, TEAM_ORDER, decision.TeamIdents.ToArray(),
                 context.Tracked.Team.Select(pokemon => pokemon.Identifier).ToArray());
+            foreach (var input in _spec.ExtraInputs)
+            {
+                CompareExtraInput(mismatches, where, input, decision, observation);
+            }
         }
 
         return mismatches;
@@ -115,7 +123,7 @@ public class MiniPokeParityChecker
     /// <summary>
     /// Every logit or value where our ONNX Runtime and Python's onnxruntime disagree on the recorded observations.
     /// </summary>
-    public static List<string> FindModelMismatches(MiniPokeFixture fixture, IMiniPokeModel model)
+    public List<string> FindModelMismatches(MiniPokeFixture fixture, IMiniPokeModel model)
     {
         var mismatches = new List<string>();
         foreach (var (decision, index) in fixture.Decisions.Select((decision, index) => (decision, index))
@@ -207,7 +215,7 @@ public class MiniPokeParityChecker
         return terastallize ? $"/choose move {moveId} terastallize" : $"/choose move {moveId}";
     }
 
-    private static BattleObservation ToObservation(MiniPokeFixtureDecision decision)
+    private BattleObservation ToObservation(MiniPokeFixtureDecision decision)
     {
         var observation = new BattleObservation(decision.MonFeatures.Length / BattleObservation.MonCount,
             decision.MoveFeatures.Length / (BattleObservation.MonCount * BattleObservation.MoveCount),
@@ -218,7 +226,40 @@ public class MiniPokeParityChecker
         decision.MoveFeatures.Select(value => (float)value).ToArray().CopyTo(observation.MoveFeatures, 0);
         decision.Field.Select(value => (float)value).ToArray().CopyTo(observation.Field, 0);
         decision.Mask.CopyTo(observation.Mask, 0);
+        foreach (var input in _spec.ExtraInputs)
+        {
+            var recorded = decision.ExtraArrays[input.Name];
+            if (input.DataType == INT64)
+            {
+                observation.ExtraIds[input.Name] = recorded.Deserialize<long[]>();
+            }
+            else
+            {
+                observation.ExtraFeatures[input.Name] =
+                    recorded.Deserialize<double[]>().Select(value => (float)value).ToArray();
+            }
+        }
+
         return observation;
+    }
+
+    private void CompareExtraInput(List<string> mismatches, string where, EncoderSpecInput input,
+        MiniPokeFixtureDecision decision, BattleObservation observation)
+    {
+        if (!decision.ExtraArrays.TryGetValue(input.Name, out var recorded))
+        {
+            mismatches.Add($"{where} {input.Name}: not recorded");
+        }
+        else if (input.DataType == INT64)
+        {
+            CompareExactly(mismatches, where, input.Name, recorded.Deserialize<long[]>(),
+                observation.ExtraIds.GetValueOrDefault(input.Name) ?? []);
+        }
+        else
+        {
+            CompareFloats(mismatches, where, input.Name, recorded.Deserialize<double[]>(),
+                observation.ExtraFeatures.GetValueOrDefault(input.Name) ?? []);
+        }
     }
 
     private void CompareExactly<T>(List<string> mismatches, string where, string array, T[] expected, T[] actual)

@@ -9,6 +9,10 @@ in 16 GB as a list of numpy dicts. Samples are written instead to compressed
     mon_feats, move_feats,    float16 (features are in [-1, 2]; ~5e-4 relative error)
     field
     mask                      uint8   (14 bools bit-packed into 2 bytes)
+
+(that is encoder V1's observation; any other encoder's arrays are stored the same
+way by dtype, ids as int16, features as float16, bools bit-packed, and meta.json
+records the observation layout)
     probs                     float16 [14]  teacher action distribution (one-hot for the heuristic)
     value                     float16 teacher value (0 when the teacher has none)
     ret                       float16 discounted return of the battle from that decision
@@ -30,18 +34,12 @@ from typing import Dict, Iterator, List, Optional
 
 import numpy as np
 
-from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES
+from encoder import ACT_DIM
+from encoder_v2 import V1_LAYOUT, Layout
 
-OBS_KEYS = ["mon_ids", "move_ids", "mon_feats", "move_feats", "field", "mask"]
-
-# name -> (row shape, stored dtype)
-LAYOUT = {
-    "mon_ids": ((N_MONS, 3), np.int16),
-    "move_ids": ((N_MONS, N_MOVES), np.int16),
-    "mon_feats": ((N_MONS, F_MON), np.float16),
-    "move_feats": ((N_MONS, N_MOVES, F_MOVE), np.float16),
-    "field": ((F_FIELD,), np.float16),
-    "mask": (((ACT_DIM + 7) // 8,), np.uint8),
+OBS_KEYS = list(V1_LAYOUT)
+STORED = {"int64": np.int16, "float32": np.float16}
+TARGETS = {
     "probs": ((ACT_DIM,), np.float16),
     "value": ((), np.float16),
     "ret": ((), np.float16),
@@ -50,23 +48,41 @@ LAYOUT = {
 META = "meta.json"
 
 
-def _empty(n: int) -> Dict[str, np.ndarray]:
-    return {k: np.zeros((n, *shape), dtype=dt) for k, (shape, dt) in LAYOUT.items()}
+def storage_layout(obs_layout: Layout) -> dict:
+    """name -> (row shape, stored dtype) for an encoder's observation, plus the targets."""
+    out = {}
+    for name, (shape, dtype) in obs_layout.items():
+        if dtype == "bool":
+            out[name] = (((int(np.prod(shape)) + 7) // 8,), np.uint8)
+        else:
+            out[name] = (tuple(shape), STORED[dtype])
+    return {**out, **TARGETS}
+
+
+LAYOUT = storage_layout(V1_LAYOUT)
+
+
+def _empty(layout: dict, n: int) -> Dict[str, np.ndarray]:
+    return {k: np.zeros((n, *shape), dtype=dt) for k, (shape, dt) in layout.items()}
 
 
 class ShardWriter:
     """Thread-safe: poke-env calls `add` from its event-loop thread. Full shards
     are compressed and written by a background thread."""
 
-    def __init__(self, root: Path | str, shard_size: int = 16384, info: Optional[dict] = None):
+    def __init__(self, root: Path | str, shard_size: int = 16384, info: Optional[dict] = None,
+                 obs_layout: Optional[Layout] = None):
         self.root = Path(root)
         self.root.mkdir(parents=True, exist_ok=True)
         if (self.root / META).exists():
             raise FileExistsError(f"{self.root} already holds a dataset; pick another --data dir")
         self.shard_size = shard_size
-        self.info = info or {}
+        self.obs_layout = dict(obs_layout or V1_LAYOUT)
+        self.layout = storage_layout(self.obs_layout)
+        self.info = {**(info or {}), "obs_layout": {k: [list(shape), dt] for k, (shape, dt)
+                                                    in self.obs_layout.items()}}
         self._lock = threading.Lock()
-        self._buf = _empty(shard_size)
+        self._buf = _empty(self.layout, shard_size)
         self._n = 0
         self._shards: List[dict] = []
         self._io = ThreadPoolExecutor(max_workers=1)
@@ -82,9 +98,8 @@ class ShardWriter:
         with self._lock:
             i = self._n
             b = self._buf
-            for k in OBS_KEYS[:-1]:
-                b[k][i] = obs[k]
-            b["mask"][i] = np.packbits(obs["mask"].astype(bool))
+            for k, (_, dtype) in self.obs_layout.items():
+                b[k][i] = np.packbits(obs[k].astype(bool).ravel()) if dtype == "bool" else obs[k]
             b["probs"][i] = probs
             b["value"][i] = value
             b["ret"][i] = ret
@@ -99,7 +114,7 @@ class ShardWriter:
         data = {k: v[: self._n] for k, v in self._buf.items()}
         name = f"shard_{len(self._shards):05d}.npz"
         self._shards.append({"file": name, "n": self._n})
-        self._buf, self._n = _empty(self.shard_size), 0
+        self._buf, self._n = _empty(self.layout, self.shard_size), 0
         shards = list(self._shards)
         self._pending.append(self._io.submit(self._write, name, data, shards))
 
@@ -119,17 +134,16 @@ class ShardWriter:
         self._io.shutdown()
 
 
-def decode(rows: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+def decode(rows: Dict[str, np.ndarray], obs_layout: Optional[Layout] = None) -> Dict[str, np.ndarray]:
     """Compact rows -> what the model takes (encoder.collate's dtypes), plus
     float32 targets. Teacher probabilities are renormalised after float16."""
-    obs = {
-        "mon_ids": rows["mon_ids"].astype(np.int64),
-        "move_ids": rows["move_ids"].astype(np.int64),
-        "mon_feats": rows["mon_feats"].astype(np.float32),
-        "move_feats": rows["move_feats"].astype(np.float32),
-        "field": rows["field"].astype(np.float32),
-        "mask": np.unpackbits(rows["mask"], axis=-1, count=ACT_DIM).astype(bool),
-    }
+    obs = {}
+    for k, (shape, dtype) in (obs_layout or V1_LAYOUT).items():
+        if dtype == "bool":
+            n = int(np.prod(shape))
+            obs[k] = np.unpackbits(rows[k], axis=-1, count=n).astype(bool).reshape(-1, *shape)
+        else:
+            obs[k] = rows[k].astype(np.dtype(dtype))
     probs = rows["probs"].astype(np.float32)
     probs /= np.maximum(probs.sum(-1, keepdims=True), 1e-8)
     return {"obs": obs, "probs": probs,
@@ -143,6 +157,11 @@ class ShardDataset:
         self.root = Path(root)
         self.meta = json.loads((self.root / META).read_text())
         self.shards: List[dict] = self.meta["shards"]
+        # Datasets written before the layout was recorded hold V1 observations
+        saved = self.meta.get("obs_layout")
+        self.obs_layout: Layout = ({k: (tuple(shape), dt) for k, (shape, dt) in saved.items()}
+                                   if saved else dict(V1_LAYOUT))
+        self.layout = storage_layout(self.obs_layout)
         self.val_frac = val_frac
         self.buffer_shards = buffer_shards
 
@@ -161,7 +180,7 @@ class ShardDataset:
 
     def _load(self, shard: dict, split: str) -> Dict[str, np.ndarray]:
         with np.load(self.root / shard["file"]) as z:
-            rows = {k: z[k] for k in LAYOUT}
+            rows = {k: z[k] for k in self.layout}
         cut = shard["n"] - self._n_val(shard["n"])
         sl = slice(cut, None) if split == "val" else slice(0, cut)
         return {k: v[sl] for k, v in rows.items()}
@@ -175,12 +194,12 @@ class ShardDataset:
             rng.shuffle(order)
         for g in range(0, len(order), self.buffer_shards):
             parts = [self._load(self.shards[i], split) for i in order[g: g + self.buffer_shards]]
-            rows = {k: np.concatenate([p[k] for p in parts]) for k in LAYOUT}
+            rows = {k: np.concatenate([p[k] for p in parts]) for k in self.layout}
             n = len(rows["action"])
             idx = rng.permutation(n) if rng is not None else np.arange(n)
             for s in range(0, n, batch_size):
                 take = idx[s: s + batch_size]
-                yield decode({k: v[take] for k, v in rows.items()})
+                yield decode({k: v[take] for k, v in rows.items()}, self.obs_layout)
 
 
 def discounted_returns(rewards: List[float], gamma: float) -> np.ndarray:

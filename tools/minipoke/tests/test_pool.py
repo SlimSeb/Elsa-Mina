@@ -81,3 +81,59 @@ def test_v1_split_is_pure_mirror():
 def test_split_evenly():
     assert split_evenly(25, 2) == [13, 12]
     assert sum(split_evenly(7, 3)) == 7
+
+
+def test_pfsp_favours_the_snapshots_the_learner_beats_least(model, tmp_path):
+    pool = OpponentPool(tmp_path, cap=10, sampling="pfsp", floor=0.1, ema=0.05)
+    for it in (0, 10, 20):
+        pool.add(model, it)
+    pool.record(0, wins=100, games=100)   # always beaten -> weight at the floor
+    pool.record(10, wins=50, games=100)
+    pool.record(20, wins=0, games=100)    # never beaten
+    weights = {s.iteration: pool.weight(s) for s in pool.snapshots}
+    assert weights[0] == pytest.approx(0.1)
+    assert weights[10] == pytest.approx(0.5, abs=0.01)
+    assert weights[20] == pytest.approx(1.0, abs=0.01)
+    rng = random.Random(0)
+    counts = {0: 0, 10: 0, 20: 0}
+    for _ in range(4000):
+        counts[pool.sample(1, rng)[0].iteration] += 1
+    total = sum(weights.values())
+    for it, w in weights.items():
+        assert counts[it] / 4000 == pytest.approx(w / total, abs=0.03)
+    # every snapshot can still be drawn, and draws stay distinct
+    assert counts[0] > 0
+    assert all(len({s.iteration for s in pool.sample(3, rng)}) == 3 for _ in range(50))
+
+
+def test_pool_win_rate_is_an_ema_over_games(model, tmp_path):
+    pool = OpponentPool(tmp_path, ema=0.1)
+    pool.add(model, 0)
+    snap = pool.snapshots[0]
+    assert (snap.win_rate, snap.games) == (0.5, 0)
+    pool.record(0, wins=1, games=1)
+    assert snap.win_rate == pytest.approx(0.55)
+    pool.record(0, wins=0, games=10)    # 10 games of weight 0.1 toward 0
+    assert snap.win_rate == pytest.approx(0.55 * 0.9 ** 10)
+    assert snap.games == 11
+    pool.record(99, wins=3, games=4)    # unknown snapshot (evicted): ignored
+    other = OpponentPool(tmp_path)
+    other.load_state_dict(pool.state_dict())
+    assert other.snapshots[0].win_rate == snap.win_rate and other.snapshots[0].games == 11
+
+
+def test_uniform_sampling_draws_like_v1(model, tmp_path):
+    pool = OpponentPool(tmp_path, sampling="uniform")
+    for it in range(0, 50, 10):
+        pool.add(model, it)
+    pool.record(0, wins=0, games=50)  # win rates do not matter
+    a, b = random.Random(7), random.Random(7)
+    assert pool.sample(2, a) == b.sample(pool.snapshots, 2)
+
+
+def test_old_pool_states_load_with_neutral_win_rates(model, tmp_path):
+    pool = OpponentPool(tmp_path)
+    pool.add(model, 0)
+    old_state = {"snapshots": [{"iteration": 0, "file": "snap_00000.pt"}]}
+    pool.load_state_dict(old_state)
+    assert (pool.snapshots[0].win_rate, pool.snapshots[0].games) == (0.5, 0)

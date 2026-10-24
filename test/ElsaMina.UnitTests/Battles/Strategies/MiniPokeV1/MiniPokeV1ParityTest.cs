@@ -26,9 +26,9 @@ public class MiniPokeV1ParityTest
         foreach (var model in MODELS)
         {
             var options = GetOptions(model);
-            var featureNames = new MiniPokeV1FeatureNames(EncoderSpec.Load(options.EncoderSpecPath));
+            var spec = EncoderSpec.Load(options.EncoderSpecPath);
             _checkers[model] = new MiniPokeParityChecker(GetFixturesDirectory(model),
-                new MiniPokeV1Encoder(options, TestBattleDex.Instance), featureNames.Describe);
+                new MiniPokeV1Encoder(options, TestBattleDex.Instance), spec, new MiniPokeV1FeatureNames(spec).Describe);
         }
     }
 
@@ -87,11 +87,12 @@ public class MiniPokeV1ParityTest
         string fileName)
     {
         // Arrange
-        var fixture = _checkers[model].Load(fileName);
+        var checker = _checkers[model];
+        var fixture = checker.Load(fileName);
         using var onnxModel = new MiniPokeOnnxModel(GetOptions(model));
 
         // Act
-        var mismatches = MiniPokeParityChecker.FindModelMismatches(fixture, onnxModel);
+        var mismatches = checker.FindModelMismatches(fixture, onnxModel);
 
         // Assert
         using (Assert.EnterMultipleScope())

@@ -3,6 +3,8 @@ Render a run's metrics.csv to a PNG.
 
     python plot_metrics.py runs/medium-20261021-1400            # -> runs/.../metrics.png
     python plot_metrics.py runs/a runs/b --out compare.png       # several runs on the same axes
+    python plot_metrics.py runs/a runs/b --x iteration           # x: total_states (default),
+                                                                 # iteration or hours
 """
 
 from __future__ import annotations
@@ -15,9 +17,10 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib.ticker import EngFormatter  # noqa: E402
 
 PANELS = [
-    ("Win rate (greedy eval)", ["eval_wr_heuristic", "eval_wr_pool"], (0, 1)),
+    ("Win rate (greedy eval)", ["eval_wr_heuristic", "confirm_wr", "eval_wr_pool"], (0, 1)),
     ("Win rate (training battles)", ["train_wr_heuristic", "train_wr_pool"], (0, 1)),
     ("Throughput (states/s)", ["states_per_s"], None),
     ("Policy loss", ["pi_loss"], None),
@@ -26,6 +29,12 @@ PANELS = [
     ("Entropy", ["entropy"], None),
     ("Approx. KL / clip fraction", ["kl", "clipfrac"], None),
     ("Learning rate", ["lr"], None),
+    ("Elo (learner; random = 0)", ["elo"], None),
+    ("Pool / rewards", ["pool_hardest_wr", "faint_reward"], None),
+    ("PPO epochs run", ["epochs"], None),
+    ("Auxiliary heads (accuracy)", ["aux_action_acc", "aux_item_acc", "aux_ability_acc",
+                                    "aux_tera_acc", "aux_moves_recall"], (0, 1)),
+    ("Auxiliary losses / uniform KL", ["aux_action_loss", "aux_set_loss", "uniform_kl"], None),
 ]
 
 
@@ -46,7 +55,8 @@ def main() -> None:
     args = ap.parse_args()
 
     paths = [Path(r) if r.endswith(".csv") else Path(r) / "metrics.csv" for r in args.runs]
-    fig, axes = plt.subplots(3, 3, figsize=(15, 11), constrained_layout=True)
+    rows = (len(PANELS) + 2) // 3
+    fig, axes = plt.subplots(rows, 3, figsize=(15, 3.7 * rows), constrained_layout=True)
     for path in paths:
         cols = read(path)
         name = path.parent.name
@@ -59,6 +69,8 @@ def main() -> None:
                     ax.plot(*zip(*pts), marker="o" if len(pts) < 30 else None, ms=3, label=label)
             ax.set_title(title)
             ax.set_xlabel(args.x)
+            if args.x == "total_states":
+                ax.xaxis.set_major_formatter(EngFormatter())  # 2M, not 2000000
             if ylim:
                 ax.set_ylim(*ylim)
             ax.grid(alpha=0.3)

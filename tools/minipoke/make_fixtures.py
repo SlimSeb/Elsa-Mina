@@ -39,6 +39,10 @@ writes the fixtures to test/ElsaMina.UnitTests/Battles/Strategies/MiniPokeVN_SIZ
 --model, --spec and --out override those paths. Run it with the encoder.py the
 model was trained with: the fixtures record what that encoder.py produces.
 
+A minipoke-v2 model (`--version 2_1M`, its encoder_spec.json has "encoder_version": 2)
+is encoded with encoder_v2.py, the set_priors.json next to its spec and the flags
+the spec records; its fixtures hold every input the spec lists, and "encoder_version".
+
 Actions are picked randomly among the legal ones, favoring terastallization
 when it is available so that tera turns show up in most battles, and
 otherwise following SimpleHeuristicsPlayer half of the time so that battles
@@ -62,6 +66,9 @@ from poke_env.environment import SinglesEnv
 from poke_env.player import Player, SimpleHeuristicsPlayer
 
 import encoder as E
+from encoder_v2 import EncoderV1, encoder_for
+from model import ModelConfig
+from setpriors import SetPriors
 
 FORMAT = "gen9randombattle"
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -69,11 +76,12 @@ ARRAYS = ["mon_ids", "move_ids", "mon_feats", "move_feats", "field", "mask"]
 
 
 class RecordingPlayer(Player):
-    def __init__(self, rng: random.Random, tera_bias: float, session=None, **kwargs):
+    def __init__(self, rng: random.Random, tera_bias: float, session=None, encoder=None, **kwargs):
         super().__init__(**kwargs)
         self.rng = rng
         self.tera_bias = tera_bias
         self.session = session
+        self.encoder = encoder or EncoderV1()
         self.lines: Dict[str, List[str]] = {}
         self.decisions: Dict[str, List[dict]] = {}
         self.errors: Dict[str, List[int]] = {}
@@ -95,15 +103,16 @@ class RecordingPlayer(Player):
                 raise
 
     def choose_move(self, battle):
-        obs = E.encode(battle)
+        obs = self.encoder.encode(battle)
         tag = battle.battle_tag
         record = {"line_count": len(self.lines[tag])}
-        for name in ARRAYS:
+        for name in self.encoder.input_names:
             record[name] = obs[name].ravel().tolist()
         record["team_idents"] = list(battle.team.keys())
         record["orders"] = self._legal_orders(obs["mask"], battle)
         if self.session is not None:
-            logits, value = self.session.run(None, {n: obs[n][None] for n in ARRAYS})
+            logits, value = self.session.run(None, {n: obs[n][None]
+                                                    for n in self.encoder.input_names})
             record["logits"] = logits[0].tolist()
             record["value"] = float(value[0])
         self.decisions.setdefault(tag, []).append(record)
@@ -146,6 +155,7 @@ def write_fixtures(player: RecordingPlayer, out: Path) -> int:
             continue
         fixture = {
             "format_version": 1,
+            **({"encoder_version": player.encoder.version} if player.encoder.version > 1 else {}),
             "battle_tag": tag,
             "username": player.username,
             "player_role": battle.player_role,
@@ -171,6 +181,21 @@ def check_spec(spec_path: Optional[str]) -> None:
     assert (spec["f_mon"], spec["f_move"], spec["f_field"]) == (E.F_MON, E.F_MOVE, E.F_FIELD)
 
 
+def encoder_from_spec(spec_path: Optional[str]):
+    """The encoder a model's encoder_spec.json describes (V1 without one)."""
+    if spec_path is None:
+        return EncoderV1()
+    spec = json.loads(Path(spec_path).read_text())
+    if spec.get("encoder_version", 1) == 1:
+        return EncoderV1()
+    priors_file = Path(spec_path).parent / spec["set_priors"]["file"]
+    priors = SetPriors.from_dict(json.loads(priors_file.read_text()))
+    assert priors.sha256 == spec["set_priors"]["sha256"], f"{priors_file} differs from the spec"
+    encoder = encoder_for(ModelConfig.from_dict(spec["model"]), priors)
+    assert encoder.input_names == [i["name"] for i in spec["inputs"]], "inputs differ from the spec"
+    return encoder
+
+
 async def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--version", help="model N_SIZE (e.g. 1_4M): use the MiniPokeVN_SIZE model, spec and fixtures paths")
@@ -193,6 +218,7 @@ async def main() -> None:
         ap.error("--out (or --version) is required")
 
     check_spec(args.spec)
+    encoder = encoder_from_spec(args.spec)
     session = None
     if args.model:
         import onnxruntime as ort
@@ -208,6 +234,7 @@ async def main() -> None:
             rng=random.Random(rng.random()),
             tera_bias=args.tera_bias,
             session=session,
+            encoder=encoder,
             account_configuration=AccountConfiguration(f"Fixture{name}{suffix}", None),
             battle_format=FORMAT,
             max_concurrent_battles=1,

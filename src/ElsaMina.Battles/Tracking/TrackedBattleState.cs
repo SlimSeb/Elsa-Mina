@@ -68,6 +68,12 @@ public class TrackedBattleState
     /// </summary>
     public List<string[]> PendingLines { get; } = [];
 
+    /// <summary>
+    /// The |turn|, |move|, |switch|, |drag|, |replace| and |faint| lines in the order received, split on '|': the
+    /// part of poke-env's protocol log (battle._replay_data) that minipoke-v2's history features read.
+    /// </summary>
+    public List<string[]> ProtocolLines { get; } = [];
+
     public TrackedPokemon ActivePokemon => Team.FirstOrDefault(pokemon => pokemon.Active);
     public TrackedPokemon OpponentActivePokemon => OpponentTeam.FirstOrDefault(pokemon => pokemon.Active);
     public bool IsNeutralizingGasActive => Fields.ContainsKey(PokeEnvNames.NEUTRALIZING_GAS);
