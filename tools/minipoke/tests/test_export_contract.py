@@ -104,6 +104,16 @@ def test_size_is_recognised_from_a_checkpoint_config():
     assert size_of(PRESETS["medium"]) == "medium"
     assert size_of(replace(PRESETS["medium"], value_bins=1, dropout=0.05)) == "medium"
     assert size_of(ModelConfig.from_dict({"d_model": 128, "n_layers": 3})) == "small"
+    assert size_of(PRESETS["wide"]) == "wide"
+    assert size_of(PRESETS["wide-medium"]) == "wide-medium"
+    assert size_of(replace(PRESETS["wide-medium"], encoder_version=2, history=True)) == "wide-medium"
+
+
+def test_wide_medium_v2_is_in_the_target_size():
+    from model import preset
+    n = sum(p.numel() for p in MiniPokeTransformer(
+        preset("wide-medium", encoder_version=2, history=True)).parameters())
+    assert 3.5e6 <= n <= 4.5e6
 
 
 # --------------------------------------------------------------------------
@@ -114,6 +124,7 @@ V2_MODELS = {
     "v2-medium": dict(size="medium", encoder_version=2),
     "v2-move-tokens": dict(size="small", encoder_version=2, move_tokens=True),
     "v2-history": dict(size="small", encoder_version=2, history=True),
+    "v2-wide-medium-history": dict(size="wide-medium", encoder_version=2, history=True),
     "v2-typed-ffn": dict(size="small", encoder_version=2, move_tokens=True, typed_ffn=True),
     "v2-history-tokens": dict(size="small", encoder_version=2, history_tokens=8, typed_ffn=True),
     "v2-matchups": dict(size="small", encoder_version=2, matchup_tokens=True),

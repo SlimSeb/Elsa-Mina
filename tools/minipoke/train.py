@@ -17,6 +17,7 @@ Needs one local Showdown server (see README), or --showdown-cmd to start it:
 entropy). `--size wide` is MiniPokeV1_4M's architecture, trained with the same
 recipe. `--size medium` turns on the long-run defaults: LR warmup + cosine,
 entropy annealing, the opponent pool and a distributional value head.
+`--size wide-medium` is wide's architecture with medium's value head and defaults.
 """
 
 from __future__ import annotations
@@ -74,9 +75,10 @@ DEFAULTS: Dict[str, Dict[str, object]] = {
     ),
 }
 DEFAULTS["wide"] = DEFAULTS["small"]  # MiniPokeV1_4M was trained with the V1 recipe
+DEFAULTS["wide-medium"] = DEFAULTS["medium"]
 # --value-ce-norm none is the two-hot loss before it was divided by log(bins); medium's
 # value weight was 0.1 then, so that setting also brings back the old medium default.
-RAW_CE_VF_COEF = {"medium": 0.1}
+RAW_CE_VF_COEF = {"medium": 0.1, "wide-medium": 0.1}
 # Options added after a run was started: resuming it keeps what it was trained with
 LEGACY = dict(value_ce_norm="none", kl_stop="last", pool_sampling="uniform")
 COMMON_DEFAULTS = dict(
@@ -618,7 +620,7 @@ def build_parser() -> argparse.ArgumentParser:
                        help="rollout inference device; auto (default for ppo) benchmarks CPU "
                             "against the training device and keeps the faster")
         p.add_argument("--concurrency", type=int, default=None,
-                       help="concurrent battles per seat pair (default 32 small/wide, 48 medium)")
+                       help="concurrent battles per seat pair (default 32 small/wide, 48 medium/wide-medium)")
         p.add_argument("--eval-battles", type=int, default=200)
         p.add_argument("--ckpt-dir", default=None,
                        help="default checkpoints/ (ppo --resume: the resumed run's directory)")
@@ -635,7 +637,7 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--size", default=default_size, choices=list(PRESETS))
         p.add_argument("--dropout", type=float, default=None)
         p.add_argument("--value-bins", type=int, default=None,
-                       help="1 = scalar value head; default 1 small/wide, 51 medium")
+                       help="1 = scalar value head; default 1 small/wide, 51 medium/wide-medium")
         arch_args(p)
 
     def arch_args(p):
@@ -684,7 +686,7 @@ def build_parser() -> argparse.ArgumentParser:
     model_args(p, "small")
     data_args(p, 3000, 0.1)
     p.add_argument("--bc-value-coef", type=float, default=None,
-                   help="also fit the value head to battle returns (default 0 small/wide, 0.5 medium)")
+                   help="also fit the value head to battle returns (default 0 small/wide, 0.5 medium/wide-medium)")
     value_ce_arg(p)
     p.set_defaults(fn=cmd_imitate)
 

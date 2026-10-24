@@ -7,21 +7,22 @@ and a **single** local Showdown server. ElsaMina plays with the exported models
 The next model, **minipoke-v2**, adds random battle set priors and optional history,
 move, matchup and auxiliary features, all behind flags (see [minipoke-v2](#minipoke-v2-encoder-v2)).
 
-| | ps-ppo | minipoke `small` (V1_1M) | minipoke `wide` (V1_4M) | minipoke `medium` |
-|---|---|---|---|---|
-| Parameters | ~16M | 0.91M | 4.12M | 3.85M |
-| d_model / layers / heads | 512 / 3 / 8 | 128 / 3 / 4 | 256 / 3 / 8 | 256 / 4 / 8 |
-| FFN | x4 | x2 | x4 | x2 |
-| Embeddings (species / item / ability / move) | 64 / 32 / 64 / 64 | 32 / 16 / 16 / 32 | 64 / 32 / 64 / 64 | 64 / 32 / 32 / 64 |
-| Attention | `flex_attention` (Triton, CUDA-only) | `scaled_dot_product_attention` + boolean mask (MPS ok) | same | same |
-| Turn history | KV cache, 64 turns | none (current state only) | none | none |
-| Policy head | linear on actor token | pointer heads: switch logits from team tokens, move logits from the active Pokémon's move vectors | same | same |
-| Value head | 51-bin distributional | scalar | scalar | 51-bin two-hot over [-1.6, 1.6] |
-| Environment | many Showdown servers + Ray workers | one server, poke-env, asyncio, batched inference | same | same |
-| Training | BC → PPO | BC → mirror self-play PPO | same as `small` | BC (or distillation) → PPO with an opponent pool, schedules, resumable |
+| | ps-ppo | minipoke `small` (V1_1M) | minipoke `wide` (V1_4M) | minipoke `medium` | minipoke `wide-medium` |
+|---|---|---|---|---|---|
+| Parameters | ~16M | 0.91M | 4.12M | 3.85M | 4.13M (v2 + `--history`: 4.40M) |
+| d_model / layers / heads | 512 / 3 / 8 | 128 / 3 / 4 | 256 / 3 / 8 | 256 / 4 / 8 | 256 / 3 / 8 |
+| FFN | x4 | x2 | x4 | x2 | x4 |
+| Embeddings (species / item / ability / move) | 64 / 32 / 64 / 64 | 32 / 16 / 16 / 32 | 64 / 32 / 64 / 64 | 64 / 32 / 32 / 64 | 64 / 32 / 64 / 64 |
+| Attention | `flex_attention` (Triton, CUDA-only) | `scaled_dot_product_attention` + boolean mask (MPS ok) | same | same | same |
+| Turn history | KV cache, 64 turns | none (current state only) | none | none | none |
+| Policy head | linear on actor token | pointer heads: switch logits from team tokens, move logits from the active Pokémon's move vectors | same | same | same |
+| Value head | 51-bin distributional | scalar | scalar | 51-bin two-hot over [-1.6, 1.6] | same as `medium` |
+| Environment | many Showdown servers + Ray workers | one server, poke-env, asyncio, batched inference | same | same | same |
+| Training | BC → PPO | BC → mirror self-play PPO | same as `small` | BC (or distillation) → PPO with an opponent pool, schedules, resumable | same as `medium` |
 
 `small` and `wide` are the architectures of the released `MiniPokeV1_1M` and
-`MiniPokeV1_4M`. Every V1 size exports the **same ONNX interface** (inputs, dtypes,
+`MiniPokeV1_4M`. `wide-medium` is `wide`'s transformer trained with `medium`'s value
+head and recipe, the size meant for `MiniPokeV2_4M` (see [below](#training-minipokev2_4m-wide-medium)). Every V1 size exports the **same ONNX interface** (inputs, dtypes,
 shapes, `logits [B,14]`, `value [B]`) and the same `encoder_spec.json`, byte for byte:
 the distributional head returns its expected value, so ElsaMina cannot tell them apart.
 `tests/test_export_contract.py` checks this. A minipoke-v2 model keeps the outputs and
@@ -90,7 +91,7 @@ architecture stored in the checkpoint, and default to the options of the size it
 matches. Checkpoints store their own config, so older ones (saved before the value
 head was configurable, or by the previous `train.py`) still load, resume and export.
 
-| | `small`, `wide` (the V1 recipe, unchanged) | `medium` |
+| | `small`, `wide` (the V1 recipe, unchanged) | `medium`, `wide-medium` |
 |---|---|---|
 | Value head | scalar, MSE | 51 bins, two-hot cross-entropy / log(51) (`--value-bins`, `--value-ce-norm`) |
 | BC value fit (`--bc-value-coef`) | 0 (policy only) | 0.5, to the battles' discounted returns |
@@ -398,6 +399,32 @@ A V1 model's spec is unchanged, byte for byte. A v2 model's spec adds:
   metrics.csv logs each loss and accuracy and the share of labelled steps.
 - `--reward winloss`: 1 for a win, 0 otherwise, no faint shaping, gamma 1.
 - `--uniform-kl-coef C`: adds C × KL(uniform over the legal actions || policy).
+
+### Training MiniPokeV2_4M (`wide-medium`)
+
+`MiniPokeV2_4M` is `MiniPokeV2_1M` (the `v2-mr` run) four times larger: the same
+observation (`--encoder-version 2 --history`) and the medium recipe, on `wide`'s
+transformer (256 / 3 layers / 8 heads, FFN x4) with the 51-bin value head. That is
+4.40M parameters. Its `encoder_spec.json` is V2_1M's but for its own `set_priors` hash,
+so it runs with `MiniPokeV2Encoder` as is. `--size wide-medium` sets every default
+(`--init` and `--resume` recognize it from the checkpoint), so no recipe flag is needed:
+
+```bash
+T=checkpoints/v2-mr/best.pt          # MiniPokeV2_1M's checkpoint (or v1-wide.pt, MiniPokeV1_4M's)
+python train.py distill --teacher $T --size wide-medium --encoder-version 2 --history \
+    --battles 10000 --epochs 6 --seed 1 --data data/distill-v2-hist-4m --ckpt-dir checkpoints/v2-4m
+python train.py ppo --init checkpoints/v2-4m/distill.pt --ckpt-dir checkpoints/v2-4m --run v2-4m \
+    --states 5000000 --seed 1 --showdown-cmd "node pokemon-showdown start --no-security"
+python train.py eval --ckpt checkpoints/v2-4m/best.pt --battles 1000
+python train.py eval --ckpt checkpoints/v2-4m/best.pt --vs-ckpt $T --battles 1000
+```
+
+The teacher is the strongest model so far; its encoder does not matter (the teacher plays
+from its own encoding). Distillation reuses `data/distill-v2-hist-4m` when it is run again.
+Expect about medium's speed (90-175 st/s on a laptop CPU, see above): 5M states take
+8-15 h, and `--resume checkpoints/v2-4m/ppo_latest.pt --states 10000000` extends the run
+the next night. Then release it as `2_4M` ([Releasing a new model](#releasing-a-new-model-n_size)),
+reusing the V2 encoder.
 
 ## Elo league table
 
