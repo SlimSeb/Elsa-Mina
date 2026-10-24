@@ -580,11 +580,11 @@ coefficient's scale): sweep them only for ideas that look promising.
 
 ## Using a model in ElsaMina
 
-Each exported model is named after its **version** (the `encoder.py` it was trained
-with) and its size in parameters: `MiniPokeV1_1M`, `MiniPokeV1_4M`, later `MiniPokeV2_...`.
-Models of one version share their C# encoder. ElsaMina keeps every model side by side,
-so they can be compared with `-strategy minipokevN-size` (`minipokev1-1m`, `minipokev1-4m`;
-`-strategy minipoke` picks the latest one).
+Each exported model is named after its **version** (the encoder it was trained with:
+`encoder.py` for 1, `encoder_v2.py` for 2) and its size in parameters: `MiniPokeV1_1M`,
+`MiniPokeV1_4M`, `MiniPokeV2_1M`. Models of one version share their C# encoder. ElsaMina
+keeps every model side by side, so they can be compared with `-strategy minipokevN-size`
+(`minipokev1-1m`, `minipokev1-4m`, `minipokev2-1m`; `-strategy minipoke` picks the latest one).
 
 The C# side reproduces what the model sees in training:
 
@@ -593,6 +593,8 @@ The C# side reproduces what the model sees in training:
 | poke-env's battle tracking | `src/ElsaMina.Battles/Tracking` (shared by every version) |
 | `encoder.py`: slots, ids, item hashing, action mask | `Strategies/MiniPoke/MiniPokeEncoder.cs` (shared) |
 | `encoder.py`: feature vectors | `Strategies/MiniPokeVN/MiniPokeVNEncoder.cs` (one per version) |
+| `encoder_v2.py`: V1's arrays, then set priors and history | `Strategies/MiniPokeV2/MiniPokeV2Encoder.cs` (extends V1's) |
+| `setpriors.py`, `history.py` | `Strategies/MiniPokeV2/SetPriors.cs`, `ProtocolHistory.cs` |
 | `export_onnx.py` outputs | `src/ElsaMina.Battles/Models/MiniPokeVN_SIZE/` (one per model) |
 | ONNX inference, action → `/choose` | `Strategies/MiniPoke/` (shared) |
 
@@ -645,12 +647,17 @@ side by side instead, release it as a new model (below), reusing V1's encoder.
    to what the Python encoder produced, every action mapped to the order poke-env sent,
    and the same logits in Python's onnxruntime and ElsaMina's.
 
-**minipoke-v2 (not ported yet).** Its C# encoder keeps V1's arrays and adds the ones its
-`encoder_spec.json` lists under `"inputs"`, following the spec's rules: it loads the
-model's `set_priors.json` (the priors are the model's, not Showdown's current file), and
-with history, events or matchups it needs the battle's protocol lines in order (the
-tracker must keep them), poke-env's `last_move` / `_active_turns` / `protect_counter`, and
-`damage.py`'s estimate. The v2 fixtures carry `"encoder_version": 2` and every input.
+**minipoke-v2.** `MiniPokeV2Encoder` keeps V1's arrays and adds the ones its
+`encoder_spec.json` lists under `"inputs"`, following the spec's rules. It loads the
+model's `set_priors.json` (the priors are the model's, not Showdown's current file; its
+sha256 must be the spec's), and `--history` reads the battle's protocol lines in order
+(`TrackedBattleState.ProtocolLines`) and poke-env's `last_move`, `_active_turns` and
+`protect_counter`, which the tracker keeps. `--history-tokens` and `--matchup-tokens` are not
+ported: the encoder refuses a spec using them, so a model trained with them needs those
+arrays (and `damage.py`) ported first. The v2 fixtures carry `"encoder_version": 2` and
+every input; `MiniPokeV2ParityTest` compares all of them. `MiniPokeV2_1M` is the `v2-mr`
+run: `--encoder-version 2 --history`, distilled from `MiniPokeV1_1M`, then the medium
+recipe for 2.5M states.
 
 Older models keep working as long as their encoder stays as it was. Their
 fixtures were recorded with their own encoder: tag the commit of each
