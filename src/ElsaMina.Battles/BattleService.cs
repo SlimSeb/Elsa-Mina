@@ -57,7 +57,12 @@ public class BattleService : IBattleService
 
             _bot.Say(roomId, "/leave");
             _contexts.TryRemove(roomId, out _);
-            _ladderingService.OnBattleEnded();
+            // Spectated battles end too (and replay their |win| when joined late), only ours call for a new search
+            if (!string.IsNullOrEmpty(context.SideId))
+            {
+                _ladderingService.OnBattleEnded();
+            }
+
             return;
         }
 

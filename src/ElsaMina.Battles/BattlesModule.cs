@@ -40,6 +40,7 @@ public class BattlesModule : Module
         builder.RegisterType<LadderingService>().As<ILadderingService>().SingleInstance();
 
         builder.RegisterHandler<BattleHandler>();
+        builder.RegisterHandler<UpdateSearchHandler>();
 
         builder.RegisterCommand<SearchCommand>();
         builder.RegisterCommand<UseTeamCommand>();
