@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace ElsaMina.UnitTests.Battles.Strategies.MiniPoke;
@@ -28,6 +29,12 @@ public class MiniPokeFixtureDecision
 
     [JsonPropertyName("mask")]
     public bool[] Mask { get; set; } = [];
+
+    /// <summary>
+    /// The arrays a version adds after the six above (minipoke-v2's cand_ids, hist_feats...), by input name.
+    /// </summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement> ExtraArrays { get; set; } = [];
 
     /// <summary>
     /// poke-env's battle.team keys, in order.

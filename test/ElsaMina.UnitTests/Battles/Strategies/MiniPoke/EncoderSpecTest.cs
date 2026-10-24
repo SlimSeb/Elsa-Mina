@@ -52,6 +52,22 @@ public class EncoderSpecTest
     }
 
     [Test]
+    public void Test_Load_ShouldReadNoExtraInputs_WhenSpecIsV1()
+    {
+        // Act
+        var spec = EncoderSpec.Load(SPEC_PATH);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(spec.EncoderVersion, Is.EqualTo(1));
+            Assert.That(spec.ExtraInputs, Is.Empty);
+            Assert.That(spec.Model, Is.Null);
+            Assert.That(spec.SetPriors, Is.Null);
+        }
+    }
+
+    [Test]
     public void Test_Load_ShouldThrow_WhenOrderingHasNameTheTrackerNeverProduces()
     {
         // Arrange: an extra weather would also change f_field, so swap one name instead

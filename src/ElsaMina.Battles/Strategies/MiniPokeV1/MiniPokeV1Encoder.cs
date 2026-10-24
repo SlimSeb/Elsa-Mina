@@ -8,7 +8,7 @@ namespace ElsaMina.Battles.Strategies.MiniPokeV1;
 /// block of encode). Must match it value for value: MiniPokeV1ParityTest checks it against battles recorded
 /// with that encoder.py.
 /// </summary>
-public sealed class MiniPokeV1Encoder : MiniPokeEncoder
+public class MiniPokeV1Encoder : MiniPokeEncoder
 {
     // Scalar features around the named blocks, as counted in encoder.py's F_MON, F_MOVE and F_FIELD
     private const int MON_LEADING_FEATURES = 6;
