@@ -303,6 +303,13 @@ class Rollouts:
         return evaluate(self.batcher, make_opp, n_battles, self.cfg.concurrency,
                         self.cfg.stall_timeout, self.server)
 
+    def evaluate_weights(self, state: Dict[str, torch.Tensor], n_battles: int) -> Tuple[float, int]:
+        """Greedy `state` (another version of the learner, e.g. best.pt) vs the heuristic."""
+        load_into(self.eval_model, state)
+        return evaluate(self.eval_batcher,
+                        lambda: SafeHeuristicsPlayer(**make_kwargs(self.cfg.concurrency)),
+                        n_battles, self.cfg.concurrency, self.cfg.stall_timeout, self.server)
+
 
 def evaluate(batcher: InferenceBatcher, make_opponent: Callable[[], Player], n_battles: int,
              concurrency: int, stall_timeout: float = 180.0, server=None) -> Tuple[float, int]:

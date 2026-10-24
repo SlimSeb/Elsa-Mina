@@ -274,7 +274,7 @@ METRICS = ["iteration", "time", "hours", "states", "total_states", "battles", "p
            "aux_action_acc", "aux_set_loss", "aux_item_acc", "aux_ability_acc", "aux_tera_acc",
            "aux_moves_recall", "train_wr_pool", "train_wr_heuristic",
            "eval_wr_heuristic", "eval_n_heuristic", "eval_wr_pool", "eval_n_pool", "confirm_wr",
-           "confirm_n", "best_wr", "elo", "epochs", "faint_reward", "pool_size",
+           "confirm_n", "best_wr", "incumbent_wr", "incumbent_n", "elo", "epochs", "faint_reward", "pool_size",
            "pool_hardest_wr", "stalled", "rebuilds", "rss_mb"]
 
 
@@ -345,12 +345,18 @@ def cmd_ppo(args) -> None:
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=1e-2)
     pool = OpponentPool(ckpt_dir / "pool", cap=args.pool_cap, sampling=args.pool_sampling,
                         floor=args.pfsp_floor, ema=args.pool_ema)
+    # best_wr: best.pt's win rate, first the one that made it best.pt, then the one
+    # it keeps on fresh battles (best_wins / best_n) when candidates challenge it
     st = {"iteration": 0, "total_states": 0, "active_seconds": 0.0, "best_wr": -1.0,
-          "best_iteration": None}
+          "best_iteration": None, "best_wins": 0.0, "best_n": 0}
+    best_path = ckpt_dir / "best.pt"
+    best_state = None   # best.pt's weights
     if resumed:
         opt.load_state_dict(resumed["opt"])
         # Checkpoints saved before the full training state only hold the iteration
         st.update(resumed.get("state") or {"iteration": resumed.get("iteration", 0)})
+        if best_path.exists():
+            best_state = load_checkpoint(best_path)["model"]
         pool.load_state_dict(resumed.get("pool"))
         set_rng_state(resumed.get("rng"))
         log.info("[ppo] resumed %s at iteration %d (%s states, %.2f h)", args.resume,
@@ -384,6 +390,29 @@ def cmd_ppo(args) -> None:
 
     def sync() -> None:
         load_into(infer_model, model.state_dict())
+
+    def challenge(it: int, score: float, n_score: int, row: dict, **info) -> None:
+        """`model` (iteration `it`) won `score` of `n_score` fresh battles: it becomes
+        best.pt if that beats best.pt's win rate, measured again on fresh battles.
+        The score that made best.pt win is optimistic (the luckiest of many), so
+        without that a lucky early best.pt would outlive better policies."""
+        nonlocal best_state
+        if args.confirm_battles and best_state is not None:
+            wr, n = rollouts.evaluate_weights(best_state, args.confirm_battles)
+            st["best_wins"] += wr * n
+            st["best_n"] += n
+            if st["best_n"]:
+                st["best_wr"] = st["best_wins"] / st["best_n"]
+                row.update(incumbent_wr=st["best_wr"], incumbent_n=st["best_n"])
+                log.info("[ppo] best.pt (it %s) re-evaluated: %s", st["best_iteration"],
+                         with_ci(st["best_wr"], st["best_n"]))
+        if (n_score >= min(args.min_eval_battles, args.confirm_battles or n_score)
+                and score > st["best_wr"]):
+            st["best_wr"], st["best_iteration"] = score, it
+            st["best_wins"], st["best_n"] = 0.0, 0   # the battles that selected it do not count
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+            save_checkpoint(best_path, model, None, iteration=it, **info)
+            log.info("[ppo] new best: %.1f%% at iteration %d -> %s", 100 * score, it, best_path)
 
     budget = Budget(args.iterations, args.hours, args.states)
 
@@ -493,13 +522,8 @@ def cmd_ppo(args) -> None:
                     elo.record(LEARNER, "heuristic", score * n_score, n_score)
                     log.info("[ppo] it %d: candidate (%.1f%%) confirmed at %s", it, 100 * wr,
                              with_ci(score, n_score))
-                if (n_score >= min(args.min_eval_battles, args.confirm_battles or n_done)
-                        and score > st["best_wr"]):
-                    st["best_wr"], st["best_iteration"] = score, it
-                    save_checkpoint(ckpt_dir / "best.pt", model, None, iteration=it,
-                                    eval_wr_heuristic=wr, confirm_wr=row.get("confirm_wr"))
-                    log.info("[ppo] new best: %.1f%% at iteration %d -> %s", 100 * score, it,
-                             ckpt_dir / "best.pt")
+                challenge(it, score, n_score, row, eval_wr_heuristic=wr,
+                          confirm_wr=row.get("confirm_wr"))
 
         st["active_seconds"] += time.time() - t_iter
         row.update(hours=st["active_seconds"] / 3600, best_wr=max(st["best_wr"], 0.0),
@@ -514,8 +538,8 @@ def cmd_ppo(args) -> None:
              st["iteration"], stop.reason or "budget reached", f"{st['total_states']:,}",
              st["active_seconds"] / 3600, peak_rss_mb() or -1)
     close_players(rollouts.players)
-    best = ckpt_dir / "best.pt"
-    export_checkpoint(best if best.exists() else ckpt_dir / "ppo_latest.pt", args.export_dir)
+    export_checkpoint(best_path if best_path.exists() else ckpt_dir / "ppo_latest.pt",
+                      args.export_dir)
     server.stop()
 
 

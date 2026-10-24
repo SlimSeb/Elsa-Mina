@@ -179,9 +179,14 @@ tokens and typed FFN do not change the encoding, history and matchups do).
   (`--eval-pool-battles` 100 each). A candidate for `checkpoints/best.pt` (an evaluation
   with at least `--min-eval-battles` 150 finished battles, beating the best) is
   re-evaluated over `--confirm-battles` (400) fresh battles, and only that confirmed
-  win rate competes: the best of many noisy evaluations is optimistic. `--confirm-battles 0`
-  turns it off. At the end, `best.pt` (or the latest checkpoint if there is none) is
-  exported to `export/`.
+  win rate competes: the best of many noisy evaluations is optimistic. The win rate
+  that made `best.pt` win is optimistic too, so `best.pt` itself is also played again
+  over 400 fresh battles at each challenge, and the candidate must beat that (its
+  fresh battles add up across challenges; `incumbent_wr` in metrics.csv). Without
+  that, a lucky early `best.pt` outlived every later policy (one ablation run kept
+  iteration 10 of 377).
+  `--confirm-battles 0` turns both off. At the end, `best.pt` (or the latest
+  checkpoint if there is none) is exported to `export/`.
 - **Elo.** See [Elo league table](#elo-league-table): `runs/<run>/elo.json`, `elo` in
   metrics.csv.
 - **Robustness.** A battle that raises in `choose_move` plays a random move and the
@@ -197,7 +202,8 @@ tokens and typed FFN do not change the encoding, history and matchups do).
 - **Logs.** `runs/<run>/train.log`, plus one row per iteration in
   `runs/<run>/metrics.csv`: states, st/s, losses, entropy, KL, PPO epochs run, clip
   fraction, explained variance, LR, entropy coefficient, faint reward, training win
-  rates by opponent, eval and confirmed win rates, best, Elo, pool size and its hardest
+  rates by opponent, eval and confirmed win rates, best and best.pt's re-evaluated
+  win rate, Elo, pool size and its hardest
   snapshot's EMA win rate, auxiliary losses and accuracies, uniform KL, stalls and RSS.
 
 Training fixes, besides the value loss scale:

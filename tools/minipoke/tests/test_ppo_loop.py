@@ -23,8 +23,10 @@ class FakeServer:
 
 class FakeRollouts:
     """Plays nothing: every iteration returns 4 random 25-step episodes, every
-    evaluation the next scripted win rate."""
+    evaluation the next scripted win rate (best.pt's re-evaluations: best_results)."""
     eval_results = []
+    best_results = []
+    weights_evaluated = []
 
     def __init__(self, learner, device, cfg, server=None, rewards=None):
         self.cfg = cfg
@@ -51,6 +53,11 @@ class FakeRollouts:
         scripted = opponent == "heuristic" and FakeRollouts.eval_results
         return (FakeRollouts.eval_results.pop(0) if scripted else 0.5), n_battles
 
+    def evaluate_weights(self, state, n_battles):
+        self.evals.append(("best.pt", n_battles))
+        FakeRollouts.weights_evaluated.append(state)
+        return (FakeRollouts.best_results.pop(0) if FakeRollouts.best_results else 0.5), n_battles
+
 
 @pytest.fixture
 def run_ppo(tmp_path, monkeypatch):
@@ -74,6 +81,8 @@ def run_ppo(tmp_path, monkeypatch):
     for s, h in handlers.items():
         signal.signal(s, h)
     FakeRollouts.eval_results = []
+    FakeRollouts.best_results = []
+    FakeRollouts.weights_evaluated = []
 
 
 def test_states_budget_stops_the_run(run_ppo):
@@ -98,14 +107,43 @@ def test_states_budget_drives_the_schedules(run_ppo):
 
 
 def test_best_needs_a_confirmed_win_rate(run_ppo):
-    # it 1: candidate 0.9, confirmed 0.55 -> best; it 2: candidate 0.8, confirmed 0.50 -> not
-    # better; it 3: 0.52 does not beat the confirmed 0.55 -> no confirmation at all
+    # it 1: candidate 0.9, confirmed 0.55 -> best; it 2: candidate 0.8, confirmed 0.50, and
+    # best.pt measured again at 0.53 -> not better; it 3: 0.52 does not beat best.pt's 0.53
     FakeRollouts.eval_results = [0.9, 0.55, 0.8, 0.50, 0.52]
+    FakeRollouts.best_results = [0.53]
     rows, ck = run_ppo("--size", "small", "--iterations", "3", "--eval-every", "1",
                        "--eval-battles", "200", "--confirm-battles", "400")
     assert [r["confirm_wr"] for r in rows] == ["0.55", "0.5", ""]
-    assert ck["state"]["best_wr"] == 0.55 and ck["state"]["best_iteration"] == 1
-    assert [float(r["best_wr"]) for r in rows] == [0.55, 0.55, 0.55]
+    assert [r["incumbent_wr"] for r in rows] == ["", "0.53", ""]
+    assert ck["state"]["best_iteration"] == 1
+    assert ck["state"]["best_wr"] == pytest.approx(0.53) and ck["state"]["best_n"] == 400
+    assert [float(r["best_wr"]) for r in rows] == [0.55, 0.53, 0.53]
+
+
+def test_a_lucky_best_is_measured_again_and_replaced(run_ppo, tmp_path):
+    # it 1 confirmed at a lucky 0.70; it 2 confirmed at 0.62 would never beat that, but
+    # best.pt only wins 0.58 of fresh battles
+    FakeRollouts.eval_results = [0.9, 0.70, 0.75, 0.62]
+    FakeRollouts.best_results = [0.58]
+    rows, ck = run_ppo("--size", "small", "--iterations", "2", "--eval-every", "1",
+                       "--confirm-battles", "400")
+    assert ck["state"]["best_iteration"] == 2
+    assert (ck["state"]["best_wr"], ck["state"]["best_n"]) == (0.62, 0)
+    assert load_checkpoint(tmp_path / "checkpoints" / "best.pt")["iteration"] == 2
+
+
+def test_resume_measures_the_saved_best_pt(run_ppo, tmp_path):
+    FakeRollouts.eval_results = [0.6, 0.6, 0.7, 0.65]
+    run_ppo("--size", "small", "--iterations", "1", "--eval-every", "1")
+    best = load_checkpoint(tmp_path / "checkpoints" / "best.pt")["model"]
+    FakeRollouts.best_results = [0.5]
+    args = train.build_parser().parse_args(["ppo", "--device", "cpu", "--resume",
+                                            str(tmp_path / "checkpoints" / "ppo_latest.pt"),
+                                            "--iterations", "2", "--eval-every", "1"])
+    args.fn(args)
+    seen = FakeRollouts.weights_evaluated[0]
+    assert all(torch.equal(seen[k], v) for k, v in best.items())
+    assert load_checkpoint(tmp_path / "checkpoints" / "best.pt")["iteration"] == 2
 
 
 def test_budget_is_whichever_ends_first():
