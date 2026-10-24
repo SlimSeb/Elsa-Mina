@@ -1,8 +1,9 @@
 """
 MiniPokeTransformer — a small take on ps-ppo's PokeTransformer that runs on
 Apple Silicon (MPS), CUDA or CPU. Presets: "small" (~0.9M parameters, the
-MiniPokeV1_1M architecture), "medium" (~3.8M) and "wide" (~4.1M, the
-MiniPokeV1_4M architecture).
+MiniPokeV1_1M architecture), "medium" (~3.8M), "wide" (~4.1M, the
+MiniPokeV1_4M architecture) and "wide-medium" (wide's transformer with medium's
+distributional value head, for medium's training recipe).
 
 Differences from the original:
   * No flex_attention / Triton: plain F.scaled_dot_product_attention with a
@@ -123,15 +124,22 @@ PRESETS: Dict[str, ModelConfig] = {
                           value_bins=51),
     "wide": ModelConfig(d_model=256, n_layers=3, n_heads=8, ff_mult=4.0,
                         species_dim=64, item_dim=32, ability_dim=64, move_dim=64),
+    # wide's transformer, medium's value head (and, in train.py, its recipe)
+    "wide-medium": ModelConfig(d_model=256, n_layers=3, n_heads=8, ff_mult=4.0,
+                               species_dim=64, item_dim=32, ability_dim=64, move_dim=64,
+                               value_bins=51),
 }
 
 
 def size_of(cfg: ModelConfig) -> str:
-    """The preset whose transformer shape matches cfg ("small" when none does)."""
-    for name, p in PRESETS.items():
-        if (cfg.d_model, cfg.n_layers, cfg.n_heads) == (p.d_model, p.n_layers, p.n_heads):
+    """The preset whose transformer shape matches cfg ("small" when none does). When
+    several do (wide, wide-medium), the one whose value head is of the same kind."""
+    shape = (cfg.d_model, cfg.n_layers, cfg.n_heads)
+    same_shape = [name for name, p in PRESETS.items() if (p.d_model, p.n_layers, p.n_heads) == shape]
+    for name in same_shape:
+        if (PRESETS[name].value_bins > 1) == (cfg.value_bins > 1):
             return name
-    return "small"
+    return same_shape[0] if same_shape else "small"
 
 
 def preset(name: str, **overrides) -> ModelConfig:
