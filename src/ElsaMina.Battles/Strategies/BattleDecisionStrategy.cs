@@ -22,5 +22,10 @@ public enum BattleDecisionStrategy
     /// minipoke-v2 with ~1M parameters: V1's inputs plus random battle set priors and history features
     /// (encoder_v2.py), trained with the medium recipe.
     /// </summary>
-    MiniPokeV2_1M
+    MiniPokeV2_1M,
+
+    /// <summary>
+    /// minipoke-v2 with ~4M parameters: same encoder as <see cref="MiniPokeV2_1M"/>, wide-medium network.
+    /// </summary>
+    MiniPokeV2_4M
 }

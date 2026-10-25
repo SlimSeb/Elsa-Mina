@@ -36,6 +36,7 @@ public class BattlesModule : Module
         RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_1M);
         RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_4M);
         RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_1M);
+        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_4M);
         builder.RegisterType<BattleDecisionManager>().As<IBattleDecisionService>().As<IBattleDecisionManager>().SingleInstance();
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
         builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();

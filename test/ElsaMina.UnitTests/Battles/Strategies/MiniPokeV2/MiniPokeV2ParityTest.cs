@@ -15,7 +15,8 @@ namespace ElsaMina.UnitTests.Battles.Strategies.MiniPokeV2;
 public class MiniPokeV2ParityTest
 {
     // Every model trained with encoder_v2.py, each with its own fixtures
-    private static readonly BattleDecisionStrategy[] MODELS = [BattleDecisionStrategy.MiniPokeV2_1M];
+    private static readonly BattleDecisionStrategy[] MODELS =
+        [BattleDecisionStrategy.MiniPokeV2_1M, BattleDecisionStrategy.MiniPokeV2_4M];
 
     private readonly Dictionary<BattleDecisionStrategy, MiniPokeParityChecker> _checkers = [];
 
