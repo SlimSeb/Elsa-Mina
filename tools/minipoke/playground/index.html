@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>minipoke playground</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.wasm.min.js"></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <h1>minipoke playground</h1>
+  <label>Model <select id="model-select"></select></label>
+  <label>Fixture <select id="fixture-select"></select></label>
+  <label class="file-pick" title="or drop a .json.gz anywhere on the page">or open <input type="file" id="file-input" accept=".gz,.json"></label>
+  <span id="status" class="status"></span>
+</header>
+<div id="banner" class="banner" hidden></div>
+
+<main class="layout">
+  <section class="panel col-log">
+    <div class="navigator">
+      <div class="nav-row">
+        <button id="prev" type="button" title="previous decision (left arrow)">&#9664;</button>
+        <input id="decision-slider" type="range" min="0" max="0" value="0" aria-label="decision">
+        <button id="next" type="button" title="next decision (right arrow)">&#9654;</button>
+      </div>
+      <div id="nav-info" class="nav-info"></div>
+    </div>
+    <div class="log-head">
+      <h2>Battle log</h2>
+      <label><input type="checkbox" id="show-requests"> show |request| lines</label>
+    </div>
+    <div id="log" class="log"></div>
+  </section>
+
+  <section class="panel col-state">
+    <div class="edit-bar">
+      <div class="edit-bar-row">
+        <span id="edit-count">No edits</span>
+        <button id="reset" type="button" disabled>Reset</button>
+      </div>
+      <p id="edit-note" class="note" hidden>Edited inputs can describe states the encoder would never produce:
+        nothing derived from an edited cell follows it (lowering HP to 0 does not set fainted or the alive
+        counts, a status or boost does not touch the move features, a weather does not change any base power).</p>
+      <ul id="edit-list" class="edit-list"></ul>
+    </div>
+    <h2>Field</h2>
+    <div id="field" class="field"></div>
+    <h2 id="ours-title">Our team</h2>
+    <div id="ours" class="cards"></div>
+    <h2 id="theirs-title">Their team</h2>
+    <div id="theirs" class="cards"></div>
+    <details id="raw" class="raw">
+      <summary>Raw cell editor</summary>
+      <div class="raw-row">
+        <label>Input <select id="raw-input"></select></label>
+        <label>Index <input id="raw-index" type="text" value="0" size="10" title="flat index, or comma separated (row, column...)"></label>
+        <span id="raw-shape" class="dim"></span>
+      </div>
+      <div id="raw-info" class="raw-info"></div>
+      <div class="raw-row">
+        <label>Value <input id="raw-value" type="number" step="any"></label>
+        <button id="raw-set" type="button">Set</button>
+        <button id="raw-revert" type="button">Revert cell</button>
+      </div>
+    </details>
+  </section>
+
+  <section class="panel col-out">
+    <div class="out-head">
+      <h2>Policy</h2>
+      <label class="temp">temperature <input id="temperature" type="range" min="0.1" max="3" step="0.05" value="1"> <span id="temperature-value">1.00</span></label>
+    </div>
+    <p id="policy-info" class="dim small"></p>
+    <div id="actions" class="actions"></div>
+    <h2>Value</h2>
+    <div id="value" class="value"></div>
+    <h2>Parity</h2>
+    <div id="parity" class="parity"></div>
+    <div class="parity-buttons">
+      <button id="check-fixture" type="button">Check whole fixture</button>
+      <button id="check-folder" type="button">Check every fixture of this model</button>
+    </div>
+    <div id="check-result" class="check-result"></div>
+  </section>
+</main>
+
+<div id="drop-overlay" class="drop-overlay" hidden>Drop a fixture (.json.gz)</div>
+</body>
+</html>

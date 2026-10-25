@@ -604,6 +604,8 @@ coefficient's scale): sweep them only for ideas that look promising.
   faked rollouts (budgets, confirmed best, pool, Elo, aux), distillation across
   encoders, resume, the pool, the dataset and clean stops.
 - `make_fixtures.py` records battles for ElsaMina's parity tests (V1, or v2 from a v2 spec).
+- `playground/` runs an exported model in the browser on those fixtures (see
+  [Model playground](#model-playground)).
 
 ## Using a model in ElsaMina
 
@@ -692,6 +694,32 @@ release (`git tag minipoke-v1-4m`) to regenerate them later.
 
 Upgrading poke-env, or changing what an encoder reads from it, means checking
 the C# tracker against new fixtures too.
+
+## Model playground
+
+`playground/` is a static page that runs a released model in the browser
+(onnxruntime-web 1.20.1 from jsDelivr, wasm) on the battle states of its parity
+fixtures, and lets you edit them. Serve the repository root and open it:
+
+```bash
+python3 -m http.server 8765        # from the repository root
+open http://localhost:8765/tools/minipoke/playground/
+```
+
+Pick a model (the folders under `src/ElsaMina.Battles/Models/`) and one of its fixtures,
+or drop any fixture `.json.gz` on the page (refused if its encoder version is not the
+model's). Step through the decisions with the slider or the arrow keys: the page shows
+the battle log so far, the 12 Pokémon, the field and the v2 inputs, the 14 action
+probabilities (raw logits beside them, temperature for display only) and the value,
+which is the expected training return (win/loss plus faint shaping), not a win
+probability. The parity badge compares the browser's output with the logits and value
+recorded in the fixture, which only match the model that recorded that folder;
+"Check every fixture of this model" runs the whole folder. Edits (HP, status, boosts,
+weather, terrain, hazards, screens, the action mask, any raw input cell) re-run the
+model at once, with the recorded state as ghost bars and Reset to go back. An edited
+input is not re-encoded: nothing derived from it follows.
+
+The page never encodes a battle itself: every input comes from a fixture.
 
 ## What to expect
 
