@@ -9,7 +9,8 @@ public enum BattleDecisionStrategy
 
     /// <summary>
     /// The first minipoke model, ~1M parameters (Models/MiniPokeV1_1M, strategy "minipokev1-1m"). Each model gets
-    /// its own value, named after its model directory as MiniPokeV{version}_{size}, and a line in BattlesModule.
+    /// its own value, named after its model directory as MiniPokeV{version}_{size} (version 2.1 as 2_1), and a line
+    /// in BattlesModule.
     /// </summary>
     MiniPokeV1_1M,
 
@@ -31,9 +32,10 @@ public enum BattleDecisionStrategy
     MiniPokeV2_4M,
 
     /// <summary>
-    /// minipoke v3 with ~1M parameters: <see cref="MiniPokeV2_1M"/> trained further with the move effect features
-    /// (encoder_v2.py --move-effects: abilities, items and types a move can't work through, and the moves that had
-    /// no effect or failed before). Played with the V2 encoder, which reads them from the spec.
+    /// minipoke v2.1 with ~1M parameters (strategy "minipokev2.1-1m"): <see cref="MiniPokeV2_1M"/> trained further
+    /// with the move effect features (encoder_v2.py --move-effects: abilities, items and types a move can't work
+    /// through, and the moves that had no effect or failed before). Played with the V2 encoder, which reads them from
+    /// the spec.
     /// </summary>
-    MiniPokeV3_1M
+    MiniPokeV2_1_1M
 }

@@ -13,8 +13,8 @@ namespace ElsaMina.UnitTests.Battles.Strategies.MiniPokeV2;
 public class MiniPokeV2MoveEffectsTest
 {
     private const int EFFECT_FEATURES = 6;
-    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV3_1M,
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV3_1M"));
+    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV2_1_1M,
+        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1_1M"));
     private static readonly string[] MOVES = ["earthquake", "rockblast", "glare", "coil"];
     private static readonly float[] LEVITATE_REVEALED = [1f, 1f, 0f, 1f, 0f, 0f];
     private static readonly float[] LEVITATE_KNOWN = [1f, 1f, 0f, 0f, 0f, 0f];

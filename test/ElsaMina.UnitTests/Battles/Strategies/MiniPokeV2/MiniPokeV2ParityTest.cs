@@ -18,7 +18,7 @@ public class MiniPokeV2ParityTest
     private static readonly BattleDecisionStrategy[] MODELS =
     [
         BattleDecisionStrategy.MiniPokeV2_1M, BattleDecisionStrategy.MiniPokeV2_4M,
-        BattleDecisionStrategy.MiniPokeV3_1M
+        BattleDecisionStrategy.MiniPokeV2_1_1M
     ];
 
     private readonly Dictionary<BattleDecisionStrategy, MiniPokeParityChecker> _checkers = [];

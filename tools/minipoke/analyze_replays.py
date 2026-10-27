@@ -1389,8 +1389,10 @@ def attribute_models(battles: List[Battle], names: Sequence[str]) -> None:
 # 9. Report sections
 # --------------------------------------------------------------------------
 def strategy(model: str) -> str:
-    """"MiniPokeV2_1M" -> "minipokev2-1m", ElsaMina's name for it."""
-    return model.lower().replace("_", "-")
+    """"MiniPokeV2_1M" -> "minipokev2-1m", "MiniPokeV2_1_1M" -> "minipokev2.1-1m": ElsaMina's name for it
+    (BattleDecisionStrategyExtensions.GetName)."""
+    version, _, size = model.lower().rpartition("_")
+    return f"{version.replace('_', '.')}-{size}" if version else size
 
 
 def win_summary(name: str, group: List[Battle]) -> list:

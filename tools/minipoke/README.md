@@ -289,7 +289,7 @@ to a new model (`imitate`, `distill`, `ppo` without `--init`/`--resume`).
 
 `--move-effects` is the one flag that also works with `ppo --init`: `with_move_effects()`
 adds the inputs to the checkpoint's model with zero weights, so it starts out playing exactly
-like it (see [MiniPokeV3_1M](#minipokev3_1m-move-effects)).
+like it (`MiniPokeV2_1_1M` is `MiniPokeV2_1M` trained further this way).
 
 ### Set priors
 
@@ -640,12 +640,12 @@ coefficient's scale): sweep them only for ideas that look promising.
 ## Using a model in ElsaMina
 
 Each exported model is named after its **version** (the observation it was trained with:
-`encoder.py` for 1, `encoder_v2.py` for 2, `encoder_v2.py --move-effects` for 3) and its size in
-parameters: `MiniPokeV1_1M`, `MiniPokeV1_4M`, `MiniPokeV2_1M`, `MiniPokeV2_4M`, `MiniPokeV3_1M`.
-Models of one encoder share their C# encoder (V3 models play with `MiniPokeV2Encoder`, which reads
-the move effect flag from the spec). ElsaMina keeps every model side by side, so they can be
-compared with `-strategy minipokevN-size` (`minipokev1-1m`, `minipokev1-4m`, `minipokev2-1m`,
-`minipokev2-4m`, `minipokev3-1m`; `-strategy minipoke` picks the latest one). The bot starts with `minipokev2-4m`; `-strategy calc` switches to the damage calc
+`encoder.py` for 1, `encoder_v2.py` for 2, `encoder_v2.py --move-effects` for 2.1, written `2_1` in
+names) and its size in parameters: `MiniPokeV1_1M`, `MiniPokeV1_4M`, `MiniPokeV2_1M`, `MiniPokeV2_4M`,
+`MiniPokeV2_1_1M`. Models of one encoder share their C# encoder (V2.1 models play with
+`MiniPokeV2Encoder`, which reads the move effect flag from the spec). ElsaMina keeps every model side
+by side, so they can be compared with `-strategy minipokevN-size` (`minipokev1-1m`, `minipokev1-4m`,
+`minipokev2-1m`, `minipokev2-4m`, `minipokev2.1-1m`; `-strategy minipoke` picks the latest one). The bot starts with `minipokev2-4m`; `-strategy calc` switches to the damage calc
 strategy the models fall back on.
 
 The C# side reproduces what the model sees in training:
@@ -705,7 +705,8 @@ side by side instead, release it as a new model (below), reusing V1's encoder.
 ### Releasing a new model N_SIZE
 
 `N_SIZE` is the version and the size, `1_4M` for minipoke v1 with ~4M parameters,
-`2_1M` for a ~1M minipoke-v2 model (strategy `minipokev2-1m`).
+`2_1M` for a ~1M minipoke-v2 model (strategy `minipokev2-1m`), `2_1_1M` for a ~1M minipoke v2.1
+model (strategy `minipokev2.1-1m`).
 
 1. Export the checkpoint into its model directory:
    ```bash
