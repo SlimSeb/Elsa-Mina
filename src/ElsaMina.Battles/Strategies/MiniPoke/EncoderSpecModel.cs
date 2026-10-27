@@ -30,4 +30,10 @@ public sealed class EncoderSpecModel
 
     [JsonPropertyName("matchup_tokens")]
     public bool MatchupTokens { get; set; }
+
+    /// <summary>
+    /// The move effect features (effect_feats, cand_effect_feats). Specs exported before them don't say.
+    /// </summary>
+    [JsonPropertyName("move_effects")]
+    public bool MoveEffects { get; set; }
 }

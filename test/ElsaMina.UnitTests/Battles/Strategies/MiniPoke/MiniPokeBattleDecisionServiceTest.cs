@@ -17,6 +17,8 @@ public class MiniPokeBattleDecisionServiceTest
     private const int ACTION_COUNT = BattleObservation.ActionCount;
     private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV1_1M, "Models/MiniPokeV1_1M");
     private static readonly int[] SECOND_CHOICE = [2];
+    private static readonly int[] THIRD_CHOICE = [3];
+    private static readonly string[] GUARDED_MOVES = ["earthquake", "rockblast", "glare", "coil"];
     private static readonly int[] FOURTH_CHOICE = [4];
     private static readonly int[] FIFTH_CHOICE = [5];
 
@@ -35,8 +37,8 @@ public class MiniPokeBattleDecisionServiceTest
         _randomService.RandomElement(Arg.Any<IEnumerable<int>>()).Returns(FALLBACK_MOVE_CHOICE);
         var fallback = new CalcBasedBattleDecisionService(_randomService, Substitute.For<IOpponentMovesPredictor>(),
             Substitute.For<IBattleSearchAlgorithm>());
-        _service = new MiniPokeBattleDecisionService(_model, _encoder, fallback, _randomService,
-            OPTIONS);
+        _service = new MiniPokeBattleDecisionService(_model, _encoder, fallback,
+            new MiniPokeActionGuard(TestBattleDex.Instance), OPTIONS);
     }
 
     private static BattleContext CreateSinglesContext(int activeSlots = 1)
@@ -154,6 +156,69 @@ public class MiniPokeBattleDecisionServiceTest
 
         // Assert: action 8 is model move 2, the request's 2nd move
         Assert.That(decision.Choices, Is.EqualTo(SECOND_CHOICE));
+    }
+
+    [Test]
+    public async Task Test_GetDecisionAsync_ShouldPlayNextBestAction_WhenGuardVetoesModelChoice()
+    {
+        // Arrange: model move 0, Earthquake, already had no effect on Eelektross
+        var context = CreateGuardedContext();
+        var observation = CreateGuardedObservation();
+        _encoder.Encode(Arg.Any<BattleContext>()).Returns(observation);
+        var logits = new float[ACTION_COUNT];
+        logits[6] = 10f;
+        logits[10] = 9f;
+        logits[7] = 5f;
+        _model.Evaluate(observation).Returns((logits, 0f));
+
+        // Act
+        var decision = await _service.GetDecisionAsync(context);
+
+        // Assert: action 7 is model move 1, the request's 3rd move
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
+            Assert.That(decision.Choices, Is.EqualTo(THIRD_CHOICE));
+            Assert.That(decision.UseTerastallize, Is.False);
+        }
+    }
+
+    [Test]
+    public async Task Test_GetDecisionAsync_ShouldKeepModelChoice_WhenGuardVetoesEveryLegalAction()
+    {
+        // Arrange
+        var context = CreateGuardedContext();
+        var observation = CreateGuardedObservation();
+        Array.Fill(observation.Mask, false);
+        observation.Mask[6] = true;
+        _encoder.Encode(Arg.Any<BattleContext>()).Returns(observation);
+        var logits = new float[ACTION_COUNT];
+        logits[6] = 10f;
+        _model.Evaluate(observation).Returns((logits, 0f));
+
+        // Act
+        var decision = await _service.GetDecisionAsync(context);
+
+        // Assert: action 6 is model move 0, the request's 4th move
+        Assert.That(decision.Choices, Is.EqualTo(FOURTH_CHOICE));
+    }
+
+    private static BattleContext CreateGuardedContext()
+    {
+        var context = CreateSinglesContext();
+        context.Lines.AddRange([
+            "|switch|p1a: Sandaconda|Sandaconda, L84|258/258", "|switch|p2a: Eelektross|Eelektross, L87|100/100",
+            "|turn|1", "|move|p1a: Sandaconda|Earthquake|p2a: Eelektross",
+            "|-immune|p2a: Eelektross|[from] ability: Levitate", "|turn|2"
+        ]);
+        return context;
+    }
+
+    private static BattleObservation CreateGuardedObservation()
+    {
+        var observation = CreateObservation();
+        GUARDED_MOVES.CopyTo(observation.MoveSlotIds, 0);
+        return observation;
     }
 
     [Test]
@@ -329,33 +394,5 @@ public class MiniPokeBattleDecisionServiceTest
 
         // Assert
         Assert.That(decision, Is.Null);
-    }
-
-    [Test]
-    public async Task Test_GetDecisionAsync_ShouldSampleFromLegalActions_WhenSamplingIsEnabled()
-    {
-        // Arrange
-        var service = new MiniPokeBattleDecisionService(_model, _encoder,
-            new CalcBasedBattleDecisionService(_randomService, Substitute.For<IOpponentMovesPredictor>(),
-                Substitute.For<IBattleSearchAlgorithm>()),
-            _randomService, OPTIONS with { Sample = true });
-        var observation = CreateObservation();
-        Array.Fill(observation.Mask, false);
-        observation.Mask[0] = true;
-        observation.Mask[6] = true;
-        _encoder.Encode(Arg.Any<BattleContext>()).Returns(observation);
-        _model.Evaluate(observation).Returns((new float[ACTION_COUNT], 0f));
-        // Equal logits: a roll near 1 lands on the last legal action
-        _randomService.NextDouble().Returns(0.99);
-
-        // Act
-        var decision = await service.GetDecisionAsync(CreateSinglesContext());
-
-        // Assert: action 6 is model move 0, the request's 4th move
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(decision.Type, Is.EqualTo(BattleDecisionType.Move));
-            Assert.That(decision.Choices, Is.EqualTo(FOURTH_CHOICE));
-        }
     }
 }

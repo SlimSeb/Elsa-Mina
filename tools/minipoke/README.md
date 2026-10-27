@@ -73,6 +73,7 @@ python train.py ppo --resume checkpoints/ppo_latest.pt
 # Evaluate (greedy, 1000 battles, 95% Wilson interval), head to head, league table
 python train.py eval --ckpt checkpoints/best.pt --opponent heuristic
 python train.py eval --ckpt checkpoints/best.pt --vs-ckpt other/best.pt
+python train.py eval --ckpt a.pt --vs-ckpt a.pt --no-tera-before 5   # a.pt without tera before turn 5 vs a.pt
 python train.py elo --ckpts a/best.pt b/best.pt --scripted heuristic maxpower random
 
 python plot_metrics.py runs/<run>                     # -> runs/<run>/metrics.png
@@ -283,7 +284,12 @@ to a new model (`imitate`, `distill`, `ppo` without `--init`/`--resume`).
 | `--history-tokens K` | `history_tokens` (0) | yes | the last K battle events as tokens (replaces `--history`) |
 | `--matchup-tokens` | `matchup_tokens` | yes | 12 damage-calc matchup tokens, injected after layer n_layers // 2 |
 | `--typed-ffn` | `typed_ffn` | no | one feed-forward block per token type |
+| `--move-effects` | `move_effects` | yes | per move: immune through an ability, item or type, status fails, no effect / failed before (`effects.py`) |
 | `--aux-action-coef`, `--aux-set-coef` (ppo) | `aux_heads` | no | training-only heads: opponent's action, opponent sets |
+
+`--move-effects` is the one flag that also works with `ppo --init`: `with_move_effects()`
+adds the inputs to the checkpoint's model with zero weights, so it starts out playing exactly
+like it (see [MiniPokeV3_1M](#minipokev3_1m-move-effects)).
 
 ### Set priors
 
@@ -330,6 +336,26 @@ time), and exports write them to `set_priors.json`.
 | `event_ids` (`--history-tokens K`) | int64 [K, 2] | move id (PAD for an entrance), species id of the last K events, oldest first |
 | `event_feats` (`--history-tokens K`) | f32 [K, 14] | present, ours, move, entrance, dragged, called/locked, crit, miss, super effective, resisted, immune, failed, KO, turns ago |
 | `matchup_feats` (`--matchup-tokens`) | f32 [12, 16] | rows 0-5: our mon i vs their active, 6-11: our active vs their mon j; expected damage fraction of each known move both ways, max each way, KO flags, move order |
+| `effect_feats` (`--move-effects`) | f32 [12, 4, 6] | per known move, against the opposing active: no effect, ability blocks, status fails, immune before, failed last time, failed the last two times |
+| `cand_effect_feats` (`--move-effects`) | f32 [6, K, 6] | the same per candidate move, against our active |
+
+**Move effects.** V1's move features read poke-env's type chart only
+(`Pokemon.damage_multiplier`), which ignores abilities: Earthquake into Levitate looks super
+effective, and on the ladder MiniPokeV2_1M used it into a revealed Levitate up to six turns
+in a row. `effects.py` adds, for each move (owner = the Pokémon with it, target = the
+opposing active, V1's convention):
+- **no effect**: 1 when the type chart (damaging moves and Thunder Wave), a revealed item
+  (Air Balloon, Safety Goggles) or the target's types (Fire can't be burned, Grass and
+  powder...) make it a sure miss, else **ability blocks**: the probability that the target's
+  ability stops it (Levitate, Volt Absorb, Flash Fire, Soundproof, Good as Gold, Armor Tail,
+  Insomnia... every rule is in the spec as data). The target's ability is its revealed one,
+  else its set priors' weights (opponents), else its possible abilities, uniformly; times the
+  probability that the owner is not a Mold Breaker / Teravolt / Turboblaze.
+- **status fails**: a status move inflicting a major status into a target that has one.
+- **immune before**, **failed last time / twice**: from the protocol log
+  (`history.move_outcomes`): an `|-immune|` on the other side after one of this side's
+  chosen uses of the move, on this target, since it last terastallized; the owner's last
+  one / two uses of the move followed by `|-fail|`.
 
 History reads poke-env's state (`last_move`, `_active_turns`, `protect_counter`) and
 the battle's protocol log (`Battle._replay_data`, every parsed line but `|request|`)
@@ -376,15 +402,16 @@ A V1 model's spec is unchanged, byte for byte. A v2 model's spec adds:
 - `"encoder_version": 2` (first key) and `"inputs"`: every ONNX input in order, with its
   shape and dtype;
 - `"model"`: the config fields that shape the observation (`encoder_version`,
-  `cand_moves`, `history`, `history_tokens`, `matchup_tokens`);
+  `cand_moves`, `history`, `history_tokens`, `matchup_tokens`, and `move_effects` only
+  when set, so the specs exported before it stay byte-identical);
 - `"set_priors"`: the file (`set_priors.json`), its sha256, the sha256 of the Showdown
   sets file it came from, K, the species lookup, evidence, consistency, ranking,
   tie-breaking, weighting and Choice rules;
-- `"history"`, `"history_tokens"`, `"matchup_tokens"` (when used): every rule, including
-  what the C# tracker must keep beyond poke-env's state (the protocol log) and the
-  damage estimate's formula;
+- `"history"`, `"history_tokens"`, `"matchup_tokens"`, `"move_effects"` (when used):
+  every rule, including what the C# tracker must keep beyond poke-env's state (the
+  protocol log), the damage estimate's formula and the ability, item and type rules;
 - `"orderings"`: also `prior_feats`, `cand_feats`, `hist_feats`, `event_feats`,
-  `matchup_feats`.
+  `matchup_feats`, `effect_feats`.
 
 ### Auxiliary heads, rewards, exploration (from [Jaxcalibur](https://jaxcalibur.github.io/))
 
@@ -576,8 +603,9 @@ coefficient's scale): sweep them only for ideas that look promising.
   `SinglesEnv` action space, so orders are always built by poke-env itself.
 - `encoder_v2.py` (minipoke-v2): V1's arrays plus set priors, history, events and
   matchups, by flag; `encoder_for(cfg, priors)` picks a model's encoder.
-- `setpriors.py` (random battle set priors), `history.py` (protocol-log history and
-  events), `damage.py` (the matchup damage estimate).
+- `setpriors.py` (random battle set priors), `history.py` (protocol-log history,
+  events and move outcomes), `damage.py` (the matchup damage estimate), `effects.py` (the
+  move effect features' ability, item and type rules).
 - `model.py` holds `MiniPokeTransformer`, `ModelConfig` and the `small` / `medium` / `wide` presets.
 - `players.py` has `InferenceBatcher` (async batching, with its model's encoder),
   `RLPlayer` (records trajectories with win ±1 and faint ±0.1 rewards, as in ps-ppo, or
@@ -604,16 +632,21 @@ coefficient's scale): sweep them only for ideas that look promising.
   faked rollouts (budgets, confirmed best, pool, Elo, aux), distillation across
   encoders, resume, the pool, the dataset and clean stops.
 - `make_fixtures.py` records battles for ElsaMina's parity tests (V1, or v2 from a v2 spec).
+- `analyze_replays.py` analyzes the ladder battles ElsaMina saved with `-savereplays` (see
+  [Ladder replays](#ladder-replays)).
 - `playground/` runs an exported model in the browser on those fixtures (see
   [Model playground](#model-playground)).
 
 ## Using a model in ElsaMina
 
-Each exported model is named after its **version** (the encoder it was trained with:
-`encoder.py` for 1, `encoder_v2.py` for 2) and its size in parameters: `MiniPokeV1_1M`,
-`MiniPokeV1_4M`, `MiniPokeV2_1M`. Models of one version share their C# encoder. ElsaMina
-keeps every model side by side, so they can be compared with `-strategy minipokevN-size`
-(`minipokev1-1m`, `minipokev1-4m`, `minipokev2-1m`; `-strategy minipoke` picks the latest one).
+Each exported model is named after its **version** (the observation it was trained with:
+`encoder.py` for 1, `encoder_v2.py` for 2, `encoder_v2.py --move-effects` for 3) and its size in
+parameters: `MiniPokeV1_1M`, `MiniPokeV1_4M`, `MiniPokeV2_1M`, `MiniPokeV2_4M`, `MiniPokeV3_1M`.
+Models of one encoder share their C# encoder (V3 models play with `MiniPokeV2Encoder`, which reads
+the move effect flag from the spec). ElsaMina keeps every model side by side, so they can be
+compared with `-strategy minipokevN-size` (`minipokev1-1m`, `minipokev1-4m`, `minipokev2-1m`,
+`minipokev2-4m`, `minipokev3-1m`; `-strategy minipoke` picks the latest one). The bot starts with `minipokev2-4m`; `-strategy calc` switches to the damage calc
+strategy the models fall back on.
 
 The C# side reproduces what the model sees in training:
 
@@ -624,11 +657,31 @@ The C# side reproduces what the model sees in training:
 | `encoder.py`: feature vectors | `Strategies/MiniPokeVN/MiniPokeVNEncoder.cs` (one per version) |
 | `encoder_v2.py`: V1's arrays, then set priors and history | `Strategies/MiniPokeV2/MiniPokeV2Encoder.cs` (extends V1's) |
 | `setpriors.py`, `history.py` | `Strategies/MiniPokeV2/SetPriors.cs`, `ProtocolHistory.cs` |
+| `effects.py`, `history.move_outcomes` (`--move-effects`) | `Strategies/MiniPokeV2/MoveEffects.cs`, `MoveOutcomes.cs` |
 | `export_onnx.py` outputs | `src/ElsaMina.Battles/Models/MiniPokeVN_SIZE/` (one per model) |
 | ONNX inference, action → `/choose` | `Strategies/MiniPoke/` (shared) |
 
 Any difference between the two encoders is silent: the model still plays legal
 moves, just badly. The parity fixtures catch it.
+
+Two things happen around the model, for every version:
+- **The guard** (`Strategies/MiniPoke/MiniPokeActionGuard.cs`). The bot plays the most likely
+  legal action, unless the guard vetoes it, then the most likely one left (a model whose every
+  legal action is vetoed keeps its choice; each override is logged). It vetoes what is sure to
+  be wasted, from the battle's lines and the request: a move our active Pokémon already used on
+  the opposing active with no effect (`|-immune|`), while neither terastallized since (moves
+  whose type or immunity changes, like Tera Blast, Weather Ball or Endeavor, excepted); a move
+  that only heals at full HP; Sleep Talk and Snore while awake; a hazard the opponent's side
+  already has every layer of; and every switch after Showdown answered "Can't switch: The
+  active Pokémon is trapped" (a trapping ability the request only announces as
+  `maybeTrapped`), until either active Pokémon changes. On the ladder battles analyzed, it
+  would have changed 93 of 12,345 decisions. The parity check (fixtures) compares the model's
+  own argmax, without the guard; `analyze_replays.py` applies the same rules (`guard_vetoes`).
+- **The value calibration** (`value_calibration.json` next to the model, optional). The value
+  head learned from self-play; against humans it is optimistic (MiniPokeV2_1M: +0.18 over the
+  realized return). `analyze_replays.py --write-calibration` fits expected return = scale ×
+  value + offset on the ladder battles and writes it; ElsaMina logs the expected return next to
+  the value. Nothing plays from the value.
 
 ### Replacing a released model
 
@@ -694,6 +747,24 @@ release (`git tag minipoke-v1-4m`) to regenerate them later.
 
 Upgrading poke-env, or changing what an encoder reads from it, means checking
 the C# tracker against new fixtures too.
+
+## Ladder replays
+
+`-savereplays` keeps, for each ladder battle, every line the bot received (`<id>.log`) and
+Showdown's public replay (`<id>.json`, with the input log). `analyze_replays.py` replays each
+log into poke-env, runs the models on every decision point and writes a report:
+
+```bash
+python analyze_replays.py replays/replays --out replays/analysis      # ~20 s, cached after
+python analyze_replays.py replays/replays --out replays/analysis --write-calibration
+```
+
+`report.md` has the key findings, results by rating, how battles ended, the parity check
+(the committed choices against the argmax of the model that played, with or without the
+guard: both are read from the choices), the value head and its calibration, and the bot's
+behavior next to the humans' (moves into immunities, failed moves, tera timing...).
+`battles.csv`, `decisions.jsonl` and `value_calibration.json` hold the numbers. The replay
+folder is only read; `PLAYED_BY` and `COMPARE_WITH` at the top of the script name the models.
 
 ## Model playground
 

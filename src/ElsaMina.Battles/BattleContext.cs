@@ -25,12 +25,10 @@ public class BattleContext
     }
 
     public int Rqid { get; set; }
-    public string SideName { get; set; } = "";
     public string SideId { get; set; } = "";
     public string OpponentSideId => SideId == "p1" ? "p2" : "p1";
     public bool Wait { get; set; }
     public bool TeamPreview { get; set; }
-    public bool NoCancel { get; set; }
     public bool IsBattleOver { get; set; }
     public bool HasAnnouncedStart { get; set; }
     public bool HasAnnouncedEnd { get; set; }

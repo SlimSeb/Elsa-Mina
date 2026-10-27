@@ -26,6 +26,13 @@ SETS = {
         {"role": "Bulky Setup", "movepool": ["Bulk Up", "Drain Punch", "Jet Punch", "Wave Crash"],
          "abilities": ["Zero to Hero"], "teraTypes": ["Water"]},
     ]},
+    # Flash Fire weight (1/2 + 1) / 2 = 0.75, Flame Body 0.25
+    "heatran": {"level": 80, "sets": [
+        {"role": "Bulky Support", "movepool": ["Magma Storm", "Earth Power", "Stealth Rock", "Taunt"],
+         "abilities": ["Flash Fire", "Flame Body"], "teraTypes": ["Grass"]},
+        {"role": "Wallbreaker", "movepool": ["Magma Storm", "Earth Power", "Flash Cannon"],
+         "abilities": ["Flash Fire"], "teraTypes": ["Steel"]},
+    ]},
 }
 
 

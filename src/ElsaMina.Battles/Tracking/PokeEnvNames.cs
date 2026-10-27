@@ -11,7 +11,6 @@ public static class PokeEnvNames
     public const string UNKNOWN = "UNKNOWN";
     public const string FAINTED = "FNT";
     public const string SLEEP = "SLP";
-    public const string TOXIC = "TOX";
     public const string STELLAR = "STELLAR";
     public const string THREE_QUESTION_MARKS = "THREE_QUESTION_MARKS";
     public const string NEUTRALIZING_GAS = "NEUTRALIZING_GAS";

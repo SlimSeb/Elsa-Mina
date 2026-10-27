@@ -25,13 +25,10 @@ public class BattleStrategyCommandTest
     {
         // Arrange
         _context.Target.Returns(string.Empty);
-        _decisionManager.ActiveStrategy.Returns(BattleDecisionStrategy.Llm);
+        _decisionManager.ActiveStrategy.Returns(BattleDecisionStrategy.MiniPokeV2_4M);
         _decisionManager.AvailableStrategies.Returns(
         [
-            BattleDecisionStrategy.Llm,
             BattleDecisionStrategy.DamageCalc,
-            BattleDecisionStrategy.TypeMatchup,
-            BattleDecisionStrategy.Random,
             BattleDecisionStrategy.MiniPokeV1_1M,
             BattleDecisionStrategy.MiniPokeV1_4M
         ]);
@@ -41,8 +38,8 @@ public class BattleStrategyCommandTest
 
         // Assert
         _context.Received(1).Reply(Arg.Is<string>(msg =>
-            msg.Contains("Current battle decision strategy: **Llm**") &&
-            msg.Contains("llm, damagecalc, typematchup, random, minipokev1-1m, minipokev1-4m")));
+            msg.Contains("Current battle decision strategy: **MiniPokeV2_4M**") &&
+            msg.Contains("damagecalc, minipokev1-1m, minipokev1-4m")));
     }
 
     [Test]
@@ -74,10 +71,7 @@ public class BattleStrategyCommandTest
             .Returns(false);
         _decisionManager.AvailableStrategies.Returns(
         [
-            BattleDecisionStrategy.Llm,
             BattleDecisionStrategy.DamageCalc,
-            BattleDecisionStrategy.TypeMatchup,
-            BattleDecisionStrategy.Random,
             BattleDecisionStrategy.MiniPokeV1_1M,
             BattleDecisionStrategy.MiniPokeV1_4M
         ]);

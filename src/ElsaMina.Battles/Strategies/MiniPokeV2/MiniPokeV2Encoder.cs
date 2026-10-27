@@ -20,6 +20,9 @@ namespace ElsaMina.Battles.Strategies.MiniPokeV2;
 /// <item>hist_ids [2]: the last move of our active, of theirs. hist_feats [8]: turns since their / our active came
 /// in, they / we switched by choice last turn, their / our protect counter, they chose the same move twice in a row,
 /// that and a Choice item is possible.</item>
+/// <item>effect_feats [12, 4, 6], cand_effect_feats [6, K, 6] (--move-effects): whether each known and candidate
+/// move can work on the opposing active (<see cref="MoveEffects"/>), and whether it had no effect or failed before
+/// (<see cref="MoveOutcomes"/>).</item>
 /// </list>
 /// History tokens and matchup tokens are not ported: a spec using them is refused.
 /// </summary>
@@ -35,11 +38,13 @@ public class MiniPokeV2Encoder : MiniPokeV1Encoder
     private const int HISTORY_FEATURES = 8;
     private const int MAX_ACTIVE_TURNS = 10;
     private const int MAX_PROTECT_COUNTER = 3;
+    private const int EFFECT_FEATURES = 6;
 
     private readonly SetPriors _priors;
     private readonly int _candidateMoves;
     private readonly int _abilitiesAndItems;
     private readonly bool _history;
+    private readonly MoveEffects _moveEffects;
 
     public MiniPokeV2Encoder(MiniPokeModelOptions options, IBattleDex dex) : base(options, dex)
     {
@@ -63,6 +68,17 @@ public class MiniPokeV2Encoder : MiniPokeV1Encoder
         _candidateMoves = Spec.Model.CandidateMoves;
         _abilitiesAndItems = Spec.SetPriors.AbilitiesAndItems;
         _history = Spec.Model.History;
+        if (Spec.Model.MoveEffects)
+        {
+            if (Spec.MoveEffects?.Features.Count != EFFECT_FEATURES)
+            {
+                throw new InvalidOperationException(
+                    $"{options.EncoderSpecPath} reads move effects without the {EFFECT_FEATURES} features' rules");
+            }
+
+            _moveEffects = new MoveEffects(Spec.MoveEffects, DamageMultiplier);
+        }
+
         _priors = SetPriors.Load(Path.Join(options.ModelDirectory, Spec.SetPriors.File), dex);
         if (_priors.Sha256 != Spec.SetPriors.Sha256)
         {
@@ -86,6 +102,99 @@ public class MiniPokeV2Encoder : MiniPokeV1Encoder
             var opponentActiveIndex = opponents.IndexOf(state.OpponentActivePokemon);
             WriteHistory(observation, state, opponentActiveIndex >= 0 && priors[opponentActiveIndex].ChoicePossible);
         }
+
+        if (_moveEffects != null)
+        {
+            WriteMoveEffects(observation, state, opponents, priors);
+        }
+    }
+
+    /// <summary>
+    /// encode_effects: owner = the Pokémon with the move, target = the opposing active (V1's move features).
+    /// </summary>
+    private void WriteMoveEffects(BattleObservation observation, TrackedBattleState state,
+        List<TrackedPokemon> opponents, List<MonSetPrior> priors)
+    {
+        const int slots = BattleObservation.SlotCount;
+        const int moveCount = BattleObservation.MoveCount;
+        var features = new float[BattleObservation.MonCount * moveCount * EFFECT_FEATURES];
+        var candidateFeatures = new float[slots * _candidateMoves * EFFECT_FEATURES];
+        var outcomes = MoveOutcomes.Read(state.ProtocolLines);
+        var ourRole = state.PlayerRole;
+        var opponentRole = ProtocolHistory.OpponentRole(ourRole);
+        var opponentPriors = opponents.Zip(priors).ToDictionary(pair => pair.First, pair => pair.Second);
+        var ourActive = state.ActivePokemon;
+        var opponentActive = state.OpponentActivePokemon;
+
+        void Write(float[] target, int start, string moveId, TrackedPokemon pokemon, bool ours)
+        {
+            var side = ours ? ourRole : opponentRole;
+            var targetSide = ours ? opponentRole : ourRole;
+            var opposing = ours ? opponentActive : ourActive;
+            if (!Dex.TryGetMoveEntry(moveId, out var entry))
+            {
+                throw new InvalidOperationException($"No data for move {moveId}");
+            }
+
+            var (noEffect, abilityBlocks, statusFails) = _moveEffects.StaticFeatures(moveId, entry, pokemon,
+                opposing, Weights(pokemon), Weights(opposing), state.IsNeutralizingGasActive);
+            target[start] = (float)noEffect;
+            target[start + 1] = (float)abilityBlocks;
+            target[start + 2] = (float)statusFails;
+            if (opposing != null)
+            {
+                target[start + 3] = ToFloat(outcomes.ImmuneBefore(side, moveId, targetSide, NameOf(opposing)));
+            }
+
+            target[start + 4] = ToFloat(outcomes.FailedLast(side, NameOf(pokemon), moveId, 1));
+            target[start + 5] = ToFloat(outcomes.FailedLast(side, NameOf(pokemon), moveId, 2));
+        }
+
+        IReadOnlyList<SetPriorWeight> Weights(TrackedPokemon pokemon) =>
+            MoveEffects.AbilityWeights(pokemon, pokemon == null ? null : opponentPriors.GetValueOrDefault(pokemon));
+
+        foreach (var (first, team, ours) in new[] { (0, state.Team, true), (slots, opponents, false) })
+        {
+            var members = team.Take(slots).ToList();
+            for (var i = 0; i < members.Count; i++)
+            {
+                var moves = members[i].Moves.Values.Take(moveCount).ToList();
+                for (var j = 0; j < moves.Count; j++)
+                {
+                    Write(features, ((first + i) * moveCount + j) * EFFECT_FEATURES, moves[j].Id, members[i], ours);
+                }
+            }
+        }
+
+        for (var row = 0; row < opponents.Count; row++)
+        {
+            if (!priors[row].Found)
+            {
+                continue;
+            }
+
+            for (var j = 0; j < priors[row].Candidates.Count; j++)
+            {
+                var candidate = priors[row].Candidates[j];
+                if (Dex.TryGetMove(candidate.Name, out _))
+                {
+                    Write(candidateFeatures, (row * _candidateMoves + j) * EFFECT_FEATURES, candidate.Name,
+                        opponents[row], false);
+                }
+            }
+        }
+
+        observation.ExtraFeatures["effect_feats"] = features;
+        observation.ExtraFeatures["cand_effect_feats"] = candidateFeatures;
+    }
+
+    /// <summary>
+    /// The name in the Pokémon's protocol ident: "p1: Garchomp" -> "Garchomp".
+    /// </summary>
+    private static string NameOf(TrackedPokemon pokemon)
+    {
+        var separator = pokemon.Identifier.IndexOf(": ", StringComparison.Ordinal);
+        return separator < 0 ? pokemon.Identifier : pokemon.Identifier[(separator + 2)..];
     }
 
     private void WritePriors(BattleObservation observation, List<TrackedPokemon> opponents,
@@ -228,6 +337,13 @@ public class MiniPokeV2Encoder : MiniPokeV1Encoder
         {
             written.Add(("hist_ids", INT64, [HISTORY_IDS]));
             written.Add(("hist_feats", FLOAT32, [HISTORY_FEATURES]));
+        }
+
+        if (_moveEffects != null)
+        {
+            written.Add(("effect_feats", FLOAT32, [BattleObservation.MonCount, BattleObservation.MoveCount,
+                EFFECT_FEATURES]));
+            written.Add(("cand_effect_feats", FLOAT32, [slots, _candidateMoves, EFFECT_FEATURES]));
         }
 
         var expected = Spec.ExtraInputs

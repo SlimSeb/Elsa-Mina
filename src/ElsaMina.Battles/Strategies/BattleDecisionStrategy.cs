@@ -2,10 +2,10 @@ namespace ElsaMina.Battles.Strategies;
 
 public enum BattleDecisionStrategy
 {
-    Llm,
+    /// <summary>
+    /// Searches a damage-calc simulation of the turn. Also what the minipoke strategies fall back on.
+    /// </summary>
     DamageCalc,
-    TypeMatchup,
-    Random,
 
     /// <summary>
     /// The first minipoke model, ~1M parameters (Models/MiniPokeV1_1M, strategy "minipokev1-1m"). Each model gets
@@ -26,6 +26,14 @@ public enum BattleDecisionStrategy
 
     /// <summary>
     /// minipoke-v2 with ~4M parameters: same encoder as <see cref="MiniPokeV2_1M"/>, wide-medium network.
+    /// The strategy the bot starts with.
     /// </summary>
-    MiniPokeV2_4M
+    MiniPokeV2_4M,
+
+    /// <summary>
+    /// minipoke v3 with ~1M parameters: <see cref="MiniPokeV2_1M"/> trained further with the move effect features
+    /// (encoder_v2.py --move-effects: abilities, items and types a move can't work through, and the moves that had
+    /// no effect or failed before). Played with the V2 encoder, which reads them from the spec.
+    /// </summary>
+    MiniPokeV3_1M
 }

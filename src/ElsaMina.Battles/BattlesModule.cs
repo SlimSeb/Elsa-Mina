@@ -3,14 +3,12 @@ using ElsaMina.Battles.Commands;
 using ElsaMina.Battles.Replays;
 using ElsaMina.Battles.Results;
 using ElsaMina.Battles.Strategies;
-using ElsaMina.Battles.Strategies.Llm;
 using ElsaMina.Battles.Strategies.MiniPoke;
 using ElsaMina.Battles.Strategies.MiniPokeV1;
 using ElsaMina.Battles.Strategies.MiniPokeV2;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
 using ElsaMina.Battles.Tracking;
-using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Battles;
@@ -24,19 +22,15 @@ public class BattlesModule : Module
         builder.RegisterType<BattleDex>().As<IBattleDex>().SingleInstance();
         builder.RegisterType<BattleMessageParser>().As<IBattleMessageParser>().SingleInstance();
         builder.RegisterType<SmogonOpponentMovesPredictor>().As<IOpponentMovesPredictor>().SingleInstance();
-        // Swap MinimaxSearch for MonteCarloTreeSearch to use MCTS instead
         builder.RegisterType<MinimaxSearch>().As<IBattleSearchAlgorithm>().SingleInstance();
         builder.RegisterType<CalcBasedBattleDecisionService>().AsSelf().SingleInstance();
-        builder.RegisterType<RandomBattleDecisionService>().AsSelf().SingleInstance();
-        builder.RegisterType<TypeMatchupBattleDecisionService>().AsSelf().SingleInstance();
-        builder.RegisterType<LlmBattlePromptBuilder>().As<ILlmBattlePromptBuilder>().SingleInstance();
-        builder.RegisterType<LlmBattleDecisionParser>().As<ILlmBattleDecisionParser>().SingleInstance();
-        builder.RegisterType<LlmBattleDecisionService>().AsSelf().SingleInstance();
+        builder.RegisterType<MiniPokeActionGuard>().AsSelf().SingleInstance();
         // minipoke models: one line each (see tools/minipoke/README.md)
         RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_1M);
         RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_4M);
         RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_1M);
         RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_4M);
+        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV3_1M);
         builder.RegisterType<BattleDecisionManager>().As<IBattleDecisionService>().As<IBattleDecisionManager>().SingleInstance();
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
         builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();
@@ -75,7 +69,7 @@ public class BattlesModule : Module
                 context.ResolveKeyed<IMiniPokeModel>(strategy),
                 context.ResolveKeyed<IMiniPokeEncoder>(strategy),
                 context.Resolve<CalcBasedBattleDecisionService>(),
-                context.Resolve<IRandomService>(),
+                context.Resolve<MiniPokeActionGuard>(),
                 options))
             .AsSelf()
             .SingleInstance();

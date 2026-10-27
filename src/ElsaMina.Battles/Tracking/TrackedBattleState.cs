@@ -69,8 +69,9 @@ public class TrackedBattleState
     public List<string[]> PendingLines { get; } = [];
 
     /// <summary>
-    /// The |turn|, |move|, |switch|, |drag|, |replace| and |faint| lines in the order received, split on '|': the
-    /// part of poke-env's protocol log (battle._replay_data) that minipoke-v2's history features read.
+    /// The |turn|, |move|, |switch|, |drag|, |replace|, |faint|, |cant|, |upkeep|, |-fail|, |-immune| and
+    /// |-terastallize| lines in the order received, split on '|': the part of poke-env's protocol log
+    /// (battle._replay_data) that minipoke-v2's history and move effect features read.
     /// </summary>
     public List<string[]> ProtocolLines { get; } = [];
 

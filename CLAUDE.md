@@ -168,11 +168,12 @@ The `games_muted_event` key already exists in the `Games` feature resx files for
 
 ## minipoke Battle Models
 
-The `minipokevN-size` battle strategies (`minipokev1-1m`, `minipokev1-4m`, `minipokev2-1m`, `minipokev2-4m`) play with small transformers trained in `tools/minipoke` (Python, poke-env) and exported to ONNX in `src/ElsaMina.Battles/Models/MiniPokeVN_SIZE/`. A version is the encoder a model was trained with (`encoder.py` for 1, `encoder_v2.py` for 2); models of one version differ only in size and share their encoder. Releasing a model is described in `tools/minipoke/README.md`.
+The `minipokevN-size` battle strategies (`minipokev1-1m`, `minipokev1-4m`, `minipokev2-1m`, `minipokev2-4m`, `minipokev3-1m`) play with small transformers trained in `tools/minipoke` (Python, poke-env) and exported to ONNX in `src/ElsaMina.Battles/Models/MiniPokeVN_SIZE/`. A version is the observation a model was trained with (`encoder.py` for 1, `encoder_v2.py` for 2, `encoder_v2.py --move-effects` for 3); models of one version differ only in size. V3 models play with `MiniPokeV2Encoder`, which reads the flag from the spec. Releasing a model is described in `tools/minipoke/README.md`.
 
 - `ElsaMina.Battles/Tracking` ports poke-env 0.16.1's battle tracking into `BattleContext.Tracked`, quirks included: a model only plays well on the state it was trained on, so keep it faithful to poke-env, not to Showdown. The rest of `BattleContext` (read by the other strategies) is separate.
 - `Strategies/MiniPoke` is shared by every version (encoder base, ONNX model, decision service). `Strategies/MiniPokeVN` holds a version's port of its encoder's features; a model is registered with one `RegisterMiniPoke` line in `BattlesModule`. `MiniPokeV2Encoder` extends V1's: it adds the inputs its `encoder_spec.json` lists (random battle set priors from the model's `set_priors.json`, history features read from `TrackedBattleState.ProtocolLines`).
 - Each version has a parity test replaying, for each of its models, battles recorded by `tools/minipoke/make_fixtures.py`. Run them after touching the tracker or an encoder.
+- `MiniPokeActionGuard` vetoes actions that are sure to be wasted (a move that already had no effect on the same target, healing at full HP, a maxed hazard, a switch after Showdown said we are trapped); the decision service then plays the best legal action left. `tools/minipoke/analyze_replays.py` (`guard_vetoes`) mirrors its rules to check saved ladder battles: change both together.
 
 ## Code Style Conventions
 

@@ -48,6 +48,13 @@ With `history` (ModelConfig.history), two more (history.py reads the protocol lo
                                              they chose the same move twice in a row,
                                              that and a Choice item is possible (lock)
 
+With `move_effects` (ModelConfig.move_effects), whether each move can work on its
+target (effects.py: ability, item and type immunities, and the protocol log's
+earlier |-immune| / |-fail| results):
+
+    effect_feats      f32 [12, 4, F_EFFECT]   per known move (V1's slots and move order)
+    cand_effect_feats f32 [6, K, F_EFFECT]    per candidate move (cand_ids' order)
+
 The action space and its mapping onto poke-env orders are V1's (encoder.py).
 """
 
@@ -59,10 +66,12 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 from poke_env.battle import Battle, Move, Pokemon
 
+import effects
 import encoder as E
 from damage import Fighter, expected_fraction, move_order
-from history import (active_turns, lines_of, opponent_role, previous_turn, recent_events,
-                     same_move_twice, switched_by_choice)
+from effects import F_EFFECT, ability_weights, neutralizing_gas, static_features
+from history import (active_turns, lines_of, move_outcomes, opponent_role, previous_turn,
+                     recent_events, same_move_twice, switched_by_choice)
 from setpriors import MonPrior, SetPriors
 
 A_PRIOR = 4                              # abilities / items kept per Pokémon
@@ -76,7 +85,10 @@ TYPE_INDEX = {t.name.lower(): i for i, t in enumerate(E.TYPES)}
 
 Layout = Dict[str, Tuple[Tuple[int, ...], str]]
 # The ModelConfig fields that shape the observation (encoder_spec.json's "model")
-ENCODER_FLAGS = ("encoder_version", "cand_moves", "history", "history_tokens", "matchup_tokens")
+ENCODER_FLAGS = ("encoder_version", "cand_moves", "history", "history_tokens", "matchup_tokens",
+                 "move_effects")
+# Written to the spec only when set: the specs exported before them stay byte-identical
+OPTIONAL_FLAGS = ("move_effects",)
 
 V1_LAYOUT: Layout = {
     "mon_ids": ((E.N_MONS, 3), "int64"),
@@ -112,9 +124,10 @@ class EncoderV2(EncoderV1):
     version = 2
 
     def __init__(self, priors: SetPriors, cand_moves: int = 8, history: bool = False,
-                 history_tokens: int = 0, matchups: bool = False):
+                 history_tokens: int = 0, matchups: bool = False, move_effects: bool = False):
         super().__init__()
         self.matchups = matchups
+        self.move_effects = move_effects
         self.priors = priors
         self.k = cand_moves
         self.history_tokens = history_tokens
@@ -133,6 +146,10 @@ class EncoderV2(EncoderV1):
                                 "event_feats": ((history_tokens, F_EVENT), "float32")})
         if matchups:
             self.layout["matchup_feats"] = ((E.N_MONS, F_MATCH), "float32")
+        if move_effects:
+            self.layout.update({
+                "effect_feats": ((E.N_MONS, E.N_MOVES, F_EFFECT), "float32"),
+                "cand_effect_feats": ((E.N_SLOTS, cand_moves, F_EFFECT), "float32")})
         self._moves: Dict[str, Optional[Move]] = {}
 
     def _move(self, move_id: str) -> Optional[Move]:
@@ -154,7 +171,46 @@ class EncoderV2(EncoderV1):
             obs.update(self.encode_events(battle))
         if self.matchups:
             obs["matchup_feats"] = self.encode_matchups(battle)
+        if self.move_effects:
+            obs.update(self.encode_effects(battle, rows))
         return obs
+
+    def encode_effects(self, battle: Battle, rows: List[MonPrior]) -> Dict[str, np.ndarray]:
+        feats = np.zeros((E.N_MONS, E.N_MOVES, F_EFFECT), dtype=np.float32)
+        cand = np.zeros((E.N_SLOTS, self.k, F_EFFECT), dtype=np.float32)
+        outcomes = move_outcomes(lines_of(battle))
+        gas = neutralizing_gas(battle)
+        roles = (battle.player_role, opponent_role(battle))
+        mine = list(battle.team.items())[:E.N_SLOTS]
+        theirs = list(battle.opponent_team.items())[:E.N_SLOTS]
+        names = {id(mon): key.split(": ", 1)[-1] for key, mon in mine + theirs}
+        priors = {id(mon): p.abilities for (_, mon), p in zip(theirs, rows) if p.found}
+        weights = lambda mon: ability_weights(mon, priors.get(id(mon)))
+        actives = (battle.active_pokemon, battle.opponent_active_pokemon)
+        active_weights = tuple(weights(mon) for mon in actives)
+
+        def write(f: np.ndarray, move, mon, ours: bool) -> None:
+            side, target_side = roles if ours else roles[::-1]
+            target = actives[1 if ours else 0]
+            f[0], f[1], f[2] = static_features(move, mon, target, weights(mon),
+                                               active_weights[1 if ours else 0], gas)
+            if target is not None:
+                f[3] = float(outcomes.immune_before(side, move.id, target_side, names[id(target)]))
+            f[4] = float(outcomes.failed_last(side, names[id(mon)], move.id, 1))
+            f[5] = float(outcomes.failed_last(side, names[id(mon)], move.id, 2))
+
+        for first, team, ours in ((0, mine, True), (E.N_SLOTS, theirs, False)):
+            for i, (_, mon) in enumerate(team):
+                for j, move in enumerate(list(mon.moves.values())[:E.N_MOVES]):
+                    write(feats[first + i, j], move, mon, ours)
+        for row, ((_, mon), p) in enumerate(zip(theirs, rows)):
+            if not p.found:
+                continue
+            for j, (move_id, _) in enumerate(p.candidates):
+                move = self._move(move_id)
+                if move is not None:
+                    write(cand[row, j], move, mon, False)
+        return {"effect_feats": feats, "cand_effect_feats": cand}
 
     def encode_matchups(self, battle: Battle) -> np.ndarray:
         feats = np.zeros((E.N_MONS, F_MATCH), dtype=np.float32)
@@ -313,6 +369,9 @@ class EncoderV2(EncoderV1):
             out["orderings"]["event_feats"] = [
                 "present", "ours", "move", "entrance", "dragged", "called_or_locked",
                 *EVENT_FLAGS, "turns ago (min 10) / 10"]
+        if self.move_effects:
+            out["move_effects"] = effects.spec()
+            out["orderings"]["effect_feats"] = effects.FEATURES
         if self.matchups:
             import damage
             out["matchup_tokens"] = {
@@ -369,7 +428,8 @@ def encoder_for(cfg, priors: Optional[SetPriors] = None):
     if priors is None:
         raise ValueError("an encoder v2 model needs its set priors (model.priors)")
     return EncoderV2(priors, cfg.cand_moves, history=cfg.history,
-                     history_tokens=cfg.history_tokens, matchups=cfg.matchup_tokens)
+                     history_tokens=cfg.history_tokens, matchups=cfg.matchup_tokens,
+                     move_effects=getattr(cfg, "move_effects", False))
 
 
 def model_encoder(model):

@@ -91,9 +91,23 @@ public static class ProtocolHistory
         return moves;
     }
 
-    private static bool IsChosenMove(string[] line) =>
+    /// <summary>
+    /// A |move| line the Pokémon chose: not locked into, called or reflected (no "[from]" tag after the move).
+    /// </summary>
+    public static bool IsChosenMove(string[] line) =>
         line.Length > 3 && line[1] == "move" &&
         !line.Skip(4).Any(part => part.StartsWith(FROM_TAG, StringComparison.Ordinal));
+
+    /// <summary>
+    /// "p2a: Iron Valiant" -> ("p2", "Iron Valiant").
+    /// </summary>
+    public static (string Side, string Name) SideAndName(string ident)
+    {
+        var colon = ident.IndexOf(':');
+        var side = colon < 0 ? ident : ident[..colon];
+        var name = colon < 0 ? "" : ident[(colon + 1)..].Trim();
+        return (side.Length > 2 ? side[..2] : side, name);
+    }
 
     /// <summary>
     /// "p2a: Venusaur" -> "p2".

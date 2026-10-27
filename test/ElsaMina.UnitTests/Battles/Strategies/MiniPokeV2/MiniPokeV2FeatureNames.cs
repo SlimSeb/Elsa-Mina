@@ -18,6 +18,9 @@ public class MiniPokeV2FeatureNames
         "opponent_protect_counter", "our_protect_counter", "opponent_same_move_twice", "opponent_choice_locked"
     ];
 
+    private static readonly string[] EFFECTS =
+        ["no_effect", "ability_blocks", "status_fails", "immune_before", "failed_last_time", "failed_twice"];
+
     private readonly MiniPokeV1FeatureNames _v1Names;
     private readonly int _candidateMoves;
     private readonly int _abilitiesAndItems;
@@ -52,6 +55,10 @@ public class MiniPokeV2FeatureNames
             "prior_feats" => $"opponent {index / _prior.Count} {_prior[index % _prior.Count]}",
             "hist_ids" => HISTORY_IDS[index],
             "hist_feats" => HISTORY[index],
+            "effect_feats" => $"slot {index / (BattleObservation.MoveCount * EFFECTS.Length)} move " +
+                              $"{index / EFFECTS.Length % BattleObservation.MoveCount} {EFFECTS[index % EFFECTS.Length]}",
+            "cand_effect_feats" => $"opponent {index / (_candidateMoves * EFFECTS.Length)} candidate " +
+                                   $"{index / EFFECTS.Length % _candidateMoves} {EFFECTS[index % EFFECTS.Length]}",
             _ => _v1Names.Describe(array, index)
         };
     }

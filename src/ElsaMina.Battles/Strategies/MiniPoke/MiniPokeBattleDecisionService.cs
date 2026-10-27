@@ -1,11 +1,12 @@
-using ElsaMina.Core.Services.Probabilities;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Battles.Strategies.MiniPoke;
 
 /// <summary>
 /// Plays singles (gen9 random battles) with a minipoke network exported to ONNX: one instance per model version,
-/// each with its own model and encoder (see BattlesModule).
+/// each with its own model and encoder (see BattlesModule). It plays the most likely legal action, unless
+/// <see cref="MiniPokeActionGuard"/> vetoes it (a move that already had no effect...): then the most likely action
+/// left.
 /// Falls back to the damage-calc strategy when the model isn't loaded, the state can't
 /// be encoded (doubles, team preview) or the chosen action can't be mapped.
 /// </summary>
@@ -17,20 +18,22 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
     private readonly IMiniPokeModel _model;
     private readonly IMiniPokeEncoder _encoder;
     private readonly CalcBasedBattleDecisionService _fallback;
-    private readonly IRandomService _randomService;
+    private readonly MiniPokeActionGuard _guard;
     private readonly MiniPokeModelOptions _options;
+    private readonly MiniPokeValueCalibration _calibration;
 
     public MiniPokeBattleDecisionService(IMiniPokeModel model,
         IMiniPokeEncoder encoder,
         CalcBasedBattleDecisionService fallback,
-        IRandomService randomService,
+        MiniPokeActionGuard guard,
         MiniPokeModelOptions options)
     {
         _model = model;
         _encoder = encoder;
         _fallback = fallback;
-        _randomService = randomService;
+        _guard = guard;
         _options = options;
+        _calibration = MiniPokeValueCalibration.Load(options.ValueCalibrationPath);
     }
 
     /// <summary>
@@ -70,7 +73,7 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
             return _fallback.GetDecisionAsync(context, cancellationToken);
         }
 
-        var action = _options.Sample ? SampleAction(logits, observation.Mask) : ArgMax(logits, observation.Mask);
+        var action = Guard(ArgMax(logits, observation.Mask), logits, observation, context);
         var decision = ToDecision(action, observation);
 
         if (decision == null)
@@ -80,9 +83,48 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
             return _fallback.GetDecisionAsync(context, cancellationToken);
         }
 
-        Log.Debug("{Strategy} decision in {Room}: action {Action}, value {Value:F2}", Strategy, context.RoomId, action,
-            value);
+        Log.Debug("{Strategy} decision in {Room}: action {Action}, value {Value:F2} (expected return {Expected:F2})",
+            Strategy, context.RoomId, action, value, _calibration.Apply(value));
         return Task.FromResult(decision);
+    }
+
+    /// <summary>
+    /// The model's action, or the best one the guard doesn't veto when it vetoes it.
+    /// </summary>
+    private int Guard(int action, float[] logits, BattleObservation observation, BattleContext context)
+    {
+        if (action < 0)
+        {
+            return action;
+        }
+
+        IReadOnlyDictionary<int, string> vetoes;
+        try
+        {
+            vetoes = _guard.GetVetoes(context, observation);
+        }
+        catch (Exception exception)
+        {
+            Log.Warning(exception, "{Strategy} guard failed in {Room}; playing the model's action", Strategy,
+                context.RoomId);
+            return action;
+        }
+
+        if (!vetoes.TryGetValue(action, out var reason))
+        {
+            return action;
+        }
+
+        var allowed = observation.Mask.Select((legal, index) => legal && !vetoes.ContainsKey(index)).ToArray();
+        var guarded = ArgMax(logits, allowed);
+        if (guarded < 0)
+        {
+            return action;
+        }
+
+        Log.Information("{Strategy} guard in {Room}: action {Action} vetoed ({Reason}), playing {Guarded}", Strategy,
+            context.RoomId, action, reason, guarded);
+        return guarded;
     }
 
     private static BattleDecision ToDecision(int action, BattleObservation observation)
@@ -120,23 +162,5 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
         }
 
         return best;
-    }
-
-    private int SampleAction(float[] logits, bool[] mask)
-    {
-        var temperature = Math.Max(_options.Temperature, 1e-3f);
-        var max = logits.Where((_, i) => mask[i]).Max();
-        var weights = logits.Select((logit, i) => mask[i] ? Math.Exp((logit - max) / temperature) : 0.0).ToArray();
-        var roll = _randomService.NextDouble() * weights.Sum();
-        for (var i = 0; i < weights.Length; i++)
-        {
-            roll -= weights[i];
-            if (roll <= 0 && mask[i])
-            {
-                return i;
-            }
-        }
-
-        return ArgMax(logits, mask);
     }
 }

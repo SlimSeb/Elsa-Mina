@@ -11,12 +11,7 @@ public class BattlePokemonState
     public bool IsFainted { get; init; }
     public BattlePokemonStats Stats { get; init; } = new(0, 0, 0, 0, 0);
     public List<string> Moves { get; init; } = [];
-    public string BaseAbility { get; init; } = "";
     public string Ability { get; init; } = "";
     public string Item { get; init; } = "";
-    public string Pokeball { get; init; } = "";
-    public string TeraType { get; init; } = "";
     public string Terastallized { get; init; } = "";
-    public bool Commanding { get; init; }
-    public bool Reviving { get; init; }
 }

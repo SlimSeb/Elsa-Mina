@@ -4,9 +4,6 @@ namespace ElsaMina.Battles.Dtos;
 
 public sealed class Side
 {
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = "";
-
     [JsonPropertyName("id")]
     public string Id { get; set; } = "";
 

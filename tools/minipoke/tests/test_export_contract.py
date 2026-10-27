@@ -16,6 +16,8 @@ from model import PRESETS, MiniPokeTransformer, ModelConfig, build_model
 
 # A released V1 model: its encoder_spec.json is the one ElsaMina's C# encoder ports
 DEPLOYED_V1 = Path(__file__).resolve().parents[3] / "src/ElsaMina.Battles/Models/MiniPokeV1_4M"
+DEPLOYED_V2_1M = DEPLOYED_V1.parent / "MiniPokeV2_1M"
+V2_1M_CHECKPOINT = Path(__file__).resolve().parents[1] / "checkpoints/v2-mr.pt"
 
 F, I64, B = onnx.TensorProto.FLOAT, onnx.TensorProto.INT64, onnx.TensorProto.BOOL
 CONTRACT_INPUTS = [
@@ -128,6 +130,9 @@ V2_MODELS = {
     "v2-typed-ffn": dict(size="small", encoder_version=2, move_tokens=True, typed_ffn=True),
     "v2-history-tokens": dict(size="small", encoder_version=2, history_tokens=8, typed_ffn=True),
     "v2-matchups": dict(size="small", encoder_version=2, matchup_tokens=True),
+    "v2-history-effects": dict(size="small", encoder_version=2, history=True, move_effects=True),
+    "v2-move-tokens-effects": dict(size="small", encoder_version=2, move_tokens=True,
+                                   move_effects=True),
     "v2-everything": dict(size="medium", encoder_version=2, move_tokens=True, history_tokens=8,
                           matchup_tokens=True, typed_ffn=True),
 }
@@ -157,6 +162,7 @@ def test_v2_export_takes_v1s_inputs_then_its_own(exported_v2):
     assert ("hist_ids" in extra) == (model.cfg.history and not model.cfg.history_tokens)
     assert ("event_ids" in extra) == bool(model.cfg.history_tokens)
     assert ("matchup_feats" in extra) == model.cfg.matchup_tokens
+    assert ("effect_feats" in extra) == ("cand_effect_feats" in extra) == model.cfg.move_effects
     assert signature(graph.output) == CONTRACT_OUTPUTS
 
 
@@ -187,6 +193,20 @@ def test_v2_spec_documents_the_encoder_and_ships_the_priors(exported_v2):
     if model.cfg.history:  # what the C# tracker needs on top of poke-env's state
         assert "_replay_data" in spec["history"]["protocol_log"]
         assert len(spec["orderings"]["hist_feats"]) == 8
+    # Only a model with move effects says so: older specs stay byte-identical
+    assert spec["model"].get("move_effects", False) == model.cfg.move_effects
+    assert ("move_effects" in spec) == model.cfg.move_effects
+    if model.cfg.move_effects:
+        assert spec["move_effects"]["ability_rules"]["levitate"]["types"] == ["ground"]
+        assert len(spec["orderings"]["effect_feats"]) == 6
+
+
+@pytest.mark.skipif(not V2_1M_CHECKPOINT.exists(), reason="MiniPokeV2_1M's checkpoint not found")
+def test_reexporting_v2_1m_gives_its_released_spec(tmp_path):
+    from checkpoint import load_checkpoint
+    export(build_model(load_checkpoint(V2_1M_CHECKPOINT)), tmp_path)
+    for name in ("encoder_spec.json", "set_priors.json"):
+        assert (tmp_path / name).read_bytes() == (DEPLOYED_V2_1M / name).read_bytes(), name
 
 
 def test_v2_checkpoints_round_trip_with_their_priors(tmp_path):

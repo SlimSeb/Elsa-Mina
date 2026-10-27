@@ -34,6 +34,7 @@ from model import to_tensors
 
 FAINT_REWARD = 0.1
 WIN_REWARD = 1.0
+E_TERA = 10  # first terastallize + move action
 
 log = logging.getLogger("minipoke")
 
@@ -229,14 +230,17 @@ class SafePlayer(Player):
 # RL player
 # --------------------------------------------------------------------------
 class RLPlayer(SafePlayer):
-    """Plays with the network. If ``collector`` is set, records trajectories."""
+    """Plays with the network. If ``collector`` is set, records trajectories.
+    ``no_tera_before``: never terastallize before that turn (evaluation only)."""
 
     def __init__(self, batcher: InferenceBatcher, collector: Optional[EpisodeCollector] = None,
-                 greedy: bool = False, rewards: Optional[Rewards] = None, labeler=None, **kwargs):
+                 greedy: bool = False, rewards: Optional[Rewards] = None, labeler=None,
+                 no_tera_before: int = 0, **kwargs):
         super().__init__(**kwargs)
         self.batcher = batcher
         self.collector = collector
         self.greedy = greedy
+        self.no_tera_before = no_tera_before
         self.labeler = labeler   # aux_labels.AuxLabeler: report decisions and sets to it
         self._trajectories = Trajectories(rewards)
 
@@ -244,6 +248,9 @@ class RLPlayer(SafePlayer):
         obs = self.batcher.encoder.encode(battle)
         if not obs["mask"].any():
             return self.choose_random_move(battle)
+        if battle.turn < self.no_tera_before:
+            obs = {**obs, "mask": obs["mask"].copy()}
+            obs["mask"][E_TERA:] = False
 
         action, logp, value, _ = await self.batcher.act(obs, self.greedy)
 

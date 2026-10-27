@@ -44,7 +44,7 @@ from encoder_v2 import model_encoder
 from export_onnx import export_checkpoint, model_inputs, random_inputs
 from league import OpponentPool, split_battles
 from model import (PRESETS, MiniPokeTransformer, ModelConfig, build_model, describe, pick_device,
-                   preset, size_of, with_aux_heads)
+                   preset, size_of, with_aux_heads, with_move_effects)
 from players import DistillPlayer, InferenceBatcher, Rewards, RLPlayer, TeacherPlayer, faint_reward
 from ppo import AUX_STATS, Budget, PPOConfig, Schedule, distill_train, ppo_update
 from rollout import (SCRIPTED, RolloutConfig, Rollouts, close_players, evaluate, frozen_copy,
@@ -132,7 +132,8 @@ def new_model(args) -> MiniPokeTransformer:
                  encoder_version=args.encoder_version, cand_moves=args.cand_moves,
                  move_tokens=args.move_tokens or None, history=args.history or None,
                  typed_ffn=args.typed_ffn or None, history_tokens=args.history_tokens,
-                 matchup_tokens=args.matchup_tokens or None)
+                 matchup_tokens=args.matchup_tokens or None,
+                 move_effects=args.move_effects or None)
     model = MiniPokeTransformer(cfg)
     if cfg.encoder_version >= 2:
         model.priors = SetPriors.from_showdown(args.sets, args.showdown_cwd)
@@ -141,19 +142,22 @@ def new_model(args) -> MiniPokeTransformer:
     return model
 
 
-def eval_vs(model, infer_device, n: int, concurrency: int, opponent: str = "heuristic"):
+def eval_vs(model, infer_device, n: int, concurrency: int, opponent: str = "heuristic",
+            no_tera_before: int = 0):
     opp_cls = SCRIPTED[opponent]
     batcher = InferenceBatcher(frozen_copy(model, infer_device), infer_device,
                                max_batch=concurrency * 2)
-    return evaluate(batcher, lambda: opp_cls(**make_kwargs(concurrency)), n, concurrency)
+    return evaluate(batcher, lambda: opp_cls(**make_kwargs(concurrency)), n, concurrency,
+                    no_tera_before=no_tera_before)
 
 
-def head_to_head(model, other, infer_device, n: int, concurrency: int):
+def head_to_head(model, other, infer_device, n: int, concurrency: int, no_tera_before: int = 0):
     """Greedy `model` vs greedy `other`. -> (model's win rate, finished battles)."""
     batcher, other_batcher = (InferenceBatcher(frozen_copy(m, infer_device), infer_device,
                                                max_batch=concurrency * 2) for m in (model, other))
     return evaluate(batcher, lambda: RLPlayer(other_batcher, None, greedy=True,
-                                              **make_kwargs(concurrency)), n, concurrency)
+                                              **make_kwargs(concurrency)), n, concurrency,
+                    no_tera_before=no_tera_before)
 
 
 def with_ci(wr: float, n: int) -> str:
@@ -325,6 +329,8 @@ def cmd_ppo(args) -> None:
         model = build_model(resumed)
     elif init is not None:
         model = build_model(init)
+        if args.move_effects and not model.cfg.move_effects:
+            model = with_move_effects(model)  # plays like --init until trained
     else:
         model = new_model(args)
     if args.seed is not None and not resumed:
@@ -565,13 +571,16 @@ def cmd_eval(args) -> None:
     if args.vs_ckpt:
         other = build_model(load_checkpoint(args.vs_ckpt))
         log.info("%s: %s", args.vs_ckpt, describe(other))
-        wr, n = head_to_head(model, other, infer, args.battles, args.concurrency)
+        wr, n = head_to_head(model, other, infer, args.battles, args.concurrency,
+                             args.no_tera_before)
         label = f"{args.vs_ckpt} (greedy)"
     else:
-        wr, n = eval_vs(model, infer, args.battles, args.concurrency, args.opponent)
+        wr, n = eval_vs(model, infer, args.battles, args.concurrency, args.opponent,
+                        args.no_tera_before)
         label = args.opponent
     server.stop()
-    print(f"win rate vs {label}: {with_ci(wr, n)}")
+    restricted = f" (no tera before turn {args.no_tera_before})" if args.no_tera_before else ""
+    print(f"win rate{restricted} vs {label}: {with_ci(wr, n)}")
 
 
 def cmd_elo(args) -> None:
@@ -664,6 +673,10 @@ def build_parser() -> argparse.ArgumentParser:
         p.add_argument("--move-tokens", action="store_true",
                        help="one token per (Pokémon, move slot), candidates included; the move "
                             "head reads our active's move tokens after the transformer")
+        p.add_argument("--move-effects", action="store_true",
+                       help="v2: per-move immunity (abilities, items, types) and earlier "
+                            "failure features (effects.py). ppo --init adds them to the "
+                            "checkpoint's model with zero weights: it plays the same until trained")
 
     def value_ce_arg(p, default="log-bins"):
         p.add_argument("--value-ce-norm", default=default, choices=["log-bins", "none"],
@@ -786,6 +799,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--opponent", default="heuristic", choices=["heuristic", "random", "maxpower"])
     p.add_argument("--vs-ckpt", default=None,
                    help="play another checkpoint instead (both greedy), e.g. V1 vs medium")
+    p.add_argument("--no-tera-before", type=int, default=0,
+                   help="--ckpt never terastallizes before this turn (poke-env battle.turn); "
+                        "with --vs-ckpt the same checkpoint, measures early tera")
     p.set_defaults(fn=cmd_eval)
 
     p = sub.add_parser("elo", help="round-robin between checkpoints and scripted players")

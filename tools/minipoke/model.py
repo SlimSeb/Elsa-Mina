@@ -44,6 +44,12 @@ matchup_feats: each of our Pokémon against their active, our active against eac
 of theirs), injected into the residual stream after the first n_layers // 2
 layers: the later layers see them as state tokens, appended after the others.
 
+move_effects (encoder v2): each known and candidate move's effect features
+(encoder_v2 effect_feats / cand_effect_feats: immunities from abilities, items and
+types, and whether it failed or had no effect before) join the move MLP's input, after
+the others. with_move_effects() adds them to a trained model without changing what it
+plays: their input weights start at zero.
+
 aux_heads: training-only heads read the final tokens: the opponent's next action
 (from the critic and their active's token) and, per opponent Pokémon token, its
 item, ability and moves (logits tied to the input embeddings) and tera type.
@@ -63,6 +69,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, NT, VOCAB_SIZES
+from effects import F_EFFECT
 from encoder_v2 import F_EVENT, F_HIST, F_MATCH, F_PRIOR
 
 N_TOKENS = 3 + N_MONS
@@ -107,6 +114,8 @@ class ModelConfig:
     matchup_tokens: bool = False
     # Training-only heads (opponent's next action, opponent sets); never exported
     aux_heads: bool = False
+    # Encoder v2: per-move immunity / earlier failure features, into the move MLP
+    move_effects: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
@@ -223,9 +232,10 @@ class MiniPokeTransformer(nn.Module):
 
         if cfg.encoder_version not in (1, 2):
             raise ValueError(f"unknown encoder_version {cfg.encoder_version}")
-        if (cfg.history or cfg.history_tokens or cfg.matchup_tokens) and cfg.encoder_version < 2:
-            raise ValueError("history features, history and matchup tokens are part of "
-                             "encoder v2 (--encoder-version 2)")
+        if (cfg.history or cfg.history_tokens or cfg.matchup_tokens or cfg.move_effects) \
+                and cfg.encoder_version < 2:
+            raise ValueError("history features, history and matchup tokens and move effects are "
+                             "part of encoder v2 (--encoder-version 2)")
         self.hist_features = cfg.history and not cfg.history_tokens
         self.v2 = cfg.encoder_version == 2
         self.n_move_tokens = 0
@@ -245,7 +255,8 @@ class MiniPokeTransformer(nn.Module):
         self.segments_full = self.segments + ([("matchups", self.n_tokens, self.n_tokens + N_MONS)]
                                               if cfg.matchup_tokens else [])
         # v2: + known/candidate flag and fraction of consistent roles (1 for known moves)
-        self.move_net = mlp(cfg.move_dim + F_MOVE + (2 if self.v2 else 0), d)
+        self.move_net = mlp(cfg.move_dim + F_MOVE + (2 if self.v2 else 0)
+                            + (F_EFFECT if cfg.move_effects else 0), d)
         moves_in = 0 if cfg.move_tokens else N_MOVES * d   # move tokens: moves are tokens
         mon_in = cfg.species_dim + cfg.item_dim + cfg.ability_dim + F_MON + moves_in
         if self.v2:  # candidate moves' weighted mean, ability / item priors, prior features
@@ -322,9 +333,11 @@ class MiniPokeTransformer(nn.Module):
         """Opponent candidate moves through the move MLP: [B, 6, K, d], 0 when empty."""
         cand_feats = obs["cand_feats"]
         present = cand_feats[..., 0:1]
-        x = torch.cat([self.move_emb(obs["cand_ids"]), cand_feats[..., :F_MOVE],
-                       torch.zeros_like(present), cand_feats[..., F_MOVE:]], dim=-1)
-        return self.move_net(x) * present
+        parts = [self.move_emb(obs["cand_ids"]), cand_feats[..., :F_MOVE],
+                 torch.zeros_like(present), cand_feats[..., F_MOVE:]]
+        if self.cfg.move_effects:
+            parts.append(obs["cand_effect_feats"])
+        return self.move_net(torch.cat(parts, dim=-1)) * present
 
     def _prior_inputs(self, obs: Dict[str, torch.Tensor],
                       cand_vec: Optional[torch.Tensor]) -> torch.Tensor:
@@ -383,6 +396,8 @@ class MiniPokeTransformer(nn.Module):
         mv = [self.move_emb(move_ids), move_feats]
         if self.v2:
             mv += [move_present, move_present]       # known, fraction 1
+        if self.cfg.move_effects:
+            mv.append(obs["effect_feats"])
         move_vec = self.move_net(torch.cat(mv, dim=-1))
         move_vec = move_vec * move_present
         cand_vec = self._candidate_vectors(obs) if self.v2 else None
@@ -515,6 +530,22 @@ def with_aux_heads(model: MiniPokeTransformer) -> MiniPokeTransformer:
     new = MiniPokeTransformer(replace(model.cfg, aux_heads=True))
     missing, unexpected = new.load_state_dict(model.state_dict(), strict=False)
     assert not unexpected and all(k.startswith("aux_") for k in missing), (missing, unexpected)
+    new.priors = model.priors
+    return new
+
+
+def with_move_effects(model: MiniPokeTransformer) -> MiniPokeTransformer:
+    """The same model reading the move effect features, which start with zero weight in
+    the move MLP's first layer: it plays exactly like `model` until it is trained."""
+    if model.cfg.move_effects:
+        return model
+    new = MiniPokeTransformer(replace(model.cfg, move_effects=True))
+    state = model.state_dict()
+    first = "move_net.0.weight"
+    weight = torch.zeros_like(new.state_dict()[first])
+    weight[:, :state[first].shape[1]] = state[first]
+    state[first] = weight
+    new.load_state_dict(state)
     new.priors = model.priors
     return new
 

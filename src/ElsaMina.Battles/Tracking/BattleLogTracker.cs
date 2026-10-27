@@ -24,7 +24,8 @@ public class BattleLogTracker
     private static readonly HashSet<string> NON_REVEALING_CALLERS = ["Copycat", "Metronome", "Nature Power", "Round"];
     private static readonly HashSet<string> PLEDGES = ["Grass Pledge", "Water Pledge", "Fire Pledge"];
     private static readonly string[] FAILED_MOVE_SUFFIXES = ["[miss]", "[still]", "[notarget]"];
-    private static readonly HashSet<string> PROTOCOL_LOG_TYPES = ["turn", "move", "switch", "drag", "replace", "faint"];
+    private static readonly HashSet<string> PROTOCOL_LOG_TYPES =
+        ["turn", "move", "switch", "drag", "replace", "faint", "cant", "upkeep", "-fail", "-immune", "-terastallize"];
 
     private readonly IBattleDex _dex;
     private readonly TrackedPokemonResolver _resolver;

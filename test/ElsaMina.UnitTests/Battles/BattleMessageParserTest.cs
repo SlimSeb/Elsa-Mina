@@ -207,10 +207,8 @@ public class BattleMessageParserTest
             Assert.That(applied, Is.True);
             Assert.That(result.Type, Is.EqualTo(BattleMessageType.RequestUpdated));
             Assert.That(_context.Rqid, Is.EqualTo(7));
-            Assert.That(_context.NoCancel, Is.True);
             Assert.That(_context.Wait, Is.False);
             Assert.That(_context.TeamPreview, Is.False);
-            Assert.That(_context.SideName, Is.EqualTo("Slim"));
             Assert.That(_context.SideId, Is.EqualTo("p2"));
             Assert.That(_context.ForceSwitchSlots, Is.Empty);
 
@@ -226,7 +224,6 @@ public class BattleMessageParserTest
             Assert.That(garchomp.Moves, Is.EqualTo(GARCHOMP_MOVES));
             Assert.That(garchomp.Item, Is.EqualTo("choicescarf"));
             Assert.That(garchomp.Ability, Is.EqualTo("roughskin"));
-            Assert.That(garchomp.TeraType, Is.EqualTo("Ground"));
             var pikachu = _context.SidePokemon[1];
             Assert.That(pikachu.IsFainted, Is.True);
             Assert.That(pikachu.CurrentHp, Is.Zero);
@@ -240,7 +237,6 @@ public class BattleMessageParserTest
             Assert.That(slot.Moves[0].Name, Is.EqualTo("Earthquake"));
             Assert.That(slot.Moves[0].Id, Is.EqualTo("earthquake"));
             Assert.That(slot.Moves[0].Pp, Is.EqualTo(16));
-            Assert.That(slot.Moves[0].Target, Is.EqualTo("allAdjacent"));
             Assert.That(slot.Moves[1].Pp, Is.EqualTo(3));
             Assert.That(slot.Moves[1].MaxPp, Is.EqualTo(32));
             Assert.That(slot.Moves[1].IsDisabled, Is.True);
@@ -313,7 +309,6 @@ public class BattleMessageParserTest
         {
             Assert.That(applied, Is.False);
             Assert.That(garchomp.Level, Is.EqualTo(80));
-            Assert.That(garchomp.Gender, Is.EqualTo("F"));
             Assert.That(garchomp.IsActive, Is.False);
         }
     }
@@ -335,12 +330,7 @@ public class BattleMessageParserTest
         Apply("|poke|p2|Sunflora, M|");
 
         // Assert
-        var sunflora = GetOpponent("Sunflora");
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(sunflora.Level, Is.EqualTo(100));
-            Assert.That(sunflora.Gender, Is.EqualTo("M"));
-        }
+        Assert.That(GetOpponent("Sunflora").Level, Is.EqualTo(100));
     }
 
     [TestCase("switch")]
@@ -360,7 +350,6 @@ public class BattleMessageParserTest
             Assert.That(garchomp.HpPercent, Is.EqualTo(88).Within(0.001));
             Assert.That(garchomp.Status, Is.EqualTo("brn"));
             Assert.That(garchomp.Level, Is.EqualTo(80));
-            Assert.That(garchomp.Gender, Is.EqualTo("M"));
             Assert.That(_context.ActiveOpponent, Is.SameAs(garchomp));
         }
     }

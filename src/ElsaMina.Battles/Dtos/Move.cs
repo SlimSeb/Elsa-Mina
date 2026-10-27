@@ -16,9 +16,6 @@ public sealed class Move
     [JsonPropertyName("maxpp")]
     public int MaxPp { get; set; }
 
-    [JsonPropertyName("target")]
-    public string Target { get; set; } = "";
-
     [JsonPropertyName("disabled")]
     public bool Disabled { get; set; }
 }

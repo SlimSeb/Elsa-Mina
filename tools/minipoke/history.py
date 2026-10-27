@@ -14,6 +14,11 @@ poke-env keeps every battle line it parsed, split on "|", in `battle._replay_dat
 "The previous turn" is the lines between the last two |turn| lines: a decision
 taken mid-turn (a replacement after a faint) still looks at the last complete turn.
 
+move_outcomes() reads what came of every chosen move (the `move_effects` features,
+effects.py): a |-fail| line after it marks it failed, an |-immune| line on the other
+side records that the move had no effect on that Pokémon, until the next |move|,
+|switch|, |drag|, |replace|, |turn|, |cant| or |upkeep| line.
+
 recent_events() turns the log into events for the history tokens: every |move|
 (called and locked moves included, flagged) and every |switch| / |drag|, with the
 results that follow it until the next event or |turn|:
@@ -160,3 +165,52 @@ def recent_events(lines: Sequence[Line], k: int) -> List[Event]:
                     ev.flags["ko"] = True
                     break
     return events[-k:] if k > 0 else []
+
+
+OUTCOME_END = ("move", "switch", "drag", "replace", "turn", "cant", "upkeep")
+
+
+@dataclass
+class MoveOutcomes:
+    # (side, name, move id) -> whether each chosen use failed, oldest first
+    uses: Dict[Tuple[str, str, str], List[bool]] = field(default_factory=dict)
+    # (user side, move id, target side, target name) -> index of its last |-immune| line
+    immune: Dict[Tuple[str, str, str, str], int] = field(default_factory=dict)
+    # (side, name) -> index of its last |-terastallize| line
+    tera: Dict[Tuple[str, str], int] = field(default_factory=dict)
+
+    def failed_last(self, side: str, name: str, move: str, n: int) -> bool:
+        """The last `n` uses of `move` by that Pokémon all failed."""
+        uses = self.uses.get((side, name, move), [])
+        return len(uses) >= n and all(uses[-n:])
+
+    def immune_before(self, side: str, move: str, target_side: str, target_name: str) -> bool:
+        """`side`'s `move` had no effect on that Pokémon since it last terastallized."""
+        line = self.immune.get((side, move, target_side, target_name))
+        return line is not None and line > self.tera.get((target_side, target_name), -1)
+
+
+def move_outcomes(lines: Sequence[Line]) -> MoveOutcomes:
+    out = MoveOutcomes()
+    pending: Optional[Tuple[str, str, str]] = None
+    for i, line in enumerate(lines):
+        if len(line) < 2:
+            continue
+        kind = line[1]
+        if kind in OUTCOME_END:
+            pending = None
+        if kind == "move" and is_chosen_move(line):
+            side, name = _name(line[2])
+            move = to_id_str(line[3])
+            if move != "struggle":
+                pending = (side, name, move)
+                out.uses.setdefault(pending, []).append(False)
+        elif kind == "-fail" and pending is not None:
+            out.uses[pending][-1] = True
+        elif kind == "-immune" and pending is not None and len(line) > 2:
+            target_side, target_name = _name(line[2])
+            if target_side != pending[0]:
+                out.immune[(pending[0], pending[2], target_side, target_name)] = i
+        elif kind == "-terastallize" and len(line) > 2:
+            out.tera[_name(line[2])] = i
+    return out

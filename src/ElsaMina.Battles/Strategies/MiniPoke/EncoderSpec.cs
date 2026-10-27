@@ -79,6 +79,12 @@ public sealed class EncoderSpec
     public EncoderSpecSetPriors SetPriors { get; set; }
 
     /// <summary>
+    /// The rules of a minipoke-v2 model's move effect features, null without them.
+    /// </summary>
+    [JsonPropertyName("move_effects")]
+    public EncoderSpecMoveEffects MoveEffects { get; set; }
+
+    /// <summary>
     /// The inputs a version adds after the six every version shares.
     /// </summary>
     public IEnumerable<EncoderSpecInput> ExtraInputs =>

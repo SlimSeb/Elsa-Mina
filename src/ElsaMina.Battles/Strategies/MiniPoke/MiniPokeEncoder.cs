@@ -343,6 +343,7 @@ public abstract class MiniPokeEncoder : IMiniPokeEncoder
         for (var moveIndex = 0; moveIndex < Math.Min(moves.Count, BattleObservation.MoveCount); moveIndex++)
         {
             var id = moves[moveIndex].Id;
+            observation.MoveSlotIds[moveIndex] = id;
             observation.MoveSlotToRequestIndex[moveIndex] = requestMoves.FindIndex(move => move.Id == id);
         }
     }

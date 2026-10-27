@@ -1,0 +1,11 @@
+{
+ "model": "MiniPokeV2_1M",
+ "scale": 0.818166,
+ "offset": -0.196524,
+ "target": "realized shaped return (+-1 result, +-0.1 per faint, gamma 0.995)",
+ "decisions": 11754,
+ "mean_gap_before": 0.17665532079074178,
+ "mean_gap_after": -1.1364814899004495e-16,
+ "mae_before": 0.8177793376111313,
+ "mae_after": 0.8221020892339264
+}

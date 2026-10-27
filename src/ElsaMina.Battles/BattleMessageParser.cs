@@ -85,8 +85,6 @@ public class BattleMessageParser : IBattleMessageParser
             context.Rqid = battleState.Rqid;
             context.Wait = battleState.Wait;
             context.TeamPreview = battleState.TeamPreview;
-            context.NoCancel = battleState.NoCancel;
-            context.SideName = battleState.Side?.Name ?? "";
             context.SideId = battleState.Side?.Id ?? "";
             context.ForceSwitchSlots = ParseForceSwitch(battleState);
             context.SidePokemon = ParseSidePokemon(battleState);
@@ -245,10 +243,8 @@ public class BattleMessageParser : IBattleMessageParser
             return;
         }
 
-        var (species, level, gender) = ParseDetails(details);
-        var pokemon = GetOrCreateOpponentPokemon(context, species);
-        pokemon.Level = level;
-        pokemon.Gender = gender;
+        var (species, level) = ParseDetails(details);
+        GetOrCreateOpponentPokemon(context, species).Level = level;
     }
 
     private static void ApplySwitch(BattleContext context, string ident, string details, string hpStatus)
@@ -258,7 +254,7 @@ public class BattleMessageParser : IBattleMessageParser
             return;
         }
 
-        var (species, level, gender) = ParseDetails(details);
+        var (species, level) = ParseDetails(details);
         ParseHpStatus(hpStatus, out var hpPercent, out var status, out var fainted);
 
         foreach (var pokemon in context.OpponentPokemon)
@@ -268,7 +264,6 @@ public class BattleMessageParser : IBattleMessageParser
 
         var switched = GetOrCreateOpponentPokemon(context, species);
         switched.Level = level;
-        switched.Gender = gender;
         switched.HpPercent = hpPercent;
         switched.Status = status;
         switched.IsActive = !fainted;
@@ -286,7 +281,7 @@ public class BattleMessageParser : IBattleMessageParser
         }
 
         var oldSpecies = ExtractSpeciesFromIdent(ident);
-        var (newSpecies, _, _) = ParseDetails(details);
+        var (newSpecies, _) = ParseDetails(details);
         var pokemon = FindOpponentPokemon(context, oldSpecies);
         if (pokemon != null)
         {
@@ -493,28 +488,21 @@ public class BattleMessageParser : IBattleMessageParser
         return colonIndex < 0 || colonIndex + 2 >= ident.Length ? "" : ident[(colonIndex + 2)..];
     }
 
-    private static (string species, int level, string gender) ParseDetails(string details)
+    private static (string species, int level) ParseDetails(string details)
     {
         // Format: "Garchomp, L80, M" or "Garchomp, L80" or "Garchomp, M" or "Garchomp"
         // Level 100 omits the L prefix in some cases: "Sunflora, M"
         var tokens = details.Split(", ");
-        var species = tokens[0];
         var level = 100;
-        var gender = "";
-
         foreach (var token in tokens.AsSpan(1))
         {
-            if (token.StartsWith('L') && int.TryParse(token.AsSpan(1), out var lvl))
+            if (token.StartsWith('L') && int.TryParse(token.AsSpan(1), out var parsedLevel))
             {
-                level = lvl;
-            }
-            else if (token is "M" or "F")
-            {
-                gender = token;
+                level = parsedLevel;
             }
         }
 
-        return (species, level, gender);
+        return (tokens[0], level);
     }
 
     private static void ParseHpStatus(string hpStatus, out double hpPercent, out string status, out bool fainted)
@@ -625,14 +613,9 @@ public class BattleMessageParser : IBattleMessageParser
                     pokemon.Stats.Spd,
                     pokemon.Stats.Spe),
                 Moves = pokemon.Moves,
-                BaseAbility = pokemon.BaseAbility,
                 Ability = pokemon.Ability ?? "",
                 Item = pokemon.Item,
-                Pokeball = pokemon.Pokeball,
-                TeraType = pokemon.TeraType,
-                Terastallized = pokemon.Terastallized,
-                Commanding = pokemon.Commanding,
-                Reviving = pokemon.Reviving
+                Terastallized = pokemon.Terastallized
             });
         }
 
@@ -664,7 +647,6 @@ public class BattleMessageParser : IBattleMessageParser
                     Id = move?.Id ?? "",
                     Pp = move?.Pp ?? 0,
                     MaxPp = move?.MaxPp ?? 0,
-                    Target = move?.Target ?? "",
                     IsDisabled = move?.Disabled ?? false
                 });
             }

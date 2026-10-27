@@ -28,23 +28,14 @@ public sealed class SidePokemon
     [JsonPropertyName("item")]
     public string Item { get; set; } = "";
 
-    [JsonPropertyName("pokeball")]
-    public string Pokeball { get; set; } = "";
-
     /// <summary>
     /// Current ability, or null when the request doesn't include it.
     /// </summary>
     [JsonPropertyName("ability")]
     public string Ability { get; set; }
 
-    [JsonPropertyName("commanding")]
-    public bool Commanding { get; set; }
-
     [JsonPropertyName("reviving")]
     public bool Reviving { get; set; }
-
-    [JsonPropertyName("teraType")]
-    public string TeraType { get; set; } = "";
 
     [JsonPropertyName("terastallized")]
     public string Terastallized { get; set; } = "";

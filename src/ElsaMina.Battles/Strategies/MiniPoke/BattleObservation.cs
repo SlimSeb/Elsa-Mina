@@ -29,6 +29,7 @@ public sealed class BattleObservation
         Mask = new bool[ActionCount];
         TeamSlotToSideIndex = Enumerable.Repeat(-1, SlotCount).ToArray();
         MoveSlotToRequestIndex = Enumerable.Repeat(-1, MoveCount).ToArray();
+        MoveSlotIds = new string[MoveCount];
     }
 
     public int MonFeatureSize { get; }
@@ -76,4 +77,9 @@ public sealed class BattleObservation
     /// request lists fewer moves (locked into Outrage, Struggle, recharge). -1 when not mappable.
     /// </summary>
     public int[] MoveSlotToRequestIndex { get; }
+
+    /// <summary>
+    /// The id of the move the model's move j stands for, null when there is none.
+    /// </summary>
+    public string[] MoveSlotIds { get; }
 }

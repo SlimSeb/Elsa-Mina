@@ -312,9 +312,11 @@ class Rollouts:
 
 
 def evaluate(batcher: InferenceBatcher, make_opponent: Callable[[], Player], n_battles: int,
-             concurrency: int, stall_timeout: float = 180.0, server=None) -> Tuple[float, int]:
+             concurrency: int, stall_timeout: float = 180.0, server=None,
+             no_tera_before: int = 0) -> Tuple[float, int]:
     """Greedy play with `batcher`'s model against a fresh opponent. -> (win rate, finished)."""
-    me = RLPlayer(batcher, None, greedy=True, **make_kwargs(concurrency))
+    me = RLPlayer(batcher, None, greedy=True, no_tera_before=no_tera_before,
+                  **make_kwargs(concurrency))
     opp = make_opponent()
     res = asyncio.run(_play_pairs([(me, opp, n_battles)], [me], stall_timeout,
                                   max(600.0, n_battles * 10.0)))

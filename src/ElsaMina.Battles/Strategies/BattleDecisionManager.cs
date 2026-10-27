@@ -1,4 +1,3 @@
-using ElsaMina.Battles.Strategies.Llm;
 using ElsaMina.Battles.Strategies.MiniPoke;
 using ElsaMina.Logging;
 
@@ -6,35 +5,23 @@ namespace ElsaMina.Battles.Strategies;
 
 public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionService
 {
-    private readonly LlmBattleDecisionService _llmService;
     private readonly CalcBasedBattleDecisionService _calcService;
-    private readonly TypeMatchupBattleDecisionService _typeMatchupService;
-    private readonly RandomBattleDecisionService _randomService;
     private readonly Dictionary<BattleDecisionStrategy, MiniPokeBattleDecisionService> _miniPokeServices;
 
     public BattleDecisionManager(
-        LlmBattleDecisionService llmService,
         CalcBasedBattleDecisionService calcService,
-        TypeMatchupBattleDecisionService typeMatchupService,
-        RandomBattleDecisionService randomService,
         IEnumerable<MiniPokeBattleDecisionService> miniPokeServices)
     {
-        _llmService = llmService;
         _calcService = calcService;
-        _typeMatchupService = typeMatchupService;
-        _randomService = randomService;
         // One per minipoke model registered in BattlesModule
         _miniPokeServices = miniPokeServices.ToDictionary(service => service.Strategy);
     }
 
-    public BattleDecisionStrategy ActiveStrategy { get; set; } = BattleDecisionStrategy.DamageCalc;
+    public BattleDecisionStrategy ActiveStrategy { get; set; } = BattleDecisionStrategy.MiniPokeV2_4M;
 
     public IReadOnlyList<BattleDecisionStrategy> AvailableStrategies =>
     [
         BattleDecisionStrategy.DamageCalc,
-        BattleDecisionStrategy.Llm,
-        BattleDecisionStrategy.TypeMatchup,
-        BattleDecisionStrategy.Random,
         .._miniPokeServices.Keys.Order()
     ];
 
@@ -49,17 +36,8 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
         var normalized = strategyName.Trim().ToLowerInvariant();
         switch (normalized)
         {
-            case "llm" or "ai" or "language-model" or "languagemodel":
-                strategy = BattleDecisionStrategy.Llm;
-                break;
             case "calc" or "damagecalc" or "damage-calc" or "minimax" or "simulation" or "calcbased":
                 strategy = BattleDecisionStrategy.DamageCalc;
-                break;
-            case "type" or "typematchup" or "type-matchup" or "matchup":
-                strategy = BattleDecisionStrategy.TypeMatchup;
-                break;
-            case "random" or "rand":
-                strategy = BattleDecisionStrategy.Random;
                 break;
             case "minipoke" when _miniPokeServices.Count > 0:
                 // The latest model
@@ -92,17 +70,11 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
         return matches.Count > 0;
     }
 
-    public IBattleDecisionService GetCurrentService()
-    {
-        return ActiveStrategy switch
-        {
-            BattleDecisionStrategy.Llm => _llmService,
-            BattleDecisionStrategy.DamageCalc => _calcService,
-            BattleDecisionStrategy.TypeMatchup => _typeMatchupService,
-            BattleDecisionStrategy.Random => _randomService,
-            _ => _miniPokeServices.TryGetValue(ActiveStrategy, out var miniPokeService) ? miniPokeService : _calcService
-        };
-    }
+    /// <summary>
+    /// The service playing the active strategy: the damage calc one when its minipoke model is not registered.
+    /// </summary>
+    public IBattleDecisionService GetCurrentService() =>
+        _miniPokeServices.TryGetValue(ActiveStrategy, out var miniPokeService) ? miniPokeService : _calcService;
 
     public Task<BattleDecision> GetDecisionAsync(BattleContext context, CancellationToken cancellationToken = default)
     {
