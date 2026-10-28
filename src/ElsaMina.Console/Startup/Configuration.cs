@@ -72,4 +72,6 @@ public class Configuration : ICommandsConfiguration, IDatabaseConfiguration, IS3
     public string OtlpEndpoint { get; set; } = string.Empty;
     public string OltpHeaders { get; set; } = string.Empty;
     public string ReplaysDirectory { get; set; } = string.Empty;
+    public string ShowdownDirectory { get; set; } = string.Empty;
+    public string NodePath { get; set; } = string.Empty;
 }

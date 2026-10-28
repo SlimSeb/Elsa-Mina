@@ -188,7 +188,7 @@ def test_medium_records_the_pool_win_rates_and_resume_keeps_old_runs_on_their_se
 
     # A checkpoint saved before these options existed resumes on the old behaviour
     path = tmp_path / "checkpoints" / "ppo_latest.pt"
-    for k in ("value_ce_norm", "kl_stop", "pool_sampling", "vf_coef"):
+    for k in ("value_ce_norm", "kl_stop", "pool_sampling", "vf_coef", "faint_anneal"):
         ck["args"].pop(k)
     ck["args"]["vf_coef"] = 0.1
     torch.save(ck, path)
@@ -199,6 +199,7 @@ def test_medium_records_the_pool_win_rates_and_resume_keeps_old_runs_on_their_se
     assert (resumed["args"]["value_ce_norm"], resumed["args"]["kl_stop"],
             resumed["args"]["pool_sampling"], resumed["args"]["vf_coef"]) == (
         "none", "last", "uniform", 0.1)
+    assert resumed["args"]["faint_anneal"] == 0.0   # a constant faint reward, as it was trained
     assert resumed["state"]["iteration"] == 3
 
 
@@ -217,6 +218,27 @@ def test_elo_table_follows_training_and_eval_games(run_ppo, tmp_path):
     assert elo["results"]["heuristic|learner"][1] == 2 * 10 + 200 + 400
     assert elo["results"]["it00001|learner"][1] == 10 + 50   # training slot + eval
     assert ck["elo"]["ratings"] == ratings
+
+
+def test_medium_anneals_the_faint_reward_to_zero_halfway_through_the_budget(run_ppo):
+    rows, ck = run_ppo("--size", "medium", "--iterations", "4", "--eval-every", "1000")
+    assert ck["args"]["faint_anneal"] == 0.5
+    # progress at iterations 1-4 of 4 is 0.25 .. 1.0: 0.1 x (1 - progress / 0.5), floored at 0
+    assert [float(r["faint_reward"]) for r in rows] == pytest.approx([0.05, 0.0, 0.0, 0.0])
+
+
+def test_small_keeps_v1s_constant_faint_reward(run_ppo):
+    rows, ck = run_ppo("--size", "small", "--iterations", "2", "--eval-every", "1000")
+    assert ck["args"]["faint_anneal"] == 0.0
+    assert [float(r["faint_reward"]) for r in rows] == pytest.approx([0.1, 0.1])
+
+
+def test_faint_reward_schedules():
+    from players import faint_reward
+    assert faint_reward(500, None) == pytest.approx(0.1)
+    assert faint_reward(500, 1000, progress=0.9, anneal_until=0.5) == pytest.approx(0.05)  # states win
+    assert faint_reward(0, None, progress=0.25, anneal_until=0.5) == pytest.approx(0.05)
+    assert faint_reward(0, None, progress=0.75, anneal_until=0.5) == 0.0
 
 
 def test_winloss_reward_is_undiscounted_and_unshaped(run_ppo, monkeypatch):

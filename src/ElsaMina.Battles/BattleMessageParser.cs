@@ -615,6 +615,7 @@ public class BattleMessageParser : IBattleMessageParser
                 Moves = pokemon.Moves,
                 Ability = pokemon.Ability ?? "",
                 Item = pokemon.Item,
+                TeraType = pokemon.TeraType ?? "",
                 Terastallized = pokemon.Terastallized
             });
         }

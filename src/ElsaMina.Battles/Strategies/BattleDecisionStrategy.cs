@@ -10,7 +10,7 @@ public enum BattleDecisionStrategy
     /// <summary>
     /// The first minipoke model, ~1M parameters (Models/MiniPokeV1_1M, strategy "minipokev1-1m"). Each model gets
     /// its own value, named after its model directory as MiniPokeV{version}_{size} (version 2.1 as 2_1), and a line
-    /// in BattlesModule.
+    /// in BattlesModule; its search variant (below) gets a value too.
     /// </summary>
     MiniPokeV1_1M,
 
@@ -37,5 +37,34 @@ public enum BattleDecisionStrategy
     /// through, and the moves that had no effect or failed before). Played with the V2 encoder, which reads them from
     /// the spec.
     /// </summary>
-    MiniPokeV2_1_1M
+    MiniPokeV2_1_1M,
+
+    // Search variants, "<model>+search": the same model, searching one turn ahead on Showdown's simulator
+    // (MiniPokeTurnSearch). Named after their model with a _Search suffix: BattlesModule registers each with its model.
+    // Listed only when the simulator is configured (ShowdownDirectory).
+
+    /// <summary>
+    /// <see cref="MiniPokeV1_1M"/> with search ("minipokev1-1m+search").
+    /// </summary>
+    MiniPokeV1_1M_Search,
+
+    /// <summary>
+    /// <see cref="MiniPokeV1_4M"/> with search ("minipokev1-4m+search").
+    /// </summary>
+    MiniPokeV1_4M_Search,
+
+    /// <summary>
+    /// <see cref="MiniPokeV2_1M"/> with search ("minipokev2-1m+search"), the model search was measured with.
+    /// </summary>
+    MiniPokeV2_1M_Search,
+
+    /// <summary>
+    /// <see cref="MiniPokeV2_4M"/> with search ("minipokev2-4m+search").
+    /// </summary>
+    MiniPokeV2_4M_Search,
+
+    /// <summary>
+    /// <see cref="MiniPokeV2_1_1M"/> with search ("minipokev2.1-1m+search").
+    /// </summary>
+    MiniPokeV2_1_1M_Search
 }

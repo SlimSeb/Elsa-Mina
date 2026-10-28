@@ -35,7 +35,10 @@ Pipeline:
     strategy is switched by hand, and a folder can hold several models' battles.
     ElsaMina's guard (MiniPokeActionGuard.cs, guard_vetoes here) replaces an argmax
     it vetoes by the best action left; whether a battle was played with it is read
-    from its choices too.
+    from its choices too. So is the search (MiniPokeTurnSearch.cs, search.py): it
+    plays one of the model's likely actions, not always the argmax, and can't be
+    replayed (its simulations are random), so a battle played with it is checked
+    against its candidates (search_candidates).
  5. write to --out (results, value head and behavior: PLAYED_BY's battles only):
 
     report.md         findings, results, endings, parity, value head, behavior
@@ -393,18 +396,7 @@ class ReplayPlayer(Player):
         return self.choose_default_move()
 
 
-def move_options(battle) -> list:
-    """The moves poke-env's move actions stand for (SinglesEnv.action_to_order): the
-    active Pokémon's first four known moves, or the only available move when it is
-    not one of them (Struggle, Recharge)."""
-    me = battle.active_pokemon
-    if me is None:
-        return []
-    known = list(me.moves.values())[:E.N_MOVES]
-    available = [m.id for m in battle.available_moves]
-    if len(available) == 1 and available[0] not in [m.id for m in known]:
-        return list(battle.available_moves)
-    return known
+move_options = E.move_options
 
 
 def describe_mon(mon) -> str:
@@ -740,6 +732,22 @@ def guarded(logits: np.ndarray, mask: np.ndarray, vetoes: Dict[int, str]) -> Tup
     if not allowed.any():
         return best, mask
     return int(np.argmax(np.where(allowed, logits, -np.inf))), allowed
+
+
+# The search's candidates (search.py SearchConfig, MiniPokeSearchOptions.cs)
+SEARCH_TOP_K = 3
+SEARCH_MIN_PROB = 0.0
+
+
+def search_candidates(logits: np.ndarray, allowed: np.ndarray) -> set:
+    """The actions ElsaMina's search chooses among: the model's SEARCH_TOP_K most likely
+    allowed ones (the guard's mask), the first, then those with at least SEARCH_MIN_PROB."""
+    if allowed.sum() < 2:
+        return set()
+    weights = np.where(allowed, np.exp(logits - np.max(np.where(allowed, logits, -np.inf))), 0.0)
+    probs = weights / weights.sum()
+    ranked = [int(a) for a in np.argsort(-probs, kind="stable") if allowed[a]][:SEARCH_TOP_K]
+    return {a for rank, a in enumerate(ranked) if rank == 0 or probs[a] >= SEARCH_MIN_PROB}
 
 
 def request_at(lines: Sequence[str], line: int) -> dict:
@@ -1149,6 +1157,8 @@ class Battle:
     guard: bool = False              # played with ElsaMina's guard (MiniPokeActionGuard)
     guard_attribution: str = ""      # how guard was found, like attribution
     guard_matches: Dict[str, int] = field(default_factory=dict)  # "without" / "with" -> choices explained
+    search: bool = False             # played with ElsaMina's search (MiniPokeTurnSearch)
+    search_attribution: str = ""     # how search was found, like attribution
 
     @property
     def us(self) -> str:
@@ -1312,6 +1322,8 @@ def analyze(folder: Path, out: Path, refresh: bool, compare: bool, limit: Option
             for name, o in outputs.items():
                 own = {key: o[key][index] for key in ("logits", "probs", "argmax", "value", "entropy")}
                 own["guarded"], own["guarded_mask"] = guarded(own["logits"], d["mask"], d["vetoes"])
+                own["candidates"] = set() if d["force_switch"] else search_candidates(
+                    own["logits"], own["guarded_mask"])
                 d["models"][name] = own
             index += 1
     attribute_models(battles, list(outputs))
@@ -1325,6 +1337,8 @@ def analyze(folder: Path, out: Path, refresh: bool, compare: bool, limit: Option
                                    if int(own["guarded"]) != int(own["argmax"]) else None)
             mask = own["guarded_mask"] if battle.guard else d["mask"]
             d["check"] = check_choice(own["logits"], mask, d["action"]) if d["choice"] else None
+            if battle.search and d["check"] in ("mismatch", "illegal") and d["action"] in own["candidates"]:
+                d["check"] = "searched"
             d["gap"] = (float(own["logits"][d["argmax"]] - own["logits"][d["action"]])
                         if d["check"] in ("mismatch", "tie") else None)
             others = [name for name in d["models"] if name != battle.played_by]
@@ -1383,6 +1397,29 @@ def attribute_models(battles: List[Battle], names: Sequence[str]) -> None:
             nearest = nearest_in_time(b, guard_decided)
             b.guard = nearest.guard if nearest is not None else False
             b.guard_attribution = "nearest in time" if nearest is not None else "default"
+    attribute_search(battles)
+
+
+def attribute_search(battles: List[Battle]) -> None:
+    """Whether a battle was played with the search: some choice is not the (guarded)
+    argmax, and every choice is the argmax or one of the search's candidates. When
+    every choice is the argmax (the search agreed every time, or never ran), the
+    nearest battle in time decides, as for the guard."""
+    decided = []
+    for b in battles:
+        committed = [d for d in b.decisions if d["status"] == "committed" and d["choice"]]
+        plain = sum(explains(d, b.played_by, b.guard) for d in committed)
+        possible = sum(explains(d, b.played_by, True)
+                       or d["action"] in d["models"][b.played_by]["candidates"] for d in committed)
+        if plain < len(committed):
+            b.search = possible == len(committed)
+            b.search_attribution = "choices"
+            decided.append(b)
+    for b in battles:
+        if not b.search_attribution:
+            nearest = nearest_in_time(b, decided)
+            b.search = nearest.search if nearest is not None else False
+            b.search_attribution = "nearest in time" if nearest is not None else "default"
 
 
 # --------------------------------------------------------------------------
@@ -1606,7 +1643,7 @@ def parity_section(battles: List[Battle], models: Sequence[str]) -> Tuple[str, d
     status = Counter(d["status"] for d in decisions)
     checks = Counter(d["check"] for d in decisions if d["status"] == "committed")
     committed = status["committed"]
-    matched = checks["match"] + checks["tie"]
+    matched = checks["match"] + checks["tie"] + checks["searched"]
     rate = matched / committed if committed else float("nan")
     lo, hi = wilson(matched, committed)
 
@@ -1646,6 +1683,8 @@ def parity_section(battles: List[Battle], models: Sequence[str]) -> Tuple[str, d
             table(["Committed choice vs the argmax of the model that played", "Count", "Share"], [
                 ["argmax (match)", checks["match"], pct(checks["match"] / committed)],
                 ["tie with the argmax (counts as a match)", checks["tie"], pct(checks["tie"] / committed)],
+                ["the search's choice among the model's candidates (counts as a match)", checks["searched"],
+                 pct(checks["searched"] / committed)],
                 ["another action (mismatch)", checks["mismatch"], pct(checks["mismatch"] / committed)],
                 ["illegal in poke-env's mask", checks["illegal"], pct(checks["illegal"] / committed)],
                 ["no compact action", checks["unmapped"], pct(checks["unmapped"] / committed)],
@@ -1728,7 +1767,7 @@ def guard_subsection(battles: List[Battle]) -> Tuple[List[str], dict]:
 
 def per_model_rate(battles: List[Battle], model: str) -> str:
     ds = [d for b in battles if b.played_by == model for d in b.decisions if d["status"] == "committed"]
-    matched = sum(d["check"] in ("match", "tie") for d in ds)
+    matched = sum(d["check"] in ("match", "tie", "searched") for d in ds)
     return f"{pct(matched / len(ds), 2)} ({matched} of {len(ds)})" if ds else "n/a"
 
 
@@ -2388,6 +2427,7 @@ def battle_row(b: Battle) -> dict:
         "parity_mismatches": sum(d["check"] in ("mismatch", "illegal", "unmapped") for d in committed),
         "errors": len(b.log.errors),
         "guard": b.guard, "guard_attribution": b.guard_attribution,
+        "search": b.search, "search_attribution": b.search_attribution,
         "guard_changes": sum(bool(d.get("guard_override")) for d in b.decisions),
         "first_value": round(b.decisions[0]["value"], 4) if b.decisions else "",
         "min_value": round(min(d["value"] for d in b.decisions), 4) if b.decisions else "",

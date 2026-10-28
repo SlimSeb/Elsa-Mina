@@ -4,6 +4,9 @@ using ElsaMina.Battles.Strategies.MiniPoke;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
 using ElsaMina.Core.Services.Probabilities;
+using System.Text.Json.Nodes;
+using ElsaMina.Battles.Strategies.MiniPokeSearch;
+using ElsaMina.UnitTests.Battles.Strategies.MiniPokeSearch;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
@@ -25,7 +28,9 @@ public class MiniPokeBattleDecisionServiceTest
     private IMiniPokeModel _model;
     private IMiniPokeEncoder _encoder;
     private IRandomService _randomService;
+    private IShowdownSimulator _simulator;
     private MiniPokeBattleDecisionService _service;
+    private MiniPokeBattleDecisionService _searchService;
 
     [SetUp]
     public void SetUp()
@@ -37,8 +42,12 @@ public class MiniPokeBattleDecisionServiceTest
         _randomService.RandomElement(Arg.Any<IEnumerable<int>>()).Returns(FALLBACK_MOVE_CHOICE);
         var fallback = new CalcBasedBattleDecisionService(_randomService, Substitute.For<IOpponentMovesPredictor>(),
             Substitute.For<IBattleSearchAlgorithm>());
-        _service = new MiniPokeBattleDecisionService(_model, _encoder, fallback,
-            new MiniPokeActionGuard(TestBattleDex.Instance), OPTIONS);
+        _simulator = Substitute.For<IShowdownSimulator>();
+        var guard = new MiniPokeActionGuard(TestBattleDex.Instance);
+        var search = new MiniPokeTurnSearch(_simulator, new BattleMessageParser(TestBattleDex.Instance));
+        _service = new MiniPokeBattleDecisionService(_model, _encoder, fallback, guard, search, OPTIONS);
+        _searchService = new MiniPokeBattleDecisionService(_model, _encoder, fallback, guard, search,
+            OPTIONS with { Strategy = BattleDecisionStrategy.MiniPokeV1_1M_Search, Search = true });
     }
 
     private static BattleContext CreateSinglesContext(int activeSlots = 1)
@@ -219,6 +228,79 @@ public class MiniPokeBattleDecisionServiceTest
         var observation = CreateObservation();
         GUARDED_MOVES.CopyTo(observation.MoveSlotIds, 0);
         return observation;
+    }
+
+    private void SimulatorPrefersMoveOne()
+    {
+        _simulator.IsAvailable.Returns(true);
+        var reply = new SimulationReply(
+        [
+            new SimulationDeterminization(["coil"],
+                [
+                    [[new SimulationLeaf(["|win|Them"], "p2")]], [[new SimulationLeaf(["|win|Elsa"], "p1")]],
+                    [[new SimulationLeaf(["|win|Them"], "p2")]]
+                ])
+        ], null);
+        _simulator.SimulateAsync(Arg.Any<JsonObject>(), Arg.Any<CancellationToken>()).Returns(reply);
+    }
+
+    private void ModelPrefersMoveZero()
+    {
+        var observation = CreateGuardedObservation();
+        _encoder.Encode(Arg.Any<BattleContext>()).Returns(observation);
+        var logits = Enumerable.Repeat(-10f, ACTION_COUNT).ToArray();
+        logits[6] = 5f;
+        logits[7] = 4f;
+        _model.Evaluate(observation).Returns((logits, 0f));
+    }
+
+    [Test]
+    public async Task Test_GetDecisionAsync_ShouldNotSearch_WhenTheStrategyIsNotASearchVariant()
+    {
+        // Arrange
+        ModelPrefersMoveZero();
+        SimulatorPrefersMoveOne();
+
+        // Act
+        var decision = await _service.GetDecisionAsync(new SearchTestBattle().Context);
+
+        // Assert: action 6 is model move 0, the request's 4th move
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(decision.Choices, Is.EqualTo(FOURTH_CHOICE));
+            Assert.That(_service.CanSearch, Is.False);
+            await _simulator.DidNotReceive().SimulateAsync(Arg.Any<JsonObject>(), Arg.Any<CancellationToken>());
+        }
+    }
+
+    [Test]
+    public async Task Test_GetDecisionAsync_ShouldPlayTheSearchedAction_WhenTheSimulatorIsAvailable()
+    {
+        // Arrange: the model prefers move 0, but only move 1's simulated turn wins
+        ModelPrefersMoveZero();
+        SimulatorPrefersMoveOne();
+
+        // Act
+        var decision = await _searchService.GetDecisionAsync(new SearchTestBattle().Context);
+
+        // Assert: action 7 is model move 1, the request's 3rd move
+        Assert.That(decision.Choices, Is.EqualTo(THIRD_CHOICE));
+    }
+
+    [Test]
+    public async Task Test_GetDecisionAsync_ShouldPlayTheModelsAction_WhenTheSearchFails()
+    {
+        // Arrange
+        ModelPrefersMoveZero();
+        _simulator.IsAvailable.Returns(true);
+        _simulator.SimulateAsync(Arg.Any<JsonObject>(), Arg.Any<CancellationToken>())
+            .Throws(new InvalidOperationException("simulator crashed"));
+
+        // Act
+        var decision = await _searchService.GetDecisionAsync(new SearchTestBattle().Context);
+
+        // Assert: action 6 is model move 0, the request's 4th move
+        Assert.That(decision.Choices, Is.EqualTo(FOURTH_CHOICE));
     }
 
     [Test]

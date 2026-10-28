@@ -27,6 +27,7 @@ import json
 import logging
 import os
 import random
+import subprocess
 import time
 from pathlib import Path
 from typing import Dict, Optional
@@ -47,8 +48,10 @@ from model import (PRESETS, MiniPokeTransformer, ModelConfig, build_model, descr
                    preset, size_of, with_aux_heads, with_move_effects)
 from players import DistillPlayer, InferenceBatcher, Rewards, RLPlayer, TeacherPlayer, faint_reward
 from ppo import AUX_STATS, Budget, PPOConfig, Schedule, distill_train, ppo_update
-from rollout import (SCRIPTED, RolloutConfig, Rollouts, close_players, evaluate, frozen_copy,
-                     load_into, make_kwargs, play_match, play_recording_pairs, wilson_interval)
+from paired import TeamPairs, summarize
+from rollout import (SCRIPTED, MatchResult, RolloutConfig, Rollouts, close_players, evaluate,
+                     frozen_copy, load_into, make_kwargs, play_match, play_recording_pairs,
+                     wilson_interval)
 from setpriors import SetPriors
 from runtime import (MetricsLogger, ShowdownServer, StopController, peak_rss_mb,
                      pick_infer_device, prune_checkpoints, rss_mb)
@@ -62,7 +65,7 @@ DEFAULTS: Dict[str, Dict[str, object]] = {
         concurrency=32, battles_per_iter=128, lr=2e-4, warmup_iters=0, lr_min_ratio=1.0,
         ent_start=0.01, ent_end=0.01, mirror_share=1.0, pool_share=0.0, heuristic_share=0.0,
         bc_value_coef=0.0, value_ce_norm="log-bins", vf_coef=0.5, kl_stop="last",
-        pool_sampling="uniform",
+        pool_sampling="uniform", faint_anneal=0.0,
     ),
     "medium": dict(
         # lr 1e-4: at 2e-4 (with the raw two-hot loss at 0.5) PPO stalled around 43% vs the
@@ -71,7 +74,9 @@ DEFAULTS: Dict[str, Dict[str, object]] = {
         concurrency=48, battles_per_iter=192, lr=1e-4, warmup_iters=10, lr_min_ratio=0.1,
         ent_start=0.01, ent_end=0.003, mirror_share=0.7, pool_share=0.2, heuristic_share=0.1,
         bc_value_coef=0.5, value_ce_norm="log-bins", vf_coef=0.5, kl_stop="mean",
-        pool_sampling="pfsp",
+        # The faint reward helps early credit assignment but is not the goal: it reaches 0
+        # halfway through the budget, and the second half learns from wins and losses only
+        pool_sampling="pfsp", faint_anneal=0.5,
     ),
 }
 DEFAULTS["wide"] = DEFAULTS["small"]  # MiniPokeV1_4M was trained with the V1 recipe
@@ -80,7 +85,7 @@ DEFAULTS["wide-medium"] = DEFAULTS["medium"]
 # value weight was 0.1 then, so that setting also brings back the old medium default.
 RAW_CE_VF_COEF = {"medium": 0.1, "wide-medium": 0.1}
 # Options added after a run was started: resuming it keeps what it was trained with
-LEGACY = dict(value_ce_norm="none", kl_stop="last", pool_sampling="uniform")
+LEGACY = dict(value_ce_norm="none", kl_stop="last", pool_sampling="uniform", faint_anneal=0.0)
 COMMON_DEFAULTS = dict(
     iterations=None, hours=None, states=None, confirm_battles=400, minibatch=1024, eval_every=10, eval_battles=200,
     eval_pool_battles=100, min_eval_battles=150, snapshot_every=10, pool_cap=20, pool_slots=2,
@@ -143,21 +148,61 @@ def new_model(args) -> MiniPokeTransformer:
 
 
 def eval_vs(model, infer_device, n: int, concurrency: int, opponent: str = "heuristic",
-            no_tera_before: int = 0):
+            no_tera_before: int = 0, pairs: Optional[TeamPairs] = None,
+            search: Optional["SearchSetup"] = None) -> MatchResult:
     opp_cls = SCRIPTED[opponent]
     batcher = InferenceBatcher(frozen_copy(model, infer_device), infer_device,
                                max_batch=concurrency * 2)
     return evaluate(batcher, lambda: opp_cls(**make_kwargs(concurrency)), n, concurrency,
-                    no_tera_before=no_tera_before)
+                    no_tera_before=no_tera_before, pairs=pairs,
+                    player=search.player(batcher, concurrency) if search else None)
 
 
-def head_to_head(model, other, infer_device, n: int, concurrency: int, no_tera_before: int = 0):
-    """Greedy `model` vs greedy `other`. -> (model's win rate, finished battles)."""
+def head_to_head(model, other, infer_device, n: int, concurrency: int, no_tera_before: int = 0,
+                 pairs: Optional[TeamPairs] = None,
+                 search: Optional["SearchSetup"] = None) -> MatchResult:
+    """Greedy `model` (with `search`: searching) vs greedy `other`, `model`'s results."""
     batcher, other_batcher = (InferenceBatcher(frozen_copy(m, infer_device), infer_device,
                                                max_batch=concurrency * 2) for m in (model, other))
     return evaluate(batcher, lambda: RLPlayer(other_batcher, None, greedy=True,
                                               **make_kwargs(concurrency)), n, concurrency,
-                    no_tera_before=no_tera_before)
+                    no_tera_before=no_tera_before, pairs=pairs,
+                    player=search.player(batcher, concurrency) if search else None)
+
+
+class SearchSetup:
+    """`--search`: the --ckpt player searches one turn ahead (search.py)."""
+
+    def __init__(self, args):
+        from search import SearchConfig, SimPool
+        self.config = SearchConfig(top_k=args.search_top_k, min_prob=args.search_min_prob,
+                                   determinizations=args.search_determinizations,
+                                   samples=args.search_samples,
+                                   faint_reward=args.search_faint_reward)
+        self.sims = SimPool(args.showdown_cwd, args.search_workers)
+        self.players = []
+
+    def player(self, batcher, concurrency: int):
+        from search import SearchPlayer
+        player = SearchPlayer(batcher, self.sims, self.config, **make_kwargs(concurrency))
+        self.players.append(player)
+        return player
+
+    def describe(self) -> str:
+        return "; ".join(p.stats.describe() for p in self.players)
+
+
+def team_pairs(args, battles: int) -> Optional[TeamPairs]:
+    """The team pairs of a paired evaluation (`battles` games, two per pair), or None
+    for `--unpaired` or when the teams can't be generated (no Node or Showdown clone)."""
+    if args.unpaired:
+        return None
+    seed = args.team_seed if args.team_seed is not None else (args.seed or 0)
+    try:
+        return TeamPairs.generate(max(1, battles // 2), seed, args.showdown_cwd)
+    except (OSError, subprocess.CalledProcessError) as exc:
+        log.warning("paired teams unavailable (%s): independent random battles instead", exc)
+        return None
 
 
 def with_ci(wr: float, n: int) -> str:
@@ -166,9 +211,9 @@ def with_ci(wr: float, n: int) -> str:
 
 
 def eval_heuristic(model, infer_device, n: int, concurrency: int) -> float:
-    wr, n_done = eval_vs(model, infer_device, n, concurrency)
-    log.info("win rate vs SimpleHeuristicsPlayer: %s", with_ci(wr, n_done))
-    return wr
+    result = eval_vs(model, infer_device, n, concurrency)
+    log.info("win rate vs SimpleHeuristicsPlayer: %s", result.describe())
+    return result.rate
 
 
 # --------------------------------------------------------------------------
@@ -448,7 +493,8 @@ def cmd_ppo(args) -> None:
         # ---- play
         sync()
         if args.reward == "shaped":
-            rewards.faint = faint_reward(st["total_states"], args.faint_anneal_states)
+            rewards.faint = faint_reward(st["total_states"], args.faint_anneal_states, progress(),
+                                         args.faint_anneal)
         n_mirror, n_pool, n_heur = split_battles(args.battles_per_iter, args.mirror_share,
                                                  args.pool_share if use_pool else 0.0,
                                                  args.heuristic_share)
@@ -562,50 +608,179 @@ def cmd_ppo(args) -> None:
     server.stop()
 
 
+EVAL_SPEC = ("ckpt", "vs_ckpt", "opponent", "concurrency", "no_tera_before", "stall_timeout",
+             "search", "search_top_k", "search_min_prob", "search_determinizations", "search_samples",
+             "search_workers", "search_faint_reward", "showdown_cwd")
+
+
+def _eval_worker(spec: dict) -> dict:
+    """One process of `eval --processes`: its share of the team pairs."""
+    import random as _random
+    from poke_env import AccountConfiguration
+    from rollout import run_match
+    logging.basicConfig(level=logging.WARNING)
+    torch.set_num_threads(1)
+    infer = torch.device("cpu")
+    tag = f"{spec['tag']}{spec['worker']}"
+    account = lambda side: AccountConfiguration(f"Ev{tag}{side}", None)
+    kwargs = lambda side: dict(account_configuration=account(side), **make_kwargs(spec["concurrency"]))
+    model = build_model(load_checkpoint(spec["ckpt"]))
+    batcher = InferenceBatcher(frozen_copy(model, infer), infer, max_batch=spec["concurrency"] * 2)
+    sims = None
+    if spec["search"]:
+        from search import SearchConfig, SearchPlayer, SimPool
+        sims = SimPool(spec["showdown_cwd"], spec["search_workers"])
+        config = SearchConfig(top_k=spec["search_top_k"], min_prob=spec["search_min_prob"],
+                              determinizations=spec["search_determinizations"],
+                              samples=spec["search_samples"], faint_reward=spec["search_faint_reward"])
+        player = SearchPlayer(batcher, sims, config, **kwargs("A"))
+        player._seed = iter(range(_random.randrange(1 << 20), 1 << 30))
+    else:
+        player = RLPlayer(batcher, None, greedy=True, no_tera_before=spec["no_tera_before"], **kwargs("A"))
+    if spec["vs_ckpt"]:
+        other = build_model(load_checkpoint(spec["vs_ckpt"]))
+        other_batcher = InferenceBatcher(frozen_copy(other, infer), infer, max_batch=spec["concurrency"] * 2)
+        opponent = RLPlayer(other_batcher, None, greedy=True, **kwargs("B"))
+    else:
+        opponent = SCRIPTED[spec["opponent"]](**kwargs("B"))
+    result = run_match(player, opponent, 0, spec["stall_timeout"], None,
+                       TeamPairs(spec["first"], spec["second"]), "evaluation")
+    if sims is not None:
+        sims.close()
+    return {"scores": result.paired.scores, "games": result.games, "ties": result.ties,
+            "misplaced": result.paired.misplaced,
+            "search": player.stats.describe() if spec["search"] else ""}
+
+
+def eval_in_processes(args, pairs: TeamPairs) -> None:
+    """`eval --processes P`: P processes play a share of the team pairs each, on the same
+    server; the pair scores are pooled."""
+    import multiprocessing
+    from concurrent.futures import ProcessPoolExecutor
+    n, workers = len(pairs), args.processes
+    spec = {k: getattr(args, k) for k in EVAL_SPEC}
+    spec["tag"] = random.randrange(1000, 10000)
+    bounds = [(n * i // workers, n * (i + 1) // workers) for i in range(workers)]
+    with ProcessPoolExecutor(workers, mp_context=multiprocessing.get_context("spawn")) as pool:
+        outs = list(pool.map(_eval_worker, [
+            {**spec, "worker": i, "first": pairs.first[a:b], "second": pairs.second[a:b]}
+            for i, (a, b) in enumerate(bounds)]))
+    result = summarize([s for o in outs for s in o["scores"]], sum(o["games"] for o in outs),
+                       sum(o["ties"] for o in outs), sum(o["misplaced"] for o in outs))
+    label = f"{args.vs_ckpt} (greedy)" if args.vs_ckpt else args.opponent
+    with_search = " with search" if args.search else ""
+    print(f"win rate{with_search} vs {label}: {result.describe()} ({workers} processes)")
+    for o in outs:
+        if o["search"]:
+            print(f"search: {o['search']}")
+
+
 def cmd_eval(args) -> None:
     setup(args)
+    if args.processes > 1:
+        server = server_for(args, None)
+        pairs = team_pairs(args, args.battles)
+        if pairs is None:
+            raise SystemExit("--processes plays paired teams: they could not be generated")
+        eval_in_processes(args, pairs)
+        server.stop()
+        return
     infer = torch.device(args.infer_device or "cpu")
     model = build_model(load_checkpoint(args.ckpt))
     log.info("%s: %s", args.ckpt, describe(model))
     server = server_for(args, None)
+    pairs = team_pairs(args, args.battles)
+    search = SearchSetup(args) if args.search else None
     if args.vs_ckpt:
         other = build_model(load_checkpoint(args.vs_ckpt))
         log.info("%s: %s", args.vs_ckpt, describe(other))
-        wr, n = head_to_head(model, other, infer, args.battles, args.concurrency,
-                             args.no_tera_before)
+        result = head_to_head(model, other, infer, args.battles, args.concurrency,
+                              args.no_tera_before, pairs, search)
         label = f"{args.vs_ckpt} (greedy)"
     else:
-        wr, n = eval_vs(model, infer, args.battles, args.concurrency, args.opponent,
-                        args.no_tera_before)
+        result = eval_vs(model, infer, args.battles, args.concurrency, args.opponent,
+                         args.no_tera_before, pairs, search)
         label = args.opponent
     server.stop()
     restricted = f" (no tera before turn {args.no_tera_before})" if args.no_tera_before else ""
-    print(f"win rate{restricted} vs {label}: {with_ci(wr, n)}")
+    with_search = " with search" if search else ""
+    print(f"win rate{with_search}{restricted} vs {label}: {result.describe()}")
+    if search:
+        print(f"search: {search.describe()}")
+        search.sims.close()
+
+
+def _matchup_worker(spec: dict) -> dict:
+    """One match of `elo`: two players ("ckpt", path) or ("scripted", name), on the
+    match's team pairs, in this process or one of `--processes`."""
+    from poke_env import AccountConfiguration
+    from rollout import run_match
+    torch.set_num_threads(1)
+    infer = torch.device("cpu")
+
+    sims = []
+
+    def player(kind: str, what: str, side: str):
+        kwargs = dict(account_configuration=AccountConfiguration(f"Elo{spec['tag']}{spec['index']}{side}", None),
+                      **make_kwargs(spec["concurrency"]))
+        if kind == "scripted":
+            return SCRIPTED[what](**kwargs)
+        model = build_model(load_checkpoint(what))
+        batcher = InferenceBatcher(frozen_copy(model, infer), infer, max_batch=spec["concurrency"] * 2)
+        if kind == "search":
+            from search import SearchConfig, SearchPlayer, SimPool
+            sims.append(SimPool(spec["showdown_cwd"], spec["search_workers"]))
+            return SearchPlayer(batcher, sims[-1], SearchConfig(faint_reward=spec["search_faint_reward"]),
+                                **kwargs)
+        return RLPlayer(batcher, None, greedy=True, **kwargs)
+
+    pairs = TeamPairs(spec["first"], spec["second"]) if spec["first"] else None
+    result = run_match(player(*spec["a"], "A"), player(*spec["b"], "B"), spec["battles"],
+                       spec["stall_timeout"], None, pairs, "match")
+    for pool in sims:
+        pool.close()
+    return {"score": result.score, "games": result.games, "ties": result.ties,
+            "describe": result.describe()}
 
 
 def cmd_elo(args) -> None:
     """Round-robin between checkpoints and scripted players, rated by maximum
     likelihood with the scripted players as anchors."""
     setup(args)
-    infer = torch.device(args.infer_device or "cpu")
-    makers = {}
+    players = {}
     for path in args.ckpts:
-        model = build_model(load_checkpoint(path))
         name = Path(path).stem if sum(Path(p).stem == Path(path).stem for p in args.ckpts) == 1 \
             else str(path)
-        log.info("%s: %s", name, describe(model))
-        batcher = InferenceBatcher(frozen_copy(model, infer), infer, max_batch=args.concurrency * 2)
-        makers[name] = (lambda b: lambda: RLPlayer(b, None, greedy=True,
-                                                   **make_kwargs(args.concurrency)))(batcher)
+        log.info("%s: %s", name, describe(build_model(load_checkpoint(path))))
+        players[name] = ("ckpt", path)
+    for path in args.search_ckpts:
+        players[f"{Path(path).stem}+search"] = ("search", path)
     for name in args.scripted:
-        makers[name] = (lambda cls: lambda: cls(**make_kwargs(args.concurrency)))(SCRIPTED[name])
-    anchors = {k: v for k, v in parse_anchors(args.anchors).items() if k in makers}
+        players[name] = ("scripted", name)
+    anchors = {k: v for k, v in parse_anchors(args.anchors).items() if k in players}
     server = server_for(args, None)
+    pairs = team_pairs(args, args.battles)   # every match plays the same team pairs
+    matchups = round_robin_pairs(players)
+    tag = random.randrange(1000, 10000)
+    specs = [{"a": players[a], "b": players[b], "index": i, "tag": tag, "battles": args.battles,
+              "concurrency": args.concurrency, "stall_timeout": args.stall_timeout,
+              "showdown_cwd": args.showdown_cwd, "search_workers": args.search_workers,
+              "search_faint_reward": args.search_faint_reward,
+              "first": pairs.first if pairs else None, "second": pairs.second if pairs else None}
+             for i, (a, b) in enumerate(matchups)]
+    if args.processes > 1:
+        import multiprocessing
+        from concurrent.futures import ProcessPoolExecutor
+        pool = ProcessPoolExecutor(args.processes, mp_context=multiprocessing.get_context("spawn"))
+        outcomes = pool.map(_matchup_worker, specs)
+    else:
+        pool, outcomes = None, map(_matchup_worker, specs)
     results = {}
-    for a, b in round_robin_pairs(makers):
-        score, n = play_match(makers[a], makers[b], args.battles, args.stall_timeout, server)
-        results[(a, b)] = (score, n)
-        print(f"{a} vs {b}: {with_ci(score / max(n, 1), n)}", flush=True)
+    for (a, b), out in zip(matchups, outcomes):   # in order, as they finish
+        results[(a, b)] = (out["score"], out["games"])
+        print(f"{a} vs {b}: {out['describe']}", flush=True)
+    if pool is not None:
+        pool.shutdown()
     server.stop()
     ratings = fit_ratings(results, anchors)
     print(f"\nratings (anchors {anchors or 'none: centred on 0'}):")
@@ -641,6 +816,11 @@ def build_parser() -> argparse.ArgumentParser:
                             '"node pokemon-showdown start --no-security"')
         p.add_argument("--showdown-cwd", default="pokemon-showdown")
         p.add_argument("--showdown-port", type=int, default=8000)
+        p.add_argument("--unpaired", action="store_true",
+                       help="eval / elo: independent random battles instead of paired teams "
+                            "(each team pair played twice, swapped; see paired.py)")
+        p.add_argument("--team-seed", type=int, default=None,
+                       help="eval / elo: seed of the paired teams (default --seed, else 0)")
 
     def model_args(p, default_size):
         p.add_argument("--size", default=default_size, choices=list(PRESETS))
@@ -753,9 +933,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--aux-set-coef", type=float, default=None,
                    help="weight of the auxiliary losses predicting each opponent Pokémon's "
                         "item, ability, tera type and moves (default 0)")
+    p.add_argument("--faint-anneal", type=float, default=None,
+                   help="take the faint reward linearly from 0.1 to 0 by this fraction of the "
+                        "run's budget (default 0.5 medium / wide-medium, 0 = constant small / wide)")
     p.add_argument("--faint-anneal-states", type=int, default=None,
                    help="take the faint reward linearly from 0.1 to 0 over this many training "
-                        "states (default off)")
+                        "states instead of --faint-anneal's fraction of the budget")
     p.add_argument("--warmup-iters", type=int, default=None)
     p.add_argument("--lr-min-ratio", type=float, default=None,
                    help="final LR / peak LR of the cosine decay (1 = constant)")
@@ -799,6 +982,22 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--opponent", default="heuristic", choices=["heuristic", "random", "maxpower"])
     p.add_argument("--vs-ckpt", default=None,
                    help="play another checkpoint instead (both greedy), e.g. V1 vs medium")
+    p.add_argument("--processes", type=int, default=1,
+                   help="play the team pairs in this many processes (each one CPU core's worth "
+                        "of poke-env and inference) and pool their results")
+    p.add_argument("--search", action="store_true",
+                   help="--ckpt searches one turn ahead on Showdown's simulator (search.py)")
+    p.add_argument("--search-top-k", type=int, default=3, help="our candidate actions per search")
+    p.add_argument("--search-min-prob", type=float, default=0.0,
+                   help="...that the policy gives at least this probability (the first one always)")
+    p.add_argument("--search-determinizations", type=int, default=2,
+                   help="guesses of the opponent's sets per search")
+    p.add_argument("--search-samples", type=int, default=1,
+                   help="simulated turns per pair of actions and guess")
+    p.add_argument("--search-workers", type=int, default=2, help="Node simulator processes")
+    p.add_argument("--search-faint-reward", type=float, default=0.1,
+                   help="the faint reward the model was trained with, added to each simulated "
+                        "turn's value (0 for a model trained with --faint-anneal to the end)")
     p.add_argument("--no-tera-before", type=int, default=0,
                    help="--ckpt never terastallizes before this turn (poke-env battle.turn); "
                         "with --vs-ckpt the same checkpoint, measures early tera")
@@ -814,6 +1013,13 @@ def build_parser() -> argparse.ArgumentParser:
                    help="fixed ratings, e.g. random=0 (default: elo.ANCHORS, for the scripted "
                         "players taking part)")
     p.add_argument("--out", default=None, help="write the results and ratings to this JSON file")
+    p.add_argument("--processes", type=int, default=1,
+                   help="play this many matches at once, one process each")
+    p.add_argument("--search-ckpts", nargs="*", default=[],
+                   help="checkpoints that also play with search (search.py), as <name>+search")
+    p.add_argument("--search-workers", type=int, default=2, help="Node simulator processes per search player")
+    p.add_argument("--search-faint-reward", type=float, default=0.1,
+                   help="the faint reward the searching models were trained with")
     p.set_defaults(fn=cmd_elo)
     return ap
 

@@ -1,4 +1,5 @@
 using ElsaMina.Logging;
+using ElsaMina.Battles.Strategies.MiniPokeSearch;
 
 namespace ElsaMina.Battles.Strategies.MiniPoke;
 
@@ -6,7 +7,8 @@ namespace ElsaMina.Battles.Strategies.MiniPoke;
 /// Plays singles (gen9 random battles) with a minipoke network exported to ONNX: one instance per model version,
 /// each with its own model and encoder (see BattlesModule). It plays the most likely legal action, unless
 /// <see cref="MiniPokeActionGuard"/> vetoes it (a move that already had no effect...): then the most likely action
-/// left.
+/// left. A model's search variant (<see cref="MiniPokeModelOptions.Search"/>) searches one turn ahead on Showdown's
+/// simulator among the actions the guard allows and plays what the search finds best (<see cref="MiniPokeTurnSearch"/>).
 /// Falls back to the damage-calc strategy when the model isn't loaded, the state can't
 /// be encoded (doubles, team preview) or the chosen action can't be mapped.
 /// </summary>
@@ -19,6 +21,7 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
     private readonly IMiniPokeEncoder _encoder;
     private readonly CalcBasedBattleDecisionService _fallback;
     private readonly MiniPokeActionGuard _guard;
+    private readonly MiniPokeTurnSearch _search;
     private readonly MiniPokeModelOptions _options;
     private readonly MiniPokeValueCalibration _calibration;
 
@@ -26,12 +29,14 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
         IMiniPokeEncoder encoder,
         CalcBasedBattleDecisionService fallback,
         MiniPokeActionGuard guard,
+        MiniPokeTurnSearch search,
         MiniPokeModelOptions options)
     {
         _model = model;
         _encoder = encoder;
         _fallback = fallback;
         _guard = guard;
+        _search = search;
         _options = options;
         _calibration = MiniPokeValueCalibration.Load(options.ValueCalibrationPath);
     }
@@ -41,16 +46,22 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
     /// </summary>
     public BattleDecisionStrategy Strategy => _options.Strategy;
 
-    public Task<BattleDecision> GetDecisionAsync(BattleContext context, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Whether it searches: a search variant, with Showdown's simulator available.
+    /// </summary>
+    public bool CanSearch => _options.Search && _search.IsAvailable;
+
+    public async Task<BattleDecision> GetDecisionAsync(BattleContext context,
+        CancellationToken cancellationToken = default)
     {
         if (context.IsBattleOver || context.Wait)
         {
-            return Task.FromResult<BattleDecision>(null);
+            return null;
         }
 
         if (!_model.IsLoaded || context.TeamPreview || context.ActiveSlots.Count > 1)
         {
-            return _fallback.GetDecisionAsync(context, cancellationToken);
+            return await _fallback.GetDecisionAsync(context, cancellationToken);
         }
 
         BattleObservation observation;
@@ -61,7 +72,7 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
             observation = _encoder.Encode(context);
             if (observation == null || !observation.Mask.Any(legal => legal))
             {
-                return _fallback.GetDecisionAsync(context, cancellationToken);
+                return await _fallback.GetDecisionAsync(context, cancellationToken);
             }
 
             (logits, value) = _model.Evaluate(observation);
@@ -70,34 +81,32 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
         {
             // Never leave a battle without a choice: the timer would forfeit it
             Log.Warning(exception, "{Strategy} failed in {Room}; using fallback", Strategy, context.RoomId);
-            return _fallback.GetDecisionAsync(context, cancellationToken);
+            return await _fallback.GetDecisionAsync(context, cancellationToken);
         }
 
-        var action = Guard(ArgMax(logits, observation.Mask), logits, observation, context);
+        var allowed = Allowed(ArgMax(logits, observation.Mask), observation, context);
+        var action = ArgMax(logits, allowed);
+        action = await SearchAsync(action, logits, allowed, observation, context, cancellationToken);
         var decision = ToDecision(action, observation);
 
         if (decision == null)
         {
             Log.Warning("{Strategy} action {Action} could not be mapped in {Room}; using fallback", Strategy, action,
                 context.RoomId);
-            return _fallback.GetDecisionAsync(context, cancellationToken);
+            return await _fallback.GetDecisionAsync(context, cancellationToken);
         }
 
         Log.Debug("{Strategy} decision in {Room}: action {Action}, value {Value:F2} (expected return {Expected:F2})",
             Strategy, context.RoomId, action, value, _calibration.Apply(value));
-        return Task.FromResult(decision);
+        return decision;
     }
 
     /// <summary>
-    /// The model's action, or the best one the guard doesn't veto when it vetoes it.
+    /// The legal actions the guard doesn't veto (all the legal ones when it would veto them all, or fails).
+    /// <paramref name="action"/>, the model's choice, is logged when it is vetoed.
     /// </summary>
-    private int Guard(int action, float[] logits, BattleObservation observation, BattleContext context)
+    private bool[] Allowed(int action, BattleObservation observation, BattleContext context)
     {
-        if (action < 0)
-        {
-            return action;
-        }
-
         IReadOnlyDictionary<int, string> vetoes;
         try
         {
@@ -107,24 +116,57 @@ public class MiniPokeBattleDecisionService : IBattleDecisionService
         {
             Log.Warning(exception, "{Strategy} guard failed in {Room}; playing the model's action", Strategy,
                 context.RoomId);
-            return action;
-        }
-
-        if (!vetoes.TryGetValue(action, out var reason))
-        {
-            return action;
+            return observation.Mask;
         }
 
         var allowed = observation.Mask.Select((legal, index) => legal && !vetoes.ContainsKey(index)).ToArray();
-        var guarded = ArgMax(logits, allowed);
-        if (guarded < 0)
+        if (!allowed.Any(legal => legal))
+        {
+            return observation.Mask;
+        }
+
+        if (action >= 0 && vetoes.TryGetValue(action, out var reason))
+        {
+            Log.Information("{Strategy} guard in {Room}: action {Action} vetoed ({Reason})", Strategy,
+                context.RoomId, action, reason);
+        }
+
+        return allowed;
+    }
+
+    /// <summary>
+    /// The action the one-turn search finds best among the allowed ones, or <paramref name="action"/> without a
+    /// simulator, when there is nothing to search, or when the search fails or runs out of time.
+    /// </summary>
+    private async Task<int> SearchAsync(int action, float[] logits, bool[] allowed, BattleObservation observation,
+        BattleContext context, CancellationToken cancellationToken)
+    {
+        if (action < 0 || !CanSearch)
         {
             return action;
         }
 
-        Log.Information("{Strategy} guard in {Room}: action {Action} vetoed ({Reason}), playing {Guarded}", Strategy,
-            context.RoomId, action, reason, guarded);
-        return guarded;
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(_search.Timeout);
+            var searched = await _search.ChooseAsync(context, logits, allowed, observation, _model, _encoder,
+                timeout.Token);
+            if (searched is { } found && found != action)
+            {
+                Log.Debug("{Strategy} search in {Room}: action {Action} -> {Searched}", Strategy, context.RoomId,
+                    action, found);
+                return found;
+            }
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException ||
+                                          !cancellationToken.IsCancellationRequested)
+        {
+            Log.Warning(exception, "{Strategy} search failed in {Room}; playing the model's action", Strategy,
+                context.RoomId);
+        }
+
+        return action;
     }
 
     private static BattleDecision ToDecision(int action, BattleObservation observation)

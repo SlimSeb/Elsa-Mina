@@ -5,6 +5,7 @@ using ElsaMina.Battles.Results;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.MiniPoke;
 using ElsaMina.Battles.Strategies.MiniPokeV1;
+using ElsaMina.Battles.Strategies.MiniPokeSearch;
 using ElsaMina.Battles.Strategies.MiniPokeV2;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
@@ -25,6 +26,8 @@ public class BattlesModule : Module
         builder.RegisterType<MinimaxSearch>().As<IBattleSearchAlgorithm>().SingleInstance();
         builder.RegisterType<CalcBasedBattleDecisionService>().AsSelf().SingleInstance();
         builder.RegisterType<MiniPokeActionGuard>().AsSelf().SingleInstance();
+        builder.RegisterType<ShowdownSimulator>().As<IShowdownSimulator>().SingleInstance();
+        builder.RegisterType<MiniPokeTurnSearch>().AsSelf().SingleInstance();
         // minipoke models: one line each (see tools/minipoke/README.md)
         RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_1M);
         RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_4M);
@@ -65,11 +68,23 @@ public class BattlesModule : Module
             .WithParameter(TypedParameter.From(options))
             .Keyed<IMiniPokeEncoder>(strategy)
             .SingleInstance();
+        RegisterMiniPokeService(builder, strategy, options);
+        // Its search variant plays with the same model and encoder
+        if (strategy.WithSearch() is { } searchStrategy)
+        {
+            RegisterMiniPokeService(builder, strategy, options with { Strategy = searchStrategy, Search = true });
+        }
+    }
+
+    private static void RegisterMiniPokeService(ContainerBuilder builder, BattleDecisionStrategy modelStrategy,
+        MiniPokeModelOptions options)
+    {
         builder.Register(context => new MiniPokeBattleDecisionService(
-                context.ResolveKeyed<IMiniPokeModel>(strategy),
-                context.ResolveKeyed<IMiniPokeEncoder>(strategy),
+                context.ResolveKeyed<IMiniPokeModel>(modelStrategy),
+                context.ResolveKeyed<IMiniPokeEncoder>(modelStrategy),
                 context.Resolve<CalcBasedBattleDecisionService>(),
                 context.Resolve<MiniPokeActionGuard>(),
+                context.Resolve<MiniPokeTurnSearch>(),
                 options))
             .AsSelf()
             .SingleInstance();

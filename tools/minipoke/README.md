@@ -70,11 +70,12 @@ python train.py ppo --init checkpoints/bc.pt --states 5000000 \
 # Stop it (Ctrl-C, SIGTERM, or `touch runs/<run>/STOP`), then continue later
 python train.py ppo --resume checkpoints/ppo_latest.pt
 
-# Evaluate (greedy, 1000 battles, 95% Wilson interval), head to head, league table
+# Evaluate (greedy, 1000 games on 500 paired teams, 95% interval), head to head, league table
 python train.py eval --ckpt checkpoints/best.pt --opponent heuristic
-python train.py eval --ckpt checkpoints/best.pt --vs-ckpt other/best.pt
+python train.py eval --ckpt checkpoints/best.pt --vs-ckpt other/best.pt --battles 4000 --processes 4
 python train.py eval --ckpt a.pt --vs-ckpt a.pt --no-tera-before 5   # a.pt without tera before turn 5 vs a.pt
-python train.py elo --ckpts a/best.pt b/best.pt --scripted heuristic maxpower random
+python train.py eval --ckpt a.pt --vs-ckpt a.pt --search --processes 4  # a.pt searching vs a.pt
+python train.py elo --ckpts a/best.pt b/best.pt --scripted heuristic maxpower random --processes 4
 
 python plot_metrics.py runs/<run>                     # -> runs/<run>/metrics.png
 python plot_metrics.py runs/a runs/b --out ab.png     # overlay runs, x = total_states
@@ -102,13 +103,14 @@ head was configurable, or by the previous `train.py`) still load, resume and exp
 | KL early stop (`--kl-stop`) | last minibatch's approx KL | the epoch's mean approx KL |
 | Opponents (`--mirror-share`, `--pool-share`, `--heuristic-share`) | 100% mirror | 70% mirror / 20% pool / 10% heuristic |
 | Pool sampling (`--pool-sampling`) | (no pool) | `pfsp` |
+| Faint reward (`--faint-anneal`) | 0.1 constant | 0.1 → 0 by half of the budget, then 0 |
 | `--concurrency` / `--battles-per-iter` | 32 / 128 | 48 / 192 |
 | Iteration budget | 300 (when none of `--iterations`, `--hours`, `--states` is given) | same |
 
 Every other PPO hyperparameter (`PPOConfig`: gamma 0.995, λ 0.95, clip 0.2,
 3 epochs, minibatch 1024, target KL 0.03) is shared. Options added since a run
 started keep their old behaviour when it is resumed (`--value-ce-norm none`,
-`--kl-stop last`, `--pool-sampling uniform`).
+`--kl-stop last`, `--pool-sampling uniform`, `--faint-anneal 0`).
 
 **The value loss scale (`--value-ce-norm`).** The two-hot cross-entropy is divided by
 log(value_bins): a fresh head (uniform logits) scores exactly 1, the scale of the
@@ -212,8 +214,14 @@ tokens and typed FFN do not change the encoding, history and matchups do).
 Training fixes, besides the value loss scale:
 - `--kl-stop mean` stops the PPO epochs when the epoch's mean approx KL exceeds the
   target (one minibatch is noisy). `small` keeps V1's last-minibatch rule.
-- `--faint-anneal-states N` takes the faint reward linearly from 0.1 to 0 over N
-  training states (off by default).
+- `--faint-anneal F` takes the faint reward linearly from 0.1 to 0 by the fraction F of the
+  run's budget (the progress the LR and entropy schedules follow), then keeps it at 0:
+  the medium recipe uses 0.5. The faint reward speeds up early credit assignment, but the
+  goal is winning: with it, the policy learns to trade Pokémon for faint points, and the
+  value predicts the shaped return instead of the result. For the second half of a run
+  the returns are the discounted win or loss alone. `--faint-anneal-states N` reaches 0
+  after N training states instead. A run resumed from before `--faint-anneal` keeps its
+  constant faint reward.
 
 How it runs:
 - **Training** (BC and PPO updates) uses `--device auto`: MPS on an M3, CUDA on a
@@ -479,12 +487,101 @@ and in checkpoints, and `elo` in metrics.csv is the learner's rating.
 `python train.py elo --ckpts A B ... --scripted heuristic maxpower random --battles 200`
 plays a round-robin (models greedy, each with its own encoder) and fits Bradley-Terry
 ratings by maximum likelihood with the anchors that take part fixed (`--out` writes them).
+Every match plays the same paired teams, and `--processes P` plays P matches at once.
+
+## Measuring
+
+`eval` and `elo` play **paired teams** by default (`paired.py`): each team pair from
+Showdown's own random battle generator is played twice, the teams swapped the second time,
+and the 95% interval comes from the spread of the pair scores. Showdown's random battle
+format generates its own teams, so these games are challenged as Anything Goes with custom
+rules that make it a random battle (no team preview, HP in percent, Sleep Clause...; not
+Custom Game, which reports exact HP to both sides). `--team-seed` picks the teams, the same
+ones for every match of a round-robin; `--unpaired` goes back to independent random battles.
+A tie (Showdown's turn 1000 auto-tie, when two greedy models loop) counts as half a win.
+
+`--processes P` splits the team pairs (`eval`) or the matches (`elo`) over P processes on the
+same server: each process is a core's worth of poke-env and inference, which bound how fast
+games are played. With search, a decision costs about 0.3 s, so parallel processes are what
+make a search measurement take minutes instead of hours.
+
+What to expect from the numbers (Oct 2026, local server):
+- **Pairing helps less than expected between models**: the pair scores' spread is about 0.9 of
+  independent games' (the interval needs ~1.1x fewer games). Random battle outcomes between
+  two models of similar strength depend more on what happens in the game than on the teams.
+- **Seats don't matter**: MiniPokeV2_1M against itself scored 50.2% over 3,000 games
+  (48.4-52.0%) as the challenger.
+- **About the two b3 vs v1-wide measurements** (56.7% and 50.9% over 1,500 games, the same
+  weights): 1,000 paired teams give 53.9% (51.9-55.9%), between the two. Seats, ties and
+  checkpoints are ruled out; two independent 1,500-game runs are ±2.5 points each, so a
+  difference of 5.8 points is unlikely (p ≈ 0.002) but happened once among dozens of
+  comparisons. Compare models on 4,000 games or more (±1.5 points) before acting on gaps of a
+  few points: with `--processes 4` that is a few minutes.
+
+## Search at decision time
+
+`search.py` (`eval --search`) plays a model with a one-turn lookahead on Showdown's own
+simulator, scored by the model's value head. At a turn with two or more legal actions:
+
+1. our candidates are the model's 3 most likely actions (`--search-top-k`), however unlikely
+   (`--search-min-prob` 0): a model sure of a bad move still gets alternatives;
+2. `search_sim.js` (Node, `--search-workers` processes) rebuilds the position in Showdown's
+   simulator `--search-determinizations` times (2). Our team comes from the request: sets,
+   exact HP, stats, PP, disabled moves. Each rebuild guesses the opponent's hidden sets with
+   Showdown's random battle generator, made to agree with what was revealed (moves, ability,
+   item, tera type). HP, status, boosts, tera, a few volatiles, hazards, screens, weather
+   and terrain are written onto the battle. The opponent's unrevealed Pokémon are random sets
+   it never switches to; they only keep the battle from ending early;
+3. for each candidate and each of the opponent's actions (usable moves, with and without
+   tera, and switches to its revealed Pokémon), one turn is played from that state;
+4. each simulated turn is replayed into a copy of our poke-env battle and scored like
+   training scores it: the turn's faint reward (`--search-faint-reward`, 0.1, the reward the
+   model was trained with) plus 0.995 x the model's value of the new state, or +-1 when the
+   battle ended;
+5. per guess, the turn is a simultaneous zero-sum game: regret matching finds the opponent's
+   equilibrium mix, each candidate scores its expected value against it, the scores are
+   averaged over the guesses, and the best candidate is played (0.02 x log policy
+   probability breaks near ties).
+
+Forced switches and turns with a single legal action use the model alone, as does any turn
+whose search fails. A search costs about 0.3 s (some 30 simulated turns): use `--processes`.
+
+Measured on MiniPokeV2_1M (`checkpoints/v2-mr.pt`), 600 team pairs each (Oct 2026, the same
+teams across a row):
+
+| | Without search | Search (default: top 3) | Search, only candidates with 2%+ |
+|---|---|---|---|
+| vs MiniPokeV2_1M without search | 50% | **61.9%** (59.5-64.4%) | 57.2% (54.7-59.8%) |
+| vs SimpleHeuristicsPlayer | 65.8% (63.4-68.3%) | **73.5%** (71.1-75.9%) | 74.0% (71.6-76.4%) |
+
+The default searches about two decisions in three (a single legal action or a forced switch
+skip it) and changes a fifth of those; none of the 46,000 searches of these two runs failed. A search simulates
+about 40-50 turns: under a second, and 0.5 s in ElsaMina. Considering the top 3 whatever their
+probability is what makes the difference against a strong opponent: a model sure of a bad move
+(Earthquake into Levitate) then still gets alternatives. Searching more
+(`--search-top-k 4 --search-determinizations 3` with the 2% threshold) gained nothing.
+
+**In ElsaMina** each model has a search variant, `-strategy <model>+search`
+(`minipokev2-1m+search`...): the same model and guard, plus the search. The plain strategies never
+search, so the two can be compared on the ladder in the same session (`-battlestatus` counts their
+results apart). The variants are offered when `ShowdownDirectory` in config.json points to a
+pokemon-showdown package (`npm install pokemon-showdown@0.11.11`, the version of the clone here; in
+the Docker image, `/opt/showdown/node_modules/pokemon-showdown`; locally, the clone itself) and Node
+runs (`NodePath`, default `node`; set it when the bot can't find Homebrew's keg-only `node@22`). `Strategies/MiniPokeSearch` ports search.py: `ShowdownSimulator`
+runs the same `search_sim.js` (copied next to the bot), `SearchPositionBuilder` is
+`position_of`, and each simulated turn is scored by replaying the battle's lines plus the
+turn's through ElsaMina's own tracker, so the model sees exactly the state it would see live.
+The search chooses among the actions `MiniPokeActionGuard` allows; past 8 s, or if anything
+fails, the bot plays the model's choice (after 5 failures in a row the simulator turns itself off
+until the bot restarts). With `LogLevel` Debug, the log shows every decision the search changed.
+`analyze_replays.py` recognizes battles played with search: their choices are the argmax or
+one of the search's candidates.
 
 ## Ablation
 
 Compare runs **at matched training states** (`--states`), not hours, and change one
 thing at a time. Read `best.pt` (confirmed over 400 battles) and the final checkpoint
-with `eval --battles 1000` (95% interval about ±3%), plus one `elo` round-robin of all
+with `eval --battles 4000 --processes 4` (95% interval about ±1.5%), plus one `elo` round-robin of all
 the runs' `best.pt`. Plot with `python plot_metrics.py runs/a runs/b ...` (x = states).
 Below, `S=5000000` (about 5.5 h for small, 9 h for medium at the speeds above) and
 `--seed 1` everywhere; `--concurrency` is fixed to 32 since it does not change learning.
@@ -634,6 +731,9 @@ coefficient's scale): sweep them only for ideas that look promising.
 - `make_fixtures.py` records battles for ElsaMina's parity tests (V1, or v2 from a v2 spec).
 - `analyze_replays.py` analyzes the ladder battles ElsaMina saved with `-savereplays` (see
   [Ladder replays](#ladder-replays)).
+- `paired.py` plays evaluations on paired teams (see [Measuring](#measuring)); `search.py`
+  and `search_sim.js` search one turn ahead on Showdown's simulator (see
+  [Search at decision time](#search-at-decision-time)).
 - `playground/` runs an exported model in the browser on those fixtures (see
   [Model playground](#model-playground)).
 
@@ -718,7 +818,8 @@ model (strategy `minipokev2.1-1m`).
    python make_fixtures.py --version N_SIZE --battles 20
    ```
 3. On the C# side:
-   - add `MiniPokeVN_SIZE` to `BattleDecisionStrategy`;
+   - add `MiniPokeVN_SIZE` to `BattleDecisionStrategy`, and `MiniPokeVN_SIZE_Search` after the other
+     search variants (`RegisterMiniPoke` registers it with the model: `-strategy minipokevN-size+search`);
    - add `RegisterMiniPoke<...>(builder, BattleDecisionStrategy.MiniPokeVN_SIZE);` to `BattlesModule`.
      If `encoder.py`'s features did not change, reuse the previous version's encoder.
      If they did, this is a new version: copy it to `Strategies/MiniPokeVN/MiniPokeVNEncoder.cs`

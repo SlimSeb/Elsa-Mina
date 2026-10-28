@@ -19,10 +19,13 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
 
     public BattleDecisionStrategy ActiveStrategy { get; set; } = BattleDecisionStrategy.MiniPokeV2_4M;
 
+    /// <summary>
+    /// The damage calc, every minipoke model, and their search variants when Showdown's simulator is configured.
+    /// </summary>
     public IReadOnlyList<BattleDecisionStrategy> AvailableStrategies =>
     [
         BattleDecisionStrategy.DamageCalc,
-        .._miniPokeServices.Keys.Order()
+        .._miniPokeServices.Where(pair => IsPlayable(pair.Value)).Select(pair => pair.Key).Order()
     ];
 
     public bool TrySetStrategy(string strategyName, out BattleDecisionStrategy strategy)
@@ -39,9 +42,9 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
             case "calc" or "damagecalc" or "damage-calc" or "minimax" or "simulation" or "calcbased":
                 strategy = BattleDecisionStrategy.DamageCalc;
                 break;
-            case "minipoke" when _miniPokeServices.Count > 0:
+            case "minipoke" when _miniPokeServices.Keys.Any(candidate => !candidate.IsSearch()):
                 // The latest model
-                strategy = _miniPokeServices.Keys.Max();
+                strategy = _miniPokeServices.Keys.Where(candidate => !candidate.IsSearch()).Max();
                 break;
             default:
                 if (!TryFindMiniPokeStrategy(normalized, out strategy))
@@ -63,12 +66,19 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
     /// </summary>
     private bool TryFindMiniPokeStrategy(string name, out BattleDecisionStrategy strategy)
     {
-        var matches = _miniPokeServices.Keys
-            .Where(candidate => candidate.GetName() == name)
+        var matches = _miniPokeServices
+            .Where(pair => pair.Key.GetName() == name && IsPlayable(pair.Value))
+            .Select(pair => pair.Key)
             .ToList();
         strategy = matches.FirstOrDefault();
         return matches.Count > 0;
     }
+
+    /// <summary>
+    /// A search variant only plays when it can search: without the simulator it would be its model alone.
+    /// </summary>
+    private static bool IsPlayable(MiniPokeBattleDecisionService service) =>
+        !service.Strategy.IsSearch() || service.CanSearch;
 
     /// <summary>
     /// The service playing the active strategy: the damage calc one when its minipoke model is not registered.

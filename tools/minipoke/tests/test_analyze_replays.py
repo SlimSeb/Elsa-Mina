@@ -299,6 +299,7 @@ def attributed_battle(start: int, picks: list, vetoes: dict = None) -> A.Battle:
         for name, logits in {"one": np.eye(14)[6] + 0.5 * np.eye(14)[8], "four": np.eye(14)[7]}.items():
             own = {"logits": logits}
             own["guarded"], own["guarded_mask"] = A.guarded(logits, mask, vetoes or {})
+            own["candidates"] = A.search_candidates(logits, own["guarded_mask"])
             models[name] = own
         decisions.append({"status": "committed", "choice": "move x", "action": action, "mask": mask,
                           "models": models})
@@ -325,6 +326,26 @@ def test_attribution_tells_whether_the_guard_played():
     assert [b.guard for b in battles] == [True, True, False]
     assert [b.guard_attribution for b in battles] == ["choices", "nearest in time", "choices"]
     assert battles[0].guard_matches == {"without": 0, "with": 2}
+
+
+def test_attribution_tells_whether_the_search_played():
+    # "one" plays 6, then 8, then the first of the 12 others: its candidates are 6, 8 and 0
+    battles = [attributed_battle(100, [6, 8, 6]),     # 8 is a search candidate, not the argmax
+               attributed_battle(150, [6, 6]),        # can't tell: nearest is 100
+               attributed_battle(400, [6, 7, 6])]     # 7 (only "four" plays it) is no candidate of "one"
+    A.attribute_models(battles, ["one", "four"])
+    assert [b.search for b in battles] == [True, True, False]
+    assert [b.search_attribution for b in battles] == ["choices", "nearest in time", "choices"]
+
+
+def test_search_candidates_are_the_likely_allowed_actions():
+    logits = np.array([0.0] * 6 + [3.0, 2.0, 1.0, -5.0] + [0.0] * 4)
+    mask = np.zeros(14, bool)
+    mask[6:10] = True
+    assert A.search_candidates(logits, mask) == {6, 7, 8}
+    mask[7] = False
+    assert A.search_candidates(logits, mask) == {6, 8, 9}    # the top 3, however unlikely
+    assert A.search_candidates(logits, np.eye(14, dtype=bool)[6]) == set()
 
 
 GUARD_REQUEST = {"side": {"id": "p1", "pokemon": [

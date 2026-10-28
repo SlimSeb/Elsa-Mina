@@ -13,5 +13,6 @@ public class BattlePokemonState
     public List<string> Moves { get; init; } = [];
     public string Ability { get; init; } = "";
     public string Item { get; init; } = "";
+    public string TeraType { get; init; } = "";
     public string Terastallized { get; init; } = "";
 }

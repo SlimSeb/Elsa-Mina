@@ -1,3 +1,9 @@
+# The minipoke search simulates turns on Showdown's own simulator (ShowdownDirectory in config.json:
+# /opt/showdown/node_modules/pokemon-showdown); the version tools/minipoke trains and measures with
+FROM node:22-bookworm-slim AS showdown
+WORKDIR /opt/showdown
+RUN npm install --omit=dev --no-audit --no-fund pokemon-showdown@0.11.11
+
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
@@ -29,6 +35,8 @@ COPY src/ElsaMina.Cloud/ src/ElsaMina.Cloud/
 COPY src/ElsaMina.Logging/ src/ElsaMina.Logging/
 COPY test/ElsaMina.UnitTests/ test/ElsaMina.UnitTests/
 COPY test/ElsaMina.IntegrationTests/ test/ElsaMina.IntegrationTests/
+# The search's simulation script, shared with tools/minipoke (ElsaMina.Battles copies it next to the bot)
+COPY tools/minipoke/search_sim.js tools/minipoke/search_sim.js
 
 RUN /app/scripts/Build/build.sh
 RUN /app/scripts/Build/publish.sh
@@ -40,6 +48,9 @@ RUN apt-get update \
        libkrb5-3 \
        libgssapi-krb5-2 \
     && rm -rf /var/lib/apt/lists/*
+
+COPY --from=showdown /usr/local/bin/node /usr/local/bin/node
+COPY --from=showdown /opt/showdown /opt/showdown
 
 WORKDIR /app
 COPY --from=build --chown=$APP_UID:$APP_UID /app/output .

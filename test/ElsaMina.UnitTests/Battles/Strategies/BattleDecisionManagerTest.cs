@@ -1,6 +1,7 @@
 using ElsaMina.Battles;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.MiniPoke;
+using ElsaMina.Battles.Strategies.MiniPokeSearch;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
 using ElsaMina.Battles.Tracking;
@@ -18,6 +19,7 @@ public class BattleDecisionManagerTest
     private MiniPokeBattleDecisionService _miniPokeV21MService;
     private MiniPokeBattleDecisionService _miniPokeV24MService;
     private MiniPokeBattleDecisionService _miniPokeV211MService;
+    private IShowdownSimulator _simulator;
     private BattleDecisionManager _manager;
 
     [SetUp]
@@ -29,27 +31,69 @@ public class BattleDecisionManagerTest
 
         _calcService = new CalcBasedBattleDecisionService(randomService, opponentMovesPredictor, searchAlgorithm);
         var guard = new MiniPokeActionGuard(Substitute.For<IBattleDex>());
+        _simulator = Substitute.For<IShowdownSimulator>();
+        _simulator.IsAvailable.Returns(true);
+        var search = new MiniPokeTurnSearch(_simulator, Substitute.For<IBattleMessageParser>());
         _miniPokeV11MService = new MiniPokeBattleDecisionService(Substitute.For<IMiniPokeModel>(),
-            Substitute.For<IMiniPokeEncoder>(), _calcService, guard,
+            Substitute.For<IMiniPokeEncoder>(), _calcService, guard, search,
             new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV1_1M, "Models/MiniPokeV1_1M"));
         _miniPokeV14MService = new MiniPokeBattleDecisionService(Substitute.For<IMiniPokeModel>(),
-            Substitute.For<IMiniPokeEncoder>(), _calcService, guard,
+            Substitute.For<IMiniPokeEncoder>(), _calcService, guard, search,
             new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV1_4M, "Models/MiniPokeV1_4M"));
         _miniPokeV21MService = new MiniPokeBattleDecisionService(Substitute.For<IMiniPokeModel>(),
-            Substitute.For<IMiniPokeEncoder>(), _calcService, guard,
+            Substitute.For<IMiniPokeEncoder>(), _calcService, guard, search,
             new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV2_1M, "Models/MiniPokeV2_1M"));
         _miniPokeV24MService = new MiniPokeBattleDecisionService(Substitute.For<IMiniPokeModel>(),
-            Substitute.For<IMiniPokeEncoder>(), _calcService, guard,
+            Substitute.For<IMiniPokeEncoder>(), _calcService, guard, search,
             new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV2_4M, "Models/MiniPokeV2_4M"));
         _miniPokeV211MService = new MiniPokeBattleDecisionService(Substitute.For<IMiniPokeModel>(),
-            Substitute.For<IMiniPokeEncoder>(), _calcService, guard,
+            Substitute.For<IMiniPokeEncoder>(), _calcService, guard, search,
             new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV2_1_1M, "Models/MiniPokeV2_1_1M"));
 
-        _manager = new BattleDecisionManager(_calcService,
+        // Each model's search variant, as BattlesModule registers them
+        List<MiniPokeBattleDecisionService> models =
         [
             _miniPokeV11MService, _miniPokeV14MService, _miniPokeV21MService, _miniPokeV24MService,
             _miniPokeV211MService
-        ]);
+        ];
+        var searchVariants = models.Select(model => new MiniPokeBattleDecisionService(Substitute.For<IMiniPokeModel>(),
+            Substitute.For<IMiniPokeEncoder>(), _calcService, guard, search,
+            new MiniPokeModelOptions(model.Strategy.WithSearch().Value, $"Models/{model.Strategy}", true)));
+        _manager = new BattleDecisionManager(_calcService, [..models, ..searchVariants]);
+    }
+
+    [Test]
+    public void Test_TrySetStrategy_ShouldSwitchToTheSearchVariant_WhenInputNamesIt()
+    {
+        // Act
+        var result = _manager.TrySetStrategy("minipokev2-1m+search", out var strategy);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.True);
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV2_1M_Search));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV2_1M_Search));
+            Assert.That(((MiniPokeBattleDecisionService)_manager.GetCurrentService()).CanSearch, Is.True);
+        }
+    }
+
+    [Test]
+    public void Test_TrySetStrategy_ShouldRefuseTheSearchVariants_WhenTheSimulatorIsMissing()
+    {
+        // Arrange
+        _simulator.IsAvailable.Returns(false);
+
+        // Act
+        var result = _manager.TrySetStrategy("minipokev2-1m+search", out _);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result, Is.False);
+            Assert.That(_manager.AvailableStrategies.Where(strategy => strategy.IsSearch()), Is.Empty);
+            Assert.That(_manager.AvailableStrategies, Does.Contain(BattleDecisionStrategy.MiniPokeV2_1M));
+        }
     }
 
     [Test]

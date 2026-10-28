@@ -146,12 +146,16 @@ class Rewards:
         return cls() if name == "shaped" else cls(win=1.0, loss=0.0, faint=0.0)
 
 
-def faint_reward(total_states: int, anneal_states: Optional[int]) -> float:
-    """FAINT_REWARD, taken linearly to 0 over `anneal_states` training states (None or
-    0: constant, as in V1)."""
-    if not anneal_states:
-        return FAINT_REWARD
-    return FAINT_REWARD * max(0.0, 1.0 - total_states / anneal_states)
+def faint_reward(total_states: int, anneal_states: Optional[int], progress: float = 0.0,
+                 anneal_until: float = 0.0) -> float:
+    """FAINT_REWARD, taken linearly to 0 over `anneal_states` training states or, without
+    them, until the run's progress (the LR and entropy schedules' fraction of the budget)
+    reaches `anneal_until`. Neither: constant, as in V1."""
+    if anneal_states:
+        return FAINT_REWARD * max(0.0, 1.0 - total_states / anneal_states)
+    if anneal_until and anneal_until > 0:
+        return FAINT_REWARD * max(0.0, 1.0 - progress / anneal_until)
+    return FAINT_REWARD
 
 
 class Trajectories:

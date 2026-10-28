@@ -24,6 +24,10 @@
         <None Update="Models\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <!-- minipoke search: the one-turn simulations, shared with tools/minipoke/search.py -->
+        <None Include="..\..\tools\minipoke\search_sim.js" Link="Search\search_sim.js">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

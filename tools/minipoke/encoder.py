@@ -278,6 +278,20 @@ def action_to_order(a: int, battle: Battle):
     )
 
 
+def move_options(battle: Battle) -> list:
+    """The moves poke-env's move actions stand for (SinglesEnv.action_to_order): the
+    active Pokémon's first four known moves, or the only available move when it is
+    not one of them (Struggle, Recharge)."""
+    me = battle.active_pokemon
+    if me is None:
+        return []
+    known = list(me.moves.values())[:N_MOVES]
+    available = [m.id for m in battle.available_moves]
+    if len(available) == 1 and available[0] not in [m.id for m in known]:
+        return list(battle.available_moves)
+    return known
+
+
 def order_to_compact_action(order, battle: Battle) -> Optional[int]:
     try:
         a = int(SinglesEnv.order_to_action(order, battle, strict=True))

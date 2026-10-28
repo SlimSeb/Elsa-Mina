@@ -37,6 +37,12 @@ public sealed class SidePokemon
     [JsonPropertyName("reviving")]
     public bool Reviving { get; set; }
 
+    /// <summary>
+    /// The type it terastallizes into ("Water"); what the minipoke search plays tera with.
+    /// </summary>
+    [JsonPropertyName("teraType")]
+    public string TeraType { get; set; } = "";
+
     [JsonPropertyName("terastallized")]
     public string Terastallized { get; set; } = "";
 }

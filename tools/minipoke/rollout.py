@@ -28,6 +28,7 @@ from poke_env.player import MaxBasePowerPlayer, Player, RandomPlayer, SimpleHeur
 
 from aux_labels import AuxLabeler
 from league import split_evenly
+from paired import PairedResult, TeamPairs, make_paired, pair_scores
 from players import EpisodeCollector, InferenceBatcher, Rewards, RLPlayer, SafePlayer
 
 log = logging.getLogger("minipoke")
@@ -300,48 +301,75 @@ class Rollouts:
             load_into(self.eval_model, snapshot_state)
             make_opp = lambda: RLPlayer(self.eval_batcher, None, greedy=True,
                                         **make_kwargs(self.cfg.concurrency))
-        return evaluate(self.batcher, make_opp, n_battles, self.cfg.concurrency,
-                        self.cfg.stall_timeout, self.server)
+        result = evaluate(self.batcher, make_opp, n_battles, self.cfg.concurrency,
+                          self.cfg.stall_timeout, self.server)
+        return result.rate, result.games
 
     def evaluate_weights(self, state: Dict[str, torch.Tensor], n_battles: int) -> Tuple[float, int]:
         """Greedy `state` (another version of the learner, e.g. best.pt) vs the heuristic."""
         load_into(self.eval_model, state)
-        return evaluate(self.eval_batcher,
-                        lambda: SafeHeuristicsPlayer(**make_kwargs(self.cfg.concurrency)),
-                        n_battles, self.cfg.concurrency, self.cfg.stall_timeout, self.server)
+        result = evaluate(self.eval_batcher,
+                          lambda: SafeHeuristicsPlayer(**make_kwargs(self.cfg.concurrency)),
+                          n_battles, self.cfg.concurrency, self.cfg.stall_timeout, self.server)
+        return result.rate, result.games
+
+
+@dataclass
+class MatchResult:
+    """A's results in a match. A tie (Showdown's turn 1000 auto-tie) counts as half a win."""
+    score: float                          # wins + ties / 2
+    games: int                            # finished games
+    ties: int = 0
+    paired: Optional[PairedResult] = None  # paired teams: the pair-by-pair result
+
+    @property
+    def rate(self) -> float:
+        return self.score / self.games if self.games else 0.0
+
+    def describe(self) -> str:
+        if self.paired is not None:
+            return self.paired.describe()
+        lo, hi = wilson_interval(self.score, self.games)
+        return (f"{self.rate:.1%} over {self.games} battles (95% CI [{lo:.1%}, {hi:.1%}])"
+                + (f", {self.ties} ties" if self.ties else ""))
+
+
+def run_match(a: Player, b: Player, n_battles: int, stall_timeout: float = 180.0, server=None,
+              pairs: Optional[TeamPairs] = None, what: str = "match") -> MatchResult:
+    """`a` challenges `b` `n_battles` times (with `pairs`: twice per team pair, the teams
+    swapped the second time), then both are closed."""
+    if pairs is not None:
+        make_paired(a, pairs.challenger())
+        make_paired(b, pairs.accepter())
+        n_battles = 2 * len(pairs)
+    res = asyncio.run(_play_pairs([(a, b, n_battles)], [a, b], stall_timeout,
+                                  max(600.0, n_battles * 10.0)))
+    if not res.ok:
+        log.error("%s stalled: %s", what, res.reason)
+        if server is not None:
+            server.ensure_up()
+    paired = pair_scores(a.battles.values(), pairs) if pairs is not None else None
+    close_players([a, b])
+    ties = max(0, a.n_done - a.n_won - getattr(b, "n_won", 0))
+    return MatchResult(a.n_won + ties / 2, a.n_done, ties, paired)
 
 
 def evaluate(batcher: InferenceBatcher, make_opponent: Callable[[], Player], n_battles: int,
              concurrency: int, stall_timeout: float = 180.0, server=None,
-             no_tera_before: int = 0) -> Tuple[float, int]:
-    """Greedy play with `batcher`'s model against a fresh opponent. -> (win rate, finished)."""
-    me = RLPlayer(batcher, None, greedy=True, no_tera_before=no_tera_before,
-                  **make_kwargs(concurrency))
-    opp = make_opponent()
-    res = asyncio.run(_play_pairs([(me, opp, n_battles)], [me], stall_timeout,
-                                  max(600.0, n_battles * 10.0)))
-    if not res.ok:
-        log.error("evaluation stalled: %s", res.reason)
-        if server is not None:
-            server.ensure_up()
-    close_players([me, opp])
-    return me.n_won / max(me.n_done, 1), me.n_done
+             no_tera_before: int = 0, pairs: Optional[TeamPairs] = None,
+             player: Optional[Player] = None) -> MatchResult:
+    """Greedy play with `batcher`'s model (or `player`, e.g. a SearchPlayer) against a
+    fresh opponent."""
+    me = player or RLPlayer(batcher, None, greedy=True, no_tera_before=no_tera_before,
+                            **make_kwargs(concurrency))
+    return run_match(me, make_opponent(), n_battles, stall_timeout, server, pairs, "evaluation")
 
 
 def play_match(make_a: Callable[[], Player], make_b: Callable[[], Player], n_battles: int,
-               stall_timeout: float = 180.0, server=None) -> Tuple[float, int]:
-    """Any two counting players (RLPlayer, the SCRIPTED ones) against each other.
-    -> (a's score: wins + ties / 2, finished battles)."""
-    a, b = make_a(), make_b()
-    res = asyncio.run(_play_pairs([(a, b, n_battles)], [a, b], stall_timeout,
-                                  max(600.0, n_battles * 10.0)))
-    if not res.ok:
-        log.error("match stalled: %s", res.reason)
-        if server is not None:
-            server.ensure_up()
-    close_players([a, b])
-    ties = max(0, a.n_done - a.n_won - b.n_won)
-    return a.n_won + ties / 2, a.n_done
+               stall_timeout: float = 180.0, server=None,
+               pairs: Optional[TeamPairs] = None) -> MatchResult:
+    """Any two counting players (RLPlayer, the SCRIPTED ones) against each other."""
+    return run_match(make_a(), make_b(), n_battles, stall_timeout, server, pairs)
 
 
 def wilson_interval(wins: float, n: int, z: float = 1.96) -> Tuple[float, float]:
