@@ -100,11 +100,8 @@
                                 @foreach (var option in possibleValues)
                                 {
                                     var label = option.DisplayedValue ?? GetString(option.DisplayedValueKey);
-                                    <option
-                                        value="@option.InternalValue"
-                                        @(string.Equals(option.InternalValue, Model.CurrentValue, StringComparison.InvariantCultureIgnoreCase) ? "selected" : string.Empty)>
-                                        @label
-                                    </option>
+                                    var isSelected = string.Equals(option.InternalValue, Model.CurrentValue, StringComparison.InvariantCultureIgnoreCase);
+                                    <option value="@option.InternalValue" selected="@isSelected">@label</option>
                                 }
                             }
                         </select>

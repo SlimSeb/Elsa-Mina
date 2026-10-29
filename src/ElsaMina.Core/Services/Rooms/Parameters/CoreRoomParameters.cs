@@ -44,7 +44,7 @@ public class CoreRoomParameters : IRoomParameterProvider
             PossibleValues = TimeZoneInfo.GetSystemTimeZones().Select(timeZone =>
                 new EnumerationValue
                 {
-                    DisplayedValue = timeZone.DisplayName,
+                    DisplayedValue = GetShortDisplayName(timeZone),
                     InternalValue = timeZone.Id
                 }),
             OnUpdateAction = (room, newValue) => room.TimeZone = TimeZoneInfo.FindSystemTimeZoneById(newValue)
@@ -68,4 +68,13 @@ public class CoreRoomParameters : IRoomParameterProvider
             DefaultValue = true.ToString()
         }
     ];
+
+    // Every zone is an option of the dashboard's select: the full display names ("(UTC+01:00) Central European
+    // Time (Paris)") made the page bigger than the 100KB Showdown accepts in a message
+    private static string GetShortDisplayName(TimeZoneInfo timeZone)
+    {
+        var offset = timeZone.BaseUtcOffset;
+        var sign = offset < TimeSpan.Zero ? "-" : "+";
+        return $"(UTC{sign}{offset:hh\\:mm}) {timeZone.Id}";
+    }
 }
