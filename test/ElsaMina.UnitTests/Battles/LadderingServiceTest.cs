@@ -1,5 +1,5 @@
 using ElsaMina.Battles;
-fix using ElsaMina.Core.Services.Clock;
+using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.System;
 using NSubstitute;
 
