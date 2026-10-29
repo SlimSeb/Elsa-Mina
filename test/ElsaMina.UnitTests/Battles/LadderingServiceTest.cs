@@ -1,6 +1,5 @@
 using ElsaMina.Battles;
-using ElsaMina.Core;
-using ElsaMina.Core.Services.Clock;
+fix using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.System;
 using NSubstitute;
 
@@ -11,9 +10,11 @@ public class LadderingServiceTest
 {
     private const string FORMAT = "gen9randombattle";
     private const string SEARCH = "/search gen9randombattle";
+    private const string TEAM = "packedteam";
     private static readonly DateTimeOffset START = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-    private IBot _bot;
+    private IBattleTeamSender _teamSender;
+    private IBattleTeamsService _battleTeamsService;
     private IClockService _clockService;
     private ISystemService _systemService;
     private LadderingService _ladderingService;
@@ -23,7 +24,9 @@ public class LadderingServiceTest
     [SetUp]
     public void SetUp()
     {
-        _bot = Substitute.For<IBot>();
+        _teamSender = Substitute.For<IBattleTeamSender>();
+        _battleTeamsService = Substitute.For<IBattleTeamsService>();
+        _battleTeamsService.GetTeam(FORMAT).Returns(TEAM);
         _clockService = Substitute.For<IClockService>();
         _systemService = Substitute.For<ISystemService>();
         _now = START;
@@ -36,8 +39,7 @@ public class LadderingServiceTest
             _sleeps.Add((callInfo.Arg<TimeSpan>(), completion));
             return completion.Task;
         });
-        _ladderingService = new LadderingService(_bot, Substitute.For<IBattleTeamsService>(), _clockService,
-            _systemService);
+        _ladderingService = new LadderingService(_teamSender, _battleTeamsService, _clockService, _systemService);
     }
 
     // Completed from the thread pool, where the service's continuation runs inline before Task.Run ends
@@ -55,7 +57,7 @@ public class LadderingServiceTest
         _ladderingService.Start(FORMAT);
 
         // Assert
-        _bot.Received(1).Say(string.Empty, SEARCH);
+        _teamSender.Received(1).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
@@ -69,7 +71,7 @@ public class LadderingServiceTest
         _ladderingService.OnBattleEnded();
 
         // Assert
-        _bot.Received(2).Say(string.Empty, SEARCH);
+        _teamSender.Received(2).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
@@ -79,7 +81,7 @@ public class LadderingServiceTest
         _ladderingService.OnBattleEnded();
 
         // Assert
-        _bot.DidNotReceiveWithAnyArgs().Say(default, default);
+        _teamSender.DidNotReceiveWithAnyArgs().SendWithTeam(default, default);
     }
 
     [Test]
@@ -93,7 +95,7 @@ public class LadderingServiceTest
         _ladderingService.OnSearchStateUpdated(false, false);
 
         // Assert
-        _bot.Received(2).Say(string.Empty, SEARCH);
+        _teamSender.Received(2).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
@@ -108,7 +110,7 @@ public class LadderingServiceTest
         _ladderingService.OnBattleEnded();
 
         // Assert
-        _bot.Received(2).Say(string.Empty, SEARCH);
+        _teamSender.Received(2).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
@@ -121,7 +123,7 @@ public class LadderingServiceTest
         _ladderingService.OnSearchStateUpdated(false, false);
 
         // Assert
-        _bot.Received(1).Say(string.Empty, SEARCH);
+        _teamSender.Received(1).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
@@ -131,7 +133,7 @@ public class LadderingServiceTest
         _ladderingService.OnSearchStateUpdated(false, false);
 
         // Assert
-        _bot.DidNotReceiveWithAnyArgs().Say(default, default);
+        _teamSender.DidNotReceiveWithAnyArgs().SendWithTeam(default, default);
     }
 
     [Test]
@@ -150,13 +152,13 @@ public class LadderingServiceTest
             Assert.That(_sleeps[^1].Delay, Is.EqualTo(LadderingService.FIRST_RETRY_DELAY));
         }
 
-        _bot.Received(1).Say(string.Empty, SEARCH);
+        _teamSender.Received(1).SendWithTeam(TEAM, SEARCH);
 
         // Act
         await ElapseLastSleepAsync();
 
         // Assert
-        _bot.Received(2).Say(string.Empty, SEARCH);
+        _teamSender.Received(2).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
@@ -180,7 +182,7 @@ public class LadderingServiceTest
             TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(3),
             TimeSpan.FromMinutes(3)
         }));
-        _bot.Received(6).Say(string.Empty, SEARCH);
+        _teamSender.Received(6).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
@@ -214,7 +216,7 @@ public class LadderingServiceTest
 
         // Assert
         Assert.That(_sleeps, Has.Count.EqualTo(1));
-        _bot.Received(1).Say(string.Empty, SEARCH);
+        _teamSender.Received(1).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
@@ -230,7 +232,7 @@ public class LadderingServiceTest
 
         // Assert
         Assert.That(_ladderingService.IsLaddering, Is.False);
-        _bot.Received(1).Say(string.Empty, SEARCH);
+        _teamSender.Received(1).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
@@ -254,13 +256,13 @@ public class LadderingServiceTest
         // Assert
         var expectedDelay = LadderingService.SEARCH_WINDOW - TimeSpan.FromSeconds(10 * LadderingService.MAX_SEARCHES_PER_WINDOW);
         Assert.That(_sleeps[^1].Delay, Is.EqualTo(expectedDelay));
-        _bot.Received(LadderingService.MAX_SEARCHES_PER_WINDOW).Say(string.Empty, SEARCH);
+        _teamSender.Received(LadderingService.MAX_SEARCHES_PER_WINDOW).SendWithTeam(TEAM, SEARCH);
 
         // Act
         await ElapseLastSleepAsync();
 
         // Assert
-        _bot.Received(LadderingService.MAX_SEARCHES_PER_WINDOW + 1).Say(string.Empty, SEARCH);
+        _teamSender.Received(LadderingService.MAX_SEARCHES_PER_WINDOW + 1).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
@@ -281,7 +283,7 @@ public class LadderingServiceTest
         _ladderingService.OnBattleEnded();
 
         // Assert
-        _bot.Received(LadderingService.MAX_SEARCHES_PER_WINDOW + 1).Say(string.Empty, SEARCH);
+        _teamSender.Received(LadderingService.MAX_SEARCHES_PER_WINDOW + 1).SendWithTeam(TEAM, SEARCH);
     }
 
     [Test]
