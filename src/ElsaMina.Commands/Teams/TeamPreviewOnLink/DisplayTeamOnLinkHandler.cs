@@ -87,7 +87,8 @@ public class DisplayTeamOnLinkHandler : ChatMessageHandler
             Author = sharedTeam.Author,
             Culture = context.Culture,
             Sender = context.Sender.Name,
-            Team = team
+            Team = team,
+            Format = sharedTeam.Format
         });
 
         context.ReplyHtml(template.RemoveNewlines());

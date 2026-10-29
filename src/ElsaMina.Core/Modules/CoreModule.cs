@@ -99,7 +99,6 @@ public class CoreModule : Module
         builder.RegisterHandler<CheckConnectionHandler>();
         builder.RegisterHandler<FormatsHandler>();
         builder.RegisterHandler<LoginHandler>();
-        builder.RegisterHandler<AcceptChallengeHandler>();
         builder.RegisterHandler<ErrorHandler>();
     }
 }

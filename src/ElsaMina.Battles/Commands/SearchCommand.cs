@@ -7,10 +7,12 @@ namespace ElsaMina.Battles.Commands;
 public class SearchCommand : Command
 {
     private readonly IBattleTeamsService _battleTeamsService;
+    private readonly IBattleTeamSender _teamSender;
 
-    public SearchCommand(IBattleTeamsService battleTeamsService)
+    public SearchCommand(IBattleTeamsService battleTeamsService, IBattleTeamSender teamSender)
     {
         _battleTeamsService = battleTeamsService;
+        _teamSender = teamSender;
     }
 
     public override bool IsWhitelistOnly => true;
@@ -25,13 +27,7 @@ public class SearchCommand : Command
             return Task.CompletedTask;
         }
 
-        var packedTeam = _battleTeamsService.GetTeam(format);
-        if (!string.IsNullOrEmpty(packedTeam))
-        {
-            context.SendMessageIn(string.Empty, $"/utm {packedTeam}");
-        }
-
-        context.SendMessageIn(string.Empty, $"/search {format}");
+        _teamSender.SendWithTeam(_battleTeamsService.GetTeam(format), $"/search {format}");
         return Task.CompletedTask;
     }
 }

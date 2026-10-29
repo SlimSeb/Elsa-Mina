@@ -1,4 +1,3 @@
-using ElsaMina.Core;
 using ElsaMina.Core.Services.Clock;
 using ElsaMina.Core.Services.System;
 using ElsaMina.Logging;
@@ -20,7 +19,8 @@ public class LadderingService : ILadderingService
     // The rate limit window lasts 3 minutes at most, waiting longer brings nothing
     public static readonly TimeSpan MAX_RETRY_DELAY = TimeSpan.FromMinutes(3);
 
-    private readonly IBot _bot;
+    private readonly IBattleTeamSender _teamSender;
+    private readonly IBattleTeamsService _battleTeamsService;
     private readonly IClockService _clockService;
     private readonly ISystemService _systemService;
     private readonly Lock _lock = new();
@@ -35,22 +35,13 @@ public class LadderingService : ILadderingService
     private bool _isSearching;
     private bool _isInGame;
 
-    public LadderingService(IBot bot, IBattleTeamsService battleTeamsService, IClockService clockService,
-        ISystemService systemService)
+    public LadderingService(IBattleTeamSender teamSender, IBattleTeamsService battleTeamsService,
+        IClockService clockService, ISystemService systemService)
     {
-        _bot = bot;
+        _teamSender = teamSender;
+        _battleTeamsService = battleTeamsService;
         _clockService = clockService;
         _systemService = systemService;
-
-        battleTeamsService.TeamChanged += HandleTeamChanged;
-    }
-
-    private void HandleTeamChanged(object sender, string team)
-    {
-        if (!string.IsNullOrEmpty(team))
-        {
-            _bot.Send($"|/utm {team}");
-        }
     }
 
     public bool IsLaddering
@@ -180,7 +171,8 @@ public class LadderingService : ILadderingService
         _nextSearchAt = null;
         _recentSearchTimes.Enqueue(_clockService.CurrentUtcDateTimeOffset);
         _isSearchUnconfirmed = true;
-        _bot.Say(string.Empty, $"/search {_format}");
+        // Challenges and team validations change the bot's team: set the format's own before each search
+        _teamSender.SendWithTeam(_battleTeamsService.GetTeam(_format), $"/search {_format}");
         ScheduleStep(SEARCH_CONFIRMATION_TIMEOUT, HandleUnconfirmedSearch);
     }
 

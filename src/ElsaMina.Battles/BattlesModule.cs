@@ -1,4 +1,5 @@
 using Autofac;
+using ElsaMina.Battles.Challenges;
 using ElsaMina.Battles.Commands;
 using ElsaMina.Battles.Replays;
 using ElsaMina.Battles.Results;
@@ -37,6 +38,9 @@ public class BattlesModule : Module
         builder.RegisterType<BattleDecisionManager>().As<IBattleDecisionService>().As<IBattleDecisionManager>().SingleInstance();
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
         builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();
+        builder.RegisterType<BattleTeamSender>().As<IBattleTeamSender>().SingleInstance();
+        builder.RegisterType<TeamValidator>().As<ITeamValidator>().SingleInstance();
+        builder.RegisterType<ChallengeService>().As<IChallengeService>().SingleInstance();
         builder.RegisterType<LadderingService>().As<ILadderingService>().SingleInstance();
         builder.RegisterType<LadderRatingService>().As<ILadderRatingService>().SingleInstance();
         builder.RegisterType<BattleResultsService>().As<IBattleResultsService>().SingleInstance();
@@ -45,6 +49,8 @@ public class BattlesModule : Module
         builder.RegisterHandler<BattleHandler>();
         builder.RegisterHandler<UpdateSearchHandler>();
         builder.RegisterHandler<ReplayUploadedHandler>();
+        builder.RegisterHandler<ChallengeHandler>();
+        builder.RegisterHandler<TeamValidationPopupHandler>();
 
         builder.RegisterCommand<SearchCommand>();
         builder.RegisterCommand<UseTeamCommand>();

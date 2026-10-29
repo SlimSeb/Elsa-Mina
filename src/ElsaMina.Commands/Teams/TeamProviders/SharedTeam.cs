@@ -6,4 +6,5 @@ public class SharedTeam
     public string Description { get; init; }
     public string Author { get; init; }
     public string TeamExport { get; init; }
+    public string Format { get; set; }
 }
