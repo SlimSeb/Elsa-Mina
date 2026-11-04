@@ -109,6 +109,7 @@ def test_size_is_recognised_from_a_checkpoint_config():
     assert size_of(PRESETS["wide"]) == "wide"
     assert size_of(PRESETS["wide-medium"]) == "wide-medium"
     assert size_of(replace(PRESETS["wide-medium"], encoder_version=2, history=True)) == "wide-medium"
+    assert size_of(replace(PRESETS["large"], encoder_version=2, history=True, move_effects=True)) == "large"
 
 
 def test_wide_medium_v2_is_in_the_target_size():
@@ -116,6 +117,14 @@ def test_wide_medium_v2_is_in_the_target_size():
     n = sum(p.numel() for p in MiniPokeTransformer(
         preset("wide-medium", encoder_version=2, history=True)).parameters())
     assert 3.5e6 <= n <= 4.5e6
+
+
+def test_large_v2_fits_in_the_gpu_and_in_a_github_file():
+    # ~4 bytes per parameter in the ONNX export: 25M is 95 MiB, GitHub refuses 100 MiB
+    from model import preset
+    n = sum(p.numel() for p in MiniPokeTransformer(
+        preset("large", encoder_version=2, history=True, move_effects=True)).parameters())
+    assert 20e6 <= n <= 25e6
 
 
 # --------------------------------------------------------------------------

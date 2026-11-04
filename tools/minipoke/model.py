@@ -2,14 +2,16 @@
 MiniPokeTransformer — a small take on ps-ppo's PokeTransformer that runs on
 Apple Silicon (MPS), CUDA or CPU. Presets: "small" (~0.9M parameters, the
 MiniPokeV1_1M architecture), "medium" (~3.8M), "wide" (~4.1M, the
-MiniPokeV1_4M architecture) and "wide-medium" (wide's transformer with medium's
-distributional value head, for medium's training recipe).
+MiniPokeV1_4M architecture), "wide-medium" (wide's transformer with medium's
+distributional value head, for medium's training recipe) and "large" (~22M, the
+most a training run fits on an 8 GB GPU, with medium's value head and recipe).
 
 Differences from the original:
   * No flex_attention / Triton: plain F.scaled_dot_product_attention with a
     boolean mask (supported on MPS).
   * d_model 128 (small) or 256 (medium, wide) instead of 512. FFN x2, except
     wide, whose layers (3), heads (8), FFN x4 and embedding sizes match the original.
+    large has the original's d_model, heads, FFN and embedding sizes, and 5 layers.
   * No turn history / KV cache and no JEPA auxiliary loss (each decision
     only sees the current state).
   * Pointer-style policy head: switch logits come from our 6 Pokémon tokens,
@@ -137,6 +139,12 @@ PRESETS: Dict[str, ModelConfig] = {
     "wide-medium": ModelConfig(d_model=256, n_layers=3, n_heads=8, ff_mult=4.0,
                                species_dim=64, item_dim=32, ability_dim=64, move_dim=64,
                                value_bins=51),
+    # VRAM grows with d_model, the minibatch and the layers, not with the parameters. A PPO
+    # run peaks at 6.2 GiB with the desktop (README): keep some of the 8 GiB free before
+    # growing this, and keep the ONNX export under GitHub's 100 MiB (it is 86 MiB)
+    "large": ModelConfig(d_model=512, n_layers=5, n_heads=8, ff_mult=4.0,
+                         species_dim=64, item_dim=32, ability_dim=64, move_dim=64,
+                         value_bins=51),
 }
 
 

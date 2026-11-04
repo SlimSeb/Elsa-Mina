@@ -7,22 +7,23 @@ and a **single** local Showdown server. ElsaMina plays with the exported models
 The next model, **minipoke-v2**, adds random battle set priors and optional history,
 move, matchup and auxiliary features, all behind flags (see [minipoke-v2](#minipoke-v2-encoder-v2)).
 
-| | ps-ppo | minipoke `small` (V1_1M) | minipoke `wide` (V1_4M) | minipoke `medium` | minipoke `wide-medium` |
-|---|---|---|---|---|---|
-| Parameters | ~16M | 0.91M | 4.12M | 3.85M | 4.13M (v2 + `--history`: 4.40M) |
-| d_model / layers / heads | 512 / 3 / 8 | 128 / 3 / 4 | 256 / 3 / 8 | 256 / 4 / 8 | 256 / 3 / 8 |
-| FFN | x4 | x2 | x4 | x2 | x4 |
-| Embeddings (species / item / ability / move) | 64 / 32 / 64 / 64 | 32 / 16 / 16 / 32 | 64 / 32 / 64 / 64 | 64 / 32 / 32 / 64 | 64 / 32 / 64 / 64 |
-| Attention | `flex_attention` (Triton, CUDA-only) | `scaled_dot_product_attention` + boolean mask (MPS ok) | same | same | same |
-| Turn history | KV cache, 64 turns | none (current state only) | none | none | none |
-| Policy head | linear on actor token | pointer heads: switch logits from team tokens, move logits from the active Pokémon's move vectors | same | same | same |
-| Value head | 51-bin distributional | scalar | scalar | 51-bin two-hot over [-1.6, 1.6] | same as `medium` |
-| Environment | many Showdown servers + Ray workers | one server, poke-env, asyncio, batched inference | same | same | same |
-| Training | BC → PPO | BC → mirror self-play PPO | same as `small` | BC (or distillation) → PPO with an opponent pool, schedules, resumable | same as `medium` |
+| | ps-ppo | minipoke `small` (V1_1M) | minipoke `wide` (V1_4M) | minipoke `medium` | minipoke `wide-medium` | minipoke `large` |
+|---|---|---|---|---|---|---|
+| Parameters | ~16M | 0.91M | 4.12M | 3.85M | 4.13M (v2 + `--history`: 4.40M) | 21.7M (v2 + `--history`: 22.5M) |
+| d_model / layers / heads | 512 / 3 / 8 | 128 / 3 / 4 | 256 / 3 / 8 | 256 / 4 / 8 | 256 / 3 / 8 | 512 / 5 / 8 |
+| FFN | x4 | x2 | x4 | x2 | x4 | x4 |
+| Embeddings (species / item / ability / move) | 64 / 32 / 64 / 64 | 32 / 16 / 16 / 32 | 64 / 32 / 64 / 64 | 64 / 32 / 32 / 64 | 64 / 32 / 64 / 64 | 64 / 32 / 64 / 64 |
+| Attention | `flex_attention` (Triton, CUDA-only) | `scaled_dot_product_attention` + boolean mask (MPS ok) | same | same | same | same |
+| Turn history | KV cache, 64 turns | none (current state only) | none | none | none | none |
+| Policy head | linear on actor token | pointer heads: switch logits from team tokens, move logits from the active Pokémon's move vectors | same | same | same | same |
+| Value head | 51-bin distributional | scalar | scalar | 51-bin two-hot over [-1.6, 1.6] | same as `medium` | same as `medium` |
+| Environment | many Showdown servers + Ray workers | one server, poke-env, asyncio, batched inference | same | same | same | same |
+| Training | BC → PPO | BC → mirror self-play PPO | same as `small` | BC (or distillation) → PPO with an opponent pool, schedules, resumable | same as `medium` | same as `medium` |
 
 `small` and `wide` are the architectures of the released `MiniPokeV1_1M` and
 `MiniPokeV1_4M`. `wide-medium` is `wide`'s transformer trained with `medium`'s value
-head and recipe, the size meant for `MiniPokeV2_4M` (see [below](#training-minipokev2_4m-wide-medium)). Every V1 size exports the **same ONNX interface** (inputs, dtypes,
+head and recipe, the size meant for `MiniPokeV2_4M` (see [below](#training-minipokev2_4m-wide-medium)).
+`large` is that recipe on the largest model an 8 GB GPU trains (see [below](#training-on-an-8-gb-gpu-large)). Every V1 size exports the **same ONNX interface** (inputs, dtypes,
 shapes, `logits [B,14]`, `value [B]`) and the same `encoder_spec.json`, byte for byte:
 the distributional head returns its expected value, so ElsaMina cannot tell them apart.
 `tests/test_export_contract.py` checks this. A minipoke-v2 model keeps the outputs and
@@ -93,7 +94,7 @@ architecture stored in the checkpoint, and default to the options of the size it
 matches. Checkpoints store their own config, so older ones (saved before the value
 head was configurable, or by the previous `train.py`) still load, resume and export.
 
-| | `small`, `wide` (the V1 recipe, unchanged) | `medium`, `wide-medium` |
+| | `small`, `wide` (the V1 recipe, unchanged) | `medium`, `wide-medium`, `large` |
 |---|---|---|
 | Value head | scalar, MSE | 51 bins, two-hot cross-entropy / log(51) (`--value-bins`, `--value-ce-norm`) |
 | BC value fit (`--bc-value-coef`) | 0 (policy only) | 0.5, to the battles' discounted returns |
@@ -461,6 +462,59 @@ Expect about medium's speed (90-175 st/s on a laptop CPU, see above): 5M states 
 the next night. Then release it as `2_4M` ([Releasing a new model](#releasing-a-new-model-n_size)),
 reusing the V2 encoder.
 
+### Training on an 8 GB GPU (`large`)
+
+`--size large` is sized for a Radeon RX 6600 XT (8 GB, PyTorch for ROCm), and for any other
+8 GB card. VRAM follows the activations, not the parameters: it grows with the minibatch, with
+`d_model` (mostly in the move MLP, which runs on 96 moves per state) and with the layers.
+
+Measured on that card with `--minibatch` 1024: the VRAM is the peak of a learner, its AdamW and
+the four rollout copies during PPO updates, `learn` is per ~8k states, and the last column is what
+a decision costs ElsaMina (one state, one thread):
+
+| d_model / layers | Parameters | VRAM | `learn` | inference, 48 states | ONNX | CPU |
+|---|---|---|---|---|---|---|
+| 256 / 3 (`wide-medium`) | 4.4M | 2.3 GiB | 3.4 s | 3.2 ms | 17 MiB | 1.4 ms |
+| 384 / 3 | 9.4M | 3.4 GiB | 5.5 s | 5.3 ms | 36 MiB | 3.2 ms |
+| 512 / 3 (ps-ppo's shape) | 16.2M | 4.5 GiB | 9.3 s | 6.6 ms | 62 MiB | 5.3 ms |
+| 512 / 4 | 19.3M | 4.9 GiB | 10.8 s | 7.9 ms | 74 MiB | 6.3 ms |
+| **512 / 5 (`large`)** | 22.5M | 5.5 GiB | 12 s | 8.8 ms | 86 MiB | 7.4 ms |
+| 640 / 3 | 24.9M | 5.4 GiB | 11.8 s | 9.8 ms | 95 MiB | 8.1 ms |
+| 512 / 6 | 25.7M | 6.1 GiB | 13.8 s | 10.3 ms | ~98 MiB | |
+| 768 / 3 | 35.6M | 6.7 GiB | 15.9 s | 12.7 ms | ~136 MiB | |
+
+A real run adds about 0.3 GiB and the desktop 0.3-0.6 GiB: over 80 iterations, `large` peaked at
+6.2 GiB of the card's 8.0 and stayed there for the last 30 minutes (`wide-medium`: 2.9 GiB). If the
+desktop needs more, `--minibatch` 768 saves 0.6 GiB, and `--resume` accepts it.
+
+The memory is not what stops `large` growing: models are committed to git, and GitHub warns
+above 50 MiB and refuses a file of 100 MiB. 512 / 6 and 640 / 3 are too close to that limit, 768 / 3
+is over it and leaves under 1 GiB of VRAM. Which of width and depth plays better was not measured.
+
+Train it like `MiniPokeV2_4M`, from the strongest model so far:
+
+```bash
+T=checkpoints/v2-1-4m/best.pt
+SD="node pokemon-showdown start --no-security"
+python train.py distill --teacher $T --size large --encoder-version 2 --history --move-effects \
+    --battles 10000 --epochs 6 --seed 1 --data data/distill-v2-1-large --ckpt-dir checkpoints/v2-1-large \
+    --showdown-cmd "$SD" &&
+python train.py ppo --init checkpoints/v2-1-large/distill.pt --ckpt-dir checkpoints/v2-1-large --run v2-1-large \
+    --states 10000000 --seed 1 --showdown-cmd "$SD" &&
+python train.py eval --ckpt checkpoints/v2-1-large/best.pt --vs-ckpt $T --battles 1000 --showdown-cmd "$SD"
+```
+
+Each step starts Showdown itself and stops it when it ends, so all three need `--showdown-cmd`
+unless a server is already running.
+
+`distill` trains with `--minibatch` 512 (3.2 GiB with the desktop). PPO runs at about 260 st/s,
+against 390 for `wide-medium`, mostly because `learn` takes 11-12 s instead of 3.4 s, so 10M states
+take about 11 h. Checkpoints grow with the model: `ppo_*.pt` is 270 MB (53 MB for `wide-medium`) and
+`best.pt` 90 MB, about 10 GB for a run of that length. Its export has the same inputs and
+`encoder_spec.json` as `MiniPokeV2_1_1M`, so `MiniPokeV2Encoder` runs it as is. Release it as `2_1_22M`
+([Releasing a new model](#releasing-a-new-model-n_size)) only if it beats its teacher: nothing has
+measured yet whether this size plays better than `wide-medium`.
+
 ## Elo league table
 
 `elo.py` rates the learner, every pool snapshot and the scripted players. The scripted
@@ -703,7 +757,7 @@ coefficient's scale): sweep them only for ideas that look promising.
 - `setpriors.py` (random battle set priors), `history.py` (protocol-log history,
   events and move outcomes), `damage.py` (the matchup damage estimate), `effects.py` (the
   move effect features' ability, item and type rules).
-- `model.py` holds `MiniPokeTransformer`, `ModelConfig` and the `small` / `medium` / `wide` presets.
+- `model.py` holds `MiniPokeTransformer`, `ModelConfig` and the `small` / `medium` / `wide` / `wide-medium` / `large` presets.
 - `players.py` has `InferenceBatcher` (async batching, with its model's encoder),
   `RLPlayer` (records trajectories with win ±1 and faint ±0.1 rewards, as in ps-ppo, or
   `--reward winloss`), and the recording teachers `TeacherPlayer` (heuristic) and

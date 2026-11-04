@@ -86,6 +86,9 @@ def test_small_keeps_the_v1_recipe_and_medium_gets_the_fixes():
     assert (wide.kl_stop, wide.pool_sampling, wide.lr) == ("last", "uniform", 2e-4)
     wide_medium = resolved("--size", "wide-medium")
     assert all(getattr(wide_medium, k) == getattr(medium, k) for k in train.DEFAULTS["medium"])
+    large = resolved("--size", "large")
+    assert all(getattr(large, k) == getattr(medium, k) for k in train.DEFAULTS["medium"])
+    assert resolved("--size", "large", "--value-ce-norm", "none").vf_coef == 0.1
 
 
 # --------------------------------------------------------------------------
