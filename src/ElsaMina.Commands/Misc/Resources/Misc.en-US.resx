@@ -435,4 +435,64 @@
     <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
         <value>Enables the klipygif and klipysearch commands in the room</value>
     </data>
+    <data name="fuelprices_help" xml:space="preserve">
+        <value>Shows the average and cheapest fuel prices in France. Syntax: -fuel [city | postal code | department], e.g. -fuel Lyon, -fuel 75015, -fuel 69</value>
+    </data>
+    <data name="fuelprices_error" xml:space="preserve">
+        <value>Could not fetch fuel prices, please try again later.</value>
+    </data>
+    <data name="fuelprices_no_prices" xml:space="preserve">
+        <value>No recent fuel price found for {0}.</value>
+    </data>
+    <data name="fuelprices_city_not_found" xml:space="preserve">
+        <value>No station found in a city named "{0}". Try a postal code or a department number.</value>
+    </data>
+    <data name="fuelprices_ambiguous_city" xml:space="preserve">
+        <value>Several cities match "{0}": {1}. Please give the full name or the postal code.</value>
+    </data>
+    <data name="fuelprices_area_country" xml:space="preserve">
+        <value>France</value>
+    </data>
+    <data name="fuelprices_area_department" xml:space="preserve">
+        <value>department {0}</value>
+    </data>
+    <data name="fuelprices_title" xml:space="preserve">
+        <value>Fuel prices: {0}</value>
+    </data>
+    <data name="fuelprices_fuel" xml:space="preserve">
+        <value>Fuel</value>
+    </data>
+    <data name="fuelprices_average" xml:space="preserve">
+        <value>Average</value>
+    </data>
+    <data name="fuelprices_cheapest" xml:space="preserve">
+        <value>Cheapest</value>
+    </data>
+    <data name="fuelprices_stations" xml:space="preserve">
+        <value>Stations</value>
+    </data>
+    <data name="fuelprices_updated_on" xml:space="preserve">
+        <value>Updated on {0}</value>
+    </data>
+    <data name="fuelprices_footer" xml:space="preserve">
+        <value>Prices updated in the last {0} days</value>
+    </data>
+    <data name="fuelprices_fuel_gazole" xml:space="preserve">
+        <value>Diesel</value>
+    </data>
+    <data name="fuelprices_fuel_e10" xml:space="preserve">
+        <value>E10</value>
+    </data>
+    <data name="fuelprices_fuel_sp98" xml:space="preserve">
+        <value>SP98</value>
+    </data>
+    <data name="fuelprices_fuel_sp95" xml:space="preserve">
+        <value>SP95</value>
+    </data>
+    <data name="fuelprices_fuel_e85" xml:space="preserve">
+        <value>E85</value>
+    </data>
+    <data name="fuelprices_fuel_gplc" xml:space="preserve">
+        <value>LPG</value>
+    </data>
 </root>

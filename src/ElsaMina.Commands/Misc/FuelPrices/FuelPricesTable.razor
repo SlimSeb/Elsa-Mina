@@ -1,0 +1,42 @@
+@using System.Globalization
+@using ElsaMina.Core.Services.Templates
+@inherits ElsaMina.Core.Services.Templates.LocalizableTemplatePage<ElsaMina.Commands.Misc.FuelPrices.FuelPricesTableViewModel>
+
+@{
+    const string headerStyle = $"border-bottom: 1px solid {StyleConstants.PRIMARY_BORDER_COLOR}; padding: 4px";
+    const string cellStyle = "padding: 2px 6px";
+    const string centeredCellStyle = "padding: 2px 6px; text-align: center";
+    static string FormatPrice(double price, CultureInfo culture) => price.ToString("0.000", culture);
+}
+<table style="margin: auto; border: 1px solid @StyleConstants.PRIMARY_BORDER_COLOR; border-radius: 12px; padding: 4px">
+    <thead>
+    <tr>
+        <th colspan="4" scope="colgroup">@GetString("fuelprices_title", Model.AreaName)</th>
+    </tr>
+    <tr>
+        <th scope="col" style="@headerStyle">@GetString("fuelprices_fuel")</th>
+        <th scope="col" style="@headerStyle">@GetString("fuelprices_average")</th>
+        <th scope="col" style="@headerStyle">@GetString("fuelprices_cheapest")</th>
+        <th scope="col" style="@headerStyle">@GetString("fuelprices_stations")</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var summary in Model.Summaries)
+    {
+        var station = summary.CheapestStation;
+        <tr>
+            <td style="@cellStyle"><b>@GetString(summary.Fuel.NameResourceKey)</b></td>
+            <td style="@centeredCellStyle">@FormatPrice(summary.AveragePrice, Model.Culture)&nbsp;€</td>
+            <td style="@cellStyle">
+                <b title="@(GetString("fuelprices_updated_on", station.UpdatedAt.ToString("d", Model.Culture)))">@FormatPrice(station.Price, Model.Culture)&nbsp;€</b>
+                <small>@station.Address, @station.PostalCode @station.City</small>
+            </td>
+            <td style="@centeredCellStyle">@summary.StationCount</td>
+        </tr>
+    }
+    </tbody>
+</table>
+<div style="text-align: center; font-size: 8pt">
+    @GetString("fuelprices_footer", Model.RecentPriceDays)
+    · <a href="https://www.prix-carburants.gouv.fr/">prix-carburants.gouv.fr</a>
+</div>

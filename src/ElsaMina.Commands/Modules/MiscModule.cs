@@ -6,6 +6,7 @@ using ElsaMina.Commands.Misc.Dailymotion;
 using ElsaMina.Commands.Misc.Dictionary;
 using ElsaMina.Commands.Misc.Facts;
 using ElsaMina.Commands.Misc.Food;
+using ElsaMina.Commands.Misc.FuelPrices;
 using ElsaMina.Commands.Misc.Genius;
 using ElsaMina.Commands.Misc.LeagueOfLegends;
 using ElsaMina.Commands.Misc.Legacy;
@@ -65,6 +66,7 @@ public class MiscModule : Module
         builder.RegisterCommand<GeniusSearchCommand>();
         builder.RegisterCommand<TimerCommand>();
         builder.RegisterCommand<ShipCommand>();
+        builder.RegisterCommand<FuelPricesCommand>();
 
         builder.RegisterHandler<YoutubeVideoOnLinkHandler>();
         builder.RegisterHandler<UrlPreviewHandler>();
@@ -74,6 +76,7 @@ public class MiscModule : Module
         builder.RegisterType<KlipyService>().As<IKlipyService>().SingleInstance();
         builder.RegisterType<GifCooldownService>().As<IGifCooldownService>().SingleInstance();
         builder.RegisterType<SpoonacularService>().As<ISpoonacularService>().SingleInstance();
+        builder.RegisterType<FuelPricesService>().As<IFuelPricesService>().SingleInstance();
 
         RegisterRandomImagesCommands(builder);
     }
