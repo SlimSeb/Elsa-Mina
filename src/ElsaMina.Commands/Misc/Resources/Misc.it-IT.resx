@@ -435,4 +435,64 @@
     <data name="parameter_description_klipy_gif_enabled" xml:space="preserve">
         <value>Abilita i comandi klipygif e klipysearch nella stanza</value>
     </data>
+    <data name="fuelprices_help" xml:space="preserve">
+        <value>Mostra i prezzi medi e più bassi dei carburanti in Francia. Sintassi: -fuel [città | codice postale | dipartimento], es. -fuel Lyon, -fuel 75015, -fuel 69</value>
+    </data>
+    <data name="fuelprices_error" xml:space="preserve">
+        <value>Impossibile recuperare i prezzi dei carburanti, riprova più tardi.</value>
+    </data>
+    <data name="fuelprices_no_prices" xml:space="preserve">
+        <value>Nessun prezzo recente trovato per {0}.</value>
+    </data>
+    <data name="fuelprices_city_not_found" xml:space="preserve">
+        <value>Nessun distributore trovato in una città chiamata "{0}". Prova con un codice postale o un numero di dipartimento.</value>
+    </data>
+    <data name="fuelprices_ambiguous_city" xml:space="preserve">
+        <value>Più città corrispondono a "{0}": {1}. Indica il nome completo o il codice postale.</value>
+    </data>
+    <data name="fuelprices_area_country" xml:space="preserve">
+        <value>Francia</value>
+    </data>
+    <data name="fuelprices_area_department" xml:space="preserve">
+        <value>dipartimento {0}</value>
+    </data>
+    <data name="fuelprices_title" xml:space="preserve">
+        <value>Prezzi dei carburanti: {0}</value>
+    </data>
+    <data name="fuelprices_fuel" xml:space="preserve">
+        <value>Carburante</value>
+    </data>
+    <data name="fuelprices_average" xml:space="preserve">
+        <value>Media</value>
+    </data>
+    <data name="fuelprices_cheapest" xml:space="preserve">
+        <value>Più economico</value>
+    </data>
+    <data name="fuelprices_stations" xml:space="preserve">
+        <value>Distributori</value>
+    </data>
+    <data name="fuelprices_updated_on" xml:space="preserve">
+        <value>Aggiornato il {0}</value>
+    </data>
+    <data name="fuelprices_footer" xml:space="preserve">
+        <value>Prezzi aggiornati negli ultimi {0} giorni</value>
+    </data>
+    <data name="fuelprices_fuel_gazole" xml:space="preserve">
+        <value>Gasolio</value>
+    </data>
+    <data name="fuelprices_fuel_e10" xml:space="preserve">
+        <value>E10</value>
+    </data>
+    <data name="fuelprices_fuel_sp98" xml:space="preserve">
+        <value>SP98</value>
+    </data>
+    <data name="fuelprices_fuel_sp95" xml:space="preserve">
+        <value>SP95</value>
+    </data>
+    <data name="fuelprices_fuel_e85" xml:space="preserve">
+        <value>E85</value>
+    </data>
+    <data name="fuelprices_fuel_gplc" xml:space="preserve">
+        <value>GPL</value>
+    </data>
 </root>
