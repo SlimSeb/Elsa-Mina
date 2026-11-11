@@ -9,6 +9,7 @@ public class BattleDecisionStrategyExtensionsTest
     [TestCase(BattleDecisionStrategy.MiniPokeV1_4M, "minipokev1-4m")]
     [TestCase(BattleDecisionStrategy.MiniPokeV2_1M, "minipokev2-1m")]
     [TestCase(BattleDecisionStrategy.MiniPokeV2_1_1M, "minipokev2.1-1m")]
+    [TestCase(BattleDecisionStrategy.MiniPokeV2_1_22M, "minipokev2.1-22m")]
     [TestCase(BattleDecisionStrategy.MiniPokeV2_1M_Search, "minipokev2-1m+search")]
     [TestCase(BattleDecisionStrategy.MiniPokeV2_1_1M_Search, "minipokev2.1-1m+search")]
     public void Test_GetName_ShouldSeparateVersionPartsWithDotsAndSizeWithDash(BattleDecisionStrategy strategy,

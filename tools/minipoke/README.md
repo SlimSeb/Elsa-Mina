@@ -512,8 +512,13 @@ against 390 for `wide-medium`, mostly because `learn` takes 11-12 s instead of 3
 take about 11 h. Checkpoints grow with the model: `ppo_*.pt` is 270 MB (53 MB for `wide-medium`) and
 `best.pt` 90 MB, about 10 GB for a run of that length. Its export has the same inputs and
 `encoder_spec.json` as `MiniPokeV2_1_1M`, so `MiniPokeV2Encoder` runs it as is. Release it as `2_1_22M`
-([Releasing a new model](#releasing-a-new-model-n_size)) only if it beats its teacher: nothing has
-measured yet whether this size plays better than `wide-medium`.
+([Releasing a new model](#releasing-a-new-model-n_size)) only if it beats its teacher.
+
+`MiniPokeV2_1_22M` is this run's `best.pt` at 10M states (iteration 1275). Against its teacher
+`v2-1-4m` it won 55.8% of 1,000 games (500 team pairs, 95% CI [52.9%, 58.7%]); against the heuristic,
+77.1% over 800 fresh battles (95% CI [74.1%, 79.9%]). Training on to 15M states
+(`--resume --states 15000000`, which raises the LR back up the cosine) did not help: the 15M
+`best.pt` won 48.1% against the 10M one (95% CI [45.3%, 50.9%]).
 
 ## Elo league table
 
@@ -796,10 +801,10 @@ coefficient's scale): sweep them only for ideas that look promising.
 Each exported model is named after its **version** (the observation it was trained with:
 `encoder.py` for 1, `encoder_v2.py` for 2, `encoder_v2.py --move-effects` for 2.1, written `2_1` in
 names) and its size in parameters: `MiniPokeV1_1M`, `MiniPokeV1_4M`, `MiniPokeV2_1M`, `MiniPokeV2_4M`,
-`MiniPokeV2_1_1M`. Models of one encoder share their C# encoder (V2.1 models play with
+`MiniPokeV2_1_1M`, `MiniPokeV2_1_22M`. Models of one encoder share their C# encoder (V2.1 models play with
 `MiniPokeV2Encoder`, which reads the move effect flag from the spec). ElsaMina keeps every model side
 by side, so they can be compared with `-strategy minipokevN-size` (`minipokev1-1m`, `minipokev1-4m`,
-`minipokev2-1m`, `minipokev2-4m`, `minipokev2.1-1m`; `-strategy minipoke` picks the latest one). The bot starts with `minipokev2-4m`; `-strategy calc` switches to the damage calc
+`minipokev2-1m`, `minipokev2-4m`, `minipokev2.1-1m`, `minipokev2.1-22m`; `-strategy minipoke` picks the latest one). The bot starts with `minipokev2-4m`; `-strategy calc` switches to the damage calc
 strategy the models fall back on.
 
 The C# side reproduces what the model sees in training:

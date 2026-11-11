@@ -39,6 +39,12 @@ public enum BattleDecisionStrategy
     /// </summary>
     MiniPokeV2_1_1M,
 
+    /// <summary>
+    /// minipoke v2.1 with ~22M parameters (strategy "minipokev2.1-22m"): same encoder as
+    /// <see cref="MiniPokeV2_1_1M"/>, large network, distilled from a ~4M v2.1 model and trained with the medium recipe.
+    /// </summary>
+    MiniPokeV2_1_22M,
+
     // Search variants, "<model>+search": the same model, searching one turn ahead on Showdown's simulator
     // (MiniPokeTurnSearch). Named after their model with a _Search suffix: BattlesModule registers each with its model.
     // Listed only when the simulator is configured (ShowdownDirectory).
@@ -66,5 +72,10 @@ public enum BattleDecisionStrategy
     /// <summary>
     /// <see cref="MiniPokeV2_1_1M"/> with search ("minipokev2.1-1m+search").
     /// </summary>
-    MiniPokeV2_1_1M_Search
+    MiniPokeV2_1_1M_Search,
+
+    /// <summary>
+    /// <see cref="MiniPokeV2_1_22M"/> with search ("minipokev2.1-22m+search").
+    /// </summary>
+    MiniPokeV2_1_22M_Search
 }
