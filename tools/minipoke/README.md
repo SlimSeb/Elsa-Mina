@@ -940,8 +940,20 @@ downloads them, rated 1500+ by default, into `replays/human/<format>/<UTC day>/<
 ```bash
 caffeinate -is python collect_replays.py                       # runs until stopped, resumes where it stopped
 python collect_replays.py --min-rating 1600 --oldest-days 90
+python collect_replays.py --skip-from replays/human/old-batch --skip-from old-batch-2.zip
 python collect_replays.py --summary                            # replays, sides by rating, server versions
 ```
+
+It only knows the replays in its own folder. To archive some (move or zip day folders), keep
+`state.json` where it is and pass each archive with `--skip-from` (a folder at any depth, or a
+.zip), or the replays at the edges of the moved ones are downloaded again.
+
+To skip a span collected on another machine, give its edges (UTC dates, or unix times):
+`--backfill-from` starts the backfill there (replays uploaded before it) and `--head-from` the
+new uploads (from it on). They never move a cursor back over what the folder already covered,
+so the same command line restarts the run. Nov 2026: the Mac's two folders hold every 1500+
+replay from 2026-10-30 13:08:14 to 2026-11-12 21:59:58 UTC, and the server continues with
+`--backfill-from "2026-10-30 13:08:14" --head-from "2026-11-12 21:59:58"`.
 
 It checks for new uploads every 15 minutes and otherwise pages back through older ones (up to
 `--oldest-days`, 365). It sends one request at a time, about 2 s apart (`--delay`), with its own

@@ -10,6 +10,8 @@ Leave it running (it resumes where it stopped; `caffeinate -is` keeps the Mac aw
 
     caffeinate -is python collect_replays.py                     # gen9randombattle, rated 1500+
     python collect_replays.py --min-rating 1600 --oldest-days 90
+    python collect_replays.py --skip-from replays/human/old-batch --skip-from old-batch-2.zip
+    python collect_replays.py --backfill-from "2026-10-30 13:08:14" --head-from "2026-11-12 21:59:58"
     python collect_replays.py --summary                          # what is on disk so far
 
 It lists replays newest first (search.json: 51 a page, `before` an upload time, exclusive) and
@@ -17,7 +19,17 @@ downloads the ones rated --min-rating or more. Two sweeps share the requests:
 - head: every --head-every seconds, the replays uploaded since the last head sweep;
 - backfill: older pages, one at a time, back to --oldest-days.
 Each replay is saved once, as <out>/<UTC upload day>/<id>.json.gz (the JSON as served).
-<out>/state.json holds the two cursors.
+<out>/state.json holds the two cursors. Replays moved out of <out> (to a folder or a .zip) are
+downloaded again unless that archive is given with --skip-from: keep state.json in <out> when
+archiving, and pass every archive.
+
+To skip a span collected elsewhere (another machine, a folder you don't have here), give its
+edges as UTC dates ("2026-10-30", "2026-10-30 13:08:14") or unix times: --backfill-from starts
+the backfill there (replays uploaded before it), --head-from starts the head there (replays
+uploaded from it on). Neither moves a cursor back over what <out> already covered, so the same
+command line restarts the run where it stopped. Without --backfill-from, the backfill starts at
+the first head sweep and goes through the head's span again (listing only, nothing is downloaded
+twice).
 
 Staying polite, so the server has no reason to rate limit or block us:
 - one request at a time, on one kept-alive connection, --delay seconds apart (2 s, +-30%
@@ -46,12 +58,13 @@ import random
 import signal
 import sys
 import time
+import zipfile
 from collections import Counter
 from dataclasses import asdict, dataclass, fields
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
-from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple
+from pathlib import Path, PurePosixPath
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 from urllib.parse import quote
 
 HOST = "replay.pokemonshowdown.com"
@@ -228,9 +241,48 @@ def utc(upload_time: int) -> str:
     return datetime.fromtimestamp(upload_time, timezone.utc).strftime("%Y-%m-%d %H:%M")
 
 
+DATE_FORMATS = ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d")
+
+
+def parse_date(text: str) -> int:
+    """A UTC date ("2026-10-30", "2026-10-30 13:08", "2026-10-30T13:08:14Z", "... UTC") or a
+    unix time, as a unix time."""
+    value = text.strip()
+    if value.isdigit():
+        return int(value)
+    for suffix in ("UTC", "Z"):
+        if value.endswith(suffix):
+            value = value[:-len(suffix)].rstrip()
+    if len(value) > 10 and value[10] == "T":
+        value = f"{value[:10]} {value[11:]}"
+    for date_format in DATE_FORMATS:
+        try:
+            return int(datetime.strptime(value, date_format).replace(tzinfo=timezone.utc).timestamp())
+        except ValueError:
+            continue
+    raise argparse.ArgumentTypeError(f"{text!r}: expected a UTC date like 2026-10-30 or 2026-10-30 13:08:14, "
+                                     f"or a unix time")
+
+
+def archived_ids(path: Path) -> Set[str]:
+    """The ids of the replays saved in `path`: a folder (at any depth) or a .zip of one. Skips
+    the `._` resource fork entries macOS adds to the zips it makes."""
+    if path.is_dir():
+        names: Iterable[str] = (file.name for file in path.rglob(f"*{REPLAY_SUFFIX}"))
+    elif zipfile.is_zipfile(path):
+        with zipfile.ZipFile(path) as archive:
+            names = [PurePosixPath(name).name for name in archive.namelist()]
+    else:
+        raise ValueError(f"{path} is neither a folder nor a .zip")
+    return {name[:-len(REPLAY_SUFFIX)] for name in names
+            if name.endswith(REPLAY_SUFFIX) and not name.startswith("._")}
+
+
 class Collector:
     def __init__(self, server: ReplayServer, out: Path, fmt: str = "gen9randombattle", min_rating: int = 1500,
-                 oldest: int = 0, head_every: float = 900.0, max_replays: Optional[int] = None) -> None:
+                 oldest: int = 0, head_every: float = 900.0, max_replays: Optional[int] = None,
+                 skip_ids: Iterable[str] = (), backfill_from: Optional[int] = None,
+                 head_from: Optional[int] = None) -> None:
         self.server = server
         self.out = out
         self.fmt = fmt
@@ -242,14 +294,35 @@ class Collector:
         for leftover in out.glob("*/*.tmp"):
             leftover.unlink()
         self.known = {path.name[:-len(REPLAY_SUFFIX)] for path in out.glob(f"*/*{REPLAY_SUFFIX}")}
+        self.archived = set(skip_ids)  # saved elsewhere (--skip-from): never downloaded again
         self.skipped: set = set()  # fetched but not kept (no input log, 404): not fetched again this run
         self.state = self._load_state()
+        self._move_cursors(backfill_from, head_from)
         self.saved = 0
         self.started = time.monotonic()
 
+    def _move_cursors(self, backfill_from: Optional[int], head_from: Optional[int]) -> None:
+        """--backfill-from and --head-from skip a span collected elsewhere. They only move a cursor
+        forward (the backfill older, the head newer), never back over what was covered here."""
+        state = self.state
+        if backfill_from is not None and (state.backfill_before is None or backfill_from < state.backfill_before):
+            state.backfill_before = backfill_from
+            state.backfill_done = False
+        if head_from is not None and (state.newest is None or head_from > state.newest):
+            state.newest = head_from
+        # A finished backfill whose last page went below the floor goes on when the floor is lowered
+        # (its cursor is that page's `before`: one request to find it is done again otherwise)
+        if state.backfill_done and state.backfill_before is not None and state.backfill_before > self.oldest:
+            state.backfill_done = False
+
     def run(self) -> None:
-        log.info("collecting %s rated %d+ into %s (%d replays already there)",
-                 self.fmt, self.min_rating, self.out, len(self.known))
+        log.info("collecting %s rated %d+ into %s (%d replays already there, %d more archived)",
+                 self.fmt, self.min_rating, self.out, len(self.known), len(self.archived - self.known))
+        log.info("backfill: %s, back to %s UTC; new uploads: %s",
+                 "done" if self.state.backfill_done else
+                 f"from {utc(self.state.backfill_before)} UTC" if self.state.backfill_before else "from the first sweep",
+                 utc(self.oldest),
+                 f"from {utc(self.state.newest)} UTC" if self.state.newest else "from now")
         next_head = 0.0
         try:
             while not self.server.stop.is_set():
@@ -316,7 +389,7 @@ class Collector:
                 continue
             counts["rated"] += 1
             replay_id = entry["id"]
-            if replay_id in self.known or replay_id in self.skipped:
+            if replay_id in self.known or replay_id in self.archived or replay_id in self.skipped:
                 continue
             replay = self.server.get(f"/{quote(replay_id)}.json")
             if not self._usable(replay):
@@ -418,6 +491,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--max-replays", type=int, help="stop after saving this many replays")
     parser.add_argument("--max-blocks", type=int, default=4, help="stop after this many 403s in a row (default 4)")
     parser.add_argument("--user-agent", default=DEFAULT_USER_AGENT)
+    parser.add_argument("--skip-from", type=Path, action="append", default=[], metavar="PATH",
+                        help="a folder or .zip of replays saved before: never download them again (repeatable)")
+    parser.add_argument("--backfill-from", type=parse_date, metavar="DATE",
+                        help="start the backfill at this UTC date or unix time: replays uploaded before it")
+    parser.add_argument("--head-from", type=parse_date, metavar="DATE",
+                        help="collect new uploads from this UTC date or unix time on, instead of from now")
     parser.add_argument("--summary", action="store_true", help="print what is on disk and exit (no requests)")
     args = parser.parse_args(argv)
     if args.delay < 1:
@@ -428,6 +507,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.summary:
         print(summarize(out))
         return 0
+
+    skip_ids: Set[str] = set()
+    for archive in args.skip_from:
+        try:
+            ids = archived_ids(archive)
+        except (OSError, ValueError, zipfile.BadZipFile) as error:
+            parser.error(f"--skip-from {archive}: {error}")
+        log.info("skipping the %d replays in %s", len(ids), archive)
+        skip_ids |= ids
 
     stop = StopSignal()
 
@@ -440,9 +528,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     signal.signal(signal.SIGINT, on_signal)
     signal.signal(signal.SIGTERM, on_signal)
 
+    oldest = int(time.time() - args.oldest_days * 86400)
+    if args.backfill_from is not None and args.backfill_from <= oldest:
+        parser.error(f"--backfill-from {utc(args.backfill_from)} is older than --oldest-days {args.oldest_days:g}")
     server = ReplayServer(args.user_agent, args.delay, stop, args.max_blocks)
-    collector = Collector(server, out, args.format, args.min_rating, int(time.time() - args.oldest_days * 86400),
-                          args.head_every, args.max_replays)
+    collector = Collector(server, out, args.format, args.min_rating, oldest, args.head_every, args.max_replays,
+                          skip_ids, args.backfill_from, args.head_from)
     try:
         collector.run()
     except Blocked as error:
