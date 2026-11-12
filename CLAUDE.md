@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Elsa-Mina is a Pokémon Showdown chat bot written in C# (.NET 10.0). It connects via WebSocket, receives server messages as pipe-delimited strings, dispatches them to handlers, and executes commands in chat rooms.
+Elsa-Mina is a Pokémon Showdown chat bot written in C# (.NET 11.0). It connects via WebSocket, receives server messages as pipe-delimited strings, dispatches them to handlers, and executes commands in chat rooms.
 
 ## Commands
 

@@ -22,6 +22,15 @@ legal actions:
 Forced switches, and turns with one legal action, use the model alone, as does any turn
 whose search fails. `SearchPlayer` is an `RLPlayer`: anything that plays a model can play
 it with search (train.py eval / elo --search).
+
+`depth` 2 looks one decision further where it matters most. Per determinization, the
+opponent's `expand_replies` likeliest replies in its equilibrium mix (those weighing at
+least `expand_min_weight`) are deepened against each of our candidates: from each of those
+leaves, the next decision is played (a full turn, or the forced switches when a Pokémon
+fainted), our `expand_top_k` likeliest actions there (the model's policy at the leaf, among
+what Showdown allows) against each of the opponent's. The leaf then scores its turn's faint
+reward plus gamma x the value of that second game (equilibrium mixes for both sides)
+instead of the model's value; the turn's game is solved again with the deepened scores.
 """
 
 from __future__ import annotations
@@ -36,7 +45,7 @@ import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, NamedTuple, Optional, Sequence, Tuple
 
 import numpy as np
 from poke_env.data import GenData, to_id_str
@@ -67,6 +76,10 @@ class SearchConfig:
     faint_reward: float = FAINT_REWARD  # the faint reward the model was trained with
     prior_weight: float = 0.02   # x log(policy probability), added to each candidate's score
     iterations: int = 400        # regret matching iterations per game
+    depth: int = 1               # 2: one more decision after the opponent's likeliest replies
+    expand_top_k: int = 2        # depth 2: our candidates at that decision
+    expand_replies: int = 2      # depth 2: the opponent's replies deepened per determinization...
+    expand_min_weight: float = 0.1  # ...those weighing at least this in its equilibrium mix
 
 
 # --------------------------------------------------------------------------
@@ -202,6 +215,30 @@ def sim_action(action: int, battle) -> Optional[dict]:
     return {"kind": "move", "move": moves[j].id, "tera": action >= 10}
 
 
+def leaf_candidates(leaf, choices: dict, probs: np.ndarray, top_k: int) -> Optional[List[dict]]:
+    """Our candidates at the decision after a simulated turn: the `top_k` likeliest actions
+    of the model's policy at the leaf among what Showdown allows there (`choices`, from
+    search_sim.js); [] when we only wait for the opponent's forced switch, None when none of
+    the model's actions is allowed."""
+    if choices.get("wait"):
+        return []
+    moves, switches = set(choices.get("moves") or []), set(choices.get("switches") or [])
+    out: List[dict] = []
+    for action in np.argsort(-probs, kind="stable"):
+        act = sim_action(int(action), leaf)
+        if act is None or act in out:
+            continue
+        if act["kind"] == "switch":
+            allowed = act["name"] in switches
+        else:
+            allowed = act["move"] in moves and (not act["tera"] or bool(choices.get("tera")))
+        if allowed:
+            out.append(act)
+            if len(out) == top_k:
+                break
+    return out or None
+
+
 # --------------------------------------------------------------------------
 # The simulator processes
 # --------------------------------------------------------------------------
@@ -292,6 +329,16 @@ def solve_zero_sum(payoff: np.ndarray, iterations: int = 400) -> Tuple[np.ndarra
     return sum_r / sum_r.sum(), sum_c / sum_c.sum()
 
 
+class Scored(NamedTuple):
+    """A simulated leaf's score: +-1 when it ended the battle, else `reward` (its faint
+    reward) plus gamma x the model's value of `battle` (its poke-env copy); `probs` the
+    model's policy there, over every action when it was asked for unmasked."""
+    score: float
+    reward: float
+    battle: object
+    probs: Optional[np.ndarray]
+
+
 @dataclass
 class SearchStats:
     searched: int = 0
@@ -299,11 +346,13 @@ class SearchStats:
     failed: int = 0
     seconds: float = 0.0
     leaves: int = 0
+    expanded: int = 0
 
     def describe(self) -> str:
         n = max(self.searched, 1)
+        deeper = f", {self.expanded / n:.1f} leaves deepened" if self.expanded else ""
         return (f"searched {self.searched} decisions ({self.changed} changed, {self.failed} failed), "
-                f"{self.leaves / n:.0f} leaves and {self.seconds / n:.2f}s each")
+                f"{self.leaves / n:.0f} leaves{deeper} and {self.seconds / n:.2f}s each")
 
 
 class SearchPlayer(RLPlayer):
@@ -345,62 +394,143 @@ class SearchPlayer(RLPlayer):
             return None
         candidates = [candidates[i] for i in keep]
         actions = [actions[i] for i in keep]
-        reply = await self.sims.simulate({
-            "position": position_of(battle), "ours": actions, "determinizations": cfg.determinizations,
-            "samples": cfg.samples, "seed": next(self._seed)})
-        us = battle.player_role
-        mine0, theirs0 = E.fainted_counts(battle)
-        # Every leaf, then all their values in one batch
-        leaves, where = [], []
-        for d, det in enumerate(reply["determinizations"]):
-            for a, row in enumerate(det["leaves"]):
-                for b, samples in enumerate(row):
-                    for leaf in samples:
-                        if leaf is not None:
-                            leaves.append(leaf)
-                            where.append((d, a, b))
-        battles = [leaf_battle(battle, leaf["lines"]) if leaf["winner"] is None else None
-                   for leaf in leaves]
-        observations = [self.batcher.encoder.encode(b) for b in battles if b is not None]
-        evaluated = await asyncio.gather(*[self.batcher.act(o, True) for o in observations])
-        values = iter(v for _, _, v, _ in evaluated)
-        totals: Dict[Tuple[int, int, int], List[float]] = {}
-        for (d, a, b), leaf, leaf_battle_ in zip(where, leaves, battles):
-            if leaf["winner"] is not None:
-                score = 0.0 if leaf["winner"] == "tie" else (1.0 if leaf["winner"] == us else -1.0)
-            else:
-                mine, theirs = E.fainted_counts(leaf_battle_)
-                reward = cfg.faint_reward * ((theirs - theirs0) - (mine - mine0))
-                score = reward + cfg.gamma * next(values)
-            totals.setdefault((d, a, b), []).append(score)
-        scores = np.full(len(candidates), np.nan)
-        per_det = []
-        for d, det in enumerate(reply["determinizations"]):
-            n_theirs = len(det["theirs"])
-            if n_theirs == 0:
-                continue
-            payoff = np.full((len(candidates), n_theirs), np.nan)
-            for (dd, a, b), values_ab in totals.items():
-                if dd == d:
-                    payoff[a, b] = float(np.mean(values_ab))
-            rows = ~np.isnan(payoff).all(axis=1)
-            cols = ~np.isnan(payoff[rows]).any(axis=0)
-            if rows.sum() < 1 or cols.sum() < 1:
-                continue
-            game = payoff[np.ix_(rows, cols)]
-            _, theirs_mix = solve_zero_sum(game, cfg.iterations)
-            q = np.full(len(candidates), np.nan)
-            q[rows] = game @ theirs_mix
-            per_det.append(q)
+        request = {"position": position_of(battle), "ours": actions, "determinizations": cfg.determinizations,
+                   "samples": cfg.samples, "seed": next(self._seed)}
+        reply = await self.sims.simulate(request)
+        dets = reply["determinizations"]
+        keys = [(d, a, b, s) for d, det in enumerate(dets) for a, row in enumerate(det["leaves"])
+                for b, samples in enumerate(row) for s, leaf in enumerate(samples) if leaf is not None]
+        leaves = [dets[d]["leaves"][a][b][s] for d, a, b, s in keys]
+        scored = dict(zip(keys, await self._score([(battle, leaf) for leaf in leaves], unmasked=cfg.depth >= 2)))
+        totals = {key: leaf_score.score for key, leaf_score in scored.items()}
+        self.stats.leaves += len(leaves)
+        if cfg.depth >= 2:
+            await self._deepen(request, dets, scored, totals, len(candidates))
+        per_det = [q for *_, q in self._games(dets, totals, len(candidates))]
         if not per_det:
             return None
         stacked = np.vstack(per_det)
         valid = ~np.isnan(stacked).all(axis=0)
+        scores = np.full(len(candidates), np.nan)
         scores[valid] = np.nanmean(stacked[:, valid], axis=0)
         scores += cfg.prior_weight * np.log(np.maximum(probs[candidates], 1e-6))
         self.stats.searched += 1
-        self.stats.leaves += len(leaves)
         self.stats.seconds += time.perf_counter() - t0
         if not np.isfinite(scores).any():
             return None
         return candidates[int(np.nanargmax(scores))]
+
+    async def _score(self, pairs: Sequence[Tuple[object, dict]], unmasked: bool = False) -> List[Scored]:
+        """Each (parent battle, simulated leaf after it) scored like training scores a turn
+        (see Scored), the model's values in one batch. The leaf's mask is the last request's,
+        stale after a simulated turn: `unmasked` asks the model's policy over every action."""
+        cfg = self.config
+        battles = [leaf_battle(parent, leaf["lines"]) if leaf["winner"] is None else None
+                   for parent, leaf in pairs]
+        observations = []
+        for leaf_battle_ in battles:
+            if leaf_battle_ is not None:
+                obs = self.batcher.encoder.encode(leaf_battle_)
+                if unmasked:
+                    obs["mask"] = np.ones_like(obs["mask"])
+                observations.append(obs)
+        evaluated = iter(await asyncio.gather(*[self.batcher.act(o, True) for o in observations]))
+        out = []
+        for (parent, leaf), leaf_battle_ in zip(pairs, battles):
+            if leaf["winner"] is not None:
+                us = parent.player_role
+                score = 0.0 if leaf["winner"] == "tie" else (1.0 if leaf["winner"] == us else -1.0)
+                out.append(Scored(score, score, None, None))
+                continue
+            _, _, value, leaf_probs = next(evaluated)
+            mine0, theirs0 = E.fainted_counts(parent)
+            mine, theirs = E.fainted_counts(leaf_battle_)
+            reward = cfg.faint_reward * ((theirs - theirs0) - (mine - mine0))
+            out.append(Scored(reward + cfg.gamma * value, reward, leaf_battle_, leaf_probs))
+        return out
+
+    def _games(self, dets: List[dict], totals: Dict[Tuple[int, int, int, int], float], n_candidates: int):
+        """Per determinization with a game: (d, its rows, its columns, the opponent's
+        equilibrium mix over those columns, each candidate's expected score against it)."""
+        out = []
+        for d, det in enumerate(dets):
+            n_theirs = len(det["theirs"])
+            if n_theirs == 0:
+                continue
+            sums, counts = np.zeros((n_candidates, n_theirs)), np.zeros((n_candidates, n_theirs))
+            for (dd, a, b, _), score in totals.items():
+                if dd == d:
+                    sums[a, b] += score
+                    counts[a, b] += 1
+            payoff = np.where(counts > 0, sums / np.maximum(counts, 1), np.nan)
+            game, rows, cols = _playable(payoff)
+            if game is None:
+                continue
+            _, theirs_mix = solve_zero_sum(game, self.config.iterations)
+            q = np.full(n_candidates, np.nan)
+            q[rows] = game @ theirs_mix
+            out.append((d, rows, cols, theirs_mix, q))
+        return out
+
+    async def _deepen(self, request: dict, dets: List[dict], scored: Dict[tuple, Scored],
+                      totals: Dict[tuple, float], n_candidates: int) -> None:
+        """Depth 2 (see the module docstring): replaces the scores of the leaves after the
+        opponent's likeliest replies with their turn's reward plus gamma x the value of the
+        next decision."""
+        cfg = self.config
+        items, parents = [], []
+        for d, rows, cols, theirs_mix, _ in self._games(dets, totals, n_candidates):
+            order = np.argsort(-theirs_mix, kind="stable")[:cfg.expand_replies]
+            replies = [int(cols[j]) for j in order if theirs_mix[j] >= cfg.expand_min_weight]
+            for a in (int(row) for row in rows):
+                for b in replies:
+                    for s, leaf in enumerate(dets[d]["leaves"][a][b]):
+                        parent = scored.get((d, a, b, s))
+                        if parent is None or parent.battle is None or not leaf.get("choices"):
+                            continue
+                        ours = leaf_candidates(parent.battle, leaf["choices"], parent.probs, cfg.expand_top_k)
+                        if ours is None:
+                            continue
+                        items.append({"d": d, "a": a, "b": b, "s": s, "ours": ours})
+                        parents.append(((d, a, b, s), leaf, parent))
+        if not items:
+            return
+        reply = await self.sims.simulate({**request, "expand": items})
+        expansions = [(key, parent, expansion) for (key, leaf, parent), expansion
+                      in zip(parents, reply["expansions"])
+                      if expansion is not None and expansion["first"] == leaf["lines"]]
+        where, pairs = [], []
+        for e, (_, parent, expansion) in enumerate(expansions):
+            for r, row in enumerate(expansion["leaves"]):
+                for c, samples in enumerate(row):
+                    for leaf in samples:
+                        if leaf is not None:
+                            where.append((e, r, c))
+                            pairs.append((parent.battle, leaf))
+        values: Dict[Tuple[int, int, int], List[float]] = {}
+        for (e, r, c), leaf_score in zip(where, await self._score(pairs)):
+            values.setdefault((e, r, c), []).append(leaf_score.score)
+        self.stats.leaves += len(pairs)
+        for e, (key, parent, expansion) in enumerate(expansions):
+            payoff = np.full((len(expansion["leaves"]), len(expansion["theirs"])), np.nan)
+            for (ee, r, c), scores in values.items():
+                if ee == e:
+                    payoff[r, c] = float(np.mean(scores))
+            game, _, _ = _playable(payoff)
+            if game is None:
+                continue
+            ours_mix, theirs_mix = solve_zero_sum(game, cfg.iterations)
+            totals[key] = parent.reward + cfg.gamma * float(ours_mix @ game @ theirs_mix)
+            self.stats.expanded += 1
+
+
+def _playable(payoff: np.ndarray):
+    """The game left once rows without any score, then columns missing one, are dropped:
+    (game, its rows, its columns), or (None, None, None)."""
+    rows = np.flatnonzero(~np.isnan(payoff).all(axis=1))
+    if len(rows) == 0:
+        return None, None, None
+    cols = np.flatnonzero(~np.isnan(payoff[rows]).any(axis=0))
+    if len(cols) == 0:
+        return None, None, None
+    return payoff[np.ix_(rows, cols)], rows, cols

@@ -4,7 +4,7 @@ FROM node:22-bookworm-slim AS showdown
 WORKDIR /opt/showdown
 RUN npm install --omit=dev --no-audit --no-fund pokemon-showdown@0.11.11
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /app
 
 COPY .git .
@@ -41,7 +41,7 @@ COPY tools/minipoke/search_sim.js tools/minipoke/search_sim.js
 RUN /app/scripts/Build/build.sh
 RUN /app/scripts/Build/publish.sh
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS final
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

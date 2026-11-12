@@ -10,9 +10,23 @@
  *   ours: our candidate actions, {"kind": "move", "move": id, "tera": bool} or
  *     {"kind": "switch", "name": name}.
  * Response: {"id", "determinizations": [{"theirs": [label...], "leaves": [[[leaf...] per
- *   their action] per our action]}]}, a leaf being {"lines": [...], "winner": side or null}
- *   or null when Showdown refused one of the two choices. "lines" are the simulated turn
- *   as our side sees it: our |split| lines, the public ones of the others.
+ *   their action] per our action]}]}, a leaf being {"lines": [...], "winner": side or null,
+ *   "choices": ...} or null when Showdown refused one of the two choices. "lines" are the
+ *   simulated turn as our side sees it: our |split| lines, the public ones of the others.
+ *   "choices" is what we may do next (null once the battle ended): {"wait": true} when only
+ *   the opponent has a forced switch to make, else {"wait": false, "moves": [id...],
+ *   "tera": bool, "switches": [name...]} (no moves at a forced switch).
+ *
+ * Deeper search (search.py's depth 2): the same request plus "expand": [{"d", "a", "b", "s",
+ *   "ours": [choice...]}...] plays one more decision after leaf [a][b][s] of determinization d
+ *   (replayed from the same seeds, so it is the same leaf): `ours` against each of the
+ *   opponent's actions there, with "ours" ignored (one row) when we only wait for the
+ *   opponent's forced switch. The next decision is a full turn, or forced switches when a
+ *   Pokémon fainted.
+ * Response: {"id", "expansions": [expansion or null per item]}, an expansion being
+ *   {"first": [line...], "wait": bool, "theirs": [label...], "leaves": [[[leaf...] per their
+ *   action] per row]}: "first" the replayed leaf's lines (the client checks they match), and
+ *   leaves without "choices". null when the leaf ended the battle or could not be replayed.
  *
  * A determinization is one guess of what we don't know: each revealed opponent Pokémon gets
  * a set from Showdown's gen 9 random battle generator (the one closest to what it revealed:
@@ -280,12 +294,61 @@ function view(log, side) {
 	return out;
 }
 
-function play(snapshot, us, them, mine, theirs, seed) {
+/** Whether `side` has a decision to make (a side waiting for the other's forced switch has not). */
+function decides(battle, side) {
+	const request = battle[side].activeRequest;
+	return Boolean(request && !request.wait);
+}
+
+/** What our side may do at the next decision (see the header), null once the battle ended. */
+function choicesOf(battle, side) {
+	if (battle.ended) return null;
+	if (!decides(battle, side)) return {wait: true};
+	const request = battle[side].activeRequest;
+	const bench = battle[side].pokemon.filter(p => !p.isActive && !p.fainted).map(p => p.name);
+	if (request.forceSwitch) return {wait: false, moves: [], tera: false, switches: bench};
+	const active = request.active[0];
+	return {
+		wait: false,
+		moves: active.moves.filter(move => !move.disabled).map(move => move.id),
+		tera: Boolean(active.canTerastallize),
+		switches: active.trapped ? [] : bench,
+	};
+}
+
+/**
+ * The opponent's actions at a decision after the first turn: a forced switch to one of its revealed Pokémon (any
+ * when none is left), a full turn's actions, or a single "wait" when only we decide.
+ */
+function theirReplies(battle, side, revealed) {
+	if (!decides(battle, side)) return [{choice: null, label: 'wait'}];
+	if (battle[side].activeRequest.forceSwitch) {
+		const bench = battle[side].pokemon.map((p, i) => ({p, i})).filter(({p}) => !p.isActive && !p.fainted);
+		const known = bench.filter(({p}) => revealed.has(p.name));
+		return (known.length ? known : bench).map(({p, i}) => ({choice: `switch ${i + 1}`, label: p.name}));
+	}
+	return theirChoices(battle, side, revealed);
+}
+
+function turnSeed(seed, a, b, s) {
+	return seed * 31 + a * 1009 + b * 97 + s;
+}
+
+function nextSeed(seed) {
+	return ((seed >>> 0) * 7 + 104729) >>> 0;
+}
+
+/**
+ * The battle after both sides' choices from `snapshot`, a null choice for a side that does not decide; null when
+ * Showdown refused a choice.
+ */
+function playBattle(snapshot, us, them, mine, theirs, seed) {
 	const battle = State.deserializeBattle(snapshot);
 	battle.log = [];
 	battle.sentLogPos = 0;
 	battle.resetRNG(seedOf(seed));
-	if (!battle.choose(us, mine) || !battle.choose(them, theirs)) return null;
+	if (mine !== null && !battle.choose(us, mine)) return null;
+	if (theirs !== null && !battle.choose(them, theirs)) return null;
 	// Mid-turn switches (U-turn, Eject Button...) take the first Pokémon available
 	for (let guard = 0; !battle.ended && battle.midTurn && battle.requestState === 'switch' && guard < 4; guard++) {
 		for (const side of battle.sides) {
@@ -294,7 +357,23 @@ function play(snapshot, us, them, mine, theirs, seed) {
 		if (!battle.allChoicesDone()) break;
 		battle.commitChoices();
 	}
+	return battle;
+}
+
+function leafOf(battle, us, them) {
 	return {lines: view(battle.log, us), winner: battle.ended ? (battle.winner === us ? us : battle.winner ? them : 'tie') : null};
+}
+
+function play(snapshot, us, them, mine, theirs, seed) {
+	const battle = playBattle(snapshot, us, them, mine, theirs, seed);
+	return battle ? {...leafOf(battle, us, them), choices: choicesOf(battle, us)} : null;
+}
+
+/** Determinization d of the request: its battle, snapshot and the opponent's actions. */
+function root(request, d, us, them, revealed) {
+	const seed = (request.seed + 7919 * d) >>> 0;
+	const battle = build(request.position, seed);
+	return {seed, battle, snapshot: JSON.stringify(State.serializeBattle(battle)), theirs: theirChoices(battle, them, revealed)};
 }
 
 function simulate(request) {
@@ -302,12 +381,10 @@ function simulate(request) {
 	const us = position.us;
 	const them = us === 'p1' ? 'p2' : 'p1';
 	const revealed = new Set(position.sides[them].pokemon.map(mon => mon.name));
+	if (request.expand) return {id: request.id, expansions: expandAll(request, us, them, revealed)};
 	const determinizations = [];
 	for (let d = 0; d < request.determinizations; d++) {
-		const seed = (request.seed + 7919 * d) >>> 0;
-		const battle = build(position, seed);
-		const snapshot = JSON.stringify(State.serializeBattle(battle));
-		const theirs = theirChoices(battle, them, revealed);
+		const {seed, battle, snapshot, theirs} = root(request, d, us, them, revealed);
 		const leaves = request.ours.map((action, a) => {
 			const mine = ourChoice(battle, us, action);
 			return theirs.map((their, b) => {
@@ -315,7 +392,7 @@ function simulate(request) {
 				const out = [];
 				for (let s = 0; s < request.samples; s++) {
 					try {
-						out.push(play(snapshot, us, them, mine, their.choice, seed * 31 + a * 1009 + b * 97 + s));
+						out.push(play(snapshot, us, them, mine, their.choice, turnSeed(seed, a, b, s)));
 					} catch (error) {
 						out.push(null);
 					}
@@ -326,6 +403,52 @@ function simulate(request) {
 		determinizations.push({theirs: theirs.map(t => t.label), leaves});
 	}
 	return {id: request.id, determinizations};
+}
+
+function expandAll(request, us, them, revealed) {
+	const roots = new Map();
+	return request.expand.map(item => {
+		try {
+			if (!roots.has(item.d)) roots.set(item.d, root(request, item.d, us, them, revealed));
+			return expand(request, roots.get(item.d), item, us, them, revealed);
+		} catch (error) {
+			return null;
+		}
+	});
+}
+
+/** One more decision after leaf [a][b][s] of a determinization (see the header). */
+function expand(request, start, item, us, them, revealed) {
+	const mine = ourChoice(start.battle, us, request.ours[item.a]);
+	const their = start.theirs[item.b];
+	if (!mine || !their) return null;
+	const first = turnSeed(start.seed, item.a, item.b, item.s);
+	const leaf = playBattle(start.snapshot, us, them, mine, their.choice, first);
+	if (!leaf || leaf.ended) return null;
+	const wait = !decides(leaf, us);
+	if (!wait && !(item.ours || []).length) return null;
+	const snapshot = JSON.stringify(State.serializeBattle(leaf));
+	const rows = wait ? [{choice: null}] : item.ours.map(action => ({choice: ourChoice(leaf, us, action)}));
+	const replies = theirReplies(leaf, them, revealed);
+	if (!replies.length) return null;
+	const seed = nextSeed(first);
+	const leaves = rows.map((row, r) => replies.map((reply, c) => {
+		const out = [];
+		for (let s = 0; s < request.samples; s++) {
+			if (!wait && !row.choice) {
+				out.push(null);
+				continue;
+			}
+			try {
+				const battle = playBattle(snapshot, us, them, row.choice, reply.choice, turnSeed(seed, r, c, s));
+				out.push(battle ? leafOf(battle, us, them) : null);
+			} catch (error) {
+				out.push(null);
+			}
+		}
+		return out;
+	}));
+	return {first: view(leaf.log, us), wait, theirs: replies.map(reply => reply.label), leaves};
 }
 
 const input = readline.createInterface({input: process.stdin});

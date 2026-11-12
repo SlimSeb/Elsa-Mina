@@ -10,7 +10,7 @@ A chat bot for Pokémon Showdown, used in the French Room and private communitie
 **[Live Demo](https://psim.us/fr)** • **[Report Bug](https://github.com/SlimSeb/Elsa-Mina/issues)**
 
 ## Prerequisites
-- .NET 10.0 or higher
+- .NET 11.0 or higher
 - PostgreSQL 12 or higher
 - Docker (optional, for containerized deployment)
 

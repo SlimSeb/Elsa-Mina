@@ -790,6 +790,8 @@ coefficient's scale): sweep them only for ideas that look promising.
 - `make_fixtures.py` records battles for ElsaMina's parity tests (V1, or v2 from a v2 spec).
 - `analyze_replays.py` analyzes the ladder battles ElsaMina saved with `-savereplays` (see
   [Ladder replays](#ladder-replays)).
+- `collect_replays.py` downloads public human replays with their input logs (see
+  [Collecting human replays](#collecting-human-replays)).
 - `paired.py` plays evaluations on paired teams (see [Measuring](#measuring)); `search.py`
   and `search_sim.js` search one turn ahead on Showdown's simulator (see
   [Search at decision time](#search-at-decision-time)).
@@ -926,6 +928,30 @@ guard: both are read from the choices), the value head and its calibration, and 
 behavior next to the humans' (moves into immunities, failed moves, tera timing...).
 `battles.csv`, `decisions.jsonl` and `value_calibration.json` hold the numbers. The replay
 folder is only read; `PLAYED_BY` and `COMPARE_WITH` at the top of the script name the models.
+
+## Collecting human replays
+
+Every public replay's JSON (`https://replay.pokemonshowdown.com/<id>.json`) holds the battle's
+input log: the server version, the battle and team seeds, both players' ratings and every choice.
+Re-run through Showdown's simulator at that version, it rebuilds what each player saw, so public
+ladder games give first-person training states without guessing hidden sets. `collect_replays.py`
+downloads them, rated 1500+ by default, into `replays/human/<format>/<UTC day>/<id>.json.gz`:
+
+```bash
+caffeinate -is python collect_replays.py                       # runs until stopped, resumes where it stopped
+python collect_replays.py --min-rating 1600 --oldest-days 90
+python collect_replays.py --summary                            # replays, sides by rating, server versions
+```
+
+It checks for new uploads every 15 minutes and otherwise pages back through older ones (up to
+`--oldest-days`, 365). It sends one request at a time, about 2 s apart (`--delay`), with its own
+User-Agent (Cloudflare refuses Python's default one). It waits on 429 and 5xx (Retry-After, or
+1 minute doubling), slows down after a 429, and stops after 4 refusals (403) in a row: wait a few
+hours, then run it again with a longer `--delay`. At 2 s it saves about 1,500 replays an hour while
+paging back (Nov 2026: 75-280 public gen9randombattle replays are uploaded per hour, about a
+quarter of them rated 1500+). The listed rating is the replay's, close to the players' average:
+filter on each player's own rating (its `>player` line) when building a dataset. Each server
+version needs its own Showdown checkout to re-simulate; `--summary` counts them.
 
 ## Model playground
 

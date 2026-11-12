@@ -8,18 +8,18 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
     with:
-      dotnet-version: "10.0.x"
+      dotnet-version: "11.0.x"
 
   code-analysis:
     uses: ./.github/workflows/code-analysis.yml
     with:
-      dotnet-version: "10.0.x"
+      dotnet-version: "11.0.x"
 
   analyze:
     needs: test
     uses: ./.github/workflows/sonar.yml
     with:
-      dotnet-version: "10.0.x"
+      dotnet-version: "11.0.x"
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -34,7 +34,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: "11.0.x"
           cache: true 
           cache-dependency-path: "**/*.csproj"
       - name: restore

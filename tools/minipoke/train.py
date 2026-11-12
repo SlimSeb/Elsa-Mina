@@ -161,26 +161,36 @@ def eval_vs(model, infer_device, n: int, concurrency: int, opponent: str = "heur
 
 
 def head_to_head(model, other, infer_device, n: int, concurrency: int, no_tera_before: int = 0,
-                 pairs: Optional[TeamPairs] = None,
-                 search: Optional["SearchSetup"] = None) -> MatchResult:
-    """Greedy `model` (with `search`: searching) vs greedy `other`, `model`'s results."""
+                 pairs: Optional[TeamPairs] = None, search: Optional["SearchSetup"] = None,
+                 vs_search: Optional["SearchSetup"] = None) -> MatchResult:
+    """Greedy `model` (with `search`: searching) vs greedy `other` (with `vs_search`:
+    searching), `model`'s results."""
     batcher, other_batcher = (InferenceBatcher(frozen_copy(m, infer_device), infer_device,
                                                max_batch=concurrency * 2) for m in (model, other))
-    return evaluate(batcher, lambda: RLPlayer(other_batcher, None, greedy=True,
-                                              **make_kwargs(concurrency)), n, concurrency,
-                    no_tera_before=no_tera_before, pairs=pairs,
+    if vs_search:
+        make_other = lambda: vs_search.player(other_batcher, concurrency)
+    else:
+        make_other = lambda: RLPlayer(other_batcher, None, greedy=True, **make_kwargs(concurrency))
+    return evaluate(batcher, make_other, n, concurrency, no_tera_before=no_tera_before, pairs=pairs,
                     player=search.player(batcher, concurrency) if search else None)
 
 
-class SearchSetup:
-    """`--search`: the --ckpt player searches one turn ahead (search.py)."""
+def search_config(settings, depth: int):
+    """The SearchConfig of `--search-*` settings (args or an eval spec dict), `depth` deep."""
+    from search import SearchConfig
+    get = settings.get if isinstance(settings, dict) else lambda key: getattr(settings, key)
+    return SearchConfig(top_k=get("search_top_k"), min_prob=get("search_min_prob"),
+                        determinizations=get("search_determinizations"), samples=get("search_samples"),
+                        faint_reward=get("search_faint_reward"), depth=depth)
 
-    def __init__(self, args):
-        from search import SearchConfig, SimPool
-        self.config = SearchConfig(top_k=args.search_top_k, min_prob=args.search_min_prob,
-                                   determinizations=args.search_determinizations,
-                                   samples=args.search_samples,
-                                   faint_reward=args.search_faint_reward)
+
+class SearchSetup:
+    """`--search`: the --ckpt player searches one turn ahead (search.py); `--vs-search-depth`:
+    the --vs-ckpt player too."""
+
+    def __init__(self, args, depth: Optional[int] = None):
+        from search import SimPool
+        self.config = search_config(args, args.search_depth if depth is None else depth)
         self.sims = SimPool(args.showdown_cwd, args.search_workers)
         self.players = []
 
@@ -612,7 +622,7 @@ def cmd_ppo(args) -> None:
 
 EVAL_SPEC = ("ckpt", "vs_ckpt", "opponent", "concurrency", "no_tera_before", "stall_timeout",
              "search", "search_top_k", "search_min_prob", "search_determinizations", "search_samples",
-             "search_workers", "search_faint_reward", "showdown_cwd")
+             "search_workers", "search_faint_reward", "search_depth", "vs_search_depth", "showdown_cwd")
 
 
 def _eval_worker(spec: dict) -> dict:
@@ -628,30 +638,35 @@ def _eval_worker(spec: dict) -> dict:
     kwargs = lambda side: dict(account_configuration=account(side), **make_kwargs(spec["concurrency"]))
     model = build_model(load_checkpoint(spec["ckpt"]))
     batcher = InferenceBatcher(frozen_copy(model, infer), infer, max_batch=spec["concurrency"] * 2)
-    sims = None
+    pools, searchers = [], []
+
+    def searching(searcher_batcher, depth: int, side: str):
+        from search import SearchPlayer, SimPool
+        pools.append(SimPool(spec["showdown_cwd"], spec["search_workers"]))
+        searchers.append(SearchPlayer(searcher_batcher, pools[-1], search_config(spec, depth), **kwargs(side)))
+        searchers[-1]._seed = iter(range(_random.randrange(1 << 20), 1 << 30))
+        return searchers[-1]
+
     if spec["search"]:
-        from search import SearchConfig, SearchPlayer, SimPool
-        sims = SimPool(spec["showdown_cwd"], spec["search_workers"])
-        config = SearchConfig(top_k=spec["search_top_k"], min_prob=spec["search_min_prob"],
-                              determinizations=spec["search_determinizations"],
-                              samples=spec["search_samples"], faint_reward=spec["search_faint_reward"])
-        player = SearchPlayer(batcher, sims, config, **kwargs("A"))
-        player._seed = iter(range(_random.randrange(1 << 20), 1 << 30))
+        player = searching(batcher, spec["search_depth"], "A")
     else:
         player = RLPlayer(batcher, None, greedy=True, no_tera_before=spec["no_tera_before"], **kwargs("A"))
     if spec["vs_ckpt"]:
         other = build_model(load_checkpoint(spec["vs_ckpt"]))
         other_batcher = InferenceBatcher(frozen_copy(other, infer), infer, max_batch=spec["concurrency"] * 2)
-        opponent = RLPlayer(other_batcher, None, greedy=True, **kwargs("B"))
+        if spec["vs_search_depth"]:
+            opponent = searching(other_batcher, spec["vs_search_depth"], "B")
+        else:
+            opponent = RLPlayer(other_batcher, None, greedy=True, **kwargs("B"))
     else:
         opponent = SCRIPTED[spec["opponent"]](**kwargs("B"))
     result = run_match(player, opponent, 0, spec["stall_timeout"], None,
                        TeamPairs(spec["first"], spec["second"]), "evaluation")
-    if sims is not None:
-        sims.close()
+    for pool in pools:
+        pool.close()
     return {"scores": result.paired.scores, "games": result.games, "ties": result.ties,
             "misplaced": result.paired.misplaced,
-            "search": player.stats.describe() if spec["search"] else ""}
+            "search": " | ".join(p.stats.describe() for p in searchers)}
 
 
 def eval_in_processes(args, pairs: TeamPairs) -> None:
@@ -669,9 +684,8 @@ def eval_in_processes(args, pairs: TeamPairs) -> None:
             for i, (a, b) in enumerate(bounds)]))
     result = summarize([s for o in outs for s in o["scores"]], sum(o["games"] for o in outs),
                        sum(o["ties"] for o in outs), sum(o["misplaced"] for o in outs))
-    label = f"{args.vs_ckpt} (greedy)" if args.vs_ckpt else args.opponent
-    with_search = " with search" if args.search else ""
-    print(f"win rate{with_search} vs {label}: {result.describe()} ({workers} processes)")
+    label = vs_label(args) if args.vs_ckpt else args.opponent
+    print(f"win rate{with_search(args)} vs {label}: {result.describe()} ({workers} processes)")
     for o in outs:
         if o["search"]:
             print(f"search: {o['search']}")
@@ -693,23 +707,36 @@ def cmd_eval(args) -> None:
     server = server_for(args, None)
     pairs = team_pairs(args, args.battles)
     search = SearchSetup(args) if args.search else None
+    vs_search = SearchSetup(args, args.vs_search_depth) if args.vs_ckpt and args.vs_search_depth else None
     if args.vs_ckpt:
         other = build_model(load_checkpoint(args.vs_ckpt))
         log.info("%s: %s", args.vs_ckpt, describe(other))
         result = head_to_head(model, other, infer, args.battles, args.concurrency,
-                              args.no_tera_before, pairs, search)
-        label = f"{args.vs_ckpt} (greedy)"
+                              args.no_tera_before, pairs, search, vs_search)
+        label = vs_label(args)
     else:
         result = eval_vs(model, infer, args.battles, args.concurrency, args.opponent,
                          args.no_tera_before, pairs, search)
         label = args.opponent
     server.stop()
     restricted = f" (no tera before turn {args.no_tera_before})" if args.no_tera_before else ""
-    with_search = " with search" if search else ""
-    print(f"win rate{with_search}{restricted} vs {label}: {result.describe()}")
-    if search:
-        print(f"search: {search.describe()}")
-        search.sims.close()
+    print(f"win rate{with_search(args)}{restricted} vs {label}: {result.describe()}")
+    for setup_ in (search, vs_search):
+        if setup_:
+            print(f"search: {setup_.describe()}")
+            setup_.sims.close()
+
+
+def with_search(args) -> str:
+    if not args.search:
+        return ""
+    return " with search" + (f" (depth {args.search_depth})" if args.search_depth > 1 else "")
+
+
+def vs_label(args) -> str:
+    if args.vs_search_depth:
+        return f"{args.vs_ckpt} (searching, depth {args.vs_search_depth})"
+    return f"{args.vs_ckpt} (greedy)"
 
 
 def _matchup_worker(spec: dict) -> dict:
@@ -1000,6 +1027,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--search-faint-reward", type=float, default=0.1,
                    help="the faint reward the model was trained with, added to each simulated "
                         "turn's value (0 for a model trained with --faint-anneal to the end)")
+    p.add_argument("--search-depth", type=int, default=1, choices=[1, 2],
+                   help="2: one more decision after the opponent's likeliest replies (search.py)")
+    p.add_argument("--vs-search-depth", type=int, default=0, choices=[0, 1, 2],
+                   help="--vs-ckpt searches too, this deep, with the other --search-* settings "
+                        "(0: it plays its model alone), e.g. depth 2 vs depth 1")
     p.add_argument("--no-tera-before", type=int, default=0,
                    help="--ckpt never terastallizes before this turn (poke-env battle.turn); "
                         "with --vs-ckpt the same checkpoint, measures early tera")
