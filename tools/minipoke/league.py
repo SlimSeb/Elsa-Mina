@@ -26,6 +26,10 @@ class Snapshot:
     file: str
     win_rate: float = 0.5   # learner's EMA win rate against it (0.5 before any game)
     games: int = 0          # training games played against it
+    # A fixed opponent (train.py --pool-extra): in the pool for the whole run, never evicted,
+    # outside the cap; negative iteration (-1, -2...), `source` its checkpoint
+    fixed: bool = False
+    source: str = ""
 
 
 class OpponentPool:
@@ -57,18 +61,34 @@ class OpponentPool:
                     **model_extras(model)}, self.dir / snap.file)
         self.snapshots = [s for s in self.snapshots if s.iteration != iteration] + [snap]
         self.snapshots.sort(key=lambda s: s.iteration)
-        while len(self.snapshots) > self.cap:
+        while len(self._evictable()) > self.cap:
             self._evict()
         return snap
 
+    def add_fixed(self, state: dict, cfg, source: str, extras: Optional[dict] = None) -> Snapshot:
+        """A fixed opponent's weights (`state`, the learner's architecture), for the whole run."""
+        self.dir.mkdir(parents=True, exist_ok=True)
+        k = sum(s.fixed for s in self.snapshots) + 1
+        snap = Snapshot(-k, f"fixed_{k:02d}.pt", fixed=True, source=source)
+        torch.save({"model": state, "cfg": cfg.to_dict(), "iteration": -k, "source": source,
+                    **(extras or {})}, self.dir / snap.file)
+        self.snapshots.append(snap)
+        self.snapshots.sort(key=lambda s: s.iteration)
+        return snap
+
+    def _evictable(self) -> List[Snapshot]:
+        return [s for s in self.snapshots if not s.fixed]
+
     def _evict(self) -> None:
-        its = [s.iteration for s in self.snapshots]
+        snaps = self._evictable()
+        its = [s.iteration for s in snaps]
         candidates = range(1, len(its) - self.keep_recent)
         if not candidates:
             victim = 0
         else:
             victim = min(candidates, key=lambda i: (its[i + 1] - its[i - 1], its[i]))
-        snap = self.snapshots.pop(victim)
+        snap = snaps[victim]
+        self.snapshots.remove(snap)
         (self.dir / snap.file).unlink(missing_ok=True)
 
     def weight(self, snap: Snapshot) -> float:
@@ -103,7 +123,8 @@ class OpponentPool:
                 s.games += games
 
     def recent(self, n: int) -> List[Snapshot]:
-        return list(reversed(self.snapshots[-n:]))
+        """The `n` newest snapshots of the run, newest first (fixed opponents are not)."""
+        return list(reversed(self._evictable()[-n:]))
 
     def load_weights(self, snap: Snapshot) -> dict:
         return torch.load(self.dir / snap.file, map_location="cpu", weights_only=False)["model"]

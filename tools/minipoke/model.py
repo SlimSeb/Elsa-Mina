@@ -57,6 +57,9 @@ aux_heads: training-only heads read the final tokens: the opponent's next action
 item, ability and moves (logits tied to the input embeddings) and tera type.
 forward() never runs them, so they are not part of the ONNX export.
 
+q_head: a training-only per-action Q head on the critic token (offline RL, train.py offline
+--algo q). forward() never runs it either.
+
 typed_ffn: each layer has one feed-forward block per token type ("cls" = actor
 and critic, "field", "mons", "moves", "events"...) instead of one shared by every token.
 """
@@ -118,6 +121,9 @@ class ModelConfig:
     aux_heads: bool = False
     # Encoder v2: per-move immunity / earlier failure features, into the move MLP
     move_effects: bool = False
+    # Training-only Q head (offline RL, train.py offline --algo q): one value per action, from
+    # the critic token; never exported
+    q_head: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
@@ -322,6 +328,8 @@ class MiniPokeTransformer(nn.Module):
                                                  nn.Linear(d, ACT_DIM))
             self.aux_set_proj = nn.Linear(d, cfg.item_dim + cfg.ability_dim + cfg.move_dim)
             self.aux_tera_head = nn.Linear(d, NT)
+        if cfg.q_head:
+            self.q_head = nn.Sequential(nn.Linear(d, d), nn.GELU(), nn.Linear(d, ACT_DIM))
 
         self.apply(self._init)
 
@@ -455,10 +463,11 @@ class MiniPokeTransformer(nn.Module):
         logits, value, _ = self.forward_train(obs)
         return logits, value
 
-    def forward_train(self, obs: Dict[str, torch.Tensor], aux: bool = False):
+    def forward_train(self, obs: Dict[str, torch.Tensor], aux: bool = False, q: bool = False):
         """Like forward(), plus the value logits [B, bins] (None for a scalar head).
         With `aux`, also a dict of the auxiliary heads' logits: "action" [B, 14],
-        "item" / "ability" / "moves" [B, 6, vocab] and "tera" [B, 6, types]."""
+        "item" / "ability" / "moves" [B, 6, vocab] and "tera" [B, 6, types].
+        With `q` (and not `aux`), also the Q head's values [B, 14] (cfg.q_head)."""
         mon_feats = obs["mon_feats"]
         x, key_present, move_vec = self.embed(obs)
         B, d = x.shape[0], self.cfg.d_model
@@ -512,6 +521,8 @@ class MiniPokeTransformer(nn.Module):
         else:
             value_logits = self.value_head(critic)
             value = torch.softmax(value_logits, dim=-1) @ self.value_support
+        if q:
+            return logits, value, value_logits, self.q_head(critic)
         if not aux:
             return logits, value, value_logits
         return logits, value, value_logits, self._aux_heads(x, critic, mon_feats)
@@ -538,6 +549,17 @@ def with_aux_heads(model: MiniPokeTransformer) -> MiniPokeTransformer:
     new = MiniPokeTransformer(replace(model.cfg, aux_heads=True))
     missing, unexpected = new.load_state_dict(model.state_dict(), strict=False)
     assert not unexpected and all(k.startswith("aux_") for k in missing), (missing, unexpected)
+    new.priors = model.priors
+    return new
+
+
+def with_q_head(model: MiniPokeTransformer) -> MiniPokeTransformer:
+    """The same model plus a fresh (training-only) Q head."""
+    if model.cfg.q_head:
+        return model
+    new = MiniPokeTransformer(replace(model.cfg, q_head=True))
+    missing, unexpected = new.load_state_dict(model.state_dict(), strict=False)
+    assert not unexpected and all(k.startswith("q_head") for k in missing), (missing, unexpected)
     new.priors = model.priors
     return new
 

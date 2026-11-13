@@ -38,6 +38,10 @@ class PPOConfig:
     # Auxiliary losses (model.cfg.aux_heads, labels from aux_labels.AuxLabeler)
     aux_action_coef: float = 0.0
     aux_set_coef: float = 0.0
+    # Weight of KL(policy || reference policy) over the legal actions, the reference being
+    # a frozen model (train.py --ref-ckpt): an anchor that keeps self-play near what the
+    # reference learned (AlphaStar's KL to its supervised policy)
+    ref_kl_coef: float = 0.0
 
 
 @dataclass
@@ -107,6 +111,14 @@ def value_loss(model, values: torch.Tensor, value_logits: Optional[torch.Tensor]
     target_dist = two_hot(targets, model.value_support)
     ce = -(target_dist * F.log_softmax(value_logits, dim=-1)).sum(-1).mean()
     return ce / math.log(value_logits.shape[-1]) if ce_norm else ce
+
+
+def policy_kl(logits: torch.Tensor, ref_logits: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    """Mean over the batch of KL(pi || ref) over each row's legal actions (the masked
+    logits are -1e9 elsewhere: both softmaxes are 0 there, and those terms are dropped)."""
+    logp = F.log_softmax(logits, dim=-1)
+    logq = F.log_softmax(ref_logits, dim=-1)
+    return (logp.exp() * (logp - logq)).masked_fill(~mask, 0.0).sum(-1).mean()
 
 
 def uniform_kl(logits: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
@@ -216,9 +228,11 @@ def explained_variance(values: np.ndarray, returns: np.ndarray) -> float:
 
 
 def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
-               ent_coef: Optional[float] = None) -> Dict[str, float]:
+               ent_coef: Optional[float] = None, ref_model=None) -> Dict[str, float]:
     """One PPO update. The optimizer's LR is set by the caller (schedules);
-    `ent_coef` overrides cfg.ent_coef when annealed."""
+    `ent_coef` overrides cfg.ent_coef when annealed. `ref_model` (frozen, on `device`, same
+    observations) is the reference policy of cfg.ref_kl_coef; its KL is reported whenever
+    it is given."""
     model.train()
     ent_coef = cfg.ent_coef if ent_coef is None else ent_coef
     obs, actions, old_logp, adv, ret, old_values = compute_gae(episodes, cfg.gamma, cfg.gae_lambda)
@@ -235,9 +249,10 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
     n = len(obs)
     batch = collate(obs)
     stats = {"pi_loss": 0.0, "v_loss": 0.0, "v_mse": 0.0, "entropy": 0.0, "kl": 0.0,
-             "clipfrac": 0.0, "uniform_kl": 0.0}
+             "clipfrac": 0.0, "uniform_kl": 0.0, "ref_kl": 0.0}
     n_updates = 0
     epochs_run = 0
+    kl_stopped = False
 
     for _ in range(cfg.epochs):
         perm = np.random.permutation(n)
@@ -267,6 +282,13 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
             ukl = uniform_kl(logits, mb["mask"]) if cfg.uniform_kl_coef else None
             if ukl is not None:
                 loss = loss + cfg.uniform_kl_coef * ukl
+            rkl = None
+            if ref_model is not None:
+                with torch.no_grad():
+                    ref_logits = ref_model(mb)[0]
+                rkl = policy_kl(logits, ref_logits, mb["mask"])
+                if cfg.ref_kl_coef:
+                    loss = loss + cfg.ref_kl_coef * rkl
             if "aux_action_loss" in aux:
                 loss = loss + cfg.aux_action_coef * aux["aux_action_loss"]
             if "aux_set_loss" in aux:
@@ -295,19 +317,24 @@ def ppo_update(model, optimizer, episodes, cfg: PPOConfig, device,
                 stats["kl"] += approx_kl
                 stats["clipfrac"] += ((ratio - 1).abs() > cfg.clip).float().mean().item()
                 stats["uniform_kl"] += ukl.item() if ukl is not None else 0.0
+                stats["ref_kl"] += rkl.item() if rkl is not None else 0.0
                 for k, v in aux.items():
                     aux_sums[k] = aux_sums.get(k, 0.0) + v.item()
                     aux_counts[k] = aux_counts.get(k, 0) + 1
             n_updates += 1
         epochs_run += 1
         if kl_early_stop(epoch_kls, cfg.target_kl, cfg.kl_stop):
+            kl_stopped = epochs_run < cfg.epochs   # stopping after the last epoch changes nothing
             break
 
     skipped = stats.pop("skipped", 0)
     out = {k: v / max(n_updates, 1) for k, v in stats.items()}
+    if ref_model is None:
+        out["ref_kl"] = float("nan")
     out["samples"] = n
     out["skipped"] = skipped
     out["epochs"] = epochs_run
+    out["kl_stopped"] = int(kl_stopped)
     for k in AUX_STATS:
         out[k] = aux_sums[k] / aux_counts[k] if k in aux_counts else float("nan")
     out["explained_var"] = explained_variance(old_values, ret)

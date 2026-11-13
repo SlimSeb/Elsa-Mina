@@ -109,9 +109,12 @@ head was configurable, or by the previous `train.py`) still load, resume and exp
 | Iteration budget | 300 (when none of `--iterations`, `--hours`, `--states` is given) | same |
 
 Every other PPO hyperparameter (`PPOConfig`: gamma 0.995, λ 0.95, clip 0.2,
-3 epochs, minibatch 1024, target KL 0.03) is shared. Options added since a run
+3 epochs, minibatch 1024, target KL 0.03) is shared: `--epochs`, `--target-kl` and
+`--minibatch` change them, `--recipe` sets a named group of options (see
+[minipoke v3](#minipoke-v3-bigger-ppo-steps-then-human-replays)). Options added since a run
 started keep their old behaviour when it is resumed (`--value-ce-norm none`,
-`--kl-stop last`, `--pool-sampling uniform`, `--faint-anneal 0`).
+`--kl-stop last`, `--pool-sampling uniform`, `--faint-anneal 0`, 3 epochs, target KL 0.03,
+no reference KL).
 
 **The value loss scale (`--value-ce-norm`).** The two-hot cross-entropy is divided by
 log(value_bins): a fresh head (uniform logits) scores exactly 1, the scale of the
@@ -520,6 +523,246 @@ take about 11 h. Checkpoints grow with the model: `ppo_*.pt` is 270 MB (53 MB fo
 (`--resume --states 15000000`, which raises the LR back up the cosine) did not help: the 15M
 `best.pt` won 48.1% against the 10M one (95% CI [45.3%, 50.9%]).
 
+## minipoke v3: bigger PPO steps, then human replays
+
+The best model on the gen9randombattle ladder, `MiniPokeV2_1_22M`, sits around 1300. v3 changes
+the training, not the model or its observation: (A) PPO takes bigger, less noisy steps; (B) the
+model learns from human ladder replays with offline RL, as Metamon did (Grigsby et al., RLC 2025,
+[arXiv:2504.04395](https://arxiv.org/abs/2504.04395): offline RL on human replays beat imitating
+them); (C) PPO then fine-tunes that model, anchored to it.
+
+### A. Bigger PPO steps
+
+PPO barely moves the policy. In `runs/v2-mr` (MiniPokeV2_1M, the medium recipe: clip 0.2, 3 epochs,
+minibatch 1024, target KL 0.03 with `--kl-stop mean`, LR 1e-4 cosine to 10%), the approx KL of an
+iteration has a median of 0.0027 (max 0.0059) and the clip fraction 2.8%; all 3 epochs run every
+iteration, so the KL stop never fires; explained variance is 0.30-0.52 (median 0.44); the greedy win
+rate against the heuristic went from 61% to 66% in the first million states and stayed there to
+2.5M. `runs/b3` (V1 recipe, a constant 2e-4) reached a median KL of 0.0115 and stopped early 16 times.
+
+| Option | Default | |
+|---|---|---|
+| `--lr`, `--lr-min-ratio`, `--warmup-iters` | per size | peak LR, floor (final / peak of the cosine), warmup |
+| `--epochs` | 3 | PPO epochs over each iteration's states, fewer when the KL stops them |
+| `--target-kl` | 0.03 | approx KL that stops the epochs (`--kl-stop mean`: the epoch's mean) |
+| `--battles-per-iter`, `--minibatch` | per size, 1024 | |
+| `--ref-ckpt`, `--ref-kl-coef C` | none, 0 | adds C × KL(policy ‖ reference) over the legal actions; the reference is frozen, on the training device, and must read the same observation |
+| `--pool-extra CKPT...` | none | checkpoints in the opponent pool for the whole run (never evicted, outside `--pool-cap`, `fixedN` in the Elo table); the learner's architecture |
+| `--recipe` | none | `v2-mr` or `v3`, below |
+
+metrics.csv adds `ref_kl` (whenever `--ref-ckpt` is given, whatever its weight) and `kl_stopped`
+(1 when the KL ended the epochs early); `epochs` is the number run. The reference KL is AlphaStar's
+anchor to its supervised policy: part C trains self-play without drifting away from what the human
+data taught.
+
+**Recipes.** `--recipe NAME` fills the options not given on the command line before the size's
+defaults do; no default changes, and a run without it trains as before. It is saved with the run, and
+so is every option it set, so `--resume` keeps them (on a resumed run it only fills options the run
+never had).
+- `v2-mr`: MiniPokeV2_1M's run exactly (`checkpoints/v2-mr/ppo_latest.pt`'s saved options): LR 1e-4,
+  10 warmup iterations, floor 0.1, 3 epochs, target KL 0.03 (mean), entropy 0.01 → 0.003, 70% mirror /
+  20% pool (pfsp) / 10% heuristic, 192 battles per iteration, minibatch 1024, `--vf-coef 0.5`, a
+  constant faint reward. It started from `checkpoints/b3/distill.pt`.
+- `v3`: `v2-mr` with LR 2e-4, floor 0.3 and 4 epochs. **Provisional**: set `RECIPES["v3"]` in
+  train.py to the winners of [the ablation](#4-ppo-step-size-on-small-minipoke-v3), which has not run
+  yet. A run logs the recipe it uses, and says when it is provisional.
+
+### B. Human replays
+
+#### Re-simulation
+
+A public replay's input log (see [Collecting human replays](#collecting-human-replays)) holds the
+server version (a git commit), the battle and team seeds, both players and every choice Showdown
+committed (a refused choice never reaches it). Run through that version's simulator, it rebuilds what
+each player's client received.
+
+- `showdown_versions.py` keeps one checkout per version under `showdown-versions/` (ignored by git):
+  a blobless bare clone of smogon/pokemon-showdown, a worktree per commit, `node build`, and one
+  `node_modules` per distinct `package-lock.json` (`npm ci --omit=dev`), shared through a symlink. A
+  version builds in ~40 s the first time (the clone and `npm ci`), ~4 s after; failures are recorded in
+  `failed.json` and not retried unless asked.
+- `resim.js` (Node, one process per version) writes the input log line by line into that version's own
+  `BattleStream` (`_writeLine`, then `sendUpdates`, as the server writes every line on its own), splits
+  each update per player with the version's own `extractChannelMessages`, and adds the `rqid` the
+  server adds to requests (`room-battle.ts`: one counter per battle, both sides, first request 2). It
+  records which input log choice answered each request. `>chat` lines are skipped.
+- `resim.py` drives the workers and judges each re-simulation: every choice accepted, the battle ended,
+  and its omniscient view (exact HP of both sides: that is what a public log is) equal to the replay's
+  log, line for line, once both are reduced to the simulator's lines (`battle_lines`). The room's own
+  lines are left out: joins and leaves, chat and chat command answers (`|error|`, plain text), `|t:|`,
+  the timer, `|badge|`, `|raw|`, `||...` messages, forfeit and inactivity messages, a player's `|player|`
+  line when leaving or rejoining, the `/offertie` hint.
+
+```bash
+python resim.py check replays/human/gen9randombattle replays/human/gen9randombattle-first-step-zipped
+python resim.py parity replays/replays          # the bot's own games against their .logs
+```
+
+Nov 2026, the Mac's 9,368 human replays (10 ids in both folders, counted once): **all 9,358 replay
+exactly**, on 6 server versions (0% dropped on each: 035c1a1f3c2e 3,210, 567c1cedddea 3,068,
+2e0a951377bb 1,599, d106d9675a90 698, cbdc8519ef95 538, 5b01be81011e 245), in 90 s with 6 workers.
+
+**Parity.** A model only plays well on the exact state it was trained on, so the bot's own ladder
+games (`-savereplays`: the replay with its input log, and the `.log` of every line ElsaMina received
+live) check the whole chain: the bot's side of the re-simulation must be the `.log`'s battle lines
+exactly (requests and their rqid included), then poke-env fed either one must make the same decisions
+with the same encodings, and the re-simulation's choices must map to the same actions as
+`analyze_replays.py`'s alignment of the `.log`. Of the 561 games in `replays/replays` (all on
+3da4dd39a2): **558 identical**, 12,271 decision points, 257,691 encoder arrays (V1 and V2.1), 12,189
+choices mapped to the same action. The other 3 are the games where Showdown refused the bot's switch
+while trapped: their `.log` has the `|error|` and a second request, which the input log cannot hold.
+`tests/test_resim.py` runs the same check on three of them (`tests/fixtures/resim`: names anonymized,
+chat removed), with their stored re-simulation always and with Node when that version is built.
+
+Two things a re-simulated side needs that the room sends: poke-env counts a battle at `|init|battle`
+(and waits for that count at `|win|`), so `resim.side_decisions` prepends it; and it reads the format
+from the room name, so the tag is `battle-<replay id>`.
+
+#### The dataset
+
+```bash
+python human_data.py replays/human/gen9randombattle replays/human/gen9randombattle-first-step-zipped \
+    --encoder-from ../../src/ElsaMina.Battles/Models/MiniPokeV2_1_22M --out data/human-v21
+```
+
+Each kept battle's sides whose player is rated `--min-player-rating` (1500) or more, by its own rating,
+are fed to poke-env 0.16.1 (`analyze_replays.ReplayPlayer`), encoded with the student's encoder
+(`--encoder-from`: a checkpoint, or a released model's folder: its flags and set priors; every V2 model
+shares the same priors, f05fb3c538a6), and each choice is mapped to the 14 actions
+(`analyze_replays.choice_to_action`). Battles forfeited or timed out before turn 3 are dropped. Rewards
+are training's (`--faint-reward` 0.1 per faint difference after each decision, ±1 at the end),
+returns discounted by `--gamma` 0.995. A decision without a usable label (an unanswered last request,
+a choice outside poke-env's mask) keeps its step, with action -1, so trajectories stay whole.
+
+Shards keep, besides the observation and the one-hot action, the fields offline RL needs to put rows
+back in trajectory order (`dataset.py` extra fields): `traj` (battle × 2 + side), `step`, `reward`,
+`done`, `rating`, `turn`, `label_ok`, `result`. Battles are split whole by upload time: the newest
+`--test-frac` 10% test, the `--val-frac` 5% before them validation (early stopping), the rest trains.
+Each chunk of 100 battles is a task (`--processes`, default 3: each ~0.6 GB plus a ~0.2 GB Node
+process; a worker is replaced after 25 chunks), and a stopped build resumes when run again
+(`<out>/chunks/`).
+
+Nov 2026, the Mac's replays: 9,259 battles kept (97 forfeited before turn 3), 18,412 sides (106 under
+1500), **554,196 decisions**, 548,042 labelled (the rest: 6,154 last requests nobody answered; no
+choice unmapped or illegal). Train 469,716 (Oct 30 – Nov 9), validation 28,060 (Nov 9-10), test
+56,420 (Nov 10-12). 93 MB, built in ~6 min with 3 processes.
+
+#### Offline RL
+
+```bash
+python train.py offline --data data/human-v21 --size wide-medium --algo bc   --ckpt-dir checkpoints/v3/bc-4m
+python train.py offline --data data/human-v21 --size wide-medium --algo awbc --ckpt-dir checkpoints/v3/awbc-4m
+python train.py offline-eval --ckpt checkpoints/v3/bc-4m/offline.pt ../../src/ElsaMina.Battles/Models/MiniPokeV2_1_22M \
+    --data data/human-v21
+```
+
+Every algorithm trains the value head on the dataset's returns (the humans' value, `--vf-coef` 0.5);
+`offline.py` has the details.
+- `bc`: -log π(a|s) of the human's action.
+- `awbc` (AWR / CRR): -w(A) log π(a|s). A is GAE (γ 0.995, λ `--gae-lambda` 0.95) along each human
+  trajectory with the value head as the critic, recomputed by an ordered pass over the training set at
+  the start of each epoch; `--weight exp`: min(exp(A / std(A) / `--beta`), `--max-weight` 20),
+  `--weight binary`: 1[A > 0]. The first `--warmup-epochs` (1) are plain BC while the critic learns.
+- `q`: the same weights with A = Q(s,a) - Σ π(a'|s) Q(s,a'), from a per-action Q head used only in
+  training (`ModelConfig.q_head`, like the auxiliary heads: never exported), trained by TD toward
+  r + γ V(s'), V from the ordered pass.
+
+Steps without a label train the value head, never the actor. The labels are one-hot, so a big model
+memorizes them: every epoch is scored on the validation battles, the best one (validation NLL) is
+`offline.pt` (`offline_last.pt` is the last), and training stops after `--patience` (2) epochs without
+a better one. `--init` starts from a checkpoint instead of a new `--size` model, which reads the
+dataset's observation and priors. At the end, the best epoch is measured on the test battles
+(`offline_metrics.json`).
+
+`offline-eval` measures checkpoints, or released models' folders (their ONNX), on a split: top-1
+agreement and NLL against players rated `--min-rating` (1700) or more and against all, the value's
+AUC at telling won from lost battles' decisions, its MSE to the return, and its calibration (by value
+bin: mean value, mean return, win rate).
+
+**First results (Nov 2026, the Mac's 9.4k battles, `small` from scratch, 8 epochs, seed 1).** One
+epoch is 80 s on the M3 (918 steps of 512), an AWBC epoch adds its ordered pass (~25 s); both runs
+were still improving their validation NLL at epoch 8. On the test battles (33,251 choices of 1700+
+players, 55,743 of all):
+
+| | top-1 (1700+) | NLL (1700+) | top-1 (all) | value AUC |
+|---|---|---|---|---|
+| MiniPokeV2_1_1M (released, self-play) | 36.6% | 4.75 | 36.6% | 0.668 |
+| MiniPokeV2_1_22M (released, self-play) | 39.7% | 5.39 | 39.8% | 0.692 |
+| BC, small | 46.0% | 1.42 | 46.5% | 0.620 |
+| AWBC (exp, β 1), small | **46.6%** | **1.41** | 47.0% | 0.615 |
+
+Paired evals, 4,000 games on 2,000 team pairs each (team seed 0, 95% intervals):
+
+| | vs heuristic | vs MiniPokeV2_1_1M | vs BC |
+|---|---|---|---|
+| MiniPokeV2_1_1M | 67.3% (65.9-68.7) | | |
+| BC, small | 59.5% (58.1-60.9) | 47.5% (46.1-49.0) | |
+| AWBC, small | 64.0% (62.6-65.5) | **53.6% (52.1-55.1)** | **55.1% (53.7-56.5)** |
+
+The self-play models put almost no probability on many human choices (NLL 4.7-5.4): they play
+another game than the humans. Human BC predicts the humans far better but plays worse than the
+self-play model it is the size of; advantage weighting, on the same data, beats BC everywhere and
+the released 1M model head to head, although the heuristic still prefers the self-play model. The
+value head learns slowly from human results (AUC 0.62 against the self-play models' 0.67-0.69: every
+battle's ~60 states share one result, so 9k battles are 9k results), and it is the critic AWBC
+weighs with: more battles (the server's 50k), or a value head started from a self-play model
+(`--init`), should help it most. The Q head (`--algo q`) is there for when weighting by the value's
+advantages stops helping.
+
+### C. Putting it together
+
+The offline model starts PPO with part A's recipe, anchored to itself by the reference KL, with the
+frozen human-BC model in the pool. Each stage on the 4M size (`wide-medium`) first, then `large` on the
+GPU box. On the Mac (16 GB), keep one training job at a time.
+
+```bash
+caffeinate -is bash -c '
+set -e
+SD="node pokemon-showdown start --no-security"
+CWD=~/Documents/minipoke/pokemon-showdown
+M=../../src/ElsaMina.Battles/Models
+# 1. Offline RL, 4M (not timed yet: small takes 80 s an epoch, expect several times that); the small
+#    runs still improved at epoch 8, so up to 15, early stopping on the validation NLL
+python train.py offline --data data/human-v21 --size wide-medium --algo bc   --epochs 15 --seed 1 --ckpt-dir checkpoints/v3/bc-4m
+python train.py offline --data data/human-v21 --size wide-medium --algo awbc --epochs 15 --seed 1 --ckpt-dir checkpoints/v3/awbc-4m
+python train.py offline-eval --ckpt checkpoints/v3/bc-4m/offline.pt checkpoints/v3/awbc-4m/offline.pt \
+    $M/MiniPokeV2_1_1M $M/MiniPokeV2_1_22M --data data/human-v21 --out runs/v3/offline-4m.json
+for c in bc-4m awbc-4m; do
+  python train.py eval --ckpt checkpoints/v3/$c/offline.pt --battles 4000 --processes 4 --showdown-cmd "$SD" --showdown-cwd "$CWD"
+  python train.py eval --ckpt checkpoints/v3/$c/offline.pt --vs-ckpt $M/MiniPokeV2_1_22M --battles 4000 --processes 4 \
+      --showdown-cmd "$SD" --showdown-cwd "$CWD"
+done
+# 2. PPO from the better offline model (here awbc), anchored to it, the BC model in the pool
+python train.py ppo --init checkpoints/v3/awbc-4m/offline.pt --recipe v3 \
+    --ref-ckpt checkpoints/v3/awbc-4m/offline.pt --ref-kl-coef 0.05 --pool-extra checkpoints/v3/bc-4m/offline.pt \
+    --states 5000000 --seed 1 --ckpt-dir checkpoints/v3/ppo-4m --run v3-ppo-4m --export-dir export/v3-ppo-4m \
+    --showdown-cmd "$SD" --showdown-cwd "$CWD"
+# 3. Paired evals (and against MiniPokeV2_1_4M: its checkpoint, checkpoints/v2-1-4m/best.pt, is on the GPU box)
+python train.py eval --ckpt checkpoints/v3/ppo-4m/best.pt --vs-ckpt $M/MiniPokeV2_1_22M --battles 4000 --processes 4 \
+    --showdown-cmd "$SD" --showdown-cwd "$CWD"
+python train.py eval --ckpt checkpoints/v3/ppo-4m/best.pt --vs-ckpt checkpoints/v3/awbc-4m/offline.pt --battles 4000 \
+    --processes 4 --showdown-cmd "$SD" --showdown-cwd "$CWD"
+python train.py eval --ckpt checkpoints/v3/ppo-4m/best.pt --battles 4000 --processes 4 --showdown-cmd "$SD" --showdown-cwd "$CWD"
+python train.py eval --ckpt checkpoints/v3/ppo-4m/best.pt --vs-ckpt $M/MiniPokeV2_1_22M --search --battles 2000 \
+    --processes 4 --showdown-cmd "$SD" --showdown-cwd "$CWD"
+'
+```
+
+`ref_kl` in metrics.csv says how far the policy moved from the offline model: if it stays near 0
+while the win rates stall, lower `--ref-kl-coef`; if the eval against the offline model falls, raise
+it. The faint reward stays training's constant 0.1 throughout (the dataset's returns, and `v2-mr` /
+`v3`'s `--faint-anneal 0`), so the value keeps the semantics search assumes
+(`MiniPokeSearchOptions.FaintReward` = 0.1): no per-model search setting is needed. A recipe that
+anneals it to 0 would need one.
+
+On the GPU box, the same commands with `--size large` (offline: watch the validation NLL, the 22M
+memorizes one-hot labels; `--dropout 0.1` for a new model is an option) and its own copy of the dataset
+(`data/` is not in git: copy it, or build it there from the server's 50k replays with `human_data.py`,
+`--processes` to fit its RAM). Release a v3 model like any other ([Releasing a new model
+N_SIZE](#releasing-a-new-model-n_size)): its observation is V2.1's, so `MiniPokeV2Encoder` runs it and
+the C# side only needs the enum value, the `RegisterMiniPoke` line, fixtures and the parity test's
+`MODELS`. Its name is still to decide: by the naming rule, the observation (V2.1) is the version.
+
 ## Elo league table
 
 `elo.py` rates the learner, every pool snapshot and the scripted players. The scripted
@@ -558,6 +801,11 @@ rules that make it a random battle (no team preview, HP in percent, Sleep Clause
 Custom Game, which reports exact HP to both sides). `--team-seed` picks the teams, the same
 ones for every match of a round-robin; `--unpaired` goes back to independent random battles.
 A tie (Showdown's turn 1000 auto-tie, when two greedy models loop) counts as half a win.
+
+`--ckpt`, `--vs-ckpt` and `elo --ckpts` also take a released model's folder
+(`../../src/ElsaMina.Battles/Models/MiniPokeV2_1_22M`): its `minipoke.onnx` plays through
+onnxruntime with its own encoder (`offline.OnnxPolicy`), for the models whose checkpoint is on
+another machine.
 
 `--processes P` splits the team pairs (`eval`) or the matches (`elo`) over P processes on the
 same server: each process is a core's worth of poke-env and inference, which bound how fast
@@ -738,6 +986,45 @@ python train.py ppo --init checkpoints/b0/distill.pt --ckpt-dir checkpoints/d5-u
 The coefficients are starting points (aux 0.1 each; uniform KL 0.01, the entropy
 coefficient's scale): sweep them only for ideas that look promising.
 
+### 4. PPO step size, on small (minipoke v3)
+
+Each change alone against MiniPokeV2_1M's run (`--recipe v2-mr`), from its starting point, at matched
+states. About 1.5 h a run on the M3 (v2-mr: 471 st/s), so one night for the queue. The control is run
+again: two runs of the same recipe show how far apart noise alone puts them.
+
+```bash
+caffeinate -is bash -c '
+set -e
+SD="node pokemon-showdown start --no-security"
+CWD=~/Documents/minipoke/pokemon-showdown
+run() {
+  name=$1; shift
+  python train.py ppo --init checkpoints/b3/distill.pt --recipe v2-mr --states 2500000 --seed 1 \
+      --concurrency 32 --showdown-cmd "$SD" --showdown-cwd "$CWD" \
+      --ckpt-dir checkpoints/v3a/$name --run v3a-$name --export-dir export/v3a-$name "$@"
+}
+run ctl                              # v2-mr again: the noise floor
+run lr2e-4      --lr 2e-4
+run lr3e-4      --lr 3e-4
+run floor0.3    --lr-min-ratio 0.3
+run epochs4     --epochs 4
+run epochs6     --epochs 6
+run bpi384      --battles-per-iter 384
+for name in ctl lr2e-4 lr3e-4 floor0.3 epochs4 epochs6 bpi384; do
+  python train.py eval --ckpt checkpoints/v3a/$name/best.pt --vs-ckpt checkpoints/v2-mr/best.pt \
+      --battles 4000 --processes 4 --showdown-cmd "$SD" --showdown-cwd $CWD
+done
+python plot_metrics.py runs/v2-mr runs/v3a-* --out runs/v3a.png
+'
+```
+
+Read, for each run: the approx KL and clip fraction (bigger steps: higher), `kl_stopped` and `epochs`
+(the target KL should limit the 4-6 epoch runs), explained variance (it must not fall), the eval curves,
+and the paired eval of its `best.pt` against v2-mr's (4,000 games: ±1.5 points; the control's own gap
+says what a gap is worth). Then set `RECIPES["v3"]` to the changes that won, together, and check the
+combination once more the same way. With 384 battles per iteration, an iteration is twice the states:
+`--eval-every`, `--snapshot-every` and `--warmup-iters` count iterations.
+
 ### Suggested experiment order
 
 1. **Re-evaluate what exists**, 1000 battles each, and head to head:
@@ -786,12 +1073,19 @@ coefficient's scale): sweep them only for ideas that look promising.
   poke-env battles (priors, history, events, matchups, action mapping), the model (masks,
   move tokens, typed FFN, MPS), GAE and two-hot targets, the PPO loop end to end with
   faked rollouts (budgets, confirmed best, pool, Elo, aux), distillation across
-  encoders, resume, the pool, the dataset and clean stops.
+  encoders, resume, the pool, the dataset and clean stops; for v3, the PPO step options, recipes,
+  reference KL and fixed pool opponents (`test_ppo_v3.py`), re-simulation and parity on the committed
+  fixtures (`test_resim.py`), and the human dataset and offline RL (`test_offline.py`).
 - `make_fixtures.py` records battles for ElsaMina's parity tests (V1, or v2 from a v2 spec).
 - `analyze_replays.py` analyzes the ladder battles ElsaMina saved with `-savereplays` (see
   [Ladder replays](#ladder-replays)).
 - `collect_replays.py` downloads public human replays with their input logs (see
   [Collecting human replays](#collecting-human-replays)).
+- `showdown_versions.py` keeps a built Showdown checkout per server version; `resim.js` re-simulates
+  input logs on one, `resim.py` judges the re-simulations (`check`) and checks them against the bot's
+  own `.log`s (`parity`); `human_data.py` turns human replays into the offline RL dataset; `offline.py`
+  has offline RL (BC, advantage-weighted BC, the Q head), the offline metrics and `OnnxPolicy` (a
+  released model as a policy) (see [minipoke v3](#minipoke-v3-bigger-ppo-steps-then-human-replays)).
 - `paired.py` plays evaluations on paired teams (see [Measuring](#measuring)); `search.py`
   and `search_sim.js` search one turn ahead on Showdown's simulator (see
   [Search at decision time](#search-at-decision-time)).
@@ -959,7 +1253,8 @@ It checks for new uploads every 15 minutes and otherwise pages back through olde
 `--oldest-days`, 365). It sends one request at a time, about 2 s apart (`--delay`), with its own
 User-Agent (Cloudflare refuses Python's default one). It waits on 429 and 5xx (Retry-After, or
 1 minute doubling), slows down after a 429, and stops after 4 refusals (403) in a row: wait a few
-hours, then run it again with a longer `--delay`. At 2 s it saves about 1,500 replays an hour while
+hours, then run it again with a longer `--delay`. Training on them: `resim.py` and `human_data.py`
+([minipoke v3](#b-human-replays)). At 2 s it saves about 1,500 replays an hour while
 paging back (Nov 2026: 75-280 public gen9randombattle replays are uploaded per hour, about a
 quarter of them rated 1500+). The listed rating is the replay's, close to the players' average:
 filter on each player's own rating (its `>player` line) when building a dataset. Each server
