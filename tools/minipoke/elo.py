@@ -38,7 +38,8 @@ def expected(ra: float, rb: float) -> float:
 
 
 def snapshot_name(iteration: int) -> str:
-    return f"it{iteration:05d}"
+    """A pool snapshot's name; fixed opponents (--pool-extra) have negative iterations."""
+    return f"fixed{-iteration}" if iteration < 0 else f"it{iteration:05d}"
 
 
 def parse_anchors(text: Optional[str]) -> Dict[str, float]:

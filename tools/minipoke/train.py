@@ -38,8 +38,8 @@ os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")  # must precede torch 
 import torch
 
 import runtime
-from checkpoint import (load_checkpoint, rng_state, save_checkpoint, seed_everything,
-                        set_rng_state)
+from checkpoint import (load_checkpoint, model_extras, rng_state, save_checkpoint,
+                        seed_everything, set_rng_state)
 from dataset import ShardDataset, ShardWriter
 from elo import LEARNER, EloTable, fit_ratings, parse_anchors, round_robin_pairs, snapshot_name
 from encoder_v2 import model_encoder
@@ -95,13 +95,35 @@ COMMON_DEFAULTS = dict(
     max_infer_batch=64, faint_anneal_states=None, pfsp_floor=0.1, pool_ema=0.05,
     elo_anchors=None, elo_k=16.0, reward="shaped", uniform_kl_coef=0.0,
     aux_action_coef=0.0, aux_set_coef=0.0,
+    # PPOConfig's values, fixed until v3 made them options: older runs resume with them
+    epochs=3, target_kl=0.03, ref_kl_coef=0.0, ref_ckpt=None, pool_extra=None, recipe=None,
 )
+
+# Recipes: a named set of options, applied to those not given on the command line, before the
+# size's defaults. They change no default: a run without --recipe trains as before.
+# "v2-mr" is MiniPokeV2_1M's run (checkpoints/v2-mr, saved options), the ablation's control.
+RECIPES: Dict[str, Dict[str, object]] = {
+    "v2-mr": dict(
+        battles_per_iter=192, minibatch=1024, lr=1e-4, warmup_iters=10, lr_min_ratio=0.1,
+        epochs=3, target_kl=0.03, kl_stop="mean", ent_start=0.01, ent_end=0.003,
+        mirror_share=0.7, pool_share=0.2, heuristic_share=0.1, pool_sampling="pfsp",
+        vf_coef=0.5, value_ce_norm="log-bins", faint_anneal=0.0,
+    ),
+}
+# v3: bigger, less noisy PPO steps (README: Ablation, 4. PPO step size). PROVISIONAL: these are
+# the changes expected to win, set them to the ablation's winners once it has run.
+RECIPES["v3"] = {**RECIPES["v2-mr"], "lr": 2e-4, "lr_min_ratio": 0.3, "epochs": 4}
+PROVISIONAL_RECIPES = {"v3"}
 
 
 def resolve(args: argparse.Namespace, size: str, keys) -> None:
-    """Fill options left at None from the size's defaults."""
+    """Fill options left at None from the recipe (`--recipe`), then the size's defaults."""
+    recipe = RECIPES.get(getattr(args, "recipe", None) or "", {})
     for k in keys:
         if getattr(args, k, None) is None:
+            if k in recipe:
+                setattr(args, k, recipe[k])
+                continue
             if k == "vf_coef" and getattr(args, "value_ce_norm", None) == "none":
                 setattr(args, k, RAW_CE_VF_COEF.get(size, DEFAULTS[size][k]))
                 continue
@@ -117,6 +139,17 @@ def setup(args, run_dir: Optional[Path] = None) -> torch.device:
 
 def sample_batch(n: int, model) -> Dict[str, torch.Tensor]:
     return dict(zip(model_inputs(model), random_inputs(n, model=model)))
+
+
+def load_policy(path):
+    """A checkpoint, or a released model's folder (src/ElsaMina.Battles/Models/<name>: its
+    minipoke.onnx and encoder), as a policy that plays and evaluates like a model."""
+    from offline import OnnxPolicy, is_onnx_folder
+    return OnnxPolicy(path) if is_onnx_folder(path) else build_model(load_checkpoint(path))
+
+
+def describe_policy(model) -> str:
+    return model.describe() if hasattr(model, "session") else describe(model)
 
 
 def choose_infer_device(args, model, train_device) -> torch.device:
@@ -328,12 +361,91 @@ def cmd_distill(args) -> None:
 
 
 # --------------------------------------------------------------------------
+# Offline RL on human replays (offline.py, data from human_data.py)
+# --------------------------------------------------------------------------
+def offline_model(args, data) -> MiniPokeTransformer:
+    """--init's model, or a new --size model reading the dataset's observation (its encoder
+    flags and set priors), checked against the dataset's layout."""
+    from model import with_q_head
+    flags = {k: v for k, v in (data.meta.get("model_flags") or {}).items()}
+    if args.init:
+        model = build_model(load_checkpoint(args.init))
+    else:
+        cfg = preset(args.size, dropout=args.dropout, value_bins=args.value_bins,
+                     move_tokens=args.move_tokens or None, typed_ffn=args.typed_ffn or None, **flags)
+        model = MiniPokeTransformer(cfg)
+        if data.meta.get("set_priors"):
+            model.priors = SetPriors.from_dict(data.meta["set_priors"])
+    if model_encoder(model).layout != data.obs_layout:
+        raise SystemExit(f"{args.data} holds observations of another encoder than the model's "
+                         f"(dataset flags {flags}): rebuild it with human_data.py --encoder-from")
+    theirs = data.meta.get("set_priors")
+    if theirs and model.priors is not None and SetPriors.from_dict(theirs).sha256 != model.priors.sha256:
+        log.warning("[offline] the dataset was encoded with other set priors than the model's")
+    if args.algo == "q":
+        model = with_q_head(model)
+    return model
+
+
+def cmd_offline(args) -> None:
+    from offline import HumanData, OfflineConfig, describe_metrics, offline_metrics, offline_train
+    out = Path(args.ckpt_dir or f"checkpoints/human-{args.algo}")
+    device = setup(args, Path("runs") / (args.run or out.name))
+    seed_everything(args.seed or 0)
+    data = HumanData(args.data)
+    model = offline_model(args, data).to(device)
+    log.info("[offline] model: %s on %s; data %s: %s", describe(model), device, args.data,
+             {k: len(v) for k, v in data.splits.items()})
+    runtime.mps_self_check(model, device, sample_batch(8, model))
+    cfg = OfflineConfig(algo=args.algo, weight=args.weight, beta=args.beta, max_weight=args.max_weight,
+                        warmup_epochs=args.warmup_epochs, gamma=data.meta.get("gamma", 0.995),
+                        lam=args.gae_lambda, vf_coef=args.vf_coef, q_coef=args.q_coef,
+                        value_ce_norm=args.value_ce_norm == "log-bins", epochs=args.epochs,
+                        minibatch=args.minibatch, lr=args.lr, lr_min_ratio=args.lr_min_ratio,
+                        warmup_steps=args.warmup_steps, patience=args.patience,
+                        min_rating=args.min_rating, train_min_rating=args.train_min_rating)
+
+    def save(path, m, **extra):
+        save_checkpoint(path, m, None, **extra)
+
+    result = offline_train(model, data, cfg, device, out, save, seed=args.seed or 0, log=log.info)
+    best = build_model(load_checkpoint(out / "offline.pt")).to(device)
+    metrics = offline_metrics(best, data["test"], device, args.min_rating)
+    log.info("[offline] test battles, best epoch (%d):\n%s", result["best_epoch"], describe_metrics(metrics))
+    (out / "offline_metrics.json").write_text(json.dumps({**result, "test": metrics, "args": {
+        k: v for k, v in vars(args).items() if k != "fn"}}, indent=1, default=str))
+    log.info("[offline] wrote %s", out / "offline_metrics.json")
+
+
+def cmd_offline_eval(args) -> None:
+    from offline import HumanData, describe_metrics, offline_metrics
+    from encoder_v2 import model_encoder as encoder_of
+    device = setup(args)
+    data = HumanData(args.data)
+    results = {}
+    from offline import OnnxPolicy, is_onnx_folder
+    for path in args.ckpt:
+        model = OnnxPolicy(path, threads=4) if is_onnx_folder(path) else load_policy(path)
+        on = torch.device("cpu") if hasattr(model, "session") else device
+        model = model.to(on)
+        if encoder_of(model).layout != data.obs_layout:
+            print(f"{path}: reads another observation than {args.data}: skipped")
+            continue
+        metrics = offline_metrics(model, data[args.split], on, args.min_rating)
+        results[str(path)] = metrics
+        print(f"{path} ({describe_policy(model)}), {args.split} battles:\n{describe_metrics(metrics)}")
+    if args.out:
+        Path(args.out).write_text(json.dumps(results, indent=1))
+        print(f"wrote {args.out}")
+
+
+# --------------------------------------------------------------------------
 # PPO
 # --------------------------------------------------------------------------
 PPO_KEYS = list(DEFAULTS["small"]) + list(COMMON_DEFAULTS)
 METRICS = ["iteration", "time", "hours", "states", "total_states", "battles", "play_s", "learn_s",
            "states_per_s", "lr", "ent_coef", "pi_loss", "v_loss", "v_mse", "entropy", "kl",
-           "clipfrac", "explained_var", "uniform_kl", "aux_labelled", "aux_action_loss",
+           "clipfrac", "explained_var", "uniform_kl", "ref_kl", "kl_stopped", "aux_labelled", "aux_action_loss",
            "aux_action_acc", "aux_set_loss", "aux_item_acc", "aux_ability_acc", "aux_tera_acc",
            "aux_moves_recall", "train_wr_pool", "train_wr_heuristic",
            "eval_wr_heuristic", "eval_n_heuristic", "eval_wr_pool", "eval_n_pool", "confirm_wr",
@@ -346,6 +458,52 @@ RUN_KEYS = ["run", "size", "ckpt_dir", "export_dir"]
 
 def CKPT_DIR(args) -> Path:
     return Path(args.ckpt_dir or "checkpoints")
+
+
+# Training-only parameters (never in forward(), never exported): a model with or without them
+# plays the same, so a fixed pool opponent or a reference may lack the learner's
+TRAIN_ONLY_PREFIXES = ("aux_", "q_head")
+
+
+def reference_model(path, model: MiniPokeTransformer, device) -> MiniPokeTransformer:
+    """--ref-ckpt: the frozen reference policy of --ref-kl-coef, on the training device. It
+    reads the learner's observations, so it must have the same encoder layout."""
+    ref = build_model(load_checkpoint(path))
+    if model_encoder(ref).layout != model_encoder(model).layout:
+        raise SystemExit(f"--ref-ckpt {path} reads other observations than the model being trained "
+                         f"(encoder flags differ): the reference must use the same encoder")
+    ours, theirs = getattr(model, "priors", None), getattr(ref, "priors", None)
+    if ours is not None and theirs is not None and ours.sha256 != theirs.sha256:
+        log.warning("[ppo] --ref-ckpt %s was trained with other set priors than the model: it "
+                    "judges the model's observations, built with the model's priors", path)
+    log.info("[ppo] reference policy %s: %s", path, describe(ref))
+    return frozen_copy(ref, device)
+
+
+def add_fixed_opponents(pool: OpponentPool, paths, model: MiniPokeTransformer):
+    """--pool-extra: checkpoints joining the pool for the whole run (never evicted), e.g. the
+    frozen human-BC model. Pool slots are copies of the learner, so they need its architecture;
+    training-only heads aside. Already in the pool (a resumed run): skipped."""
+    own = {k: v.detach().cpu() for k, v in model.state_dict().items()}
+    added = []
+    for path in paths:
+        if any(s.source == str(path) for s in pool.snapshots):
+            continue
+        state = load_checkpoint(path)
+        weights = state["model"]
+        missing = [k for k in own if k not in weights and not k.startswith(TRAIN_ONLY_PREFIXES)]
+        wrong = [k for k in own if k in weights and weights[k].shape != own[k].shape]
+        if missing or wrong:
+            raise SystemExit(f"--pool-extra {path} is not the learner's architecture "
+                             f"(missing {missing[:3]}, other shapes {wrong[:3]})")
+        priors = state.get("set_priors")
+        if priors is not None and getattr(model, "priors", None) is not None \
+                and priors.get("sha256") not in (None, model.priors.sha256):
+            log.warning("[ppo] --pool-extra %s was trained with other set priors: it plays with "
+                        "the learner's", path)
+        added.append(pool.add_fixed({k: weights.get(k, v) for k, v in own.items()}, model.cfg,
+                                    str(path), model_extras(model)))
+    return added
 
 
 def cmd_ppo(args) -> None:
@@ -399,10 +557,18 @@ def cmd_ppo(args) -> None:
                              "use --aux-action-coef / --aux-set-coef")
         model = with_aux_heads(model)
     model = model.to(device)
+    if args.recipe:
+        log.info("[ppo] recipe %s: %s%s", args.recipe, RECIPES[args.recipe],
+                 " (provisional: set it to the ablation's winners)" if args.recipe in PROVISIONAL_RECIPES
+                 else "")
     cfg = PPOConfig(lr=args.lr, minibatch=args.minibatch, vf_coef=args.vf_coef,
                     kl_stop=args.kl_stop, value_ce_norm=args.value_ce_norm == "log-bins",
                     uniform_kl_coef=args.uniform_kl_coef, aux_action_coef=args.aux_action_coef,
-                    aux_set_coef=args.aux_set_coef)
+                    aux_set_coef=args.aux_set_coef, epochs=args.epochs, target_kl=args.target_kl,
+                    ref_kl_coef=args.ref_kl_coef)
+    if args.ref_kl_coef and not args.ref_ckpt:
+        raise SystemExit("--ref-kl-coef needs the reference policy: --ref-ckpt")
+    ref_model = reference_model(args.ref_ckpt, model, device) if args.ref_ckpt else None
     if args.reward == "winloss":
         cfg.gamma = 1.0  # undiscounted: the value is the win probability
     sched = Schedule(lr=args.lr, warmup_iters=args.warmup_iters, lr_min_ratio=args.lr_min_ratio,
@@ -452,6 +618,12 @@ def cmd_ppo(args) -> None:
     if use_pool and len(pool) == 0:
         pool.add(model, st["iteration"])  # the starting policy (BC / distill) is the first opponent
         elo.add_player(snapshot_name(st["iteration"]))
+    if use_pool:
+        for snap in add_fixed_opponents(pool, args.pool_extra or [], model):
+            elo.add_player(snapshot_name(snap.iteration))
+            log.info("[ppo] fixed pool opponent %s: %s", snapshot_name(snap.iteration), snap.source)
+    elif args.pool_extra:
+        raise SystemExit("--pool-extra adds opponents to the pool: give --pool-share > 0")
 
     def sync() -> None:
         load_into(infer_model, model.state_dict())
@@ -533,7 +705,7 @@ def cmd_ppo(args) -> None:
 
         # ---- learn
         t0 = time.time()
-        stats = ppo_update(model, opt, episodes, cfg, device, ent_coef=ent)
+        stats = ppo_update(model, opt, episodes, cfg, device, ent_coef=ent, ref_model=ref_model)
         t_learn = time.time() - t0
         if stats["skipped"]:
             log.warning("[ppo] it %d: skipped %d minibatch(es) with a non-finite loss or gradient",
@@ -546,15 +718,17 @@ def cmd_ppo(args) -> None:
                    train_wr_heuristic=res.win_rates.get("heuristic"), pool_size=len(pool),
                    pool_hardest_wr=min((s.win_rate for s in pool.snapshots), default=None),
                    faint_reward=rewards.faint, epochs=stats["epochs"],
+                   kl_stopped=stats["kl_stopped"],
                    aux_labelled=res.aux_labelled, **{k: stats[k] for k in AUX_STATS},
                    stalled=int(not res.play.ok), rebuilds=rollouts.rebuilds,
                    **{k: stats[k] for k in ("pi_loss", "v_loss", "v_mse", "entropy", "kl",
-                                            "clipfrac", "explained_var", "uniform_kl")})
+                                            "clipfrac", "explained_var", "uniform_kl", "ref_kl")})
         log.info("[ppo] it %4d  states %6d (total %s)  play %5.1fs  learn %4.1fs  %5.0f st/s  "
-                 "lr %.2e  ent_c %.4f  pi %+.3f  v %.3f  ent %.2f  kl %.4f  clip %.3f  ev %.2f",
-                 it, stats["samples"], f"{st['total_states']:,}", t_play, t_learn,
+                 "lr %.2e  ent_c %.4f  pi %+.3f  v %.3f  ent %.2f  kl %.4f  clip %.3f  ev %.2f  "
+                 "epochs %d%s", it, stats["samples"], f"{st['total_states']:,}", t_play, t_learn,
                  row["states_per_s"], lr, ent, stats["pi_loss"], stats["v_loss"],
-                 stats["entropy"], stats["kl"], stats["clipfrac"], stats["explained_var"])
+                 stats["entropy"], stats["kl"], stats["clipfrac"], stats["explained_var"],
+                 stats["epochs"], f"  ref kl {stats['ref_kl']:.4f}" if ref_model is not None else "")
 
         if use_pool and it % args.snapshot_every == 0:
             pool.add(model, it)
@@ -636,7 +810,7 @@ def _eval_worker(spec: dict) -> dict:
     tag = f"{spec['tag']}{spec['worker']}"
     account = lambda side: AccountConfiguration(f"Ev{tag}{side}", None)
     kwargs = lambda side: dict(account_configuration=account(side), **make_kwargs(spec["concurrency"]))
-    model = build_model(load_checkpoint(spec["ckpt"]))
+    model = load_policy(spec["ckpt"])
     batcher = InferenceBatcher(frozen_copy(model, infer), infer, max_batch=spec["concurrency"] * 2)
     pools, searchers = [], []
 
@@ -652,7 +826,7 @@ def _eval_worker(spec: dict) -> dict:
     else:
         player = RLPlayer(batcher, None, greedy=True, no_tera_before=spec["no_tera_before"], **kwargs("A"))
     if spec["vs_ckpt"]:
-        other = build_model(load_checkpoint(spec["vs_ckpt"]))
+        other = load_policy(spec["vs_ckpt"])
         other_batcher = InferenceBatcher(frozen_copy(other, infer), infer, max_batch=spec["concurrency"] * 2)
         if spec["vs_search_depth"]:
             opponent = searching(other_batcher, spec["vs_search_depth"], "B")
@@ -702,15 +876,15 @@ def cmd_eval(args) -> None:
         server.stop()
         return
     infer = torch.device(args.infer_device or "cpu")
-    model = build_model(load_checkpoint(args.ckpt))
-    log.info("%s: %s", args.ckpt, describe(model))
+    model = load_policy(args.ckpt)
+    log.info("%s: %s", args.ckpt, describe_policy(model))
     server = server_for(args, None)
     pairs = team_pairs(args, args.battles)
     search = SearchSetup(args) if args.search else None
     vs_search = SearchSetup(args, args.vs_search_depth) if args.vs_ckpt and args.vs_search_depth else None
     if args.vs_ckpt:
-        other = build_model(load_checkpoint(args.vs_ckpt))
-        log.info("%s: %s", args.vs_ckpt, describe(other))
+        other = load_policy(args.vs_ckpt)
+        log.info("%s: %s", args.vs_ckpt, describe_policy(other))
         result = head_to_head(model, other, infer, args.battles, args.concurrency,
                               args.no_tera_before, pairs, search, vs_search)
         label = vs_label(args)
@@ -754,7 +928,7 @@ def _matchup_worker(spec: dict) -> dict:
                       **make_kwargs(spec["concurrency"]))
         if kind == "scripted":
             return SCRIPTED[what](**kwargs)
-        model = build_model(load_checkpoint(what))
+        model = load_policy(what)
         batcher = InferenceBatcher(frozen_copy(model, infer), infer, max_batch=spec["concurrency"] * 2)
         if kind == "search":
             from search import SearchConfig, SearchPlayer, SimPool
@@ -780,7 +954,8 @@ def cmd_elo(args) -> None:
     for path in args.ckpts:
         name = Path(path).stem if sum(Path(p).stem == Path(path).stem for p in args.ckpts) == 1 \
             else str(path)
-        log.info("%s: %s", name, describe(build_model(load_checkpoint(path))))
+        name = Path(path).name if Path(path).is_dir() else name   # a released model's folder
+        log.info("%s: %s", name, describe_policy(load_policy(path)))
         players[name] = ("ckpt", path)
     for path in args.search_ckpts:
         players[f"{Path(path).stem}+search"] = ("search", path)
@@ -923,6 +1098,54 @@ def build_parser() -> argparse.ArgumentParser:
     value_ce_arg(p)
     p.set_defaults(fn=cmd_distill)
 
+    p = sub.add_parser("offline", help="offline RL on human replays (human_data.py): bc, "
+                                        "advantage-weighted bc, or with a Q head")
+    common(p)
+    p.add_argument("--data", required=True, help="a human_data.py dataset (train/, val/, test/)")
+    p.add_argument("--init", default=None, help="start from this checkpoint (else a new --size model "
+                                                "reading the dataset's observation)")
+    p.add_argument("--size", default="wide-medium", choices=list(PRESETS))
+    p.add_argument("--dropout", type=float, default=None)
+    p.add_argument("--value-bins", type=int, default=None)
+    p.add_argument("--move-tokens", action="store_true")
+    p.add_argument("--typed-ffn", action="store_true")
+    p.add_argument("--run", default=None, help="name under runs/ (train.log; default the ckpt dir's)")
+    p.add_argument("--algo", default="bc", choices=["bc", "awbc", "q"],
+                   help="bc: imitate the human choices; awbc: weight them by w(A), A by GAE with the "
+                        "value head; q: A from a training-only Q head trained by TD")
+    p.add_argument("--weight", default="exp", choices=["exp", "binary"],
+                   help="awbc / q: min(exp(A / std / beta), --max-weight), or 1[A > 0]")
+    p.add_argument("--beta", type=float, default=1.0)
+    p.add_argument("--max-weight", type=float, default=20.0)
+    p.add_argument("--warmup-epochs", type=int, default=1,
+                   help="awbc / q: plain BC epochs first, while the critic learns")
+    p.add_argument("--gae-lambda", type=float, default=0.95)
+    p.add_argument("--vf-coef", type=float, default=0.5)
+    p.add_argument("--q-coef", type=float, default=0.5)
+    value_ce_arg(p)
+    p.add_argument("--epochs", type=int, default=10)
+    p.add_argument("--minibatch", type=int, default=512)
+    p.add_argument("--lr", type=float, default=3e-4, help="peak LR (cosine to --lr-min-ratio)")
+    p.add_argument("--lr-min-ratio", type=float, default=0.1)
+    p.add_argument("--warmup-steps", type=int, default=200)
+    p.add_argument("--patience", type=int, default=2,
+                   help="stop after this many epochs without a better validation NLL")
+    p.add_argument("--min-rating", type=int, default=1700, help="the metrics' strong players")
+    p.add_argument("--train-min-rating", type=int, default=0,
+                   help="train the actor on the choices of players rated this or more only")
+    p.set_defaults(fn=cmd_offline)
+
+    p = sub.add_parser("offline-eval", help="top-1 / NLL of human choices and value AUC, "
+                                             "calibration on a human_data.py split")
+    common(p)
+    p.add_argument("--ckpt", nargs="+", required=True,
+                   help="checkpoints or released model folders (src/ElsaMina.Battles/Models/...)")
+    p.add_argument("--data", required=True)
+    p.add_argument("--split", default="test", choices=["train", "val", "test"])
+    p.add_argument("--min-rating", type=int, default=1700)
+    p.add_argument("--out", default=None, help="write the metrics to this JSON file")
+    p.set_defaults(fn=cmd_offline_eval)
+
     p = sub.add_parser("ppo")
     common(p)
     p.set_defaults(eval_battles=None, stall_timeout=None)
@@ -941,15 +1164,34 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--states", type=int, default=None,
                    help="total training-states budget (compare runs at matched states); the "
                         "run stops at whichever of --iterations / --hours / --states ends first")
+    p.add_argument("--recipe", default=None, choices=list(RECIPES),
+                   help="a named set of options, for those not given here (before the size's "
+                        "defaults): v2-mr = MiniPokeV2_1M's run; v3 = bigger PPO steps "
+                        "(provisional until the ablation). Applies to new runs")
     p.add_argument("--battles-per-iter", type=int, default=None)
     p.add_argument("--minibatch", type=int, default=None)
+    p.add_argument("--epochs", type=int, default=None,
+                   help="PPO epochs over each iteration's states (default 3), fewer when the "
+                        "approx KL stops them (--target-kl)")
+    p.add_argument("--target-kl", type=float, default=None,
+                   help="approx KL that stops an iteration's epochs (default 0.03; 0 = never), "
+                        "read per --kl-stop")
+    p.add_argument("--ref-ckpt", default=None,
+                   help="frozen reference policy (same encoder) for --ref-kl-coef, e.g. the "
+                        "offline-RL model PPO starts from")
+    p.add_argument("--ref-kl-coef", type=float, default=None,
+                   help="weight of KL(policy || --ref-ckpt) over the legal actions (default 0; "
+                        "its value is logged as ref_kl whenever --ref-ckpt is given)")
+    p.add_argument("--pool-extra", nargs="*", default=None,
+                   help="checkpoints (the learner's architecture) in the opponent pool for the "
+                        "whole run, never evicted, e.g. the frozen human-BC model")
     p.add_argument("--lr", type=float, default=None, help="peak learning rate")
     p.add_argument("--vf-coef", type=float, default=None,
                    help="value loss weight (default 0.5; 0.1 for medium with --value-ce-norm none)")
     value_ce_arg(p, default=None)
     p.add_argument("--kl-stop", default=None, choices=["mean", "last"],
                    help="stop the PPO epochs when the epoch's mean approx KL (default medium) "
-                        "or its last minibatch's (V1, default small/wide) exceeds 0.03")
+                        "or its last minibatch's (V1, default small/wide) exceeds --target-kl")
     p.add_argument("--reward", default=None, choices=["shaped", "winloss"],
                    help="shaped (default, V1): +-1 at the end, +-0.1 per faint, gamma 0.995; "
                         "winloss: 1 for a win, 0 otherwise, no shaping, gamma 1")
@@ -970,7 +1212,7 @@ def build_parser() -> argparse.ArgumentParser:
                         "states instead of --faint-anneal's fraction of the budget")
     p.add_argument("--warmup-iters", type=int, default=None)
     p.add_argument("--lr-min-ratio", type=float, default=None,
-                   help="final LR / peak LR of the cosine decay (1 = constant)")
+                   help="LR floor: final LR / peak LR of the cosine decay (1 = constant)")
     p.add_argument("--ent-start", type=float, default=None)
     p.add_argument("--ent-end", type=float, default=None)
     p.add_argument("--mirror-share", type=float, default=None)
