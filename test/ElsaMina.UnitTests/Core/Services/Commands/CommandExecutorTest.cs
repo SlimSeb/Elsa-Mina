@@ -93,7 +93,7 @@ public class CommandExecutorTest
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
         await _commandExecutor.WhenAllCommandsCompletedAsync();
-        await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+        await runSignal.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
         // Assert
         await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());
@@ -123,7 +123,7 @@ public class CommandExecutorTest
         await _commandExecutor.WhenAllCommandsCompletedAsync();
         if (expectedRunCalls > 0)
         {
-            await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+            await runSignal.Task.WaitAsync(TimeSpan.FromSeconds(1));
         }
 
         // Assert
@@ -201,7 +201,7 @@ public class CommandExecutorTest
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
         await _commandExecutor.WhenAllCommandsCompletedAsync();
-        await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+        await runSignal.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
         // Assert
         await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());
@@ -466,7 +466,7 @@ public class CommandExecutorTest
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
         await _commandExecutor.WhenAllCommandsCompletedAsync();
-        await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+        await runSignal.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
         // Assert
         await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());
@@ -555,7 +555,7 @@ public class CommandExecutorTest
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
         await _commandExecutor.WhenAllCommandsCompletedAsync();
-        await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+        await runSignal.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
         // Assert
         await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());
@@ -600,7 +600,7 @@ public class CommandExecutorTest
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
         await _commandExecutor.WhenAllCommandsCompletedAsync();
-        await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+        await runSignal.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
         // Assert
         await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());
@@ -625,7 +625,7 @@ public class CommandExecutorTest
         // Act
         await _commandExecutor.TryExecuteCommandAsync(commandName, _context);
         await _commandExecutor.WhenAllCommandsCompletedAsync();
-        await Task.WhenAny(runSignal.Task, Task.Delay(TimeSpan.FromSeconds(1)));
+        await runSignal.Task.WaitAsync(TimeSpan.FromSeconds(1));
 
         // Assert
         await command.Received(1).RunAsync(_context, Arg.Any<CancellationToken>());

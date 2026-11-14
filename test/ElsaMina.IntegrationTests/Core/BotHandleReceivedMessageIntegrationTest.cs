@@ -128,13 +128,14 @@ internal sealed class CommandExecutionProbe : ICommandExecutionProbe
 
     public async Task<string> WaitAsync(TimeSpan timeout)
     {
-        var completedTask = await Task.WhenAny(_resultTaskCompletionSource.Task, Task.Delay(timeout));
-        if (completedTask != _resultTaskCompletionSource.Task)
+        try
         {
-            throw new TimeoutException("The command did not run within the expected timeout.");
+            return await _resultTaskCompletionSource.Task.WaitAsync(timeout);
         }
-
-        return await _resultTaskCompletionSource.Task;
+        catch (TimeoutException exception)
+        {
+            throw new TimeoutException("The command did not run within the expected timeout.", exception);
+        }
     }
 }
 
