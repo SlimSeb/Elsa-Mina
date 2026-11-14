@@ -1,8 +1,8 @@
 using ElsaMina.Battles;
+using ElsaMina.Battles.Chat;
 using ElsaMina.Battles.Replays;
 using ElsaMina.Battles.Results;
 using ElsaMina.Core;
-using ElsaMina.Core.Services.Config;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Battles;
@@ -15,12 +15,14 @@ public class BattleServiceTest
     private static readonly string[] WIN_PARTS = ["", "win", "Elsa-Mina"];
     private static readonly string[] REQUEST_PARTS = ["", "request", "{\"rqid\":1}"];
     private static readonly string[] WIN_LINES = ["|win|Elsa-Mina"];
+    private static readonly string[] CRIT_PARTS = ["", "-crit", "p2a: Garchomp"];
 
     private IBattleMessageParser _messageParser;
     private IBot _bot;
     private ILadderingService _ladderingService;
     private IBattleResultsService _battleResultsService;
     private IReplaySavingService _replaySavingService;
+    private IBattleChatService _battleChatService;
     private BattleService _battleService;
 
     [SetUp]
@@ -31,19 +33,19 @@ public class BattleServiceTest
         _ladderingService = Substitute.For<ILadderingService>();
         _battleResultsService = Substitute.For<IBattleResultsService>();
         _replaySavingService = Substitute.For<IReplaySavingService>();
-        var configuration = Substitute.For<IConfiguration>();
-        configuration.Name.Returns("Elsa-Mina");
+        _battleChatService = Substitute.For<IBattleChatService>();
         _battleService = new BattleService(_messageParser, Substitute.For<IBattleDecisionService>(), _bot,
-            configuration, _ladderingService, _battleResultsService, _replaySavingService);
+            _ladderingService, _battleResultsService, _replaySavingService, _battleChatService);
     }
 
-    private void SetUpBattleEnd(string sideId, string winner = "Elsa-Mina")
+    private void SetUpBattleEnd(string sideId, BattleOutcome? outcome = BattleOutcome.Won)
     {
+        _battleResultsService.GetOutcome(Arg.Any<BattleMessageResult>()).Returns(outcome);
         _messageParser.TryApplyMessage(WIN_PARTS, ROOM_ID, Arg.Any<BattleContext>(), out Arg.Any<BattleMessageResult>())
             .Returns(callInfo =>
             {
                 callInfo.ArgAt<BattleContext>(2).SideId = sideId;
-                callInfo[3] = new BattleMessageResult(BattleMessageType.BattleEnded, winner);
+                callInfo[3] = new BattleMessageResult(BattleMessageType.BattleEnded, "Elsa-Mina");
                 return true;
             });
     }
@@ -84,13 +86,12 @@ public class BattleServiceTest
         _ladderingService.DidNotReceive().OnBattleEnded();
     }
 
-    [TestCase("Elsa-Mina", BattleOutcome.Won)]
-    [TestCase("Someone Else", BattleOutcome.Lost)]
-    public async Task Test_HandleMessageAsync_ShouldRecordResult_WhenBotPlayedTheBattle(string winner,
-        BattleOutcome expected)
+    [TestCase(BattleOutcome.Won)]
+    [TestCase(BattleOutcome.Lost)]
+    public async Task Test_HandleMessageAsync_ShouldRecordResult_WhenBotPlayedTheBattle(BattleOutcome expected)
     {
         // Arrange
-        SetUpBattleEnd("p1", winner);
+        SetUpBattleEnd("p1", expected);
 
         // Act
         await _battleService.HandleMessageAsync(WIN_PARTS, ROOM_ID);
@@ -117,6 +118,19 @@ public class BattleServiceTest
                 Arg.Any<CancellationToken>());
             _bot.Say(ROOM_ID, "/leave");
         });
+    }
+
+    [Test]
+    public async Task Test_HandleMessageAsync_ShouldNotRecordResult_WhenServerDidNotNameWinner()
+    {
+        // Arrange
+        SetUpBattleEnd("p1", null);
+
+        // Act
+        await _battleService.HandleMessageAsync(WIN_PARTS, ROOM_ID);
+
+        // Assert
+        _battleResultsService.DidNotReceiveWithAnyArgs().OnBattleEnded(null, default);
     }
 
     [Test]
@@ -149,6 +163,67 @@ public class BattleServiceTest
 
         // Assert
         _battleResultsService.Received(1).OnBattleStarted(Arg.Is<BattleContext>(context => context.RoomId == ROOM_ID));
+    }
+
+    [Test]
+    public async Task Test_HandleMessageAsync_ShouldSayStartMessage_WhenBattleStarts()
+    {
+        // Arrange
+        _battleChatService.GetStartMessage().Returns("glhf!");
+        _messageParser.TryApplyMessage(START_PARTS, ROOM_ID, Arg.Any<BattleContext>(), out Arg.Any<BattleMessageResult>())
+            .Returns(callInfo =>
+            {
+                callInfo[3] = new BattleMessageResult(BattleMessageType.BattleStarted);
+                return true;
+            });
+
+        // Act
+        await _battleService.HandleMessageAsync(START_PARTS, ROOM_ID);
+
+        // Assert
+        _bot.Received(1).Say(ROOM_ID, "glhf!");
+    }
+
+    [TestCase(BattleOutcome.Won)]
+    [TestCase(BattleOutcome.Lost)]
+    [TestCase(null)]
+    public async Task Test_HandleMessageAsync_ShouldSayEndMessageOfOutcome_WhenBattleEnds(BattleOutcome? outcome)
+    {
+        // Arrange
+        SetUpBattleEnd("p1", outcome);
+        _battleChatService.GetEndMessage(outcome).Returns("GG!");
+
+        // Act
+        await _battleService.HandleMessageAsync(WIN_PARTS, ROOM_ID);
+
+        // Assert
+        _bot.Received(1).Say(ROOM_ID, "GG!");
+    }
+
+    [Test]
+    public async Task Test_HandleMessageAsync_ShouldSayReaction_WhenChatReactsToLine()
+    {
+        // Arrange: the parser does nothing with the line
+        _battleChatService.GetReaction(CRIT_PARTS, Arg.Any<BattleContext>()).Returns("Critical hit!");
+
+        // Act
+        await _battleService.HandleMessageAsync(CRIT_PARTS, ROOM_ID);
+
+        // Assert
+        _bot.Received(1).Say(ROOM_ID, "Critical hit!");
+    }
+
+    [Test]
+    public async Task Test_HandleMessageAsync_ShouldSayNothing_WhenChatDoesNotReact()
+    {
+        // Arrange
+        _battleChatService.GetReaction(CRIT_PARTS, Arg.Any<BattleContext>()).Returns((string)null);
+
+        // Act
+        await _battleService.HandleMessageAsync(CRIT_PARTS, ROOM_ID);
+
+        // Assert
+        _bot.DidNotReceiveWithAnyArgs().Say(null, null);
     }
 
     [Test]

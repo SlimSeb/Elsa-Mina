@@ -2,6 +2,7 @@ using ElsaMina.Battles;
 using ElsaMina.Battles.Results;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Core.Services.Clock;
+using ElsaMina.Core.Services.Config;
 using NSubstitute;
 
 namespace ElsaMina.UnitTests.Battles.Results;
@@ -20,7 +21,42 @@ public class BattleResultsServiceTest
         _battleDecisionManager.ActiveStrategy.Returns(BattleDecisionStrategy.MiniPokeV2_1M);
         var clockService = Substitute.For<IClockService>();
         clockService.CurrentUtcDateTimeOffset.Returns(NOW);
-        _service = new BattleResultsService(_battleDecisionManager, clockService);
+        var configuration = Substitute.For<IConfiguration>();
+        configuration.Name.Returns("Elsa-Mina");
+        _service = new BattleResultsService(_battleDecisionManager, clockService, configuration);
+    }
+
+    [TestCase("Elsa-Mina", BattleOutcome.Won)]
+    [TestCase("elsa mina", BattleOutcome.Won)]
+    [TestCase("Someone Else", BattleOutcome.Lost)]
+    public void Test_GetOutcome_ShouldCompareWinnerWithBotName_WhenServerNamedWinner(string winner,
+        BattleOutcome expected)
+    {
+        // Act
+        var outcome = _service.GetOutcome(new BattleMessageResult(BattleMessageType.BattleEnded, winner));
+
+        // Assert
+        Assert.That(outcome, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void Test_GetOutcome_ShouldReturnTied_WhenBattleIsTie()
+    {
+        // Act
+        var outcome = _service.GetOutcome(new BattleMessageResult(BattleMessageType.BattleEnded, IsTie: true));
+
+        // Assert
+        Assert.That(outcome, Is.EqualTo(BattleOutcome.Tied));
+    }
+
+    [Test]
+    public void Test_GetOutcome_ShouldReturnNull_WhenServerDidNotNameWinner()
+    {
+        // Act
+        var outcome = _service.GetOutcome(new BattleMessageResult(BattleMessageType.BattleEnded));
+
+        // Assert
+        Assert.That(outcome, Is.Null);
     }
 
     private void Play(string roomId, BattleOutcome outcome, int turns = 20)

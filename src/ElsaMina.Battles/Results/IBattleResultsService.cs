@@ -6,6 +6,11 @@ namespace ElsaMina.Battles.Results;
 public interface IBattleResultsService
 {
     /// <summary>
+    /// How an ended battle went for the bot, null when the server did not name the winner.
+    /// </summary>
+    BattleOutcome? GetOutcome(BattleMessageResult result);
+
+    /// <summary>
     /// Remembers which strategy plays the battle.
     /// </summary>
     void OnBattleStarted(BattleContext context);

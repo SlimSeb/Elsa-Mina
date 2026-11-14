@@ -32,6 +32,11 @@ public class BattleContext
     public bool IsBattleOver { get; set; }
     public bool HasAnnouncedStart { get; set; }
     public bool HasAnnouncedEnd { get; set; }
+
+    /// <summary>
+    /// Whether the bot already reacted to an event in the battle's chat during the current turn.
+    /// </summary>
+    public bool HasReactedThisTurn { get; set; }
     public List<bool> ForceSwitchSlots { get; set; } = [];
 
     /// <summary>

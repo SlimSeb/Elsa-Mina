@@ -1,9 +1,8 @@
 using System.Collections.Concurrent;
+using ElsaMina.Battles.Chat;
 using ElsaMina.Battles.Replays;
 using ElsaMina.Battles.Results;
 using ElsaMina.Core;
-using ElsaMina.Core.Services.Config;
-using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Battles;
 
@@ -12,27 +11,27 @@ public class BattleService : IBattleService
     private readonly IBattleMessageParser _messageParser;
     private readonly IBattleDecisionService _decisionService;
     private readonly IBot _bot;
-    private readonly IConfiguration _configuration;
     private readonly ILadderingService _ladderingService;
     private readonly IBattleResultsService _battleResultsService;
     private readonly IReplaySavingService _replaySavingService;
+    private readonly IBattleChatService _battleChatService;
     private readonly ConcurrentDictionary<string, BattleContext> _contexts = new();
 
     public BattleService(IBattleMessageParser messageParser,
         IBattleDecisionService decisionService,
         IBot bot,
-        IConfiguration configuration,
         ILadderingService ladderingService,
         IBattleResultsService battleResultsService,
-        IReplaySavingService replaySavingService)
+        IReplaySavingService replaySavingService,
+        IBattleChatService battleChatService)
     {
         _messageParser = messageParser;
         _decisionService = decisionService;
         _bot = bot;
-        _configuration = configuration;
         _ladderingService = ladderingService;
         _battleResultsService = battleResultsService;
         _replaySavingService = replaySavingService;
+        _battleChatService = battleChatService;
     }
 
     public IReadOnlyList<BattleContext> GetBattlesInProgress() => _contexts.Values
@@ -49,7 +48,14 @@ public class BattleService : IBattleService
 
         var context = _contexts.GetOrAdd(roomId, id => new BattleContext(id));
         context.Lines.Add(string.Join("|", parts));
-        if (!_messageParser.TryApplyMessage(parts, roomId, context, out var result))
+        var isApplied = _messageParser.TryApplyMessage(parts, roomId, context, out var result);
+        var reaction = _battleChatService.GetReaction(parts, context);
+        if (!string.IsNullOrEmpty(reaction))
+        {
+            _bot.Say(roomId, reaction);
+        }
+
+        if (!isApplied)
         {
             return;
         }
@@ -57,7 +63,7 @@ public class BattleService : IBattleService
         if (result.Type == BattleMessageType.BattleStarted && !context.HasAnnouncedStart)
         {
             _bot.Say(roomId, "/timer on");
-            _bot.Say(roomId, "Battle started. Good luck!");
+            _bot.Say(roomId, _battleChatService.GetStartMessage());
             context.HasAnnouncedStart = true;
             _battleResultsService.OnBattleStarted(context);
         }
@@ -66,10 +72,10 @@ public class BattleService : IBattleService
         {
             // Spectated battles end too (and replay their |win| when joined late), only ours count
             var isOurBattle = !string.IsNullOrEmpty(context.SideId);
-            var outcome = GetOutcome(result);
+            var outcome = _battleResultsService.GetOutcome(result);
             if (!context.HasAnnouncedEnd)
             {
-                AnnounceBattleEnd(roomId, outcome);
+                _bot.Say(roomId, _battleChatService.GetEndMessage(outcome));
                 context.HasAnnouncedEnd = true;
             }
 
@@ -108,38 +114,6 @@ public class BattleService : IBattleService
                 _bot.Say(roomId, command);
             }
         }
-    }
-
-    /// <summary>
-    /// Null when the server did not name the winner.
-    /// </summary>
-    private BattleOutcome? GetOutcome(BattleMessageResult result)
-    {
-        if (result.IsTie)
-        {
-            return BattleOutcome.Tied;
-        }
-
-        if (string.IsNullOrWhiteSpace(result.WinnerName))
-        {
-            return null;
-        }
-
-        return result.WinnerName.ToLowerAlphaNum() == _configuration.Name.ToLowerAlphaNum()
-            ? BattleOutcome.Won
-            : BattleOutcome.Lost;
-    }
-
-    private void AnnounceBattleEnd(string roomId, BattleOutcome? outcome)
-    {
-        var message = outcome switch
-        {
-            BattleOutcome.Tied => "Battle ended in a tie. GG!",
-            BattleOutcome.Won => "GG! I won.",
-            BattleOutcome.Lost => "GG! I lost.",
-            _ => "Battle ended. GG!"
-        };
-        _bot.Say(roomId, message);
     }
 
     private static string BuildCommand(BattleDecision decision, int rqid)

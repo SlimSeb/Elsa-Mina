@@ -1,5 +1,6 @@
 using Autofac;
 using ElsaMina.Battles.Challenges;
+using ElsaMina.Battles.Chat;
 using ElsaMina.Battles.Commands;
 using ElsaMina.Battles.Replays;
 using ElsaMina.Battles.Results;
@@ -46,6 +47,7 @@ public class BattlesModule : Module
         builder.RegisterType<LadderRatingService>().As<ILadderRatingService>().SingleInstance();
         builder.RegisterType<BattleResultsService>().As<IBattleResultsService>().SingleInstance();
         builder.RegisterType<ReplaySavingService>().As<IReplaySavingService>().SingleInstance();
+        builder.RegisterType<BattleChatService>().As<IBattleChatService>().SingleInstance();
 
         builder.RegisterHandler<BattleHandler>();
         builder.RegisterHandler<UpdateSearchHandler>();

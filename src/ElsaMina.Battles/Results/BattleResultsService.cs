@@ -1,5 +1,7 @@
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Core.Services.Clock;
+using ElsaMina.Core.Services.Config;
+using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Battles.Results;
 
@@ -7,14 +9,17 @@ public class BattleResultsService : IBattleResultsService
 {
     private readonly IBattleDecisionManager _battleDecisionManager;
     private readonly IClockService _clockService;
+    private readonly IConfiguration _configuration;
     private readonly Lock _lock = new();
     private readonly Dictionary<(string Format, BattleDecisionStrategy Strategy), BattleRecord> _records = [];
     private BattleResult _lastResult;
 
-    public BattleResultsService(IBattleDecisionManager battleDecisionManager, IClockService clockService)
+    public BattleResultsService(IBattleDecisionManager battleDecisionManager, IClockService clockService,
+        IConfiguration configuration)
     {
         _battleDecisionManager = battleDecisionManager;
         _clockService = clockService;
+        _configuration = configuration;
     }
 
     public BattleResult LastResult
@@ -26,6 +31,23 @@ public class BattleResultsService : IBattleResultsService
                 return _lastResult;
             }
         }
+    }
+
+    public BattleOutcome? GetOutcome(BattleMessageResult result)
+    {
+        if (result.IsTie)
+        {
+            return BattleOutcome.Tied;
+        }
+
+        if (string.IsNullOrWhiteSpace(result.WinnerName))
+        {
+            return null;
+        }
+
+        return result.WinnerName.ToLowerAlphaNum() == _configuration.Name.ToLowerAlphaNum()
+            ? BattleOutcome.Won
+            : BattleOutcome.Lost;
     }
 
     public void OnBattleStarted(BattleContext context)
