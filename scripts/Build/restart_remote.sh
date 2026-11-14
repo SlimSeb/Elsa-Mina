@@ -60,10 +60,13 @@ fi
 echo "Setting permissions"
 chmod u+x ElsaMina.Console
 
+# Set up environment variables for .NET runtime
+export DOTNET_ROOT=/usr/lib/dotnet
+export PATH="$DOTNET_ROOT:$PATH"
+
 # glibc creates up to 8 malloc arenas per core, each holding on to freed native memory.
 # Two arenas are plenty for the bot and keep native heap fragmentation low.
 export MALLOC_ARENA_MAX=2
-
 echo "Starting ElsaMina.Console"
 setsid nohup ./ElsaMina.Console >> elsa.log 2>&1 < /dev/null &
 NEW_PID=$!
