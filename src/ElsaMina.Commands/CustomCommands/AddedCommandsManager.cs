@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using ElsaMina.Core;
 using ElsaMina.Core.Contexts;
@@ -8,7 +9,7 @@ using ElsaMina.Core.Utils;
 using ElsaMina.DataAccess;
 using ElsaMina.DataAccess.Models;
 using ElsaMina.Logging;
-using NCalc;
+using Lusamine.SlimExpressionParser;
 
 namespace ElsaMina.Commands.CustomCommands;
 
@@ -90,50 +91,42 @@ public partial class AddedCommandsManager : IAddedCommandsManager, IDynamicComma
         foreach (Match match in matches)
         {
             var rawExpression = match.Groups[1].Value;
-            var result = EvaluateExpression(new Expression(rawExpression), identifiers, functions);
-            content = content.Replace(match.Value, result.ToString());
+            var result = EvaluateExpression(rawExpression, identifiers, functions);
+            content = content.Replace(match.Value, Convert.ToString(result, CultureInfo.InvariantCulture));
         }
 
         return content;
     }
 
     private static object EvaluateExpression(
-        Expression expression,
+        string expression,
         Dictionary<string, Func<object>> identifiers,
-        Dictionary<string, Func<object[], object>> functions)
+        Dictionary<string, Func<Arguments, object>> functions)
     {
+        var expressionContext = new ExpressionContext();
         foreach (var identifier in identifiers)
         {
-            expression.Parameters[identifier.Key] = identifier.Value.Invoke();
+            expressionContext.Identifier(identifier.Key, identifier.Value);
         }
 
         foreach (var function in functions)
         {
-            expression.EvaluateFunction += (name, args) =>
-            {
-                if (name == function.Key)
-                {
-                    var evaluatedParams = Enumerable.Range(0, args.Parameters.Count)
-                        .Select(index => args.Parameters.Evaluate(index))
-                        .ToArray();
-                    args.Result = function.Value.DynamicInvoke((object)evaluatedParams);
-                }
-            };
+            expressionContext.Function(function.Key, function.Value);
         }
 
-        return expression.Evaluate();
+        return Evaluator.Evaluate(expression, expressionContext);
     }
 
-    private Dictionary<string, Func<object[], object>> BuildFunctions() =>
+    private Dictionary<string, Func<Arguments, object>> BuildFunctions() =>
         new()
         {
             ["choice"] = args => _randomService.RandomElement(args),
-            ["dice"] = args => _randomService.NextInt(Convert.ToInt32(args[0].ToString()), Convert.ToInt32(args[1].ToString()) + 1),
-            ["repeat"] = args => string.Concat(Enumerable.Repeat(args[0], Convert.ToInt32(args[1].ToString()))),
-            ["optional"] = args => _randomService.NextDouble() < Convert.ToDouble(args[1].ToString()) ? args[0] : string.Empty,
-            ["cos"] = args => Math.Cos(Convert.ToDouble(args[0].ToString())),
-            ["sin"] = args => Math.Sin(Convert.ToDouble(args[0].ToString())),
-            ["tan"] = args => Math.Tan(Convert.ToDouble(args[0].ToString()))
+            ["dice"] = args => _randomService.NextInt((int)args.Number(0), (int)args.Number(1) + 1),
+            ["repeat"] = args => string.Concat(Enumerable.Repeat(args.Text(0), (int)args.Number(1))),
+            ["optional"] = args => _randomService.NextDouble() < args.Number(1) ? args[0] : string.Empty,
+            ["cos"] = args => Math.Cos(args.Number(0)),
+            ["sin"] = args => Math.Sin(args.Number(0)),
+            ["tan"] = args => Math.Tan(args.Number(0))
         };
 
     private Dictionary<string, Func<object>> BuildIdentifiers(IContext context) =>
