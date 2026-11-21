@@ -6,7 +6,6 @@ using ElsaMina.Battles.Replays;
 using ElsaMina.Battles.Results;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.MiniPoke;
-using ElsaMina.Battles.Strategies.MiniPokeV1;
 using ElsaMina.Battles.Strategies.MiniPokeSearch;
 using ElsaMina.Battles.Strategies.MiniPokeV2;
 using ElsaMina.Battles.Strategies.Prediction;
@@ -31,12 +30,8 @@ public class BattlesModule : Module
         builder.RegisterType<ShowdownSimulator>().As<IShowdownSimulator>().SingleInstance();
         builder.RegisterType<MiniPokeTurnSearch>().AsSelf().SingleInstance();
         // minipoke models: one line each (see tools/minipoke/README.md)
-        RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_1M);
-        RegisterMiniPoke<MiniPokeV1Encoder>(builder, BattleDecisionStrategy.MiniPokeV1_4M);
-        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_1M);
-        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_4M);
-        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_1_1M);
-        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_1_22M);
+        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_1_22M, playsAlone: false);
+        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV3_22M, playsAlone: true);
         builder.RegisterType<BattleDecisionManager>().As<IBattleDecisionService>().As<IBattleDecisionManager>().SingleInstance();
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
         builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();
@@ -66,8 +61,10 @@ public class BattlesModule : Module
     /// <summary>
     /// A minipoke model: the files exported to Models/{strategy}, played by its own decision service
     /// with the encoder matching the encoder.py it was trained with. The decision manager picks up every version.
+    /// With <paramref name="playsAlone"/> false, only its search variant is offered.
     /// </summary>
-    private static void RegisterMiniPoke<TEncoder>(ContainerBuilder builder, BattleDecisionStrategy strategy)
+    private static void RegisterMiniPoke<TEncoder>(ContainerBuilder builder, BattleDecisionStrategy strategy,
+        bool playsAlone)
         where TEncoder : MiniPokeEncoder
     {
         var options = new MiniPokeModelOptions(strategy,
@@ -77,7 +74,11 @@ public class BattlesModule : Module
             .WithParameter(TypedParameter.From(options))
             .Keyed<IMiniPokeEncoder>(strategy)
             .SingleInstance();
-        RegisterMiniPokeService(builder, strategy, options);
+        if (playsAlone)
+        {
+            RegisterMiniPokeService(builder, strategy, options);
+        }
+
         // Its search variant plays with the same model and encoder
         if (strategy.WithSearch() is { } searchStrategy)
         {

@@ -4,6 +4,7 @@ using ElsaMina.Battles;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.MiniPoke;
 using ElsaMina.Battles.Strategies.MiniPokeV2;
+using ElsaMina.UnitTests.Battles.Strategies.MiniPoke;
 
 namespace ElsaMina.UnitTests.Battles.Strategies.MiniPokeV2;
 
@@ -17,8 +18,8 @@ public class MiniPokeV2EncoderTest
     private const int PRIOR_FEATURES = 24;
     private const int HAS_SETS = 20;
 
-    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV2_1M,
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1M"));
+    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV2_1_22M,
+        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1_22M"));
     private static readonly string[] PROTECT_ONLY = ["protect"];
 
     private BattleMessageParser _parser;
@@ -175,7 +176,8 @@ public class MiniPokeV2EncoderTest
     public void Test_Constructor_ShouldThrow_WhenSpecIsV1()
     {
         // Arrange
-        var options = OPTIONS with { ModelDirectory = Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV1_1M") };
+        MiniPokeV1Spec.WriteTo(_directory);
+        var options = OPTIONS with { ModelDirectory = _directory };
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() =>

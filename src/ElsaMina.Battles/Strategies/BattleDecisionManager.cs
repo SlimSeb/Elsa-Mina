@@ -17,7 +17,7 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
         _miniPokeServices = miniPokeServices.ToDictionary(service => service.Strategy);
     }
 
-    public BattleDecisionStrategy ActiveStrategy { get; set; } = BattleDecisionStrategy.MiniPokeV2_4M;
+    public BattleDecisionStrategy ActiveStrategy { get; set; } = BattleDecisionStrategy.MiniPokeV3_22M_Search;
 
     /// <summary>
     /// The damage calc, every minipoke model, and their search variants when Showdown's simulator is configured.
@@ -62,7 +62,7 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
     }
 
     /// <summary>
-    /// A minipoke model by its strategy name ("minipokev1-4m").
+    /// A minipoke model by its strategy name ("minipokev3-22m").
     /// </summary>
     private bool TryFindMiniPokeStrategy(string name, out BattleDecisionStrategy strategy)
     {

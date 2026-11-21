@@ -3,7 +3,7 @@
 A proof of concept based on [Nebraskinator/ps-ppo](https://github.com/Nebraskinator/ps-ppo),
 shrunk to run on Apple Silicon with [poke-env](https://github.com/hsahovic/poke-env)
 and a **single** local Showdown server. ElsaMina plays with the exported models
-(`-strategy minipokev1-4m`, see [Using a model in ElsaMina](#using-a-model-in-elsamina)).
+(`-strategy minipokev2.1-22m+search`, see [Using a model in ElsaMina](#using-a-model-in-elsamina)).
 The next model, **minipoke-v2**, adds random battle set priors and optional history,
 move, matchup and auxiliary features, all behind flags (see [minipoke-v2](#minipoke-v2-encoder-v2)).
 
@@ -726,7 +726,7 @@ M=../../src/ElsaMina.Battles/Models
 python train.py offline --data data/human-v21 --size wide-medium --algo bc   --epochs 15 --seed 1 --ckpt-dir checkpoints/v3/bc-4m
 python train.py offline --data data/human-v21 --size wide-medium --algo awbc --epochs 15 --seed 1 --ckpt-dir checkpoints/v3/awbc-4m
 python train.py offline-eval --ckpt checkpoints/v3/bc-4m/offline.pt checkpoints/v3/awbc-4m/offline.pt \
-    $M/MiniPokeV2_1_1M $M/MiniPokeV2_1_22M --data data/human-v21 --out runs/v3/offline-4m.json
+    $M/MiniPokeV2_1_22M --data data/human-v21 --out runs/v3/offline-4m.json
 for c in bc-4m awbc-4m; do
   python train.py eval --ckpt checkpoints/v3/$c/offline.pt --battles 4000 --processes 4 --showdown-cmd "$SD" --showdown-cwd "$CWD"
   python train.py eval --ckpt checkpoints/v3/$c/offline.pt --vs-ckpt $M/MiniPokeV2_1_22M --battles 4000 --processes 4 \
@@ -761,7 +761,9 @@ memorizes one-hot labels; `--dropout 0.1` for a new model is an option) and its 
 `--processes` to fit its RAM). Release a v3 model like any other ([Releasing a new model
 N_SIZE](#releasing-a-new-model-n_size)): its observation is V2.1's, so `MiniPokeV2Encoder` runs it and
 the C# side only needs the enum value, the `RegisterMiniPoke` line, fixtures and the parity test's
-`MODELS`. Its name is still to decide: by the naming rule, the observation (V2.1) is the version.
+`MODELS`. It is released as `MiniPokeV3_22M` (`-strategy minipokev3-22m`), named after its training rather
+than its observation (V2.1). The first export is the large AWBC model after 13 PPO iterations
+(`checkpoints/v3/ppo-large/ppo_latest.pt`, 139k states): re-export it as PPO goes on to measure what PPO adds.
 
 ## Elo league table
 
@@ -1096,12 +1098,13 @@ combination once more the same way. With 384 battles per iteration, an iteration
 
 Each exported model is named after its **version** (the observation it was trained with:
 `encoder.py` for 1, `encoder_v2.py` for 2, `encoder_v2.py --move-effects` for 2.1, written `2_1` in
-names) and its size in parameters: `MiniPokeV1_1M`, `MiniPokeV1_4M`, `MiniPokeV2_1M`, `MiniPokeV2_4M`,
-`MiniPokeV2_1_1M`, `MiniPokeV2_1_22M`. Models of one encoder share their C# encoder (V2.1 models play with
-`MiniPokeV2Encoder`, which reads the move effect flag from the spec). ElsaMina keeps every model side
-by side, so they can be compared with `-strategy minipokevN-size` (`minipokev1-1m`, `minipokev1-4m`,
-`minipokev2-1m`, `minipokev2-4m`, `minipokev2.1-1m`, `minipokev2.1-22m`; `-strategy minipoke` picks the latest one). The bot starts with `minipokev2-4m`; `-strategy calc` switches to the damage calc
-strategy the models fall back on.
+names) and its size in parameters: `MiniPokeV2_1_22M`, then `MiniPokeV3_22M` (V2.1's observation, named after
+its training: human replays, then PPO). Models of one encoder share their C# encoder (V2.1 and V3 models play
+with `MiniPokeV2Encoder`, which reads the move effect flag from the spec). ElsaMina only keeps the models worth
+playing: `minipokev2.1-22m+search`, by far the best (offered only with search), and `minipokev3-22m` (alone or
+`+search`, `-strategy minipoke` picks it). The older models (`MiniPokeV1_1M`, `MiniPokeV1_4M`, `MiniPokeV2_1M`,
+`MiniPokeV2_4M`, `MiniPokeV2_1_1M`) were removed in Nov 2026: git history has them. The bot starts with
+`minipokev3-22m+search`; `-strategy calc` switches to the damage calc strategy the models fall back on.
 
 The C# side reproduces what the model sees in training:
 
@@ -1140,22 +1143,22 @@ Two things happen around the model, for every version:
 
 ### Replacing a released model
 
-`encoder.py` and a V1 model's `encoder_spec.json` have not changed, so a V1 model trained
-here (any size) runs with V1's C# encoder as is. To replace a released model with one of
-about the same size (`MiniPokeV1_4M` here), only `minipoke.onnx` changes:
+A model trained with the same encoder flags and set priors as a released one exports the same
+`encoder_spec.json`, so it runs with that model's C# encoder as is. To replace a released model with one
+of the same observation (`MiniPokeV3_22M` here, with a later PPO checkpoint), only `minipoke.onnx` changes:
 
 ```bash
-python export_onnx.py --ckpt checkpoints/best.pt --out export/
-cp export/minipoke.onnx ../../src/ElsaMina.Battles/Models/MiniPokeV1_4M/minipoke.onnx
-git diff --stat ../../src/ElsaMina.Battles/Models/MiniPokeV1_4M/encoder_spec.json  # must be empty
-python make_fixtures.py --version 1_4M --battles 20    # Showdown running
+python export_onnx.py --ckpt checkpoints/v3/ppo-large/best.pt --out export/
+cp export/minipoke.onnx ../../src/ElsaMina.Battles/Models/MiniPokeV3_22M/minipoke.onnx
+git diff --stat ../../src/ElsaMina.Battles/Models/MiniPokeV3_22M/  # only minipoke.onnx
+python make_fixtures.py --version 3_22M --battles 20    # Showdown running
 ```
 
 The last step is required: the parity fixtures also store the logits of the model
-they were recorded with (`MiniPokeV1ParityTest` compares them with ElsaMina's
+they were recorded with (`MiniPokeV2ParityTest` compares them with ElsaMina's
 onnxruntime), so they must be recorded again with the new `minipoke.onnx`. The
 encoding and action checks stay the same. To keep the old model available
-side by side instead, release it as a new model (below), reusing V1's encoder.
+side by side instead, release it as a new model (below), reusing its encoder.
 
 ### Releasing a new model N_SIZE
 
@@ -1180,7 +1183,7 @@ model (strategy `minipokev2.1-1m`).
      If they did, this is a new version: copy it to `Strategies/MiniPokeVN/MiniPokeVNEncoder.cs`
      and port the changes;
    - add the model to `MODELS` in its version's parity test. For a new version, copy
-     `test/.../Battles/Strategies/MiniPokeV1/MiniPokeV1ParityTest.cs` (and its
+     `test/.../Battles/Strategies/MiniPokeV2/MiniPokeV2ParityTest.cs` (and its
      `FeatureNames` if the features changed) to `MiniPokeVN`.
 4. Run the tests. `MiniPokeVNParityTest` must pass for the model: every array equal
    to what the Python encoder produced, every action mapped to the order poke-env sent,

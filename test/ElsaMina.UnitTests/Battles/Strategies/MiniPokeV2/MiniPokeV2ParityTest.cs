@@ -7,7 +7,7 @@ namespace ElsaMina.UnitTests.Battles.Strategies.MiniPokeV2;
 
 /// <summary>
 /// Checks the C# side of every minipoke-v2 model against real battles recorded with the encoder_v2.py it was trained
-/// with (tools/minipoke/make_fixtures.py --version 2_1M for MiniPokeV2_1M): our encoder must produce exactly what
+/// with (tools/minipoke/make_fixtures.py --version 3_22M for MiniPokeV3_22M): our encoder must produce exactly what
 /// encoder_v2.py produced, V1's arrays and the set priors and history ones, each action must map to the order
 /// poke-env sent, and the ONNX model must give the same output in both runtimes.
 /// </summary>
@@ -16,10 +16,7 @@ public class MiniPokeV2ParityTest
 {
     // Every model trained with encoder_v2.py, each with its own fixtures
     private static readonly BattleDecisionStrategy[] MODELS =
-    [
-        BattleDecisionStrategy.MiniPokeV2_1M, BattleDecisionStrategy.MiniPokeV2_4M,
-        BattleDecisionStrategy.MiniPokeV2_1_1M, BattleDecisionStrategy.MiniPokeV2_1_22M
-    ];
+        [BattleDecisionStrategy.MiniPokeV2_1_22M, BattleDecisionStrategy.MiniPokeV3_22M];
 
     private readonly Dictionary<BattleDecisionStrategy, MiniPokeParityChecker> _checkers = [];
 

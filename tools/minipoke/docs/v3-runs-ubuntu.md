@@ -151,7 +151,7 @@ M=../../src/ElsaMina.Battles/Models
 python train.py offline --data data/human-v21 --size wide-medium --algo bc   --epochs 15 --seed 1 --ckpt-dir checkpoints/v3/bc-4m
 python train.py offline --data data/human-v21 --size wide-medium --algo awbc --epochs 15 --seed 1 --ckpt-dir checkpoints/v3/awbc-4m
 python train.py offline-eval --ckpt checkpoints/v3/bc-4m/offline.pt checkpoints/v3/awbc-4m/offline.pt \
-    $M/MiniPokeV2_1_1M $M/MiniPokeV2_1_22M --data data/human-v21 --out runs/v3/offline-4m.json
+    $M/MiniPokeV2_1_22M --data data/human-v21 --out runs/v3/offline-4m.json
 for c in bc-4m awbc-4m; do
   python train.py eval --ckpt checkpoints/v3/$c/offline.pt --battles 4000 --processes 4 \
       --showdown-cmd "$SD" --showdown-cwd "$SHOWDOWN"

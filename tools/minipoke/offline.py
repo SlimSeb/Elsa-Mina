@@ -38,7 +38,7 @@ import math
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
 import numpy as np
 import torch
@@ -254,10 +254,13 @@ def describe_metrics(m: Dict[str, object]) -> str:
 # Training
 # --------------------------------------------------------------------------
 def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: Path, save,
-                  seed: int = 0, log=print) -> Dict[str, object]:
+                  seed: int = 0, log=print, resume: Optional[dict] = None) -> Dict[str, object]:
     """Trains `model` on data["train"], early-stopping on data["val"]'s NLL. `save(path, model,
-    **extra)` writes a checkpoint; the best epoch goes to out_dir/offline.pt, the last to
-    out_dir/offline_last.pt. Returns the history and the best epoch's validation metrics."""
+    optimizer, **extra)` writes a checkpoint; the best epoch goes to out_dir/offline.pt, the last
+    to out_dir/offline_last.pt with the optimizer and what continuing the run needs (step, best
+    epoch, history, shuffle state). `resume` (offline_last.pt's "offline" entry, plus its "opt")
+    continues a stopped run after its last finished epoch, as if it had not stopped. Returns the
+    history and the best epoch's validation metrics."""
     rng = np.random.default_rng(seed)
     train, val = data["train"], data["val"]
     n = len(train)
@@ -268,16 +271,49 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
     steps_per_epoch = math.ceil(n / cfg.minibatch)
     total = max(1, steps_per_epoch * cfg.epochs)
 
+    history, best, best_epoch, bad, step = [], math.inf, 0, 0, 0
+    first_epoch, rewarm_from = 1, None
+    if resume:
+        first_epoch = resume["epoch"] + 1
+        state = resume.get("resume")
+        if state:
+            step, best, best_epoch, bad = state["step"], state["best"], state["best_epoch"], state["bad"]
+            history = list(state["history"])
+            rng.bit_generator.state = state["rng"]
+        else:
+            # Saved before runs could resume: the schedule's position from the epoch, the best
+            # epoch from offline.pt, another shuffle
+            step = resume["epoch"] * steps_per_epoch
+            if (out_dir / "offline.pt").exists():
+                saved_best = torch.load(out_dir / "offline.pt", map_location="cpu", weights_only=False)["offline"]
+                best, best_epoch = saved_best["val"]["nll"], saved_best["epoch"]
+                bad = resume["epoch"] - best_epoch
+            rng = np.random.default_rng([seed, first_epoch])
+        if resume.get("opt"):
+            opt.load_state_dict(resume["opt"])
+        else:
+            rewarm_from = step
+            log(f"[offline] no optimizer state saved: a new one, its LR warmed up again over "
+                f"{cfg.warmup_steps} steps")
+        log(f"[offline] resuming after epoch {resume['epoch']} (step {step}, best epoch {best_epoch}: "
+            f"val NLL {best:.4f}, {bad} epochs without a better one)")
+
     def lr_at(step: int) -> float:
         if step < cfg.warmup_steps:
             return cfg.lr * (step + 1) / cfg.warmup_steps
         progress = min(1.0, (step - cfg.warmup_steps) / max(1, total - cfg.warmup_steps))
-        return cfg.lr * (cfg.lr_min_ratio + (1 - cfg.lr_min_ratio) * 0.5 * (1 + math.cos(math.pi * progress)))
+        lr = cfg.lr * (cfg.lr_min_ratio + (1 - cfg.lr_min_ratio) * 0.5 * (1 + math.cos(math.pi * progress)))
+        if rewarm_from is not None and step < rewarm_from + cfg.warmup_steps:
+            lr *= (step - rewarm_from + 1) / cfg.warmup_steps
+        return lr
 
-    history, best, best_epoch, bad, step = [], math.inf, 0, 0, 0
+    last_epoch = cfg.epochs
+    if bad >= cfg.patience:
+        log(f"[offline] already stopped: no better validation NLL for {bad} epochs (best epoch {best_epoch})")
+        last_epoch = first_epoch - 1
     log(f"[offline] {cfg.algo}: {n} training states ({int(labelled.sum())} labelled), "
         f"{len(val)} validation, {steps_per_epoch} steps per epoch")
-    for epoch in range(1, cfg.epochs + 1):
+    for epoch in range(first_epoch, last_epoch + 1):
         t0 = time.time()
         weights = next_value = None
         stats = {"actor": 0.0, "value": 0.0, "q": 0.0, "w_mean": float("nan"), "w_pos": float("nan")}
@@ -339,17 +375,22 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
             f"value {stats['value']:.4f}" + (f"  q {stats['q']:.4f}" if use_q else "")
             + (f"  w mean {stats['w_mean']:.2f} (A>0 {stats['w_pos']:.2f})" if weights is not None else "")
             + f"  | val NLL {vm['nll']:.4f}  top-1 {vm['top1']:.3f}  value AUC {vm['value_auc']:.3f}")
-        extra = {"offline": {"config": asdict(cfg), "epoch": epoch, "val": vm, "data": str(data.root)}}
-        save(out_dir / "offline_last.pt", model, **extra)
-        if vm["nll"] < best:
+        improved = vm["nll"] < best
+        if improved:
             best, best_epoch, bad = vm["nll"], epoch, 0
-            save(out_dir / "offline.pt", model, **extra)
-            log(f"[offline] best so far -> {out_dir / 'offline.pt'}")
         else:
             bad += 1
-            if bad >= cfg.patience:
-                log(f"[offline] no better validation NLL for {bad} epochs: stopping (best epoch {best_epoch})")
-                break
+        info = {"config": asdict(cfg), "epoch": epoch, "val": vm, "data": str(data.root)}
+        if improved:
+            # Before offline_last.pt: a run resumed from it never finds an older best in offline.pt
+            save(out_dir / "offline.pt", model, None, offline=info)
+            log(f"[offline] best so far -> {out_dir / 'offline.pt'}")
+        save(out_dir / "offline_last.pt", model, opt, offline={**info, "resume": {
+            "step": step, "best": best, "best_epoch": best_epoch, "bad": bad, "history": history,
+            "rng": rng.bit_generator.state}})
+        if bad >= cfg.patience:
+            log(f"[offline] no better validation NLL for {bad} epochs: stopping (best epoch {best_epoch})")
+            break
     return {"history": history, "best_epoch": best_epoch, "best_val_nll": best}
 
 

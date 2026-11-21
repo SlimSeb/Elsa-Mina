@@ -40,7 +40,7 @@ def resim_of(stem: str, out: dict) -> R.Resim:
 
 @pytest.fixture(scope="module")
 def encoders():
-    return R.parity_encoders(["MiniPokeV1_1M", "MiniPokeV2_1_1M"])
+    return R.parity_encoders(["MiniPokeV2_1_22M"])
 
 
 # --------------------------------------------------------------------------
@@ -149,7 +149,7 @@ def test_both_sides_decode_and_every_answered_choice_is_legal(encoders):
                 continue
             action, problem = choice_to_action(R.as_choice(side, text), d["team"], d["request_team"], d["moves"])
             assert action is not None, problem
-            assert np.asarray(d["obs"]["MiniPokeV2_1_1M"]["mask"])[action]
+            assert np.asarray(d["obs"]["MiniPokeV2_1_22M"]["mask"])[action]
 
 
 NODE = shutil.which("node") is not None and ShowdownVersions().is_built(VERSION)

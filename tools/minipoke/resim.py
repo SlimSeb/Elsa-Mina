@@ -504,7 +504,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("parity", help="the bot's ladder games (-savereplays) against their .logs")
     common(p)
     p.add_argument("folder", help="the folder of <id>.log / <id>.json pairs")
-    p.add_argument("--models", nargs="+", default=["MiniPokeV1_1M", "MiniPokeV2_1_1M"],
+    p.add_argument("--models", nargs="+", default=["MiniPokeV2_1_22M"],
                    help="encoders compared: these released models' (src/ElsaMina.Battles/Models)")
     p.set_defaults(fn=cmd_parity)
     return ap

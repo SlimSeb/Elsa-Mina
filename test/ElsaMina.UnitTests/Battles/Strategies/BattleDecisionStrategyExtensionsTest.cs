@@ -6,12 +6,10 @@ namespace ElsaMina.UnitTests.Battles.Strategies;
 public class BattleDecisionStrategyExtensionsTest
 {
     [TestCase(BattleDecisionStrategy.DamageCalc, "damagecalc")]
-    [TestCase(BattleDecisionStrategy.MiniPokeV1_4M, "minipokev1-4m")]
-    [TestCase(BattleDecisionStrategy.MiniPokeV2_1M, "minipokev2-1m")]
-    [TestCase(BattleDecisionStrategy.MiniPokeV2_1_1M, "minipokev2.1-1m")]
     [TestCase(BattleDecisionStrategy.MiniPokeV2_1_22M, "minipokev2.1-22m")]
-    [TestCase(BattleDecisionStrategy.MiniPokeV2_1M_Search, "minipokev2-1m+search")]
-    [TestCase(BattleDecisionStrategy.MiniPokeV2_1_1M_Search, "minipokev2.1-1m+search")]
+    [TestCase(BattleDecisionStrategy.MiniPokeV3_22M, "minipokev3-22m")]
+    [TestCase(BattleDecisionStrategy.MiniPokeV2_1_22M_Search, "minipokev2.1-22m+search")]
+    [TestCase(BattleDecisionStrategy.MiniPokeV3_22M_Search, "minipokev3-22m+search")]
     public void Test_GetName_ShouldSeparateVersionPartsWithDotsAndSizeWithDash(BattleDecisionStrategy strategy,
         string expectedName)
     {
@@ -28,15 +26,15 @@ public class BattleDecisionStrategyExtensionsTest
         // Act & Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(BattleDecisionStrategy.MiniPokeV2_4M.WithSearch(),
-                Is.EqualTo(BattleDecisionStrategy.MiniPokeV2_4M_Search));
-            Assert.That(BattleDecisionStrategy.MiniPokeV2_4M_Search.IsSearch(), Is.True);
-            Assert.That(BattleDecisionStrategy.MiniPokeV2_4M.IsSearch(), Is.False);
+            Assert.That(BattleDecisionStrategy.MiniPokeV3_22M.WithSearch(),
+                Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
+            Assert.That(BattleDecisionStrategy.MiniPokeV3_22M_Search.IsSearch(), Is.True);
+            Assert.That(BattleDecisionStrategy.MiniPokeV3_22M.IsSearch(), Is.False);
         }
     }
 
     [TestCase(BattleDecisionStrategy.DamageCalc)]
-    [TestCase(BattleDecisionStrategy.MiniPokeV1_1M_Search)]
+    [TestCase(BattleDecisionStrategy.MiniPokeV2_1_22M_Search)]
     public void Test_WithSearch_ShouldBeNull_WhenTheStrategyHasNoSearchVariant(BattleDecisionStrategy strategy)
     {
         // Act & Assert

@@ -4,21 +4,35 @@ using ElsaMina.Battles;
 using ElsaMina.Battles.Strategies;
 using ElsaMina.Battles.Strategies.MiniPoke;
 using ElsaMina.Battles.Strategies.MiniPokeV1;
+using ElsaMina.UnitTests.Battles.Strategies.MiniPoke;
 
 namespace ElsaMina.UnitTests.Battles.Strategies.MiniPokeV1;
 
 /// <summary>
-/// minipoke v1's encoder, including what it inherits from <see cref="MiniPokeEncoder"/>. MiniPokeV1ParityTest
-/// checks its features against encoder.py.
+/// minipoke v1's encoder, including what it inherits from <see cref="MiniPokeEncoder"/>, on a V1 spec. The V2 encoder
+/// extends it: MiniPokeV2ParityTest checks these features against encoder.py's.
 /// </summary>
 public class MiniPokeV1EncoderTest
 {
-    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV1_1M,
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV1_1M"));
     private static readonly string[] PROTECT_ONLY = ["protect"];
 
+    private MiniPokeModelOptions _options;
     private BattleMessageParser _parser;
     private BattleContext _context;
+
+    [OneTimeSetUp]
+    public void OneTimeSetUp()
+    {
+        var directory = Directory.CreateTempSubdirectory("minipoke-v1").FullName;
+        MiniPokeV1Spec.WriteTo(directory);
+        _options = new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV2_1_22M, directory);
+    }
+
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        Directory.Delete(_options.ModelDirectory, recursive: true);
+    }
 
     [SetUp]
     public void SetUp()
@@ -57,7 +71,7 @@ public class MiniPokeV1EncoderTest
     public void Test_Encode_ShouldHashItemsLikeZlibCrc32_WhenItemsAreKnown()
     {
         // Arrange: expected ids are 2 + zlib.crc32(item) % 1024, computed in Python
-        var encoder = new MiniPokeV1Encoder(OPTIONS, TestBattleDex.Instance);
+        var encoder = new MiniPokeV1Encoder(_options, TestBattleDex.Instance);
         StartBattle(("Zapdos", "leftovers"), ("Garchomp", "choicescarf"), ("Corviknight", "heavydutyboots"),
             ("Gholdengo", ""));
 
@@ -79,7 +93,7 @@ public class MiniPokeV1EncoderTest
     public void Test_Encode_ShouldMapTeamSlotsToRequestOrder_WhenRequestIsReordered()
     {
         // Arrange
-        var encoder = new MiniPokeV1Encoder(OPTIONS, TestBattleDex.Instance);
+        var encoder = new MiniPokeV1Encoder(_options, TestBattleDex.Instance);
         StartBattle(("Zapdos", "leftovers"), ("Garchomp", "choicescarf"));
         _context.SidePokemon.Reverse();
 
@@ -94,7 +108,7 @@ public class MiniPokeV1EncoderTest
     public void Test_Encode_ShouldReturnNull_WhenBattleIsDoubles()
     {
         // Arrange
-        var encoder = new MiniPokeV1Encoder(OPTIONS, TestBattleDex.Instance);
+        var encoder = new MiniPokeV1Encoder(_options, TestBattleDex.Instance);
         StartBattle(("Zapdos", "leftovers"));
         _context.ActiveSlots.Add(new BattleActiveSlot());
 
@@ -109,7 +123,7 @@ public class MiniPokeV1EncoderTest
     public void Test_Encode_ShouldReturnNull_WhenSpecIsMissing()
     {
         // Arrange
-        var encoder = new MiniPokeV1Encoder(OPTIONS with { ModelDirectory = "missing" }, TestBattleDex.Instance);
+        var encoder = new MiniPokeV1Encoder(_options with { ModelDirectory = "missing" }, TestBattleDex.Instance);
         StartBattle(("Zapdos", "leftovers"));
 
         // Act
@@ -126,7 +140,7 @@ public class MiniPokeV1EncoderTest
     {
         // Arrange: a spec exported from a different encoder.py
         var directory = Directory.CreateTempSubdirectory("minipoke").FullName;
-        var spec = JsonNode.Parse(File.ReadAllText(OPTIONS.EncoderSpecPath));
+        var spec = JsonNode.Parse(File.ReadAllText(_options.EncoderSpecPath));
         spec[size] = value;
         File.WriteAllText(Path.Join(directory, "encoder_spec.json"), spec.ToJsonString());
 
@@ -134,7 +148,7 @@ public class MiniPokeV1EncoderTest
         {
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(() =>
-                _ = new MiniPokeV1Encoder(OPTIONS with { ModelDirectory = directory }, TestBattleDex.Instance));
+                _ = new MiniPokeV1Encoder(_options with { ModelDirectory = directory }, TestBattleDex.Instance));
             Assert.That(exception.Message, Does.Contain(size));
         }
         finally

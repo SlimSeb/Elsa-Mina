@@ -47,7 +47,7 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence
+from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -62,6 +62,8 @@ SPLITS = ("train", "val", "test")
 EXTRA = {"traj": ((), "int32"), "step": ((), "int16"), "reward": ((), "float16"),
          "done": ((), "uint8"), "rating": ((), "int16"), "turn": ((), "int16"),
          "label_ok": ((), "uint8"), "result": ((), "int8")}
+# Chunks a worker process does before it is replaced (pool_rounds)
+CHUNKS_PER_WORKER = 25
 # Rows per shard: a writer preallocates them (V2.1: 11.7 KB a row, 47 MB a shard). Not much more:
 # a buffer of 1M rows is 11 GB, and once freed memory is reused it is all resident
 SHARD_ROWS = 4096
@@ -279,6 +281,21 @@ def utc(ts: int) -> str:
     return datetime.fromtimestamp(ts, timezone.utc).strftime("%Y-%m-%d %H:%M")
 
 
+def pool_rounds(fn: Callable, tasks: Sequence, processes: int, per_worker: int = CHUNKS_PER_WORKER,
+                **pool_args) -> Iterator[Tuple[object, object]]:
+    """(task, fn(task)) for each of `tasks`, as they finish, on `processes` worker processes
+    replaced about every `per_worker` tasks: whatever poke-env or the allocator keeps goes with
+    them. A new pool per round of processes x per_worker tasks, not max_tasks_per_child: with every
+    task submitted up front, ProcessPoolExecutor does not replace the workers that retire (CPython
+    gh-115634), and once all of them have, it waits forever."""
+    size = processes * per_worker
+    for start in range(0, len(tasks), size):
+        with ProcessPoolExecutor(processes, **pool_args) as pool:
+            futures = {pool.submit(fn, task): task for task in tasks[start:start + size]}
+            for future in as_completed(futures):
+                yield futures[future], future.result()
+
+
 def resume_chunks(out: Path, tasks: List[dict], settings: dict) -> Dict[int, dict]:
     """The results of the chunks a stopped build of the same plan finished (<out>/chunks/), so a
     rerun of the same command line only does the rest. A chunk that was being written when the
@@ -367,20 +384,17 @@ def build(args) -> dict:
     todo = [t for t in tasks if t["chunk"] not in results]
     if results:
         log.info("resuming: %d chunks done, %d to go", len(results), len(todo))
-    # Each worker process is replaced after 25 chunks: whatever poke-env or the allocator keeps
-    # goes with it
-    with ProcessPoolExecutor(args.processes, mp_context=multiprocessing.get_context("spawn"),
-                             initializer=_init_worker, max_tasks_per_child=25,
-                             initargs=(args.encoder_from, str(args.versions), settings)) as pool:
-        futures = {pool.submit(process_chunk, task): task["chunk"] for task in todo}
-        for done, future in enumerate(as_completed(futures), 1):
-            chunk = futures[future]
-            results[chunk] = future.result()
-            save_chunk(out, chunk, results[chunk])
-            if done % 10 == 0 or done == len(todo):
-                log.info("%d / %d chunks, %d samples (%.0f s)", len(results), len(tasks),
-                         sum(s["n"] for r in results.values() for v in r["shards"].values() for s in v),
-                         time.time() - t0)
+    finished = pool_rounds(process_chunk, todo, args.processes,
+                           mp_context=multiprocessing.get_context("spawn"), initializer=_init_worker,
+                           initargs=(args.encoder_from, str(args.versions), settings))
+    for done, (task, result) in enumerate(finished, 1):
+        chunk = task["chunk"]
+        results[chunk] = result
+        save_chunk(out, chunk, result)
+        if done % 10 == 0 or done == len(todo):
+            log.info("%d / %d chunks, %d samples (%.0f s)", len(results), len(tasks),
+                     sum(s["n"] for r in results.values() for v in r["shards"].values() for s in v),
+                     time.time() - t0)
     stats: Counter = Counter({f"battle_build_failed": sum(
         1 for r in replays if short(r.version) in build_failed or not r.version)})
     shards = {s: [] for s in SPLITS}

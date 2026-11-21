@@ -389,26 +389,39 @@ def offline_model(args, data) -> MiniPokeTransformer:
 
 def cmd_offline(args) -> None:
     from offline import HumanData, OfflineConfig, describe_metrics, offline_metrics, offline_train
-    out = Path(args.ckpt_dir or f"checkpoints/human-{args.algo}")
+    resumed = load_checkpoint(args.resume) if args.resume else None
+    if resumed is not None and not (resumed.get("offline") or {}).get("config"):
+        raise SystemExit(f"{args.resume} is not a checkpoint of train.py offline")
+    out = Path(args.ckpt_dir or (Path(args.resume).parent if resumed else f"checkpoints/human-{args.algo}"))
     device = setup(args, Path("runs") / (args.run or out.name))
     seed_everything(args.seed or 0)
     data = HumanData(args.data)
-    model = offline_model(args, data).to(device)
+    if resumed:
+        # The run's own model and settings: the command line's training options are not used
+        saved = resumed["offline"]
+        if Path(saved["data"]).resolve() != Path(args.data).resolve():
+            log.warning("[offline] %s was trained on %s, not %s", args.resume, saved["data"], args.data)
+        model = build_model(resumed).to(device)
+        cfg = OfflineConfig(**{k: v for k, v in saved["config"].items()
+                               if k in OfflineConfig.__dataclass_fields__})
+    else:
+        model = offline_model(args, data).to(device)
+        cfg = OfflineConfig(algo=args.algo, weight=args.weight, beta=args.beta, max_weight=args.max_weight,
+                            warmup_epochs=args.warmup_epochs, gamma=data.meta.get("gamma", 0.995),
+                            lam=args.gae_lambda, vf_coef=args.vf_coef, q_coef=args.q_coef,
+                            value_ce_norm=args.value_ce_norm == "log-bins", epochs=args.epochs,
+                            minibatch=args.minibatch, lr=args.lr, lr_min_ratio=args.lr_min_ratio,
+                            warmup_steps=args.warmup_steps, patience=args.patience,
+                            min_rating=args.min_rating, train_min_rating=args.train_min_rating)
     log.info("[offline] model: %s on %s; data %s: %s", describe(model), device, args.data,
              {k: len(v) for k, v in data.splits.items()})
     runtime.mps_self_check(model, device, sample_batch(8, model))
-    cfg = OfflineConfig(algo=args.algo, weight=args.weight, beta=args.beta, max_weight=args.max_weight,
-                        warmup_epochs=args.warmup_epochs, gamma=data.meta.get("gamma", 0.995),
-                        lam=args.gae_lambda, vf_coef=args.vf_coef, q_coef=args.q_coef,
-                        value_ce_norm=args.value_ce_norm == "log-bins", epochs=args.epochs,
-                        minibatch=args.minibatch, lr=args.lr, lr_min_ratio=args.lr_min_ratio,
-                        warmup_steps=args.warmup_steps, patience=args.patience,
-                        min_rating=args.min_rating, train_min_rating=args.train_min_rating)
 
-    def save(path, m, **extra):
-        save_checkpoint(path, m, None, **extra)
+    def save(path, m, optimizer, **extra):
+        save_checkpoint(path, m, optimizer, **extra)
 
-    result = offline_train(model, data, cfg, device, out, save, seed=args.seed or 0, log=log.info)
+    result = offline_train(model, data, cfg, device, out, save, seed=args.seed or 0, log=log.info,
+                           resume={**resumed["offline"], "opt": resumed.get("opt")} if resumed else None)
     best = build_model(load_checkpoint(out / "offline.pt")).to(device)
     metrics = offline_metrics(best, data["test"], device, args.min_rating)
     log.info("[offline] test battles, best epoch (%d):\n%s", result["best_epoch"], describe_metrics(metrics))
@@ -435,6 +448,7 @@ def cmd_offline_eval(args) -> None:
         results[str(path)] = metrics
         print(f"{path} ({describe_policy(model)}), {args.split} battles:\n{describe_metrics(metrics)}")
     if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(results, indent=1))
         print(f"wrote {args.out}")
 
@@ -1104,6 +1118,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--data", required=True, help="a human_data.py dataset (train/, val/, test/)")
     p.add_argument("--init", default=None, help="start from this checkpoint (else a new --size model "
                                                 "reading the dataset's observation)")
+    p.add_argument("--resume", default=None,
+                   help="continue a stopped run after its last finished epoch, with its own model and "
+                        "settings (its offline_last.pt; --ckpt-dir defaults to its folder)")
     p.add_argument("--size", default="wide-medium", choices=list(PRESETS))
     p.add_argument("--dropout", type=float, default=None)
     p.add_argument("--value-bins", type=int, default=None)

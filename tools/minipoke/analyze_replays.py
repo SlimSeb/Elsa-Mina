@@ -90,8 +90,8 @@ FORMAT = "gen9randombattle"
 REPLAY_URL = "https://replay.pokemonshowdown.com/"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MODELS_DIR = REPO_ROOT / "src" / "ElsaMina.Battles" / "Models"
-PLAYED_BY = "MiniPokeV2_1M"     # the model the report is about
-COMPARE_WITH = "MiniPokeV2_4M"  # run on the same states (step 6), and a candidate for attribution
+PLAYED_BY = "MiniPokeV2_1_22M"  # the model the report is about
+COMPARE_WITH = "MiniPokeV3_22M"  # run on the same states (step 6), and a candidate for attribution
 CACHE_VERSION = 1
 
 # The value head's return: players.Rewards "shaped" (what the v2 runs trained with,

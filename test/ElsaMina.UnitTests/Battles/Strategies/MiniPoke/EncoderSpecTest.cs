@@ -4,17 +4,18 @@ using ElsaMina.Battles.Strategies.MiniPoke;
 namespace ElsaMina.UnitTests.Battles.Strategies.MiniPoke;
 
 /// <summary>
-/// The checks every model version's spec goes through, on minipoke v1's spec. Feature sizes are checked by each
-/// version's encoder.
+/// The checks every model version's spec goes through, on the released minipoke v2.1 spec and on a V1 spec. Feature
+/// sizes are checked by each version's encoder.
 /// </summary>
 public class EncoderSpecTest
 {
     private static readonly string SPEC_PATH =
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV1_1M", "encoder_spec.json");
-    private static readonly string V2_SPEC_PATH =
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1M", "encoder_spec.json");
-    private static readonly string[] V2_HISTORY_INPUTS =
-        ["cand_ids", "cand_feats", "prior_ids", "prior_w", "prior_feats", "hist_ids", "hist_feats"];
+        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1_22M", "encoder_spec.json");
+    private static readonly string[] V2_1_INPUTS =
+    [
+        "cand_ids", "cand_feats", "prior_ids", "prior_w", "prior_feats", "hist_ids", "hist_feats", "effect_feats",
+        "cand_effect_feats"
+    ];
     private static readonly int[] CANDIDATE_FEATURES_SHAPE = [6, 8, 40];
 
     private string _tamperedSpecPath;
@@ -31,9 +32,9 @@ public class EncoderSpecTest
         File.Delete(_tamperedSpecPath);
     }
 
-    private string WriteTamperedSpec(Action<JsonNode> tamper, string specPath = null)
+    private string WriteTamperedSpec(Action<JsonNode> tamper)
     {
-        var spec = JsonNode.Parse(File.ReadAllText(specPath ?? SPEC_PATH));
+        var spec = JsonNode.Parse(File.ReadAllText(SPEC_PATH));
         tamper(spec);
         File.WriteAllText(_tamperedSpecPath, spec.ToJsonString());
         return _tamperedSpecPath;
@@ -59,8 +60,11 @@ public class EncoderSpecTest
     [Test]
     public void Test_Load_ShouldReadNoExtraInputs_WhenSpecIsV1()
     {
+        // Arrange
+        File.WriteAllText(_tamperedSpecPath, MiniPokeV1Spec.Create().ToJsonString());
+
         // Act
-        var spec = EncoderSpec.Load(SPEC_PATH);
+        var spec = EncoderSpec.Load(_tamperedSpecPath);
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -76,17 +80,18 @@ public class EncoderSpecTest
     public void Test_Load_ShouldReadInputsAndSetPriors_WhenSpecIsMiniPokeV2()
     {
         // Act
-        var spec = EncoderSpec.Load(V2_SPEC_PATH);
+        var spec = EncoderSpec.Load(SPEC_PATH);
 
         // Assert
         using (Assert.EnterMultipleScope())
         {
             Assert.That(spec.EncoderVersion, Is.EqualTo(2));
-            Assert.That(spec.ExtraInputs.Select(input => input.Name), Is.EqualTo(V2_HISTORY_INPUTS));
+            Assert.That(spec.ExtraInputs.Select(input => input.Name), Is.EqualTo(V2_1_INPUTS));
             Assert.That(spec.Inputs.Single(input => input.Name == "cand_feats").GetDimensions(),
                 Is.EqualTo(CANDIDATE_FEATURES_SHAPE));
             Assert.That(spec.Model.CandidateMoves, Is.EqualTo(8));
             Assert.That(spec.Model.History, Is.True);
+            Assert.That(spec.Model.MoveEffects, Is.True);
             Assert.That(spec.SetPriors.File, Is.EqualTo("set_priors.json"));
             Assert.That(spec.SetPriors.AbilitiesAndItems, Is.EqualTo(4));
         }
@@ -96,7 +101,7 @@ public class EncoderSpecTest
     public void Test_Load_ShouldThrow_WhenInputsDontStartWithTheSharedOnes()
     {
         // Arrange
-        var path = WriteTamperedSpec(spec => spec["inputs"][0]["name"] = "species_ids", V2_SPEC_PATH);
+        var path = WriteTamperedSpec(spec => spec["inputs"][0]["name"] = "species_ids");
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() => EncoderSpec.Load(path));

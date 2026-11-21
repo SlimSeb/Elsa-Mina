@@ -3,6 +3,8 @@ and offline RL (offline.py: GAE along trajectories, advantage weights, bc / awbc
 the offline metrics, the ONNX policy). Synthetic data, CPU, no Showdown."""
 
 import json
+import multiprocessing
+import threading
 from pathlib import Path
 
 import numpy as np
@@ -116,6 +118,19 @@ def test_a_stopped_build_resumes_its_finished_chunks_only(tmp_path):
         H.resume_chunks(tmp_path / "d", tasks, {"gamma": 0.9})
 
 
+def test_pool_rounds_replaces_retired_workers_instead_of_hanging():
+    # ProcessPoolExecutor(max_tasks_per_child=3) with every task submitted up front stops after
+    # 2 workers x 3 tasks: the retired workers are not replaced (CPython gh-115634)
+    finished = []
+    tasks = list(range(-20, 0))
+    thread = threading.Thread(daemon=True, target=lambda: finished.extend(H.pool_rounds(
+        abs, tasks, 2, per_worker=3, mp_context=multiprocessing.get_context("spawn"))))
+    thread.start()
+    thread.join(timeout=120)
+    assert not thread.is_alive(), f"pool_rounds hung after {len(finished)} of {len(tasks)} tasks"
+    assert sorted(finished) == [(task, -task) for task in tasks]
+
+
 # --------------------------------------------------------------------------
 # Advantages
 # --------------------------------------------------------------------------
@@ -161,21 +176,84 @@ def test_auc():
 # --------------------------------------------------------------------------
 # Training end to end
 # --------------------------------------------------------------------------
-def run(human_data, tmp_path, **cfg):
+def run(human_data, tmp_path, model=None, resume=None, save=None, **cfg):
     from checkpoint import save_checkpoint
     from model import with_q_head
     torch.manual_seed(0)
-    model = MiniPokeTransformer(PRESETS["small"])
-    if cfg.get("algo") == "q":
-        model = with_q_head(model)
+    if model is None:
+        model = MiniPokeTransformer(PRESETS["small"])
+        if cfg.get("algo") == "q":
+            model = with_q_head(model)
     data = O.HumanData(human_data)
     config = O.OfflineConfig(minibatch=64, warmup_steps=2, **cfg)
     out = tmp_path / cfg.get("algo", "bc")
-    out.mkdir()
-    result = O.offline_train(model, data, config, "cpu", out,
-                             lambda path, m, **extra: save_checkpoint(path, m, None, **extra),
-                             log=lambda *_: None)
+    out.mkdir(parents=True, exist_ok=True)
+    result = O.offline_train(model, data, config, "cpu", out, save or save_checkpoint,
+                             log=lambda *_: None, resume=resume)
     return result, out
+
+
+class Stopped(Exception):
+    pass
+
+
+def stop_after_epoch(epoch):
+    """A save that stops the run once offline_last.pt of `epoch` is written (a Ctrl-C there)."""
+    from checkpoint import save_checkpoint
+
+    def save(path, m, optimizer, **extra):
+        save_checkpoint(path, m, optimizer, **extra)
+        if path.name == "offline_last.pt" and extra["offline"]["epoch"] == epoch:
+            raise Stopped
+    return save
+
+
+def stopped_run(human_data, tmp_path, epoch, **cfg):
+    """A run stopped after `epoch`: its offline_last.pt and offline.pt."""
+    from checkpoint import load_checkpoint
+    with pytest.raises(Stopped):
+        run(human_data, tmp_path, save=stop_after_epoch(epoch), **cfg)
+    out = tmp_path / cfg.get("algo", "bc")
+    return load_checkpoint(out / "offline_last.pt"), load_checkpoint(out / "offline.pt")
+
+
+def test_a_stopped_run_resumes_as_if_it_had_not_stopped(human_data, tmp_path):
+    from checkpoint import load_checkpoint
+    from model import build_model
+    cfg = dict(algo="awbc", epochs=4, warmup_epochs=1, patience=5, lr=3e-3)
+    straight, straight_out = run(human_data, tmp_path / "straight", **cfg)
+    last, _ = stopped_run(human_data, tmp_path / "stopped", 2, **cfg)
+    resumed, out = run(human_data, tmp_path / "stopped", model=build_model(last),
+                       resume={**last["offline"], "opt": last["opt"]}, **cfg)
+    assert [h["epoch"] for h in resumed["history"]] == [1, 2, 3, 4]
+    assert [h["val_nll"] for h in resumed["history"]] == pytest.approx(
+        [h["val_nll"] for h in straight["history"]], rel=1e-5)
+    assert resumed["best_epoch"] == straight["best_epoch"]
+    theirs = load_checkpoint(straight_out / "offline_last.pt")["model"]
+    ours = load_checkpoint(out / "offline_last.pt")["model"]
+    assert all(torch.allclose(ours[k], theirs[k], atol=1e-6) for k in theirs)
+
+
+def test_a_run_saved_before_resume_existed_continues_after_its_epoch(human_data, tmp_path):
+    from model import build_model
+    cfg = dict(algo="bc", epochs=4, patience=5, lr=3e-3)
+    last, best = stopped_run(human_data, tmp_path, 2, **cfg)
+    old = {k: v for k, v in last["offline"].items() if k != "resume"}      # no step, history, optimizer
+    resumed, out = run(human_data, tmp_path, model=build_model(last), resume={**old, "opt": None}, **cfg)
+    assert [h["epoch"] for h in resumed["history"]] == [3, 4]
+    assert resumed["best_val_nll"] <= best["offline"]["val"]["nll"]
+
+
+def test_resuming_a_run_that_stopped_early_trains_no_more(human_data, tmp_path):
+    from checkpoint import load_checkpoint
+    from model import build_model
+    finished, out = run(human_data, tmp_path, algo="bc", epochs=30, patience=1, lr=5e-2)
+    last = load_checkpoint(out / "offline_last.pt")
+    resumed, _ = run(human_data, tmp_path, model=build_model(last),
+                     resume={**last["offline"], "opt": last["opt"]}, algo="bc", epochs=30, patience=1, lr=5e-2)
+    assert [(h["epoch"], h["val_nll"]) for h in resumed["history"]] == \
+        [(h["epoch"], h["val_nll"]) for h in finished["history"]]
+    assert resumed["best_epoch"] == finished["best_epoch"]
 
 
 @pytest.mark.parametrize("algo, weight", [("bc", "exp"), ("awbc", "exp"), ("awbc", "binary"), ("q", "exp")])
@@ -217,16 +295,22 @@ def test_offline_metrics(human_data):
 # --------------------------------------------------------------------------
 # A released model as a policy
 # --------------------------------------------------------------------------
-RELEASED = Path(__file__).resolve().parents[3] / "src" / "ElsaMina.Battles" / "Models" / "MiniPokeV1_1M"
+@pytest.fixture
+def released(tmp_path):
+    """A V1 model released as ElsaMina's are (src/ElsaMina.Battles/Models/<name>: minipoke.onnx and its spec)."""
+    from export_onnx import export
+    from tests.helpers import make_model
+    export(make_model("small"), tmp_path / "released")
+    return tmp_path / "released"
 
 
-@pytest.mark.skipif(not O.is_onnx_folder(RELEASED), reason="ElsaMina's MiniPokeV1_1M not found")
-def test_onnx_policy_plays_like_a_model(human_data):
+def test_onnx_policy_plays_like_a_model(human_data, released):
     from encoder_v2 import model_encoder
     from players import InferenceBatcher
     from rollout import frozen_copy
     import train
-    policy = train.load_policy(RELEASED)
+    assert O.is_onnx_folder(released)
+    policy = train.load_policy(released)
     assert isinstance(policy, O.OnnxPolicy) and "ONNX" in train.describe_policy(policy)
     copy = frozen_copy(policy, torch.device("cpu"))
     assert model_encoder(copy).layout == dict(V1_LAYOUT)

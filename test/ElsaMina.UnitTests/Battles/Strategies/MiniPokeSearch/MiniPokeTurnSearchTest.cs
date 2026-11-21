@@ -17,8 +17,8 @@ public class MiniPokeTurnSearchTest
     private const int ROCK_BLAST = 7;
     private const int OPPONENT_ACTIVE_SLOT = 6;
     private const int HP_FEATURE = 5;
-    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV2_1M,
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1M"));
+    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV2_1_22M,
+        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1_22M"));
     private static readonly string[] END_OF_TURN = ["|upkeep", "|turn|2"];
 
     private SearchTestBattle _battle;

@@ -14,10 +14,12 @@ import encoder as E
 from export_onnx import export, parity
 from model import PRESETS, MiniPokeTransformer, ModelConfig, build_model
 
-# A released V1 model: its encoder_spec.json is the one ElsaMina's C# encoder ports
-DEPLOYED_V1 = Path(__file__).resolve().parents[3] / "src/ElsaMina.Battles/Models/MiniPokeV1_4M"
-DEPLOYED_V2_1M = DEPLOYED_V1.parent / "MiniPokeV2_1M"
-V2_1M_CHECKPOINT = Path(__file__).resolve().parents[1] / "checkpoints/v2-mr.pt"
+# The released V1 models' encoder_spec.json (MiniPokeV1_1M's and MiniPokeV1_4M's, byte-identical): the one ElsaMina's
+# C# encoder ports, kept here since no V1 model is released anymore
+REFERENCE_V1_SPEC = Path(__file__).resolve().parent / "fixtures" / "encoder_spec.json"
+# The model ElsaMina plays (a V2.1 one: V1's six inputs, then V2's), and the checkpoint it was exported from
+DEPLOYED = Path(__file__).resolve().parents[3] / "src/ElsaMina.Battles/Models/MiniPokeV2_1_22M"
+DEPLOYED_CHECKPOINT = Path(__file__).resolve().parents[1] / "checkpoints/v2-1-large/best-10m.pt"
 
 F, I64, B = onnx.TensorProto.FLOAT, onnx.TensorProto.INT64, onnx.TensorProto.BOOL
 CONTRACT_INPUTS = [
@@ -51,12 +53,17 @@ def test_export_has_the_deployed_signature(exported):
     assert signature(graph.output) == CONTRACT_OUTPUTS
 
 
-@pytest.mark.skipif(not DEPLOYED_V1.exists(), reason="ElsaMina's MiniPokeV1_4M model not found")
-def test_export_matches_the_deployed_v1_graph_signature(exported):
+@pytest.fixture(scope="module")
+def deployed_graph():
+    return onnx.load(str(DEPLOYED / "minipoke.onnx"), load_external_data=False).graph
+
+
+@pytest.mark.skipif(not DEPLOYED.exists(), reason="ElsaMina's MiniPokeV2_1_22M model not found")
+def test_export_matches_the_deployed_graph_signature(exported, deployed_graph):
     _, onnx_path, _ = exported
-    deployed, ours = onnx.load(str(DEPLOYED_V1 / "minipoke.onnx")).graph, onnx.load(str(onnx_path)).graph
-    assert signature(ours.input) == signature(deployed.input)
-    assert signature(ours.output) == signature(deployed.output)
+    ours = onnx.load(str(onnx_path)).graph
+    assert signature(ours.input) == signature(deployed_graph.input)[:len(CONTRACT_INPUTS)]
+    assert signature(ours.output) == signature(deployed_graph.output)
 
 
 def test_export_runs_any_batch_size_and_matches_pytorch(exported):
@@ -67,7 +74,7 @@ def test_export_runs_any_batch_size_and_matches_pytorch(exported):
 
 def test_encoder_spec_is_byte_identical_to_the_reference(exported):
     _, _, out = exported
-    assert (out / "encoder_spec.json").read_bytes() == (DEPLOYED_V1 / "encoder_spec.json").read_bytes()
+    assert (out / "encoder_spec.json").read_bytes() == REFERENCE_V1_SPEC.read_bytes()
 
 
 def test_encoder_layout_is_unchanged():
@@ -186,7 +193,7 @@ def test_v2_spec_documents_the_encoder_and_ships_the_priors(exported_v2):
     import json
     model, _, out = exported_v2
     spec = json.loads((out / "encoder_spec.json").read_text())
-    v1 = json.loads((DEPLOYED_V1 / "encoder_spec.json").read_text())
+    v1 = json.loads(REFERENCE_V1_SPEC.read_text())
     assert spec["encoder_version"] == 2
     assert {k: spec[k] for k in v1 if k != "orderings"} == {k: v for k, v in v1.items()
                                                             if k != "orderings"}
@@ -210,12 +217,12 @@ def test_v2_spec_documents_the_encoder_and_ships_the_priors(exported_v2):
         assert len(spec["orderings"]["effect_feats"]) == 6
 
 
-@pytest.mark.skipif(not V2_1M_CHECKPOINT.exists(), reason="MiniPokeV2_1M's checkpoint not found")
-def test_reexporting_v2_1m_gives_its_released_spec(tmp_path):
+@pytest.mark.skipif(not DEPLOYED_CHECKPOINT.exists(), reason="MiniPokeV2_1_22M's checkpoint not found")
+def test_reexporting_the_deployed_model_gives_its_released_spec(tmp_path):
     from checkpoint import load_checkpoint
-    export(build_model(load_checkpoint(V2_1M_CHECKPOINT)), tmp_path)
+    export(build_model(load_checkpoint(DEPLOYED_CHECKPOINT)), tmp_path)
     for name in ("encoder_spec.json", "set_priors.json"):
-        assert (tmp_path / name).read_bytes() == (DEPLOYED_V2_1M / name).read_bytes(), name
+        assert (tmp_path / name).read_bytes() == (DEPLOYED / name).read_bytes(), name
 
 
 def test_v2_checkpoints_round_trip_with_their_priors(tmp_path):
