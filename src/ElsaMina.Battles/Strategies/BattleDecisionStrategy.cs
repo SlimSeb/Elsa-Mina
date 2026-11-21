@@ -18,8 +18,7 @@ public enum BattleDecisionStrategy
 
     /// <summary>
     /// minipoke v3 with ~22M parameters (strategy "minipokev3-22m"): V2.1's observation and network, trained on human
-    /// ladder replays (advantage-weighted BC) then fine-tuned by PPO anchored to that model. Played with the V2
-    /// encoder, like <see cref="MiniPokeV2_1_22M"/>.
+    /// ladder replays (advantage-weighted BC, no PPO). Played with the V2 encoder, like <see cref="MiniPokeV2_1_22M"/>.
     /// </summary>
     MiniPokeV3_22M,
 

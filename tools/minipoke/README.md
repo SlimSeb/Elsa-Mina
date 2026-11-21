@@ -762,8 +762,9 @@ memorizes one-hot labels; `--dropout 0.1` for a new model is an option) and its 
 N_SIZE](#releasing-a-new-model-n_size)): its observation is V2.1's, so `MiniPokeV2Encoder` runs it and
 the C# side only needs the enum value, the `RegisterMiniPoke` line, fixtures and the parity test's
 `MODELS`. It is released as `MiniPokeV3_22M` (`-strategy minipokev3-22m`), named after its training rather
-than its observation (V2.1). The first export is the large AWBC model after 13 PPO iterations
-(`checkpoints/v3/ppo-large/ppo_latest.pt`, 139k states): re-export it as PPO goes on to measure what PPO adds.
+than its observation (V2.1): the large AWBC model on 258k human battles (`checkpoints/v3/awbc-large-v21b/offline.pt`,
+best epoch 5 of 6, test top-1 59.95%), without PPO. PPO from it (`--recipe v3`, `--ref-kl-coef 0.05`) lost to it:
+39% at iterations 10 and 20 (100 games each), its KL to it growing every iteration (0.195 at iteration 29).
 
 ## Elo league table
 
@@ -1099,7 +1100,7 @@ combination once more the same way. With 384 battles per iteration, an iteration
 Each exported model is named after its **version** (the observation it was trained with:
 `encoder.py` for 1, `encoder_v2.py` for 2, `encoder_v2.py --move-effects` for 2.1, written `2_1` in
 names) and its size in parameters: `MiniPokeV2_1_22M`, then `MiniPokeV3_22M` (V2.1's observation, named after
-its training: human replays, then PPO). Models of one encoder share their C# encoder (V2.1 and V3 models play
+its training: offline RL on human replays). Models of one encoder share their C# encoder (V2.1 and V3 models play
 with `MiniPokeV2Encoder`, which reads the move effect flag from the spec). ElsaMina only keeps the models worth
 playing: `minipokev2.1-22m+search`, by far the best (offered only with search), and `minipokev3-22m` (alone or
 `+search`, `-strategy minipoke` picks it). The older models (`MiniPokeV1_1M`, `MiniPokeV1_4M`, `MiniPokeV2_1M`,
