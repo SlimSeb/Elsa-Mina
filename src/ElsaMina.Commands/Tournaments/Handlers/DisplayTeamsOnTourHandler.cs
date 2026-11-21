@@ -1,6 +1,7 @@
 using ElsaMina.Commands.Teams;
 using ElsaMina.Core;
 using ElsaMina.Core.Handlers;
+using ElsaMina.Core.Services.Formats;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
@@ -43,23 +44,11 @@ public class DisplayTeamsOnTourHandler : Handler
             return;
         }
 
-        if (format.StartsWith("gen9"))
-        {
-            format = format[4..];
-        }
-
-        format = format switch
-        {
-            "nationaldex" => "natdex",
-            "almostanyability" => "aaa",
-            "anythinggoes" => "ag",
-            _ => format
-        };
-
+        var formatIds = FormatAliases.GetEquivalentFormatIds(format);
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
         var teams = await dbContext.Teams.Include(team => team.Rooms)
             .Where(team => team.Rooms != null && team.Rooms.Any(roomTeam => roomTeam.RoomId == roomId) &&
-                           team.Format == format)
+                           formatIds.Contains(team.Format))
             .ToListAsync(cancellationToken);
         if (teams.Count == 0)
         {

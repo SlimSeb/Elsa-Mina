@@ -17,7 +17,8 @@ namespace ElsaMina.Battles.Challenges;
 /// <list type="bullet">
 /// <item>no team when the format generates them (random battles);</item>
 /// <item>else the team chosen for the format with -useteam;</item>
-/// <item>else a team saved for the format (-add-team), picked at random among those the server validates (/vtm).</item>
+/// <item>else a team saved for the format (-add-team), picked at random among those the server validates (/vtm), teams
+/// saved under another name of the format ("ou" for "gen9ou", see <see cref="FormatAliases"/>) coming after the others.</item>
 /// </list>
 /// Without any, the challenge is rejected and the challenger told why.
 /// Showdown counts each validation and battle of an IP against a limit of 12 every 3 minutes (see
@@ -131,16 +132,20 @@ public sealed class ChallengeService : IChallengeService, IDisposable
     private async Task<(Team Team, string PackedTeam, bool AllChecked)> FindValidTeamAsync(string format,
         string formatId, CancellationToken cancellationToken)
     {
+        var formatIds = FormatAliases.GetEquivalentFormatIds(formatId);
         List<Team> teams;
         await using (var dbContext = await _dbContextFactory.CreateDbContextAsync(cancellationToken))
         {
-            teams = await dbContext.Teams.Where(team => team.Format == formatId).ToListAsync(cancellationToken);
+            teams = await dbContext.Teams.Where(team => formatIds.Contains(team.Format))
+                .ToListAsync(cancellationToken);
         }
 
         _randomService.ShuffleInPlace(teams);
+        // Teams saved under the format's id first, then under its other names ("ou" for "gen9ou")
+        var teamsByFormat = teams.ToLookup(team => team.Format);
         var validationFormat = format.ToLowerInvariant();
         var validated = 0;
-        foreach (var team in teams)
+        foreach (var team in formatIds.SelectMany(equivalentFormatId => teamsByFormat[equivalentFormatId]))
         {
             var packedTeam = Pack(team);
             if (packedTeam == null)

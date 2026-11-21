@@ -141,4 +141,31 @@ public class TeamListCommandTest
             .GetTemplateAsync("Teams/TeamList",
                 Arg.Is<TeamListViewModel>(vm => vm.Teams.Count() == 1 && vm.Teams.First().Format == "gen9ou"));
     }
+
+    [TestCase("gen9ou", "ou")]
+    [TestCase("ou", "gen9ou")]
+    [TestCase("gen9nationaldex", "natdex")]
+    public async Task Test_RunAsync_ShouldListTeamsSavedUnderAnotherNameOfFormat_WhenFormatIsProvided(string format,
+        string savedFormat)
+    {
+        await using (var seedContext = new BotDbContext(_dbOptions))
+        {
+            var team = new Team { Id = "t1", Name = "Team", Format = savedFormat, Rooms = [new RoomTeam { RoomId = "testroom" }] };
+            var otherGenerationTeam = new Team { Id = "t2", Name = "Gen 8 Team", Format = "gen8ou", Rooms = [new RoomTeam { RoomId = "testroom" }] };
+            await seedContext.Teams.AddRangeAsync(team, otherGenerationTeam);
+            await seedContext.SaveChangesAsync();
+        }
+
+        _context.Target.Returns(format);
+        _context.RoomId.Returns("testroom");
+        _context.HasRankOrHigher(Rank.Voiced).Returns(true);
+        _templatesManager.GetTemplateAsync(Arg.Any<string>(), Arg.Any<TeamListViewModel>())
+            .Returns("<html/>");
+
+        await _command.RunAsync(_context);
+
+        await _templatesManager.Received(1)
+            .GetTemplateAsync("Teams/TeamList",
+                Arg.Is<TeamListViewModel>(vm => vm.Teams.Count() == 1 && vm.Teams.First().Id == "t1"));
+    }
 }

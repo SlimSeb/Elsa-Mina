@@ -1,5 +1,6 @@
 ﻿using ElsaMina.Core.Contexts;
 using ElsaMina.Core.Services.Commands;
+using ElsaMina.Core.Services.Formats;
 using ElsaMina.Core.Services.Rooms;
 using ElsaMina.Core.Services.Templates;
 using ElsaMina.Core.Utils;
@@ -33,12 +34,12 @@ public class TeamListCommand : Command
         if (!string.IsNullOrEmpty(context.Target))
         {
             var arguments = context.Target.Split(",");
-            var format = arguments[0].ToLowerAlphaNum();
+            var formatIds = FormatAliases.GetEquivalentFormatIds(arguments[0].ToLowerAlphaNum());
             roomId = arguments.Length >= 2 ? arguments[1].ToLowerAlphaNum() : context.RoomId;
             teams = await dbContext.Teams
                 .Include(team => team.Rooms)
                 .Where(team => team.Rooms != null && team.Rooms.Any(roomTeam => roomTeam.RoomId == roomId) &&
-                               team.Format == format)
+                               formatIds.Contains(team.Format))
                 .ToListAsync(cancellationToken);
         }
         else
