@@ -14,12 +14,12 @@ public class BattleTeamSender : IBattleTeamSender
         _bot = bot;
     }
 
-    public void SendWithTeam(string packedTeam, string command)
+    public void SendWithTeam(string packedTeam, string command, string roomId = null)
     {
         lock (_lock)
         {
             _bot.Send($"|/utm {(string.IsNullOrEmpty(packedTeam) ? NO_TEAM : packedTeam)}");
-            _bot.Say(string.Empty, command);
+            _bot.Say(roomId ?? string.Empty, command);
         }
     }
 }

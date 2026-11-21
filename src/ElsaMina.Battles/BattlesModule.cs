@@ -10,7 +10,9 @@ using ElsaMina.Battles.Strategies.MiniPokeSearch;
 using ElsaMina.Battles.Strategies.MiniPokeV2;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
+using ElsaMina.Battles.Tournaments;
 using ElsaMina.Battles.Tracking;
+using ElsaMina.Core.Services.Rooms.Parameters;
 using ElsaMina.Core.Utils;
 
 namespace ElsaMina.Battles;
@@ -43,12 +45,15 @@ public class BattlesModule : Module
         builder.RegisterType<BattleResultsService>().As<IBattleResultsService>().SingleInstance();
         builder.RegisterType<ReplaySavingService>().As<IReplaySavingService>().SingleInstance();
         builder.RegisterType<BattleChatService>().As<IBattleChatService>().SingleInstance();
+        builder.RegisterType<TournamentPlayingService>().As<ITournamentPlayingService>().SingleInstance();
+        builder.RegisterType<TournamentsRoomParameters>().As<IRoomParameterProvider>().SingleInstance();
 
         builder.RegisterHandler<BattleHandler>();
         builder.RegisterHandler<UpdateSearchHandler>();
         builder.RegisterHandler<ReplayUploadedHandler>();
         builder.RegisterHandler<ChallengeHandler>();
         builder.RegisterHandler<TeamValidationPopupHandler>();
+        builder.RegisterHandler<TournamentHandler>();
 
         builder.RegisterCommand<SearchCommand>();
         builder.RegisterCommand<UseTeamCommand>();
@@ -56,6 +61,8 @@ public class BattlesModule : Module
         builder.RegisterCommand<BattleStrategyCommand>();
         builder.RegisterCommand<SaveReplaysCommand>();
         builder.RegisterCommand<BattleStatusCommand>();
+        builder.RegisterCommand<JoinTournamentCommand>();
+        builder.RegisterCommand<LeaveTournamentCommand>();
     }
 
     /// <summary>

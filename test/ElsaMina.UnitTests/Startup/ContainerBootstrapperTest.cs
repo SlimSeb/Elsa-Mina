@@ -131,7 +131,7 @@ public class ContainerBootstrapperTest
         var definitions = _container.Resolve<IParametersDefinitionFactory>().GetParametersDefinitions();
 
         // Assert
-        Assert.That(definitions, Has.Count.EqualTo(13));
+        Assert.That(definitions, Has.Count.EqualTo(14));
     }
 
     [Test]
@@ -139,6 +139,8 @@ public class ContainerBootstrapperTest
     [TestCase("parameter_name_bucks_enabled")]
     [TestCase("parameter_name_event_announces_type")]
     [TestCase("parameter_value_event_announces_games")]
+    [TestCase("parameter_name_auto_join_tournaments")]
+    [TestCase("jointour_joining")]
     public void Test_Build_ShouldFindRoomParameterStrings_InEveryLocale(string key)
     {
         // Arrange

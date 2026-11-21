@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="parameter_name_auto_join_tournaments" xml:space="preserve">
+        <value>Participar dos torneios de Random Battle</value>
+    </data>
+    <data name="parameter_description_auto_join_tournaments" xml:space="preserve">
+        <value>O bot entra em cada torneio de [Gen 9] Random Battle criado nesta sala e joga suas partidas.</value>
+    </data>
+    <data name="jointour_help" xml:space="preserve">
+        <value>Faz o bot entrar no torneio desta sala e jogar suas partidas (somente [Gen 9] Random Battle). Sintaxe: -jointour</value>
+    </data>
+    <data name="jointour_joining" xml:space="preserve">
+        <value>Entrando no torneio. Vou jogar minhas partidas assim que estiverem prontas.</value>
+    </data>
+    <data name="jointour_no_tournament" xml:space="preserve">
+        <value>Não há nenhum torneio nesta sala.</value>
+    </data>
+    <data name="jointour_already_joined" xml:space="preserve">
+        <value>Já estou participando deste torneio.</value>
+    </data>
+    <data name="jointour_already_started" xml:space="preserve">
+        <value>O torneio já começou.</value>
+    </data>
+    <data name="jointour_unsupported_format" xml:space="preserve">
+        <value>Só posso jogar torneios em: {0}.</value>
+    </data>
+    <data name="leavetour_help" xml:space="preserve">
+        <value>Faz o bot sair do torneio desta sala (ele desiste se o torneio já começou). Sintaxe: -leavetour</value>
+    </data>
+    <data name="leavetour_leaving" xml:space="preserve">
+        <value>Saindo do torneio.</value>
+    </data>
+    <data name="leavetour_not_joined" xml:space="preserve">
+        <value>Não estou participando do torneio desta sala.</value>
+    </data>
+</root>

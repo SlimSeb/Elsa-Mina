@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral,
+            PublicKeyToken=b77a5c561934e089
+        </value>
+    </resheader>
+
+    <data name="parameter_name_auto_join_tournaments" xml:space="preserve">
+        <value>Random-Battle-Turnieren beitreten</value>
+    </data>
+    <data name="parameter_description_auto_join_tournaments" xml:space="preserve">
+        <value>Der Bot tritt jedem in diesem Raum erstellten [Gen 9] Random Battle-Turnier bei und spielt seine Matches.</value>
+    </data>
+    <data name="jointour_help" xml:space="preserve">
+        <value>Lässt den Bot dem Turnier dieses Raums beitreten und seine Matches spielen (nur [Gen 9] Random Battle). Syntax: -jointour</value>
+    </data>
+    <data name="jointour_joining" xml:space="preserve">
+        <value>Ich trete dem Turnier bei. Ich spiele meine Matches, sobald sie bereit sind.</value>
+    </data>
+    <data name="jointour_no_tournament" xml:space="preserve">
+        <value>In diesem Raum gibt es kein Turnier.</value>
+    </data>
+    <data name="jointour_already_joined" xml:space="preserve">
+        <value>Ich nehme bereits an diesem Turnier teil.</value>
+    </data>
+    <data name="jointour_already_started" xml:space="preserve">
+        <value>Das Turnier hat bereits begonnen.</value>
+    </data>
+    <data name="jointour_unsupported_format" xml:space="preserve">
+        <value>Ich kann nur Turniere in folgenden Formaten spielen: {0}.</value>
+    </data>
+    <data name="leavetour_help" xml:space="preserve">
+        <value>Lässt den Bot das Turnier dieses Raums verlassen (er gibt auf, wenn das Turnier bereits begonnen hat). Syntax: -leavetour</value>
+    </data>
+    <data name="leavetour_leaving" xml:space="preserve">
+        <value>Ich verlasse das Turnier.</value>
+    </data>
+    <data name="leavetour_not_joined" xml:space="preserve">
+        <value>Ich nehme nicht am Turnier dieses Raums teil.</value>
+    </data>
+</root>
