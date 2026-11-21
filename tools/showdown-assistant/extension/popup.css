@@ -1,0 +1,106 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1c2733;
+  --muted: #66727f;
+  --border: #c9d1da;
+  --ok: #2f7d32;
+  --error: #b42318;
+  --accent: #1f6fd1;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1f2329;
+    --fg: #e3e7ec;
+    --muted: #9aa5b1;
+    --border: #3a414b;
+    --ok: #7bc47f;
+    --error: #ff8a80;
+    --accent: #6ea8ff;
+  }
+}
+
+body {
+  width: 300px;
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13px/1.4 system-ui, sans-serif;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.status {
+  margin-bottom: 12px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+.status.error {
+  color: var(--error);
+}
+
+.row {
+  display: block;
+  margin: 6px 0;
+}
+
+.row input {
+  margin: 0 6px 0 0;
+  vertical-align: -2px;
+}
+
+.field {
+  display: block;
+  margin-top: 10px;
+}
+
+.field span {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+}
+
+.field input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 5px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 12px ui-monospace, monospace;
+}
+
+#permissions p {
+  margin: 0 0 6px;
+}
+
+button {
+  padding: 5px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.hint {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+code {
+  font-size: 11px;
+}

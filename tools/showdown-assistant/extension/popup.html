@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Battle Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <h1>Battle assistant</h1>
+
+  <section id="server" class="status">Checking the server…</section>
+
+  <section id="permissions" hidden>
+    <p>The extension needs access to Showdown and to the local server.</p>
+    <button id="grant" type="button">Allow access</button>
+  </section>
+
+  <label class="row">
+    <input id="enabled" type="checkbox">
+    <span>Show advice in battles</span>
+  </label>
+  <label class="row">
+    <input id="search" type="checkbox">
+    <span>Look one turn ahead when the server can</span>
+  </label>
+
+  <label class="field">
+    <span>Server</span>
+    <input id="serverUrl" type="url" spellcheck="false">
+  </label>
+
+  <p class="hint">Start the server with <code>dotnet run</code> in <code>tools/showdown-assistant/server</code>.</p>
+
+  <script src="popup.js"></script>
+</body>
+</html>

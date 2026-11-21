@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net11.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>ElsaMina.BattleAssistant</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- The tracker, encoder, ONNX model, guard and search the bot plays with. ElsaMina.Battles copies the models
+             (Models/**), the search script (Search/search_sim.js) and Core the Showdown data (Services/Dex) next to
+             this server -->
+        <ProjectReference Include="..\..\..\src\ElsaMina.Battles\ElsaMina.Battles.csproj"/>
+    </ItemGroup>
+
+</Project>

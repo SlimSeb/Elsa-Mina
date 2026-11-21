@@ -1,0 +1,51 @@
+{
+  "manifest_version": 3,
+  "name": "ElsaMina Battle Assistant",
+  "version": "1.1.0",
+  "description": "Shows what ElsaMina's minipoke battle model would play in your Pokémon Showdown random battles. Needs the local assistant server.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "battle-assistant@elsamina.local",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://play.pokemonshowdown.com/*",
+    "https://*.psim.us/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://play.pokemonshowdown.com/*", "https://*.psim.us/*"],
+      "js": ["hook.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["https://play.pokemonshowdown.com/*", "https://*.psim.us/*"],
+      "js": ["content.js"],
+      "css": ["panel.css"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_title": "Battle Assistant",
+    "default_popup": "popup.html",
+    "default_icon": "icons/icon.svg"
+  },
+  "options_ui": {
+    "page": "popup.html"
+  }
+}

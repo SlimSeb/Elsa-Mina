@@ -1,0 +1,236 @@
+/* The advice panel, over Showdown's page. For its dark theme the classic client puts .dark on <html>, the new client
+   on <body>. */
+#elsamina-assistant {
+  --ema-bg: #ffffff;
+  --ema-fg: #1c2733;
+  --ema-muted: #66727f;
+  --ema-border: #c9d1da;
+  --ema-header: #eef2f6;
+  --ema-bar: rgba(41, 128, 239, 0.14);
+  --ema-accent: #1f6fd1;
+  --ema-best-bg: rgba(31, 111, 209, 0.08);
+  --ema-search: #b7791f;
+  --ema-error: #b42318;
+
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10000;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  background: var(--ema-bg);
+  color: var(--ema-fg);
+  border: 1px solid var(--ema-border);
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  font: 12px/1.35 Verdana, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+html.dark #elsamina-assistant,
+body.dark #elsamina-assistant {
+  --ema-bg: #1f2329;
+  --ema-fg: #e3e7ec;
+  --ema-muted: #9aa5b1;
+  --ema-border: #3a414b;
+  --ema-header: #2a3038;
+  --ema-bar: rgba(110, 168, 255, 0.16);
+  --ema-accent: #6ea8ff;
+  --ema-best-bg: rgba(110, 168, 255, 0.10);
+  --ema-search: #e3b341;
+  --ema-error: #ff8a80;
+}
+
+#elsamina-assistant .ema-header {
+  display: block;
+  padding: 6px 8px;
+  background: var(--ema-header);
+  border-bottom: 1px solid var(--ema-border);
+  cursor: move;
+  white-space: nowrap;
+}
+
+#elsamina-assistant .ema-title {
+  font-weight: bold;
+}
+
+#elsamina-assistant .ema-turn {
+  margin-left: 8px;
+  color: var(--ema-muted);
+}
+
+#elsamina-assistant .ema-collapse {
+  float: right;
+  width: 20px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--ema-border);
+  border-radius: 4px;
+  background: var(--ema-bg);
+  color: var(--ema-fg);
+  font: bold 12px/16px Verdana, sans-serif;
+  cursor: pointer;
+}
+
+#elsamina-assistant .ema-body {
+  padding: 8px;
+}
+
+#elsamina-assistant .ema-message {
+  color: var(--ema-muted);
+}
+
+#elsamina-assistant .ema-error {
+  color: var(--ema-error);
+}
+
+#elsamina-assistant .ema-note,
+#elsamina-assistant .ema-search,
+#elsamina-assistant .ema-chosen {
+  margin-top: 6px;
+  color: var(--ema-muted);
+  font-size: 11px;
+}
+
+#elsamina-assistant .ema-search {
+  color: var(--ema-search);
+}
+
+#elsamina-assistant .ema-eval {
+  margin-bottom: 8px;
+  white-space: nowrap;
+}
+
+#elsamina-assistant .ema-evallabel,
+#elsamina-assistant .ema-evalnum {
+  display: inline-block;
+  width: 36px;
+  color: var(--ema-muted);
+  vertical-align: middle;
+}
+
+#elsamina-assistant .ema-evalnum {
+  width: 40px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#elsamina-assistant .ema-evalbar {
+  display: inline-block;
+  position: relative;
+  width: calc(100% - 80px);
+  height: 8px;
+  border-radius: 4px;
+  background: #d9534f;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+#elsamina-assistant .ema-evalfill {
+  height: 100%;
+  background: #3fa129;
+}
+
+#elsamina-assistant .ema-actions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#elsamina-assistant .ema-action {
+  position: relative;
+  padding: 4px 6px;
+  border-left: 3px solid transparent;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+#elsamina-assistant .ema-action + .ema-action {
+  margin-top: 2px;
+}
+
+#elsamina-assistant .ema-action > * {
+  position: relative;
+  vertical-align: middle;
+}
+
+#elsamina-assistant .ema-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--ema-bar);
+}
+
+#elsamina-assistant .ema-best {
+  border-left-color: var(--ema-accent);
+  background: var(--ema-best-bg);
+  font-weight: bold;
+}
+
+#elsamina-assistant .ema-vetoed {
+  color: var(--ema-muted);
+  text-decoration: line-through;
+}
+
+#elsamina-assistant .ema-kind {
+  margin-right: 4px;
+  color: var(--ema-muted);
+}
+
+#elsamina-assistant .ema-type {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 3px;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: normal;
+  line-height: 15px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+#elsamina-assistant .ema-tera {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+#elsamina-assistant .ema-detail {
+  margin-left: 6px;
+  color: var(--ema-muted);
+  font-size: 10px;
+  font-weight: normal;
+}
+
+#elsamina-assistant .ema-badge {
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 1px solid var(--ema-accent);
+  border-radius: 3px;
+  color: var(--ema-accent);
+  font-size: 9px;
+  font-weight: normal;
+  text-transform: lowercase;
+}
+
+#elsamina-assistant .ema-badge-search {
+  border-color: var(--ema-search);
+  color: var(--ema-search);
+}
+
+#elsamina-assistant .ema-prob {
+  float: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Showdown's button for the recommended choice */
+[id^="room-battle-"] .ema-highlight {
+  outline: 3px solid #1f6fd1 !important;
+  outline-offset: 1px;
+}
+
+html.dark [id^="room-battle-"] .ema-highlight,
+body.dark [id^="room-battle-"] .ema-highlight {
+  outline-color: #6ea8ff !important;
+}
