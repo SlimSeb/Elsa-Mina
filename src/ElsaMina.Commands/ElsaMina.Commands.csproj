@@ -18,6 +18,7 @@
 
     <ItemGroup>
         <PackageReference Include="HtmlAgilityPack" />
+        <PackageReference Include="Lusamine.SlimExpressionParser" />
         <PackageReference Include="Lusamine.DamageCalc" />
         <PackageReference Include="Lusamine.Markovify" />
         <PackageReference Include="Serilog.Sinks.File" />
