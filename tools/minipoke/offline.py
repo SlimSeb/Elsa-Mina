@@ -21,6 +21,13 @@ The labels are one-hot (one human choice per state): a big model memorizes them.
 scored on the validation battles (NLL of the human choices), the best epoch is kept
 (`offline.pt`) and training stops after `patience` epochs without improving.
 
+Opponent heads (ModelConfig.opp_heads, opp_targets.py): with `opp_coef` > 0, the loss adds opp_coef x
+the mean of six cross-entropies, each divided by log(classes) (~1 at init, like the value loss):
+the opponent's simultaneous choice, whether it terastallized, and each opposing Pokémon's real
+item, ability, tera type and moves. They need a dataset built with them (human_data.py writes
+them). `opp_metrics` scores them: the opponent's choice (top-1, NLL), and the hidden parts of
+their sets (items and abilities not revealed yet, tera types, recall@4 of unrevealed moves).
+
 Metrics (`offline_metrics`, on the test battles: the most recent ones): top-1 agreement and NLL
 of the human choices (players rated `min_rating`+, and all), the value head's AUC at telling won
 from lost battles' decisions, and its calibration (mean value vs mean return and win rate, by
@@ -41,7 +48,9 @@ import torch
 import torch.nn.functional as F
 
 from dataset import ShardDataset
+from encoder import N_SLOTS, UNK_ID
 from model import to_tensors
+from opp_targets import OPP_EXTRA
 
 ALGOS = ("bc", "awbc")
 
@@ -67,6 +76,7 @@ class OfflineConfig:
     patience: int = 2             # epochs without a better validation NLL before stopping
     min_rating: int = 1700        # the metrics' "strong players" threshold
     train_min_rating: int = 0     # train the actor only on players rated this or more
+    opp_coef: float = 0.0         # opponent heads' loss weight (a model with opp_heads, opponent targets)
 
 
 class HumanData:
@@ -262,6 +272,95 @@ def describe_metrics(m: Dict[str, object]) -> str:
 
 
 # --------------------------------------------------------------------------
+# Opponent heads: the opponent's choice and their real sets (opp_targets.py)
+# --------------------------------------------------------------------------
+OPP_FIELDS = tuple(OPP_EXTRA)
+
+
+def has_opp_targets(data: ShardDataset) -> bool:
+    return all(k in data.extra for k in OPP_FIELDS)
+
+
+def _masked_mean(x: torch.Tensor, sel: torch.Tensor) -> torch.Tensor:
+    sel = sel.to(x.dtype)
+    return (torch.where(sel > 0, x, torch.zeros_like(x)) * sel).sum() / sel.sum().clamp_min(1.0)
+
+
+def opp_targets_of(mb: dict, device) -> Dict[str, torch.Tensor]:
+    return {k: torch.from_numpy(mb[k]).to(device) for k in OPP_FIELDS}
+
+
+def opp_losses(out: Dict[str, torch.Tensor], t: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    """Each opponent loss, divided by log(classes): model.opp_logits' `out` against the targets `t`
+    (opp_targets.OPP_EXTRA; -1 = no target). A choice our view calls impossible (a class the
+    model masks) is left out."""
+    losses = {}
+    act, logits = t["opp_act"], out["opp_act"].float()
+    possible = out["opp_act_mask"].gather(1, act.clamp_min(0).unsqueeze(1)).squeeze(1)
+    ce = F.cross_entropy(logits, act.clamp_min(0), reduction="none")
+    losses["opp_act"] = _masked_mean(ce, (act >= 0) & possible) / math.log(logits.shape[1])
+    tera = t["opp_tera"]
+    bce = F.binary_cross_entropy_with_logits(out["opp_tera"].float(), tera.clamp_min(0).float(),
+                                             reduction="none")
+    losses["opp_tera"] = _masked_mean(bce, tera >= 0) / math.log(2)
+    for k in ("opp_item", "opp_ability", "opp_tera_type"):
+        y, lg = t[k], out[k].float()                                       # [B, 6], [B, 6, C]
+        ce = F.cross_entropy(lg.flatten(0, 1), y.clamp_min(0).flatten(), reduction="none").view_as(y)
+        losses[k] = _masked_mean(ce, y >= 0) / math.log(lg.shape[-1])
+    y = t["opp_moves"]                                                     # [B, 6, 4], 0 = none
+    logq = F.log_softmax(out["opp_moves"].float(), -1)                    # [B, 6, moves]
+    losses["opp_moves"] = _masked_mean(-logq.gather(2, y.clamp_min(0)), y > UNK_ID) \
+        / math.log(logq.shape[-1])
+    return losses
+
+
+@torch.no_grad()
+def opp_metrics(model, data: ShardDataset, device, batch: int = 1024) -> Dict[str, float]:
+    """On a split: the opponent's choice (top-1, NLL, over the choices our view can name), their
+    tera (accuracy), and what their sets hide: items and abilities not revealed yet (top-1),
+    tera types (top-1), and the recall of the moves not revealed yet in the 4 likeliest."""
+    model.eval()
+    sums: Dict[str, float] = {}
+
+    def add(name, hits, sel):
+        sel = sel.bool()
+        sums[name] = sums.get(name, 0.0) + float(hits[sel].float().sum())
+        sums[name + "_n"] = sums.get(name + "_n", 0.0) + float(sel.sum())
+
+    for mb in data.batches("train", batch):
+        obs = to_tensors(mb["obs"], device)
+        _, _, _, out = model.forward_train(obs, opp=True)
+        t = opp_targets_of(mb, device)
+        act = t["opp_act"]
+        sel = (act >= 0) & out["opp_act_mask"].gather(1, act.clamp_min(0).unsqueeze(1)).squeeze(1)
+        logq = F.log_softmax(out["opp_act"].float(), -1)
+        add("opp_act_top1", out["opp_act"].argmax(-1) == act, sel)
+        add("opp_act_nll", -logq.gather(1, act.clamp_min(0).unsqueeze(1)).squeeze(1), sel)
+        add("opp_tera_acc", (out["opp_tera"] > 0).long() == t["opp_tera"], t["opp_tera"] >= 0)
+        hidden_item = obs["mon_ids"][:, N_SLOTS:, 1] == UNK_ID
+        hidden_ability = obs["mon_ids"][:, N_SLOTS:, 2] == UNK_ID
+        add("item_top1_hidden", out["opp_item"].argmax(-1) == t["opp_item"], (t["opp_item"] >= 0) & hidden_item)
+        add("ability_top1_hidden", out["opp_ability"].argmax(-1) == t["opp_ability"],
+            (t["opp_ability"] >= 0) & hidden_ability)
+        add("tera_type_top1", out["opp_tera_type"].argmax(-1) == t["opp_tera_type"], t["opp_tera_type"] >= 0)
+        y = t["opp_moves"]                                                 # [B, 6, 4]
+        known = obs["move_ids"][:, N_SLOTS:]                               # [B, 6, 4]
+        revealed = (y.unsqueeze(-1) == known.unsqueeze(-2)).any(-1)
+        top4 = out["opp_moves"].topk(4, dim=-1).indices                    # [B, 6, 4]
+        hit = (y.unsqueeze(-1) == top4.unsqueeze(-2)).any(-1)
+        add("moves_recall4_hidden", hit, (y > UNK_ID) & ~revealed)
+    return {k: sums[k] / max(sums[k + "_n"], 1.0) for k in sums if not k.endswith("_n")} | \
+        {"opp_act_n": int(sums.get("opp_act_top1_n", 0))}
+
+
+def describe_opp(m: Dict[str, float]) -> str:
+    return (f"  opponent's choice: top-1 {m['opp_act_top1']:.3f}  NLL {m['opp_act_nll']:.3f}  "
+            f"({m['opp_act_n']} choices); tera {m['opp_tera_acc']:.3f}\n"
+            f"  their hidden sets: item {m['item_top1_hidden']:.3f}  ability {m['ability_top1_hidden']:.3f}  "
+            f"tera type {m['tera_type_top1']:.3f}  moves recall@4 {m['moves_recall4_hidden']:.3f}")
+
+
+# --------------------------------------------------------------------------
 # Training
 # --------------------------------------------------------------------------
 def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: Path, save,
@@ -279,6 +378,11 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
     labelled = (cols["label_ok"] > 0) & (cols["action"] >= 0) & (cols["rating"] >= cfg.train_min_rating)
     if cfg.algo not in ALGOS:
         raise ValueError(f"unknown offline algorithm {cfg.algo!r}: one of {ALGOS}")
+    use_opp = cfg.opp_coef > 0
+    if use_opp and not getattr(model.cfg, "opp_heads", False):
+        raise ValueError("opp_coef > 0 needs a model with opponent heads (--opp-heads)")
+    if use_opp and not (has_opp_targets(train) and has_opp_targets(val)):
+        raise ValueError(f"{data.root} has no opponent targets: rebuild it with this human_data.py")
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     steps_per_epoch = math.ceil(n / cfg.minibatch)
     total = max(1, steps_per_epoch * cfg.epochs)
@@ -329,6 +433,8 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
         t0 = time.time()
         weights = None
         stats = {"actor": 0.0, "value": 0.0, "w_mean": float("nan"), "w_pos": float("nan")}
+        if use_opp:
+            stats["opp"] = 0.0
         if cfg.algo == "awbc" and epoch > cfg.warmup_epochs:
             values = ordered_pass(model, train, device)
             adv = gae(values, cols["reward"], cols["done"], cols["traj"], cols["step"], cfg.gamma, cfg.lam)["adv"]
@@ -342,7 +448,10 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
                 group["lr"] = lr_at(step)
             obs = to_tensors(mb["obs"], device)
             rows = mb["row"]
-            logits, values, value_logits = model.forward_train(obs)
+            if use_opp:
+                logits, values, value_logits, opp_out = model.forward_train(obs, opp=True)
+            else:
+                logits, values, value_logits = model.forward_train(obs)
             action = torch.from_numpy(mb["action"]).to(device)
             lab = torch.from_numpy(labelled[rows]).to(device)
             w = torch.from_numpy(weights[rows]).to(device) if weights is not None else lab.float()
@@ -351,6 +460,9 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
             ret = torch.from_numpy(mb["ret"]).to(device)
             v_loss = value_loss(model, values, value_logits, ret, cfg.value_ce_norm)
             loss = actor + cfg.vf_coef * v_loss
+            if use_opp:
+                o_loss = torch.stack(list(opp_losses(opp_out, opp_targets_of(mb, device)).values())).mean()
+                loss = loss + cfg.opp_coef * o_loss
             if not torch.isfinite(loss):
                 continue
             opt.zero_grad(set_to_none=True)
@@ -360,18 +472,25 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
             step += 1
             stats["actor"] += actor.item() * len(rows)
             stats["value"] += v_loss.item() * len(rows)
+            if use_opp:
+                stats["opp"] += o_loss.item() * len(rows)
             seen += len(rows)
-        for k in ("actor", "value"):
-            stats[k] /= max(seen, 1)
+        for k in ("actor", "value", "opp"):
+            if k in stats:
+                stats[k] /= max(seen, 1)
         p = predict(model, val, device)
         vm = {**policy_metrics(p, 0), "value_auc": value_metrics(p)["auc"]}
+        if use_opp:
+            vm["opp"] = opp_metrics(model, val, device)
         row = {"epoch": epoch, "seconds": time.time() - t0, "lr": lr_at(step), **stats,
                **{f"val_{k}": v for k, v in vm.items()}}
         history.append(row)
         log(f"[offline] epoch {epoch}/{cfg.epochs} ({row['seconds']:.0f} s)  actor {stats['actor']:.4f}  "
             f"value {stats['value']:.4f}"
             + (f"  w mean {stats['w_mean']:.2f} (A>0 {stats['w_pos']:.2f})" if weights is not None else "")
-            + f"  | val NLL {vm['nll']:.4f}  top-1 {vm['top1']:.3f}  value AUC {vm['value_auc']:.3f}")
+            + (f"  opp {stats['opp']:.4f}" if use_opp else "")
+            + f"  | val NLL {vm['nll']:.4f}  top-1 {vm['top1']:.3f}  value AUC {vm['value_auc']:.3f}"
+            + (f"  opp top-1 {vm["opp"]['opp_act_top1']:.3f}" if use_opp else ""))
         improved = vm["nll"] < best
         if improved:
             best, best_epoch, bad = vm["nll"], epoch, 0

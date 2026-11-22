@@ -146,7 +146,12 @@ request, a choice outside poke-env's mask) keeps its step, with action -1, so tr
 
 Shards keep, besides the observation and the one-hot action, the fields offline RL needs to put rows
 back in trajectory order (`dataset.py` extra fields): `traj` (battle x 2 + side), `step`, `reward`,
-`done`, `rating`, `turn`, `label_ok`, `result`. Battles are split whole by upload time: the newest
+`done`, `rating`, `turn`, `label_ok`, `result`. They also keep what the player could not see, for the
+opponent heads (`opp_targets.py`, see [The observation and the model](#the-observation-and-the-model)):
+`opp_act` and `opp_tera`, the opponent's choice made at the same time (Showdown sends both sides a
+request at once, a wait request to a side with nothing to choose, so the k-th requests of p1 and p2
+pair up), and per opposing slot of our view its real `opp_item`, `opp_ability`, `opp_tera_type` and
+`opp_moves` (the opponent's first request). Datasets built before Nov 22 2026 do not have them. Battles are split whole by upload time: the newest
 `--test-frac` 10% test, the `--val-frac` 5% before them validation (early stopping), the rest trains.
 Each chunk of 100 battles is a task (`--processes`, default 3: each ~0.6 GB plus a ~0.2 GB Node
 process; a worker is replaced after 25 chunks), and a stopped build resumes when run again
@@ -189,6 +194,8 @@ epoch is measured on the test battles (`offline_metrics.json`).
 | `--train-min-rating` | 0 | train the actor only on players rated this or more (the dataset already starts at 1500) |
 | `--min-rating` | 1700 | the metrics' strong players |
 | `--move-tokens`, `--typed-ffn` | off | architecture options (see [The observation and the model](#the-observation-and-the-model)) |
+| `--move-pool` | `concat` | `meanmax`: a Pokémon token reads its moves in any order (new models only) |
+| `--opp-heads`, `--opp-coef` | off, 0.5 | training-only heads for the opponent's choice and real sets, and their loss weight; with `--init`, fresh heads on that model |
 | `--run` | the checkpoint folder's name | `runs/<run>/train.log` |
 
 ### Sizes
@@ -429,6 +436,28 @@ export). Architecture options for a new model: `--move-tokens` (one token per Po
 move head reads our active's move tokens after the transformer) and `--typed-ffn` (one feed-forward
 block per token type). They change no observation, and gained nothing under self-play.
 
+**Move pooling** (`--move-pool meanmax`, Nov 22 2026, not measured yet). Every model up to V3 joins a
+Pokémon's 4 move vectors end to end (`concat`), so its token depends on the slot order: the request's
+order for ours, and **the order the opponent revealed them in** for theirs. `meanmax` takes their mean
+and max over the slots holding a move instead: the same set gives the same token in any order. The
+move head still scores each slot, so actions and the observation are unchanged (the C# encoder too),
+and `mon_net`'s input shrinks from 4 to 2 move widths (about 1M parameters fewer on `large`).
+
+**Opponent heads** (`--opp-heads`, Nov 22 2026, not measured yet). A re-simulated replay knows what
+the player did not: what the opponent chose at the same time, and their real sets. Training-only
+heads learn them from the final tokens: the opponent's choice as a pointer over their 6 Pokémon
+tokens, a switch to an unrevealed Pokémon, their active's known and candidate move vectors, or
+another move (`opp_targets.OPP_*`), whether they terastallized, and per opposing slot its item,
+ability, tera type and moves. The loss adds `--opp-coef` (0.5) x the mean of the six cross-entropies,
+each divided by log(classes). The heads (`opp_*` weights) are never in `forward()`, so an export
+has the same ONNX inputs, outputs and `encoder_spec.json`. Jaxcalibur (#1 on the gen 9 random battle
+ladder, Aug 2026) reported that predicting the opponent's next action substantially improved its
+bot. `offline-eval` and the end of `offline` score them on the test battles: the opponent's choice
+(top-1, NLL), their tera, the items and abilities not revealed yet, tera types, and recall@4 of the
+moves not revealed yet. Next step, not done: use them in the search (weight the opponent's hidden
+set guesses, and mix the predicted choice into the regret-matching equilibrium), which means
+exporting them.
+
 **`encoder_spec.json`.** `export_onnx.py` writes, next to `minipoke.onnx`, everything the C# encoder
 needs: vocabularies, item hashing, one-hot orderings, feature sizes, and for V2 `"encoder_version": 2`,
 every ONNX input in order with its shape, the config fields that shape the observation, the set priors
@@ -572,6 +601,7 @@ git history.
 | Nov 13 | **Offline RL**, small, 9.4k battles: BC, then AWBC (the plan: a Q head only if AWBC did not beat BC) | AWBC beat BC on every metric and beat the self-play `MiniPokeV2_1_1M` head to head (53.6%); BC lost to it (47.5%). The Q head was never needed |
 | Nov 14-21 | AWBC, `large`, 258k battles: **`MiniPokeV3_22M`** | test top-1 59.95%; PPO from it lost to it (39%); with search, 1800+ on the ladder |
 | Nov 22 | Self-play PPO, the BC-from-heuristic and distillation commands, the Q head and the self-play models removed | |
+| Nov 22 | Order-free move pooling (`--move-pool meanmax`) and the opponent heads (`--opp-heads`), with their targets in `human_data.py` | not measured yet: needs a dataset rebuilt with the targets |
 
 Never tried: training the network on the search's choices (expert iteration), and the PPO step-size
 ablation (bigger learning rate, more epochs, bigger batches) planned for v3 before the human data
@@ -583,6 +613,8 @@ made it moot.
 - `showdown_versions.py` keeps a built Showdown checkout per server version; `resim.js` re-simulates
   input logs on one; `resim.py` judges the re-simulations (`check`) and checks them against the bot's
   own `.log`s (`parity`).
+- `opp_targets.py` reads, from a re-simulation, the opponent's choices and real sets (the opponent
+  heads' targets).
 - `human_data.py` turns human replays into the dataset; `dataset.py` holds the sharded on-disk format
   and its streaming loader.
 - `encoder.py` (V1) and `encoder_v2.py` (set priors, history, move effects, events, matchups, by flag);

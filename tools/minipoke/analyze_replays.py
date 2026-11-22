@@ -422,6 +422,7 @@ def snapshot(battle, line: int, encoders: Dict[str, object]) -> dict:
         "trapped": bool(battle.trapped),
         "can_tera": bool(battle.can_tera),
         "team": list(battle.team),
+        "opponent_team": list(battle.opponent_team),   # the opposing slots' order (opp_targets.py)
         "request_team": [p["ident"] for p in (request.get("side") or {}).get("pokemon", [])],
         "moves": [m.id for m in move_options(battle)],
         "fainted": [mine, theirs],
