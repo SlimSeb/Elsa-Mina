@@ -5,7 +5,7 @@ import torch
 
 from encoder import ACT_DIM, F_MOVE, N_MONS, N_MOVES, N_SLOTS
 from export_onnx import model_inputs, random_inputs
-from model import ACTOR, CRITIC, FIELD_TOK, MON0, MOVE0, N_TOKENS
+from model import ACTOR, CRITIC, FIELD_TOK, MOVE0, N_TOKENS
 from tests.helpers import make_model
 
 CONFIGS = {

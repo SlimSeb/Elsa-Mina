@@ -1,8 +1,9 @@
 """minipoke v3, part B: the human replay dataset (dataset.py extra fields, human_data.py helpers)
-and offline RL (offline.py: GAE along trajectories, advantage weights, bc / awbc / q training,
-the offline metrics, the ONNX policy). Synthetic data, CPU, no Showdown."""
+and offline RL (offline.py: the value loss, GAE along trajectories, advantage weights, bc / awbc
+training, the offline metrics, the ONNX policy). Synthetic data, CPU, no Showdown."""
 
 import json
+import math
 import multiprocessing
 import threading
 from pathlib import Path
@@ -16,7 +17,6 @@ import offline as O
 from dataset import ShardDataset, ShardWriter, discounted_returns
 from encoder_v2 import V1_LAYOUT
 from model import MiniPokeTransformer, PRESETS
-from ppo import compute_gae
 from tests.helpers import random_obs
 
 GAMMA = 0.995
@@ -88,7 +88,7 @@ def test_datasets_without_extra_fields_read_as_before(tmp_path):
 # --------------------------------------------------------------------------
 # human_data.py helpers
 # --------------------------------------------------------------------------
-def test_side_rewards_follow_players_trajectories():
+def test_side_rewards_are_the_faint_difference_until_the_next_decision_plus_the_result():
     # fainted (ours, theirs) at each decision; final (1, 3); a win
     rewards = H.side_rewards([(0, 0), (0, 1), (1, 1)], (1, 3), 1.0, 0.1)
     assert rewards == pytest.approx([0.1, -0.1, 0.2 + 1.0])
@@ -132,16 +132,76 @@ def test_pool_rounds_replaces_retired_workers_instead_of_hanging():
 
 
 # --------------------------------------------------------------------------
+# The value loss
+# --------------------------------------------------------------------------
+SUPPORT = torch.linspace(-1.6, 1.6, 51)
+
+
+@pytest.mark.parametrize("target", [-1.6, -1.0, -0.0371, 0.0, 0.5, 1.23, 1.6])
+def test_two_hot_expectation_is_the_target(target):
+    dist = O.two_hot(torch.tensor([target]), SUPPORT)
+    assert dist.sum().item() == pytest.approx(1.0)
+    assert (dist @ SUPPORT).item() == pytest.approx(target, abs=1e-6)
+    assert (dist > 0).sum() <= 2
+
+
+def test_two_hot_clamps_returns_outside_the_support():
+    dist = O.two_hot(torch.tensor([3.0, -9.0]), SUPPORT)
+    assert dist[0, -1] == 1.0 and dist[1, 0] == 1.0
+
+
+def test_two_hot_of_discounted_returns_round_trips():
+    r = torch.from_numpy(discounted_returns([0.1, 0.1, 1.0], GAMMA).astype(np.float32))
+    torch.testing.assert_close(O.two_hot(r, SUPPORT) @ SUPPORT, r)
+
+
+def test_distributional_value_loss_is_minimised_by_the_two_hot_target():
+    torch.manual_seed(0)
+    model = MiniPokeTransformer(PRESETS["medium"])
+    targets = torch.tensor([0.37, -0.8])
+    dist = O.two_hot(targets, model.value_support)
+    good = torch.log(dist.clamp_min(1e-12))
+    worse = torch.zeros_like(good)
+    values = (dist @ model.value_support)
+    assert O.value_loss(model, values, good, targets) < O.value_loss(model, values, worse, targets)
+    # gradient of the raw CE wrt logits = softmax - target
+    logits = torch.zeros(2, 51, requires_grad=True)
+    O.value_loss(model, values, logits, targets, ce_norm=False).backward()
+    torch.testing.assert_close(logits.grad, (torch.softmax(logits, -1) - dist).detach() / 2)
+
+
+def test_normalized_two_hot_loss_is_one_at_init_like_the_mse_scale():
+    model = MiniPokeTransformer(PRESETS["medium"])
+    targets = torch.tensor([0.37, -0.8, 1.0, -1.0])
+    uniform = torch.zeros(4, 51)  # a fresh head's logits are ~equal
+    values = torch.zeros(4)
+    assert O.value_loss(model, values, uniform, targets).item() == pytest.approx(1.0, abs=1e-6)
+    assert O.value_loss(model, values, uniform, targets, ce_norm=False).item() == pytest.approx(
+        math.log(51), abs=1e-5)
+    # the scalar head is unaffected: MSE either way
+    assert O.value_loss(model, values, None, targets) == O.value_loss(model, values, None, targets,
+                                                                     ce_norm=False)
+
+
+# --------------------------------------------------------------------------
 # Advantages
 # --------------------------------------------------------------------------
-def test_gae_matches_ppos_on_one_trajectory_whatever_the_row_order():
+def reference_gae(values, rewards, gamma, lam):
+    """GAE of one trajectory in step order, by the backward recursion, no bootstrap after it."""
+    adv, last = np.zeros(len(values)), 0.0
+    for t in reversed(range(len(values))):
+        next_value = values[t + 1] if t + 1 < len(values) else 0.0
+        last = rewards[t] + gamma * next_value - values[t] + gamma * lam * last
+        adv[t] = last
+    return adv
+
+
+def test_gae_matches_the_backward_recursion_on_one_trajectory_whatever_the_row_order():
     rng = np.random.default_rng(0)
     values = rng.uniform(-1, 1, 12).astype(np.float32)
     rewards = rng.choice([0.0, 0.1, -0.1], 12).astype(np.float32)
     rewards[-1] += 1.0
-    episode = [{"obs": {}, "action": 0, "logp": 0.0, "value": float(v), "reward": float(r)}
-               for v, r in zip(values, rewards)]
-    _, _, _, expected, _, _ = compute_gae([episode], GAMMA, 0.95)
+    expected = reference_gae(values, rewards, GAMMA, 0.95)
     perm = rng.permutation(12)
     dones = np.zeros(12)
     dones[-1] = 1
@@ -178,12 +238,9 @@ def test_auc():
 # --------------------------------------------------------------------------
 def run(human_data, tmp_path, model=None, resume=None, save=None, **cfg):
     from checkpoint import save_checkpoint
-    from model import with_q_head
     torch.manual_seed(0)
     if model is None:
         model = MiniPokeTransformer(PRESETS["small"])
-        if cfg.get("algo") == "q":
-            model = with_q_head(model)
     data = O.HumanData(human_data)
     config = O.OfflineConfig(minibatch=64, warmup_steps=2, **cfg)
     out = tmp_path / cfg.get("algo", "bc")
@@ -256,7 +313,7 @@ def test_resuming_a_run_that_stopped_early_trains_no_more(human_data, tmp_path):
     assert resumed["best_epoch"] == finished["best_epoch"]
 
 
-@pytest.mark.parametrize("algo, weight", [("bc", "exp"), ("awbc", "exp"), ("awbc", "binary"), ("q", "exp")])
+@pytest.mark.parametrize("algo, weight", [("bc", "exp"), ("awbc", "exp"), ("awbc", "binary")])
 def test_offline_training_runs_and_keeps_the_best_epoch(human_data, tmp_path, algo, weight):
     result, out = run(human_data, tmp_path, algo=algo, weight=weight, epochs=3, warmup_epochs=1,
                       patience=5, lr=3e-3)
@@ -267,8 +324,19 @@ def test_offline_training_runs_and_keeps_the_best_epoch(human_data, tmp_path, al
     assert best["offline"]["val"]["nll"] == pytest.approx(result["best_val_nll"])
     weighted = [h for h in result["history"] if not np.isnan(h["w_mean"])]
     assert len(weighted) == (2 if algo != "bc" else 0)    # after the warmup epoch
-    if algo == "q":
-        assert best["cfg"]["q_head"] and all(h["q"] > 0 for h in result["history"])
+
+
+def test_offline_training_refuses_an_unknown_algorithm(human_data, tmp_path):
+    with pytest.raises(ValueError, match="unknown offline algorithm"):
+        run(human_data, tmp_path, algo="q", epochs=1)
+
+
+def test_checkpoints_with_retired_training_only_heads_still_load():
+    from model import build_model
+    model = MiniPokeTransformer(PRESETS["small"])
+    weights = {**model.state_dict(), "q_head.0.weight": torch.zeros(1), "aux_tera_head.bias": torch.zeros(1)}
+    loaded = build_model({"model": weights, "cfg": {**model.cfg.to_dict(), "q_head": True, "aux_heads": True}})
+    assert loaded.cfg == model.cfg
 
 
 def test_offline_training_stops_when_validation_nll_stops_improving(human_data, tmp_path):
@@ -307,7 +375,7 @@ def released(tmp_path):
 def test_onnx_policy_plays_like_a_model(human_data, released):
     from encoder_v2 import model_encoder
     from players import InferenceBatcher
-    from rollout import frozen_copy
+    from matches import frozen_copy
     import train
     assert O.is_onnx_folder(released)
     policy = train.load_policy(released)

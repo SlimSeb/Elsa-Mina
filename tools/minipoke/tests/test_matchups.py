@@ -9,7 +9,7 @@ from poke_env.battle import Move
 
 import damage as D
 from encoder_v2 import EncoderV2, F_MATCH
-from tests.battles import default_team, feed, make_battle, mon, opponent_switch
+from tests.battles import default_team, feed, make_battle, opponent_switch
 from tests.priors import hand_priors
 
 

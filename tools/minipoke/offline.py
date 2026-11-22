@@ -4,20 +4,16 @@ RLC 2025: offline RL on human replays beat imitating them).
 
     train.py offline --data data/human-v21 --size wide-medium --algo bc
     train.py offline --data data/human-v21 --size wide-medium --algo awbc --weight exp
-    train.py offline --data data/human-v21 --size wide-medium --algo q
     train.py offline-eval --ckpt checkpoints/human/offline.pt --data data/human-v21
 
 Algorithms (`OfflineConfig.algo`), each training the value head on the dataset's returns (the
-humans' value: discounted, faint-shaped as in PPO, `vf_coef` x the usual value loss):
+humans' value: +-1 at the end, 0.1 per faint difference, discounted; `vf_coef` x the value loss):
  - bc:   the actor loss is -log pi(a|s) on the human's action (behavioural cloning);
  - awbc: advantage-weighted BC (AWR / CRR): -w(A) log pi(a|s), A by GAE (gamma, lambda) along
          each human trajectory with the value head as the critic, refreshed by an ordered pass
          over the training set at the start of every epoch; w = 1[A > 0] ("binary") or
          min(exp(A / beta), max_weight) ("exp", A divided by its standard deviation first);
-         the first `warmup_epochs` are plain BC, while the critic learns;
- - q:    the same weights, with A = Q(s, a) - sum_a' pi(a'|s) Q(s, a') from a per-action Q head
-         used only in training (model.with_q_head, never exported), trained by TD toward
-         r + gamma V(s') (V from the ordered pass).
+         the first `warmup_epochs` are plain BC, while the critic learns.
 Unlabelled steps (a choice that maps to no legal action, an unanswered last request) train the
 value head and carry the returns, never the actor.
 
@@ -46,20 +42,20 @@ import torch.nn.functional as F
 
 from dataset import ShardDataset
 from model import to_tensors
-from ppo import value_loss
+
+ALGOS = ("bc", "awbc")
 
 
 @dataclass
 class OfflineConfig:
-    algo: str = "bc"              # bc | awbc | q
-    weight: str = "exp"           # awbc / q: binary | exp
+    algo: str = "bc"              # bc | awbc
+    weight: str = "exp"           # awbc: binary | exp
     beta: float = 1.0             # exp weights: exp(A / beta), A in standard deviations
     max_weight: float = 20.0
-    warmup_epochs: int = 1        # awbc / q: plain BC epochs first, while the critic learns
+    warmup_epochs: int = 1        # awbc: plain BC epochs first, while the critic learns
     gamma: float = 0.995
     lam: float = 0.95
     vf_coef: float = 0.5
-    q_coef: float = 0.5
     value_ce_norm: bool = True
     epochs: int = 10
     minibatch: int = 512
@@ -92,31 +88,46 @@ class HumanData:
 
 
 # --------------------------------------------------------------------------
-# Advantages: an ordered pass for V (and Q), then GAE along each trajectory
+# The value loss: MSE for a scalar head, two-hot cross-entropy for a distributional one
+# --------------------------------------------------------------------------
+def two_hot(targets: torch.Tensor, support: torch.Tensor) -> torch.Tensor:
+    """[N] scalars -> [N, bins] distributions whose expectation over `support` is
+    the target (clamped into the support's range): the mass is split between
+    the two nearest bins, proportionally to the distance."""
+    lo, hi, bins = support[0], support[-1], support.numel()
+    pos = (targets.clamp(lo, hi) - lo) / (hi - lo) * (bins - 1)
+    below = pos.floor().clamp(max=bins - 2)
+    frac = pos - below
+    out = torch.zeros(targets.shape[0], bins, device=targets.device, dtype=support.dtype)
+    out.scatter_(1, below.long().unsqueeze(1), (1 - frac).unsqueeze(1))
+    out.scatter_add_(1, below.long().unsqueeze(1) + 1, frac.unsqueeze(1))
+    return out
+
+
+def value_loss(model, values: torch.Tensor, value_logits: Optional[torch.Tensor],
+               targets: torch.Tensor, ce_norm: bool = True) -> torch.Tensor:
+    """MSE for a scalar head, two-hot cross-entropy for a distributional one. With
+    `ce_norm`, the cross-entropy is divided by log(bins): uniform logits (a fresh
+    head) then score exactly 1, the scale of the MSE of +-1 returns."""
+    if value_logits is None:
+        return F.mse_loss(values, targets)
+    target_dist = two_hot(targets, model.value_support)
+    ce = -(target_dist * F.log_softmax(value_logits, dim=-1)).sum(-1).mean()
+    return ce / math.log(value_logits.shape[-1]) if ce_norm else ce
+
+
+# --------------------------------------------------------------------------
+# Advantages: an ordered pass for V, then GAE along each trajectory
 # --------------------------------------------------------------------------
 @torch.no_grad()
-def ordered_pass(model, data: ShardDataset, device, batch: int = 1024, q: bool = False
-                 ) -> Dict[str, np.ndarray]:
-    """V(s) for every row of `data` in global row order, and with `q` the Q head's estimate of
-    A(s, a) = Q(s, a) - sum pi Q(s, .) at the row's action (0 when unlabelled)."""
+def ordered_pass(model, data: ShardDataset, device, batch: int = 1024) -> np.ndarray:
+    """V(s) for every row of `data`, in global row order."""
     model.eval()
-    n = len(data)
-    values = np.zeros(n, dtype=np.float32)
-    q_adv = np.zeros(n, dtype=np.float32) if q else None
+    values = np.zeros(len(data), dtype=np.float32)
     for mb in data.batches("train", batch):
-        obs = to_tensors(mb["obs"], device)
-        rows = mb["row"]
-        if q:
-            logits, v, _, qv = model.forward_train(obs, q=True)
-            probs = torch.softmax(logits, -1)
-            baseline = (probs * qv).sum(-1)
-            action = torch.from_numpy(mb["action"]).to(device)
-            taken = qv.gather(1, action.clamp_min(0).unsqueeze(1)).squeeze(1)
-            q_adv[rows] = ((taken - baseline) * (action >= 0)).float().cpu().numpy()
-        else:
-            _, v = model(obs)
-        values[rows] = v.float().cpu().numpy()
-    return {"value": values, "q_adv": q_adv}
+        _, v = model(to_tensors(mb["obs"], device))
+        values[mb["row"]] = v.float().cpu().numpy()
+    return values
 
 
 def trajectory_order(traj: np.ndarray, step: np.ndarray) -> np.ndarray:
@@ -266,7 +277,8 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
     n = len(train)
     cols = {k: train.column(k) for k in ("reward", "done", "traj", "step", "label_ok", "rating", "action")}
     labelled = (cols["label_ok"] > 0) & (cols["action"] >= 0) & (cols["rating"] >= cfg.train_min_rating)
-    use_q = cfg.algo == "q"
+    if cfg.algo not in ALGOS:
+        raise ValueError(f"unknown offline algorithm {cfg.algo!r}: one of {ALGOS}")
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     steps_per_epoch = math.ceil(n / cfg.minibatch)
     total = max(1, steps_per_epoch * cfg.epochs)
@@ -315,20 +327,14 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
         f"{len(val)} validation, {steps_per_epoch} steps per epoch")
     for epoch in range(first_epoch, last_epoch + 1):
         t0 = time.time()
-        weights = next_value = None
-        stats = {"actor": 0.0, "value": 0.0, "q": 0.0, "w_mean": float("nan"), "w_pos": float("nan")}
-        if cfg.algo in ("awbc", "q") and epoch > cfg.warmup_epochs:
-            passed = ordered_pass(model, train, device, q=use_q)
-            g = gae(passed["value"], cols["reward"], cols["done"], cols["traj"], cols["step"], cfg.gamma, cfg.lam)
-            adv = passed["q_adv"] if use_q else g["adv"]
+        weights = None
+        stats = {"actor": 0.0, "value": 0.0, "w_mean": float("nan"), "w_pos": float("nan")}
+        if cfg.algo == "awbc" and epoch > cfg.warmup_epochs:
+            values = ordered_pass(model, train, device)
+            adv = gae(values, cols["reward"], cols["done"], cols["traj"], cols["step"], cfg.gamma, cfg.lam)["adv"]
             weights = advantage_weights(adv, labelled, cfg)
-            next_value = g["next_value"]
             stats["w_mean"] = float(weights[labelled].mean())
             stats["w_pos"] = float((adv[labelled] > 0).mean())
-        elif use_q:
-            passed = ordered_pass(model, train, device)
-            next_value = gae(passed["value"], cols["reward"], cols["done"], cols["traj"], cols["step"],
-                             cfg.gamma, cfg.lam)["next_value"]
         model.train()
         seen = 0
         for mb in train.batches("train", cfg.minibatch, rng=rng):
@@ -336,10 +342,7 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
                 group["lr"] = lr_at(step)
             obs = to_tensors(mb["obs"], device)
             rows = mb["row"]
-            if use_q:
-                logits, values, value_logits, qv = model.forward_train(obs, q=True)
-            else:
-                logits, values, value_logits = model.forward_train(obs)
+            logits, values, value_logits = model.forward_train(obs)
             action = torch.from_numpy(mb["action"]).to(device)
             lab = torch.from_numpy(labelled[rows]).to(device)
             w = torch.from_numpy(weights[rows]).to(device) if weights is not None else lab.float()
@@ -348,12 +351,6 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
             ret = torch.from_numpy(mb["ret"]).to(device)
             v_loss = value_loss(model, values, value_logits, ret, cfg.value_ce_norm)
             loss = actor + cfg.vf_coef * v_loss
-            if use_q:
-                target = torch.from_numpy(mb["reward"] + cfg.gamma * next_value[rows]).to(device)
-                taken = qv.gather(1, action.clamp_min(0).unsqueeze(1)).squeeze(1)
-                q_loss = (((taken - target) ** 2) * lab).sum() / lab.sum().clamp_min(1)
-                loss = loss + cfg.q_coef * q_loss
-                stats["q"] += q_loss.item() * len(rows)
             if not torch.isfinite(loss):
                 continue
             opt.zero_grad(set_to_none=True)
@@ -364,7 +361,7 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
             stats["actor"] += actor.item() * len(rows)
             stats["value"] += v_loss.item() * len(rows)
             seen += len(rows)
-        for k in ("actor", "value", "q"):
+        for k in ("actor", "value"):
             stats[k] /= max(seen, 1)
         p = predict(model, val, device)
         vm = {**policy_metrics(p, 0), "value_auc": value_metrics(p)["auc"]}
@@ -372,7 +369,7 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
                **{f"val_{k}": v for k, v in vm.items()}}
         history.append(row)
         log(f"[offline] epoch {epoch}/{cfg.epochs} ({row['seconds']:.0f} s)  actor {stats['actor']:.4f}  "
-            f"value {stats['value']:.4f}" + (f"  q {stats['q']:.4f}" if use_q else "")
+            f"value {stats['value']:.4f}"
             + (f"  w mean {stats['w_mean']:.2f} (A>0 {stats['w_pos']:.2f})" if weights is not None else "")
             + f"  | val NLL {vm['nll']:.4f}  top-1 {vm['top1']:.3f}  value AUC {vm['value_auc']:.3f}")
         improved = vm["nll"] < best
@@ -401,7 +398,7 @@ class OnnxPolicy:
     """A released model's minipoke.onnx with its encoder (encoder_spec.json, set_priors.json),
     behaving like a frozen MiniPokeTransformer for inference: `cfg`, `priors` (so
     encoder_v2.model_encoder rebuilds its encoder), `__call__(obs tensors) -> (logits, value)`,
-    and the no-ops rollout.frozen_copy calls."""
+    and the no-ops matches.frozen_copy calls."""
 
     def __init__(self, folder: Path | str, threads: int = 1):
         import onnxruntime as ort

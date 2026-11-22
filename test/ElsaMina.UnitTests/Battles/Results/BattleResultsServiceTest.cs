@@ -18,7 +18,7 @@ public class BattleResultsServiceTest
     public void SetUp()
     {
         _battleDecisionManager = Substitute.For<IBattleDecisionManager>();
-        _battleDecisionManager.ActiveStrategy.Returns(BattleDecisionStrategy.MiniPokeV2_1_22M_Search);
+        _battleDecisionManager.ActiveStrategy.Returns(BattleDecisionStrategy.MiniPokeV3_22M_Search);
         var clockService = Substitute.For<IClockService>();
         clockService.CurrentUtcDateTimeOffset.Returns(NOW);
         var configuration = Substitute.For<IConfiguration>();
@@ -84,8 +84,8 @@ public class BattleResultsServiceTest
         // Assert
         Assert.That(records, Is.EqualTo(new[]
         {
-            new BattleRecord("gen9randombattle", BattleDecisionStrategy.MiniPokeV2_1_22M_Search, 1, 1, 1),
-            new BattleRecord("gen9ou", BattleDecisionStrategy.MiniPokeV2_1_22M_Search, 0, 1, 0),
+            new BattleRecord("gen9randombattle", BattleDecisionStrategy.MiniPokeV3_22M_Search, 1, 1, 1),
+            new BattleRecord("gen9ou", BattleDecisionStrategy.MiniPokeV3_22M_Search, 0, 1, 0),
             new BattleRecord("gen9randombattle", BattleDecisionStrategy.MiniPokeV3_22M, 1, 0, 0)
         }));
     }
@@ -102,7 +102,7 @@ public class BattleResultsServiceTest
         _service.OnBattleEnded(context, BattleOutcome.Won);
 
         // Assert
-        Assert.That(_service.GetRecords().Single().Strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV2_1_22M_Search));
+        Assert.That(_service.GetRecords().Single().Strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
     }
 
     [Test]
@@ -116,7 +116,7 @@ public class BattleResultsServiceTest
 
         // Assert
         Assert.That(_service.LastResult, Is.EqualTo(new BattleResult("battle-gen9randombattle-2", "gen9randombattle",
-            BattleDecisionStrategy.MiniPokeV2_1_22M_Search, BattleOutcome.Lost, 31, NOW)));
+            BattleDecisionStrategy.MiniPokeV3_22M_Search, BattleOutcome.Lost, 31, NOW)));
     }
 
     [Test]

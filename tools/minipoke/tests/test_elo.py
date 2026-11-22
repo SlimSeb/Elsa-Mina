@@ -1,52 +1,8 @@
-import json
 import random
 
 import pytest
 
-from elo import (ANCHORS, LEARNER, EloTable, expected, fit_ratings, parse_anchors,
-                 round_robin_pairs, snapshot_name)
-
-
-def test_anchors_stay_fixed_and_the_learner_moves_toward_its_performance():
-    table = EloTable(k=16)
-    table.add_player(LEARNER, table.rating("heuristic"))
-    assert table.rating(LEARNER) == ANCHORS["heuristic"]
-    table.record(LEARNER, "heuristic", score_a=150, games=200)    # 75%: ~ +190 Elo
-    assert table.rating("heuristic") == ANCHORS["heuristic"]
-    gained = table.rating(LEARNER) - ANCHORS["heuristic"]
-    assert 150 < gained < 200                                    # converges, no overshoot
-    perf = ANCHORS["heuristic"] + 400 * __import__("math").log10(3)
-    for _ in range(20):
-        table.record(LEARNER, "heuristic", 150, 200)
-    assert table.rating(LEARNER) == pytest.approx(perf, abs=1.0)
-    assert table.games[LEARNER] == 21 * 200 and table.games["heuristic"] == 21 * 200
-
-
-def test_learner_and_snapshot_exchange_points():
-    table = EloTable(k=16)
-    table.add_player(LEARNER, 800.0)
-    table.add_player(snapshot_name(10))      # starts at the learner's rating
-    assert table.rating("it00010") == 800.0
-    table.record(LEARNER, "it00010", 15, 20)
-    up = table.rating(LEARNER) - 800.0
-    assert up > 0 and table.rating("it00010") == pytest.approx(800.0 - up)
-    table.record("it00010", LEARNER, 5, 20)  # either order: one result row
-    assert table.results == {"it00010|learner": [10.0, 40]}
-    table.record(LEARNER, LEARNER, 10, 20)   # mirror games carry nothing
-    assert table.games[LEARNER] == 40
-
-
-def test_table_round_trips_and_saves(tmp_path):
-    table = EloTable(k=16)
-    table.add_player(LEARNER, 700.0)
-    table.record(LEARNER, "maxpower", 18, 20)
-    other = EloTable(k=16)
-    other.load_state_dict(json.loads(json.dumps(table.state_dict())))
-    assert other.ratings == table.ratings and other.results == table.results
-    table.save(tmp_path / "elo.json")
-    saved = json.loads((tmp_path / "elo.json").read_text())
-    assert saved["table"][0]["player"] in ("heuristic", LEARNER)
-    assert {r["player"] for r in saved["table"]} == {LEARNER, "heuristic", "maxpower", "random"}
+from elo import ANCHORS, expected, fit_ratings, parse_anchors, round_robin_pairs
 
 
 def test_fit_recovers_ratings_with_anchors_fixed():

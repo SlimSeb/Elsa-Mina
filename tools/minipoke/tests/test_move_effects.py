@@ -4,14 +4,11 @@ import asyncio
 
 import numpy as np
 import pytest
-import torch
 
 from effects import F_EFFECT
 from encoder_v2 import EncoderV1, EncoderV2
 from history import move_outcomes
-from model import with_move_effects
 from tests.battles import default_team, make_battle, opponent_switch
-from tests.helpers import make_model, model_obs
 from tests.priors import hand_priors
 
 NO_EFFECT, ABILITY, STATUS_FAILS, IMMUNE_BEFORE, FAILED, FAILED_TWICE = range(F_EFFECT)
@@ -121,26 +118,6 @@ def test_without_the_flag_the_v2_layout_is_unchanged():
     assert list(with_effects.layout)[-2:] == ["effect_feats", "cand_effect_feats"]
 
 
-@pytest.mark.parametrize("move_tokens", [False, True])
-def test_with_move_effects_plays_like_the_model_it_extends(move_tokens):
-    model = make_model("small", encoder_version=2, history=True, move_tokens=move_tokens).eval()
-    extended = with_move_effects(model).eval()
-    assert extended.cfg.move_effects and extended.priors is model.priors
-    obs = {k: torch.from_numpy(np.stack([o[k] for o in model_obs(extended, 6)]))
-           for k in model_obs(extended, 1)[0]}
-    with torch.no_grad():
-        before = model({k: v for k, v in obs.items() if not k.endswith("effect_feats")})
-        after = extended(obs)
-    torch.testing.assert_close(after[0], before[0])
-    torch.testing.assert_close(after[1], before[1])
-    # ...and its new inputs get a gradient
-    extended.train()
-    logits, value = extended(obs)
-    (logits.masked_fill(~obs["mask"], 0).sum() + value.sum()).backward()
-    grad = extended.move_net[0].weight.grad
-    assert grad[:, -F_EFFECT:].abs().sum() > 0
-
-
 class FakeBatcher:
     encoder = EncoderV1()
 
@@ -151,10 +128,10 @@ class FakeBatcher:
 
 @pytest.mark.parametrize("no_tera_before,tera", [(0, True), (1, True), (2, False)])
 def test_no_tera_before_masks_the_tera_actions_until_that_turn(no_tera_before, tera):
-    from players import RLPlayer
+    from players import ModelPlayer
     battle = make_battle(default_team(), [opponent_switch("Venusaur"), "|turn|1"])
     batcher = FakeBatcher()
-    player = RLPlayer(batcher, greedy=True, no_tera_before=no_tera_before, start_listening=False)
+    player = ModelPlayer(batcher, no_tera_before=no_tera_before, start_listening=False)
     asyncio.run(player._choose(battle))
     assert batcher.mask[10:].any() == tera
     assert batcher.mask[6:10].any()

@@ -18,7 +18,7 @@ public class MiniPokeBattleDecisionServiceTest
     // The calc fallback picks a random move: make it pick a move index the model never maps to
     private const int FALLBACK_MOVE_CHOICE = 99;
     private const int ACTION_COUNT = BattleObservation.ActionCount;
-    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV2_1_22M, "Models/MiniPokeV2_1_22M");
+    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV3_22M, "Models/MiniPokeV3_22M");
     private static readonly int[] SECOND_CHOICE = [2];
     private static readonly int[] THIRD_CHOICE = [3];
     private static readonly string[] GUARDED_MOVES = ["earthquake", "rockblast", "glare", "coil"];
@@ -47,7 +47,7 @@ public class MiniPokeBattleDecisionServiceTest
         var search = new MiniPokeTurnSearch(_simulator, new BattleMessageParser(TestBattleDex.Instance));
         _service = new MiniPokeBattleDecisionService(_model, _encoder, fallback, guard, search, OPTIONS);
         _searchService = new MiniPokeBattleDecisionService(_model, _encoder, fallback, guard, search,
-            OPTIONS with { Strategy = BattleDecisionStrategy.MiniPokeV2_1_22M_Search, Search = true });
+            OPTIONS with { Strategy = BattleDecisionStrategy.MiniPokeV3_22M_Search, Search = true });
     }
 
     private static BattleContext CreateSinglesContext(int activeSlots = 1)
@@ -461,7 +461,7 @@ public class MiniPokeBattleDecisionServiceTest
     public void Test_Strategy_ShouldBeTheModelVersionStrategy()
     {
         // Assert
-        Assert.That(_service.Strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV2_1_22M));
+        Assert.That(_service.Strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M));
     }
 
     [Test]

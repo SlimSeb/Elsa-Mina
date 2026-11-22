@@ -64,7 +64,7 @@ import zlib
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
-from poke_env.battle import Battle, Move, Pokemon
+from poke_env.battle import Battle, Move
 
 import effects
 import encoder as E

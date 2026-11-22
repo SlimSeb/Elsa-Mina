@@ -38,7 +38,7 @@ mismatch there would not show: the model still suggests legal moves, it just pla
    |---|---|---|
    | `--ShowdownDirectory <dir>` | empty | A pokemon-showdown package (its `dist/sim`, e.g. `node_modules/pokemon-showdown`). Turns on the one-turn search, which the bot measured as stronger than the model alone. Needs Node. |
    | `--NodePath <path>` | `node` | The Node executable the search runs. |
-   | `--Model <name>` | `MiniPokeV3_22M` | Another model played with the V2 encoder: `MiniPokeV2_1_22M`. |
+   | `--Model <name>` | `MiniPokeV3_22M` | The model giving the advice: a folder of `src/ElsaMina.Battles/Models` played with the V2 encoder (only `MiniPokeV3_22M` is released). |
    | `--urls <url>` | `http://127.0.0.1:7685` | Where it listens. Change the extension's server address to match. |
 
 2. **Extension** (Firefox 128 or later): open `about:debugging#/runtime/this-firefox`, click

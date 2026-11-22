@@ -1,6 +1,5 @@
 """C3: history features from poke-env's state and the protocol log."""
 
-import numpy as np
 import pytest
 
 import encoder as E

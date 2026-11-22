@@ -20,7 +20,7 @@ legal actions:
     (its policy probability breaks near ties, `prior_weight` x log probability).
 
 Forced switches, and turns with one legal action, use the model alone, as does any turn
-whose search fails. `SearchPlayer` is an `RLPlayer`: anything that plays a model can play
+whose search fails. `SearchPlayer` is a `ModelPlayer`: anything that plays a model can play
 it with search (train.py eval / elo --search).
 
 `depth` 2 looks one decision further where it matters most. Per determinization, the
@@ -40,19 +40,18 @@ import copy
 import itertools
 import json
 import logging
-import os
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Sequence, Tuple
 
 import numpy as np
-from poke_env.data import GenData, to_id_str
+from poke_env.data import GenData
 
 import encoder as E
 from history import active_turns
-from players import FAINT_REWARD, RLPlayer
+from players import FAINT_REWARD, ModelPlayer
 
 log = logging.getLogger("minipoke")
 SIM_SCRIPT = Path(__file__).resolve().parent / "search_sim.js"
@@ -355,11 +354,11 @@ class SearchStats:
                 f"{self.leaves / n:.0f} leaves{deeper} and {self.seconds / n:.2f}s each")
 
 
-class SearchPlayer(RLPlayer):
-    """An RLPlayer that searches one turn ahead before playing (see the module docstring)."""
+class SearchPlayer(ModelPlayer):
+    """A ModelPlayer that searches one turn ahead before playing (see the module docstring)."""
 
     def __init__(self, batcher, sims: SimPool, config: Optional[SearchConfig] = None, **kwargs):
-        super().__init__(batcher, None, greedy=True, **kwargs)
+        super().__init__(batcher, **kwargs)
         self.sims = sims
         self.config = config or SearchConfig()
         self.stats = SearchStats()

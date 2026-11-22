@@ -6,11 +6,9 @@ namespace ElsaMina.UnitTests.Battles.Strategies;
 public class BattleDecisionStrategyExtensionsTest
 {
     [TestCase(BattleDecisionStrategy.DamageCalc, "damagecalc")]
-    [TestCase(BattleDecisionStrategy.MiniPokeV2_1_22M, "minipokev2.1-22m")]
     [TestCase(BattleDecisionStrategy.MiniPokeV3_22M, "minipokev3-22m")]
-    [TestCase(BattleDecisionStrategy.MiniPokeV2_1_22M_Search, "minipokev2.1-22m+search")]
     [TestCase(BattleDecisionStrategy.MiniPokeV3_22M_Search, "minipokev3-22m+search")]
-    public void Test_GetName_ShouldSeparateVersionPartsWithDotsAndSizeWithDash(BattleDecisionStrategy strategy,
+    public void Test_GetName_ShouldSeparateTheSizeWithADash(BattleDecisionStrategy strategy,
         string expectedName)
     {
         // Act
@@ -34,7 +32,7 @@ public class BattleDecisionStrategyExtensionsTest
     }
 
     [TestCase(BattleDecisionStrategy.DamageCalc)]
-    [TestCase(BattleDecisionStrategy.MiniPokeV2_1_22M_Search)]
+    [TestCase(BattleDecisionStrategy.MiniPokeV3_22M_Search)]
     public void Test_WithSearch_ShouldBeNull_WhenTheStrategyHasNoSearchVariant(BattleDecisionStrategy strategy)
     {
         // Act & Assert

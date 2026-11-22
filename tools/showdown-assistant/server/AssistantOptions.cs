@@ -4,7 +4,7 @@ using ElsaMina.Battles.Strategies;
 namespace ElsaMina.BattleAssistant;
 
 /// <summary>
-/// The server's settings: appsettings.json, overridden on the command line (--Model MiniPokeV2_1_22M,
+/// The server's settings: appsettings.json, overridden on the command line (--Model MiniPokeV3_22M,
 /// --ShowdownDirectory ~/showdown/node_modules/pokemon-showdown, --urls http://127.0.0.1:7700).
 /// </summary>
 public sealed class AssistantOptions : IBattlesConfiguration

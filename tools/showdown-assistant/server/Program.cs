@@ -18,7 +18,7 @@ var options = builder.Configuration.Get<AssistantOptions>() ?? new AssistantOpti
 if (options.Model.IsSearch() || options.Model == BattleDecisionStrategy.DamageCalc)
 {
     throw new InvalidOperationException(
-        $"--Model must be a minipoke model (MiniPokeV3_22M, MiniPokeV2_1_22M), not {options.Model}");
+        $"--Model must be a minipoke model (MiniPokeV3_22M), not {options.Model}");
 }
 
 Log.Configuration = new AssistantLoggingConfiguration();

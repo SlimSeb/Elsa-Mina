@@ -4,13 +4,13 @@ using ElsaMina.Battles.Strategies.MiniPoke;
 namespace ElsaMina.UnitTests.Battles.Strategies.MiniPoke;
 
 /// <summary>
-/// The checks every model version's spec goes through, on the released minipoke v2.1 spec and on a V1 spec. Feature
-/// sizes are checked by each version's encoder.
+/// The checks every model version's spec goes through, on the released MiniPokeV3_22M spec (V2.1's observation) and
+/// on a V1 spec. Feature sizes are checked by each version's encoder.
 /// </summary>
 public class EncoderSpecTest
 {
     private static readonly string SPEC_PATH =
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1_22M", "encoder_spec.json");
+        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV3_22M", "encoder_spec.json");
     private static readonly string[] V2_1_INPUTS =
     [
         "cand_ids", "cand_feats", "prior_ids", "prior_w", "prior_feats", "hist_ids", "hist_feats", "effect_feats",

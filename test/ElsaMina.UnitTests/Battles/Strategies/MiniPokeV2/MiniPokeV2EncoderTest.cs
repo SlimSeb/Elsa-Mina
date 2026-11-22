@@ -18,8 +18,8 @@ public class MiniPokeV2EncoderTest
     private const int PRIOR_FEATURES = 24;
     private const int HAS_SETS = 20;
 
-    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV2_1_22M,
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1_22M"));
+    private static readonly MiniPokeModelOptions OPTIONS = new(BattleDecisionStrategy.MiniPokeV3_22M,
+        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV3_22M"));
     private static readonly string[] PROTECT_ONLY = ["protect"];
 
     private BattleMessageParser _parser;

@@ -15,9 +15,10 @@ moves by name, `switch N` = the request's N-th Pokémon, terastallize = +4). A c
 no action legal in poke-env's mask keeps its step, unlabelled (action -1): the trajectory stays
 whole for the returns and advantages.
 
-Rewards are the ones the models are trained with (players.Trajectories): after each decision,
---faint-reward x (their Pokémon fainted - ours) until the next one, and the result on the last
-(+1 win, -1 loss, 0 tie). `ret` is the discounted return (--gamma).
+Rewards: after each decision, --faint-reward x (their Pokémon fainted - ours) until the next
+one, and the result on the last (+1 win, -1 loss, 0 tie). `ret` is the discounted return
+(--gamma). The value head learns that return, and the search (search.py, MiniPokeTurnSearch.cs)
+scores its leaves with the same faint reward, 0.1.
 
 Battles are split by upload time, whole: the most recent --test-frac are the test set, the
 --val-frac before them the validation set (early stopping), the rest trains.
@@ -105,8 +106,8 @@ def load_encoder(source: Optional[str]):
 # --------------------------------------------------------------------------
 def side_rewards(fainted: Sequence[Sequence[int]], final: Sequence[int], result: float,
                  faint_reward: float) -> List[float]:
-    """Each decision's reward (players.Trajectories): the faint difference until the next
-    decision, plus the result on the last one. `fainted[t]` = (ours, theirs) at decision t."""
+    """Each decision's reward: the faint difference until the next decision, plus the result
+    on the last one. `fainted[t]` = (ours, theirs) at decision t."""
     n = len(fainted)
     out = []
     for t in range(n):
@@ -395,7 +396,7 @@ def build(args) -> dict:
             log.info("%d / %d chunks, %d samples (%.0f s)", len(results), len(tasks),
                      sum(s["n"] for r in results.values() for v in r["shards"].values() for s in v),
                      time.time() - t0)
-    stats: Counter = Counter({f"battle_build_failed": sum(
+    stats: Counter = Counter({"battle_build_failed": sum(
         1 for r in replays if short(r.version) in build_failed or not r.version)})
     shards = {s: [] for s in SPLITS}
     records = []

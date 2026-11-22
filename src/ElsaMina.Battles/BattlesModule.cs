@@ -32,8 +32,7 @@ public class BattlesModule : Module
         builder.RegisterType<ShowdownSimulator>().As<IShowdownSimulator>().SingleInstance();
         builder.RegisterType<MiniPokeTurnSearch>().AsSelf().SingleInstance();
         // minipoke models: one line each (see tools/minipoke/README.md)
-        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV2_1_22M, playsAlone: false);
-        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV3_22M, playsAlone: true);
+        RegisterMiniPoke<MiniPokeV2Encoder>(builder, BattleDecisionStrategy.MiniPokeV3_22M);
         builder.RegisterType<BattleDecisionManager>().As<IBattleDecisionService>().As<IBattleDecisionManager>().SingleInstance();
         builder.RegisterType<BattleService>().As<IBattleService>().SingleInstance();
         builder.RegisterType<BattleTeamsService>().As<IBattleTeamsService>().SingleInstance();
@@ -68,10 +67,8 @@ public class BattlesModule : Module
     /// <summary>
     /// A minipoke model: the files exported to Models/{strategy}, played by its own decision service
     /// with the encoder matching the encoder.py it was trained with. The decision manager picks up every version.
-    /// With <paramref name="playsAlone"/> false, only its search variant is offered.
     /// </summary>
-    private static void RegisterMiniPoke<TEncoder>(ContainerBuilder builder, BattleDecisionStrategy strategy,
-        bool playsAlone)
+    private static void RegisterMiniPoke<TEncoder>(ContainerBuilder builder, BattleDecisionStrategy strategy)
         where TEncoder : MiniPokeEncoder
     {
         var options = new MiniPokeModelOptions(strategy,
@@ -81,10 +78,7 @@ public class BattlesModule : Module
             .WithParameter(TypedParameter.From(options))
             .Keyed<IMiniPokeEncoder>(strategy)
             .SingleInstance();
-        if (playsAlone)
-        {
-            RegisterMiniPokeService(builder, strategy, options);
-        }
+        RegisterMiniPokeService(builder, strategy, options);
 
         // Its search variant plays with the same model and encoder
         if (strategy.WithSearch() is { } searchStrategy)

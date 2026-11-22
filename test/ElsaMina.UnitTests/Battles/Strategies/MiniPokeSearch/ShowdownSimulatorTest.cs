@@ -70,9 +70,9 @@ public class ShowdownSimulatorTest
     [Test]
     public async Task Test_ChooseAsync_ShouldSearchWithTheRealModel()
     {
-        // Arrange: MiniPokeV2_1_22M itself, end to end (position, simulator, replays, ONNX values)
-        var options = new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV2_1_22M,
-            Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1_22M"));
+        // Arrange: MiniPokeV3_22M itself, end to end (position, simulator, replays, ONNX values)
+        var options = new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV3_22M,
+            Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV3_22M"));
         using var model = new MiniPokeOnnxModel(options);
         var encoder = new MiniPokeV2Encoder(options, TestBattleDex.Instance);
         var battle = new SearchTestBattle();

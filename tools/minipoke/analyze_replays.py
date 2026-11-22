@@ -90,12 +90,14 @@ FORMAT = "gen9randombattle"
 REPLAY_URL = "https://replay.pokemonshowdown.com/"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MODELS_DIR = REPO_ROOT / "src" / "ElsaMina.Battles" / "Models"
-PLAYED_BY = "MiniPokeV2_1_22M"  # the model the report is about
-COMPARE_WITH = "MiniPokeV3_22M"  # run on the same states (step 6), and a candidate for attribution
+PLAYED_BY = "MiniPokeV3_22M"  # the model the report is about
+# Another released model (a folder of MODELS_DIR) run on the same states (step 6), and a candidate
+# for attribution; None: no comparison
+COMPARE_WITH: Optional[str] = None
 CACHE_VERSION = 1
 
-# The value head's return: players.Rewards "shaped" (what the v2 runs trained with,
-# faint reward 0.1 throughout) discounted by ppo.PPOConfig.gamma per decision
+# The value head's return, as human_data.py builds it: +-1 at the end, 0.1 per faint difference
+# after each decision, discounted by GAMMA per decision
 WIN_REWARD = 1.0
 FAINT_REWARD = 0.1
 GAMMA = 0.995
@@ -619,7 +621,7 @@ def policy(logits: np.ndarray, mask: np.ndarray) -> Tuple[np.ndarray, np.ndarray
 
 
 def realized_returns(fainted: Sequence[Sequence[int]], final: Sequence[int], result: float) -> List[float]:
-    """The return the value head learns at each decision (players.Trajectories): the
+    """The return the value head learns at each decision (human_data.side_rewards): the
     faint difference until the next decision, the result on the last one, discounted."""
     n = len(fainted)
     rewards = []
@@ -1262,7 +1264,7 @@ def analyze(folder: Path, out: Path, refresh: bool, compare: bool, limit: Option
             broken.append(f"`{stem}`: {exc}")
     print(f"{len(loaded)} battles paired ({len(broken)} broken, {len(pairing_issues)} unpaired files)")
 
-    models = [load_model(PLAYED_BY)] + ([load_model(COMPARE_WITH)] if compare else [])
+    models = [load_model(PLAYED_BY)] + ([load_model(COMPARE_WITH)] if compare and COMPARE_WITH else [])
     encoders = {}
     for model in models:
         encoders.setdefault(model.key, model.encoder)
@@ -1855,8 +1857,8 @@ def value_section(battles: List[Battle], charts: Path) -> Tuple[str, dict]:
                   f"{r['value_after']:+.2f}", r["state_before"], r["what_happened"][:160]] for r in drops[:30]]
     text = ["## Value head", "",
             f"The value is the model's expected return: +-{WIN_REWARD:g} at the end, +-{FAINT_REWARD:g} per "
-            f"Pokémon fainted on either side, discounted by {GAMMA} per decision (players.Rewards "
-            f"\"shaped\"). The realized return below is that quantity computed from each battle. "
+            f"Pokémon fainted on either side, discounted by {GAMMA} per decision (the returns "
+            f"human_data.py trains on). The realized return below is that quantity computed from each battle. "
             f"{len(rows)} decision points from {len({b.id for _, b in rows})} decided battles.", "",
             table(["Value bucket", "Decisions", "Mean value", "Mean realized return", "Mean outcome",
                    "Won"], calibration), "",
@@ -2291,7 +2293,7 @@ def findings(battles: List[Battle], s: dict) -> List[str]:
                   f"The model-specific sections below leave them out. " + parity)
     out.append(parity)
 
-    n, wins = res["n"], res["wins"]
+    wins = res["wins"]
     given = sum(b.outcome == "win" and b.ending[0] in ("forfeit", "inactivity") for b in main)
     out.append(f"**{name} went {res['all'][2]} ({res['all'][3]}, 95% interval {res['all'][4]})**, and "
                f"{given} of its {wins} wins are opponent forfeits or timeouts. In the {res['to_the_end'][1]} "
@@ -2517,7 +2519,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("replays", type=Path, help="folder with the <id>.log / <id>.json pairs (only read)")
     ap.add_argument("--out", type=Path, default=Path("replays/analysis"))
-    ap.add_argument("--no-compare", action="store_true", help=f"skip {COMPARE_WITH}")
+    ap.add_argument("--no-compare", action="store_true", help=f"skip COMPARE_WITH ({COMPARE_WITH})")
     ap.add_argument("--refresh", action="store_true", help="replay every battle again, ignoring the cache")
     ap.add_argument("--limit", type=int, help="only the first N battles (by id)")
     ap.add_argument("--write-calibration", action="store_true",

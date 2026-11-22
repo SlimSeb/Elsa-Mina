@@ -16,13 +16,12 @@ public class BattleDecisionManagerTest
     private static readonly BattleDecisionStrategy[] REGISTERED_STRATEGIES =
     [
         BattleDecisionStrategy.DamageCalc, BattleDecisionStrategy.MiniPokeV3_22M,
-        BattleDecisionStrategy.MiniPokeV2_1_22M_Search, BattleDecisionStrategy.MiniPokeV3_22M_Search
+        BattleDecisionStrategy.MiniPokeV3_22M_Search
     ];
 
     private CalcBasedBattleDecisionService _calcService;
     private MiniPokeActionGuard _guard;
     private MiniPokeTurnSearch _search;
-    private MiniPokeBattleDecisionService _miniPokeV2122MSearchService;
     private MiniPokeBattleDecisionService _miniPokeV322MService;
     private MiniPokeBattleDecisionService _miniPokeV322MSearchService;
     private IShowdownSimulator _simulator;
@@ -41,12 +40,10 @@ public class BattleDecisionManagerTest
         _simulator.IsAvailable.Returns(true);
         _search = new MiniPokeTurnSearch(_simulator, Substitute.For<IBattleMessageParser>());
 
-        // As BattlesModule registers them: MiniPokeV2_1_22M only with search, MiniPokeV3_22M alone and with search
-        _miniPokeV2122MSearchService = Service(BattleDecisionStrategy.MiniPokeV2_1_22M_Search, "MiniPokeV2_1_22M");
+        // As BattlesModule registers them: the model alone and with search
         _miniPokeV322MService = Service(BattleDecisionStrategy.MiniPokeV3_22M, "MiniPokeV3_22M");
         _miniPokeV322MSearchService = Service(BattleDecisionStrategy.MiniPokeV3_22M_Search, "MiniPokeV3_22M");
-        _manager = new BattleDecisionManager(_calcService,
-            [_miniPokeV2122MSearchService, _miniPokeV322MService, _miniPokeV322MSearchService]);
+        _manager = new BattleDecisionManager(_calcService, [_miniPokeV322MService, _miniPokeV322MSearchService]);
     }
 
     private MiniPokeBattleDecisionService Service(BattleDecisionStrategy strategy, string model) =>
@@ -56,15 +53,18 @@ public class BattleDecisionManagerTest
     [Test]
     public void Test_TrySetStrategy_ShouldSwitchToTheSearchVariant_WhenInputNamesIt()
     {
+        // Arrange
+        _manager.ActiveStrategy = BattleDecisionStrategy.DamageCalc;
+
         // Act
-        var result = _manager.TrySetStrategy("minipokev2.1-22m+search", out var strategy);
+        var result = _manager.TrySetStrategy("minipokev3-22m+search", out var strategy);
 
         // Assert
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
-            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV2_1_22M_Search));
-            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV2_1_22M_Search));
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
             Assert.That(((MiniPokeBattleDecisionService)_manager.GetCurrentService()).CanSearch, Is.True);
         }
     }
@@ -76,7 +76,7 @@ public class BattleDecisionManagerTest
         _simulator.IsAvailable.Returns(false);
 
         // Act
-        var result = _manager.TrySetStrategy("minipokev2.1-22m+search", out _);
+        var result = _manager.TrySetStrategy("minipokev3-22m+search", out _);
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -138,21 +138,6 @@ public class BattleDecisionManagerTest
             Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M));
             Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M));
             Assert.That(_manager.GetCurrentService(), Is.SameAs(_miniPokeV322MService));
-        }
-    }
-
-    [Test]
-    public void Test_TrySetStrategy_ShouldReturnFalse_WhenTheModelIsOnlyOfferedWithSearch()
-    {
-        // Act
-        var result = _manager.TrySetStrategy("minipokev2.1-22m", out var strategy);
-
-        // Assert
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result, Is.False);
-            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
-            Assert.That(_manager.AvailableStrategies, Does.Not.Contain(BattleDecisionStrategy.MiniPokeV2_1_22M));
         }
     }
 

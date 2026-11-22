@@ -8,7 +8,7 @@ import pytest
 
 from paired import (BASE_FORMAT, PAIRED_FORMAT, TeamPairs, battle_score, generate_teams, make_paired,
                     pair_scores, paired_player, team_names)
-from rollout import SafeRandomPlayer
+from matches import SafeRandomPlayer
 
 SHOWDOWN = Path.home() / "Documents/minipoke/pokemon-showdown"
 
@@ -79,7 +79,7 @@ def test_pooled_pair_scores_give_the_result_of_one_run():
 
 
 def test_a_match_result_without_pairs_counts_ties_as_half():
-    from rollout import MatchResult
+    from matches import MatchResult
     result = MatchResult(score=10.5, games=20, ties=1)
     assert result.rate == pytest.approx(0.525)
     assert "52.5% over 20 battles" in result.describe() and "1 ties" in result.describe()

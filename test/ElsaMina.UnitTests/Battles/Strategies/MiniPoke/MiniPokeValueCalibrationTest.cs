@@ -23,7 +23,7 @@ public class MiniPokeValueCalibrationTest
     {
         // Arrange
         var path = Path.Join(_directory, "value_calibration.json");
-        File.WriteAllText(path, """{"model": "MiniPokeV2_1_22M", "scale": 0.8, "offset": -0.2, "decisions": 10}""");
+        File.WriteAllText(path, """{"model": "MiniPokeV3_22M", "scale": 0.8, "offset": -0.2, "decisions": 10}""");
 
         // Act
         var calibration = MiniPokeValueCalibration.Load(path);

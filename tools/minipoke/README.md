@@ -1,38 +1,36 @@
-# minipoke: a small PokeTransformer for an M3 Mac
+# minipoke: battle models for ElsaMina
 
-A proof of concept based on [Nebraskinator/ps-ppo](https://github.com/Nebraskinator/ps-ppo),
-shrunk to run on Apple Silicon with [poke-env](https://github.com/hsahovic/poke-env)
-and a **single** local Showdown server. ElsaMina plays with the exported models
-(`-strategy minipokev2.1-22m+search`, see [Using a model in ElsaMina](#using-a-model-in-elsamina)).
-The next model, **minipoke-v2**, adds random battle set priors and optional history,
-move, matchup and auxiliary features, all behind flags (see [minipoke-v2](#minipoke-v2-encoder-v2)).
+Small transformers that play gen 9 random battles in ElsaMina (`-strategy minipokev3-22m+search`, see
+[Using a model in ElsaMina](#using-a-model-in-elsamina)). They learn from human ladder games: a public
+Showdown replay holds the battle's input log, so re-simulating it rebuilds what each player saw, and the
+model is trained offline on the choices of the players rated 1500+, by behavioural cloning (BC) or
+advantage-weighted BC (AWBC), as Metamon did (Grigsby et al., RLC 2025,
+[arXiv:2504.04395](https://arxiv.org/abs/2504.04395): offline RL on human replays beat imitating them).
+At decision time, ElsaMina can also search one turn ahead on Showdown's simulator.
 
-| | ps-ppo | minipoke `small` (V1_1M) | minipoke `wide` (V1_4M) | minipoke `medium` | minipoke `wide-medium` | minipoke `large` |
-|---|---|---|---|---|---|---|
-| Parameters | ~16M | 0.91M | 4.12M | 3.85M | 4.13M (v2 + `--history`: 4.40M) | 21.7M (v2 + `--history`: 22.5M) |
-| d_model / layers / heads | 512 / 3 / 8 | 128 / 3 / 4 | 256 / 3 / 8 | 256 / 4 / 8 | 256 / 3 / 8 | 512 / 5 / 8 |
-| FFN | x4 | x2 | x4 | x2 | x4 | x4 |
-| Embeddings (species / item / ability / move) | 64 / 32 / 64 / 64 | 32 / 16 / 16 / 32 | 64 / 32 / 64 / 64 | 64 / 32 / 32 / 64 | 64 / 32 / 64 / 64 | 64 / 32 / 64 / 64 |
-| Attention | `flex_attention` (Triton, CUDA-only) | `scaled_dot_product_attention` + boolean mask (MPS ok) | same | same | same | same |
-| Turn history | KV cache, 64 turns | none (current state only) | none | none | none | none |
-| Policy head | linear on actor token | pointer heads: switch logits from team tokens, move logits from the active Pokémon's move vectors | same | same | same | same |
-| Value head | 51-bin distributional | scalar | scalar | 51-bin two-hot over [-1.6, 1.6] | same as `medium` | same as `medium` |
-| Environment | many Showdown servers + Ray workers | one server, poke-env, asyncio, batched inference | same | same | same | same |
-| Training | BC → PPO | BC → mirror self-play PPO | same as `small` | BC (or distillation) → PPO with an opponent pool, schedules, resumable | same as `medium` | same as `medium` |
+`MiniPokeV3_22M` (AWBC on 258k human battles, ~22M parameters) plays at 1800+ on the gen9randombattle
+ladder with search (Nov 2026). The models before it, trained by self-play PPO up to `MiniPokeV2_1_22M`,
+stayed around 1300, and PPO fine-tuning made the human-data model worse (see
+[Results](#results)), so the self-play training code and those models were removed in Nov 2026: git
+history has them.
 
-`small` and `wide` are the architectures of the released `MiniPokeV1_1M` and
-`MiniPokeV1_4M`. `wide-medium` is `wide`'s transformer trained with `medium`'s value
-head and recipe, the size meant for `MiniPokeV2_4M` (see [below](#training-minipokev2_4m-wide-medium)).
-`large` is that recipe on the largest model an 8 GB GPU trains (see [below](#training-on-an-8-gb-gpu-large)). Every V1 size exports the **same ONNX interface** (inputs, dtypes,
-shapes, `logits [B,14]`, `value [B]`) and the same `encoder_spec.json`, byte for byte:
-the distributional head returns its expected value, so ElsaMina cannot tell them apart.
-`tests/test_export_contract.py` checks this. A minipoke-v2 model keeps the outputs and
-V1's six inputs, and adds its own inputs after them.
+## The pipeline
+
+| Step | Script | Output |
+|---|---|---|
+| 1. Download public replays rated 1500+, with their input logs | `collect_replays.py` | `replays/human/<format>/<UTC day>/<id>.json.gz` |
+| 2. Re-simulate each on its own server version, check it against the replay | `resim.py check` | `showdown-versions/` (one checkout per version) |
+| 3. Encode each player's states, choices and returns | `human_data.py` | `data/<name>/{train,val,test}` |
+| 4. Train | `train.py offline --algo bc\|awbc` | `checkpoints/<run>/offline.pt` |
+| 5. Measure on the human test battles, then in games | `train.py offline-eval`, `train.py eval`, `train.py elo` | |
+| 6. Release into ElsaMina | `export_onnx.py`, `make_fixtures.py` | `src/ElsaMina.Battles/Models/MiniPokeVN_SIZE/` |
+| 7. Analyze the bot's own ladder games | `analyze_replays.py` | `replays/analysis/report.md` |
+
+`replays/`, `data/`, `checkpoints/`, `runs/`, `export/`, `showdown-versions/` and the Showdown clone
+stay in this directory, ignored by git. The Mac has 16 GB: keep data jobs to about 3 processes.
+[docs/ubuntu.md](docs/ubuntu.md) runs steps 1 to 5 on the replay server and the GPU box.
 
 ## Setup (macOS, Apple Silicon)
-
-Everything runs from this directory. The virtual environment, checkpoints,
-exports and the Showdown clone stay here, ignored by git.
 
 ```bash
 cd tools/minipoke
@@ -42,1198 +40,26 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt          # torch from PyPI includes MPS on macOS
 pip install -r requirements-dev.txt      # + pytest, matplotlib, psutil
 
-# 2. One local Showdown server (current Showdown needs Node 22+)
+# 2. One local Showdown server (current Showdown needs Node 22+), for eval, elo, the search,
+#    the parity fixtures and the random battle sets the set priors read
 git clone https://github.com/smogon/pokemon-showdown.git
 cd pokemon-showdown && npm install && cp config/config-example.js config/config.js
 node pokemon-showdown start --no-security   # leave running, port 8000
 ```
 
-If you push concurrency high, raise `exports.subprocesses` in Showdown's
-`config/config.js` so battles are simulated across several CPU cores. That
-is still one server, just with more simulator processes.
-
-poke-env is pinned on purpose: ElsaMina's battle tracker is a port of that exact
-version (see below). minipoke-v2 also reads Showdown's random battle sets from that
-clone (`--sets` points elsewhere).
-
-## Run
-
-```bash
-# Phase 1: imitate SimpleHeuristicsPlayer
-python train.py imitate --size medium --battles 3000 --epochs 8
-#   or distil an already trained model (its full action distribution and value)
-python train.py distill --teacher checkpoints/ppo_latest.pt --size medium --battles 3000
-
-# Phase 2: PPO from that checkpoint, with a budget in training states (or --hours, --iterations)
-python train.py ppo --init checkpoints/bc.pt --states 5000000 \
-    --showdown-cmd "node pokemon-showdown start --no-security"
-
-# Stop it (Ctrl-C, SIGTERM, or `touch runs/<run>/STOP`), then continue later
-python train.py ppo --resume checkpoints/ppo_latest.pt
-
-# Evaluate (greedy, 1000 games on 500 paired teams, 95% interval), head to head, league table
-python train.py eval --ckpt checkpoints/best.pt --opponent heuristic
-python train.py eval --ckpt checkpoints/best.pt --vs-ckpt other/best.pt --battles 4000 --processes 4
-python train.py eval --ckpt a.pt --vs-ckpt a.pt --no-tera-before 5   # a.pt without tera before turn 5 vs a.pt
-python train.py eval --ckpt a.pt --vs-ckpt a.pt --search --processes 4  # a.pt searching vs a.pt
-python train.py elo --ckpts a/best.pt b/best.pt --scripted heuristic maxpower random --processes 4
-
-python plot_metrics.py runs/<run>                     # -> runs/<run>/metrics.png
-python plot_metrics.py runs/a runs/b --out ab.png     # overlay runs, x = total_states
-python export_onnx.py --ckpt checkpoints/best.pt --out export/
-```
-
-`plot_metrics.py` plots against `--x total_states` (default), `iteration` or `hours`,
-and overlays every run given.
-
-### Sizes and their defaults
-
-`--size` picks the architecture of a new model and the defaults of every option
-not given on the command line. `--init` and `--resume` always keep the
-architecture stored in the checkpoint, and default to the options of the size it
-matches. Checkpoints store their own config, so older ones (saved before the value
-head was configurable, or by the previous `train.py`) still load, resume and export.
-
-| | `small`, `wide` (the V1 recipe, unchanged) | `medium`, `wide-medium`, `large` |
-|---|---|---|
-| Value head | scalar, MSE | 51 bins, two-hot cross-entropy / log(51) (`--value-bins`, `--value-ce-norm`) |
-| BC value fit (`--bc-value-coef`) | 0 (policy only) | 0.5, to the battles' discounted returns |
-| LR (`--lr`, `--warmup-iters`, `--lr-min-ratio`) | 2e-4 constant | 1e-4 peak, 10-iteration warmup, cosine to 10% |
-| Value loss weight (`--vf-coef`) | 0.5 | 0.5 (0.1 with `--value-ce-norm none`) |
-| Entropy coef. (`--ent-start`, `--ent-end`) | 0.01 constant | 0.01 → 0.003, linearly |
-| KL early stop (`--kl-stop`) | last minibatch's approx KL | the epoch's mean approx KL |
-| Opponents (`--mirror-share`, `--pool-share`, `--heuristic-share`) | 100% mirror | 70% mirror / 20% pool / 10% heuristic |
-| Pool sampling (`--pool-sampling`) | (no pool) | `pfsp` |
-| Faint reward (`--faint-anneal`) | 0.1 constant | 0.1 → 0 by half of the budget, then 0 |
-| `--concurrency` / `--battles-per-iter` | 32 / 128 | 48 / 192 |
-| Iteration budget | 300 (when none of `--iterations`, `--hours`, `--states` is given) | same |
-
-Every other PPO hyperparameter (`PPOConfig`: gamma 0.995, λ 0.95, clip 0.2,
-3 epochs, minibatch 1024, target KL 0.03) is shared: `--epochs`, `--target-kl` and
-`--minibatch` change them, `--recipe` sets a named group of options (see
-[minipoke v3](#minipoke-v3-bigger-ppo-steps-then-human-replays)). Options added since a run
-started keep their old behaviour when it is resumed (`--value-ce-norm none`,
-`--kl-stop last`, `--pool-sampling uniform`, `--faint-anneal 0`, 3 epochs, target KL 0.03,
-no reference KL).
-
-**The value loss scale (`--value-ce-norm`).** The two-hot cross-entropy is divided by
-log(value_bins): a fresh head (uniform logits) scores exactly 1, the scale of the
-MSE of ±1 returns, so `--vf-coef` means the same for both heads. The 0.1 medium used
-until now compensated for the raw loss. **Start medium at `--vf-coef 0.5`** (the new
-default): the gradient of the raw cross-entropy is softmax - target, so 0.5 on the
-normalized loss is 0.5 / ln 51 ≈ 0.13 on the raw one, close to the 0.1 that took the
-medium run from 43% to 55%, and 4x below the raw 0.5 (≈ 2.0 normalized) that stalled
-it. It is also V1's weight, so the value weight no longer differs between the two
-recipes. If the value gradient still dominates the trunk (see below), try 0.25.
-`--value-ce-norm none` brings back the raw loss and medium's old 0.1.
-
-### Distillation and the BC dataset
-
-`distill` plays teacher-vs-teacher battles (the teacher samples its own policy, and
-plays a uniformly random legal move with probability `--epsilon`, 0.05). It records the
-teacher's whole softmax and its value, then trains the student on the cross-entropy to
-that distribution (KL to the teacher plus a constant). It also trains
-`--vf-coef` × value loss toward the teacher's value (`--value-target return` uses the
-battle's real returns instead). Validation reports the KL and the argmax agreement.
-
-The teacher and the student may use **different encoders**: the teacher plays from its
-own encoding of each state, the dataset stores the student's encoding of the same
-state (every encoder shares V1's action space and mask). That is how a minipoke-v2
-model starts, from a V1 checkpoint rather than from heuristic BC:
-
-```bash
-python train.py distill --teacher checkpoints/v1-small.pt --size small --encoder-version 2 \
-    --battles 10000 --epochs 6 --data data/distill-v2 --ckpt-dir checkpoints/v2-priors
-```
-
-`imitate` and `distill` write their samples to `data/<name>/` as compressed `.npz`
-shards: float16 features, int16 ids, a bit-packed mask. A V1 sample is about
-110-130 bytes on disk (v2: about 160-190), against ~12 KB as a float32 numpy dict.
-That's ~5 KB per battle, so 10k battles take about 50 MB. Training streams the shards
-(a few decoded at a time, shuffled together), so RAM stays flat whatever the dataset
-size. `meta.json` records the observation layout. Use `--data DIR` to pick the
-directory; a directory that already holds a dataset is reused without playing (e.g. to
-retrain with other epochs, or another student with the same encoder flags: move
-tokens and typed FFN do not change the encoding, history and matchups do).
-
-### Long runs
-
-- **Budget.** `--hours H`, `--iterations N` and `--states S` are *totals for the run*.
-  Training stops at whichever comes first (after the iteration that crosses it).
-  Resuming counts the time and states already spent. The cosine LR and the entropy
-  annealing follow the progress `max(iterations / N, hours / H, states / S)`, so two
-  runs with the same `--states` anneal at the same states however fast they play.
-  Raising a budget on `--resume` extends the run, and the schedules stretch to match.
-- **Stopping and resuming.** The first Ctrl-C / SIGTERM / `runs/<run>/STOP` finishes the
-  current iteration, saves, and exports. A second Ctrl-C quits at once.
-  `checkpoints/ppo_latest.pt` is rewritten (atomically) after every iteration. It
-  holds the model, optimizer, schedule progress, iteration, states, RNG states,
-  pool manifest (with win rates), Elo table, best score and every option, so `--resume`
-  continues exactly (any option given again on the command line overrides the saved one).
-- **Opponent pool.** Every `--snapshot-every` iterations the policy is saved to
-  `checkpoints/pool/` (cap `--pool-cap` 20). The starting policy is the first snapshot.
-  When the pool is full, the oldest and the 5 newest snapshots stay, and among the
-  others the one leaving the smallest gap goes, which keeps a spread of ages. Each
-  iteration samples `--pool-slots` (2) snapshots. Each slot has its own inference
-  model and batcher, while all learner seats share one. Only the learner's side of
-  pool and heuristic battles is trained on.
-  `--pool-sampling pfsp` (medium's default) draws them with weight
-  max(1 - w, `--pfsp-floor` 0.1), w the learner's win rate against that snapshot: an
-  EMA over its training games (`--pool-ema` 0.05 per game, 0.5 before any), so the
-  snapshots it beats least are played most and every one keeps being played.
-  `uniform` is V1's draw.
-- **Evaluation.** Every `--eval-every` iterations: greedy win rate against
-  `SimpleHeuristicsPlayer` (`--eval-battles` 200) and against the 3 newest snapshots
-  (`--eval-pool-battles` 100 each). A candidate for `checkpoints/best.pt` (an evaluation
-  with at least `--min-eval-battles` 150 finished battles, beating the best) is
-  re-evaluated over `--confirm-battles` (400) fresh battles, and only that confirmed
-  win rate competes: the best of many noisy evaluations is optimistic. The win rate
-  that made `best.pt` win is optimistic too, so `best.pt` itself is also played again
-  over 400 fresh battles at each challenge, and the candidate must beat that (its
-  fresh battles add up across challenges; `incumbent_wr` in metrics.csv). Without
-  that, a lucky early `best.pt` outlived every later policy (one ablation run kept
-  iteration 10 of 377).
-  `--confirm-battles 0` turns both off. At the end of the run, the final policy
-  challenges `best.pt` the same way (unless it is `best.pt` already), then `best.pt`
-  (or the latest checkpoint if there is none) is exported to `export/`.
-- **Elo.** See [Elo league table](#elo-league-table): `runs/<run>/elo.json`, `elo` in
-  metrics.csv.
-- **Robustness.** A battle that raises in `choose_move` plays a random move and the
-  error is logged. If no battle finishes for `--stall-timeout` seconds (180), or an
-  iteration takes over 4× the recent median, the iteration is cancelled. Its finished
-  battles are still used, the players reconnect with fresh websockets, and the run
-  goes on. With `--showdown-cmd`, the server is started if it is down and restarted
-  if it dies (its output goes to `runs/<run>/showdown.log`). After 5 failed iterations
-  in a row the run saves and stops.
-- **Checkpoints on disk.** `ppo_latest.pt`, `best.pt`, the last 5 `ppo_NNNNN.pt`
-  (every `--save-every` iterations) and every 50th. A medium checkpoint with Adam
-  state is ~45 MB (wide ~50 MB), and a pool snapshot ~15 MB.
-- **Logs.** `runs/<run>/train.log`, plus one row per iteration in
-  `runs/<run>/metrics.csv`: states, st/s, losses, entropy, KL, PPO epochs run, clip
-  fraction, explained variance, LR, entropy coefficient, faint reward, training win
-  rates by opponent, eval and confirmed win rates, best and best.pt's re-evaluated
-  win rate, Elo, pool size and its hardest
-  snapshot's EMA win rate, auxiliary losses and accuracies, uniform KL, stalls and RSS.
-
-Training fixes, besides the value loss scale:
-- `--kl-stop mean` stops the PPO epochs when the epoch's mean approx KL exceeds the
-  target (one minibatch is noisy). `small` keeps V1's last-minibatch rule.
-- `--faint-anneal F` takes the faint reward linearly from 0.1 to 0 by the fraction F of the
-  run's budget (the progress the LR and entropy schedules follow), then keeps it at 0:
-  the medium recipe uses 0.5. The faint reward speeds up early credit assignment, but the
-  goal is winning: with it, the policy learns to trade Pokémon for faint points, and the
-  value predicts the shaped return instead of the result. For the second half of a run
-  the returns are the discounted win or loss alone. `--faint-anneal-states N` reaches 0
-  after N training states instead. A run resumed from before `--faint-anneal` keeps its
-  constant faint reward.
-
-How it runs:
-- **Training** (BC and PPO updates) uses `--device auto`: MPS on an M3, CUDA on a
-  Linux GPU box. Training on MPS keeps `PYTORCH_ENABLE_MPS_FALLBACK=1`, but every
-  operator that falls back to the CPU is logged as `[mps-fallback]`. A forward and
-  backward self-check at startup reports it before the run gets going.
-- **Rollout inference** uses `--infer-device auto` for `ppo`: it times a forward pass on
-  the CPU and on the training device at rollout batch sizes and keeps the faster one
-  (`[bench]` lines in the log). Batches are capped at `--max-infer-batch` 64: on a CPU,
-  the medium model's throughput peaks there and drops for larger batches. On an M3,
-  MPS beats the CPU for `wide` once batches reach ~32 states (about 6 ms vs 12 ms at 64).
-- `--concurrency` sets concurrent battles per seat pair. With `medium`, the learner
-  plays about `concurrency` battles at a time, split across the opponent types.
-
-### A long run on the M3 (16 GB)
-
-```bash
-python train.py imitate --size medium --battles 10000 --epochs 6      # ~50 MB of data
-python train.py ppo --init checkpoints/bc.pt --hours 24 \
-    --showdown-cmd "node pokemon-showdown start --no-security"
-python plot_metrics.py runs/<run>
-```
-
-Raise `exports.subprocesses` in Showdown's `config/config.js` (e.g. 6-8 simulator
-processes): rollouts are mostly Showdown and poke-env time. Run a 20-minute
-`ppo --hours 0.33` first and read `st/s` and the `play`/`learn` split. Total states ≈
-st/s × 3600 × hours. At 150 st/s, 24 h is about 13M states.
-
-Measured so far, on a 16-thread x86 laptop CPU with **no GPU**, training on the CPU
-(not an M3; MPS should mostly shorten `learn`):
-
-| | play (states/s) | learn (s per ~8k states) | overall st/s | peak RSS |
-|---|---|---|---|---|
-| `small`, V1 recipe | 350-490 | ~8 | 230-290 | 1.2 GB |
-| `medium`, defaults | 150-270 | 12-45 | 90-175 | 2.4 GB |
-
-Medium rollout inference on that CPU: 22 ms for 48 states, 28 ms for 64 (2.3k
-states/s). Inference is not the bottleneck there: Showdown and poke-env are.
-
-**Value vs policy gradients.** Policy and value share the transformer. For `medium`,
-at `--vf-coef` 0.5 (before the value loss was normalized) the value loss sent the trunk
-~5× the gradient norm of the policy loss (either value head), and on a 16-thread laptop
-with a T1200 a 24 h run stalled around 43% vs the heuristic with `--lr 2e-4`. With
-`--vf-coef 0.1 --lr 1e-4` the same run went from 43% to about 55% within ~150
-iterations, then plateaued, still below `small` with the V1 recipe (about 61% over
-2,000 battles). That run changed ~8 things at once and compared by hours, not states:
-see [Ablation](#ablation). Also avoid starting PPO with a miscalibrated value head: a
-distillation teacher whose value is flat makes the value gradient 20-50× the policy's.
-
-Memory: with the dataset in shards on disk, it no longer limits anything. A medium
-PPO run peaks around 2.4 GB for Python, plus Showdown.
-
-## minipoke-v2 (encoder v2)
-
-`--encoder-version 2` builds a model that reads `encoder_v2.py`'s observation: V1's six
-arrays, unchanged (`encoder.py` is still V1's), then the random battle set priors, and
-whatever the flags below add. Every flag defaults to the V1 architecture, so V1
-checkpoints, exports and `make_fixtures.py` keep working. Architecture flags only apply
-to a new model (`imitate`, `distill`, `ppo` without `--init`/`--resume`).
-
-| Flag | `ModelConfig` | Needs v2 | What it adds |
-|---|---|---|---|
-| `--encoder-version 2` | `encoder_version` | | set priors: candidate moves, ability / item / tera weights |
-| `--cand-moves K` | `cand_moves` (8) | yes | candidate move slots per opponent Pokémon |
-| `--sets PATH` | (checkpoint) | yes | the sets file or Showdown clone (default `--showdown-cwd`) |
-| `--move-tokens` | `move_tokens` | no | one token per (Pokémon, move slot); contextualized move head |
-| `--history` | `history` | yes | last moves, switches, protects, choice-lock flag (field token) |
-| `--history-tokens K` | `history_tokens` (0) | yes | the last K battle events as tokens (replaces `--history`) |
-| `--matchup-tokens` | `matchup_tokens` | yes | 12 damage-calc matchup tokens, injected after layer n_layers // 2 |
-| `--typed-ffn` | `typed_ffn` | no | one feed-forward block per token type |
-| `--move-effects` | `move_effects` | yes | per move: immune through an ability, item or type, status fails, no effect / failed before (`effects.py`) |
-| `--aux-action-coef`, `--aux-set-coef` (ppo) | `aux_heads` | no | training-only heads: opponent's action, opponent sets |
-
-`--move-effects` is the one flag that also works with `ppo --init`: `with_move_effects()`
-adds the inputs to the checkpoint's model with zero weights, so it starts out playing exactly
-like it (`MiniPokeV2_1_1M` is `MiniPokeV2_1M` trained further this way).
-
-### Set priors
-
-`setpriors.py` loads Showdown's gen 9 random battle sets: `data/random-battles/gen9/sets.json`
-in the clone (it was `data/random-sets.json` from Dec 2022 to May 2024, and had no
-abilities then). Each species has a few roles, each with a movepool, abilities and tera
-types. **The gen 9 file has no items** (Showdown's `teams.ts` picks them in code), so
-the item prior is empty with it. For each revealed opponent Pokémon:
-
-- **Species**: its id, else its dex `battleOnly` form(s), then `baseSpecies`
-  (Palafin-Hero → palafin).
-- **Evidence**: revealed moves, its revealed base ability, revealed item, and its tera
-  type once terastallized. Evidence outside the species' whole pool says nothing about
-  its roles (Struggle, moves called by Sleep Talk, Trace, Illusion...) and is ignored.
-  A role is consistent when it contains every remaining piece. No consistent role →
-  every role of the species ("fallback").
-- **Candidates**: moves of the consistent roles not revealed yet, ranked by the fraction
-  of consistent roles containing them (descending), ties by move id (ascending), the
-  first K = 8 kept. They go through the same move embedding and features as known
-  moves (V1's move features with the candidate's owner and our active as target, full
-  pp), plus a known/candidate flag and that fraction.
-- **Abilities, items, tera types**: weight of x = mean over consistent roles of
-  [x in role] / |role's x| (a revealed one: 1), as a weighted embedding sum (abilities,
-  items) and a weighted multi-hot over V1's type order (tera).
-- **Choice item possible**: a revealed Choice item, or an unknown item, no revealed
-  status move other than Trick / Switcheroo / Healing Wish, and a consistent role that
-  can be dealt a set without status moves (as `teams.ts` hands out Choice items).
-- Unrevealed opponent slots stay "unknown" placeholders.
-
-Checkpoints store the priors they were trained with (Showdown's sets change over
-time), and exports write them to `set_priors.json`.
-
-### Observation (inputs after V1's six)
-
-| Array | Shape | |
-|---|---|---|
-| `cand_ids` | int64 [6, K] | candidate move ids per opponent slot (rows = V1's slots 6-11), PAD = none |
-| `cand_feats` | f32 [6, K, 40] | V1's 39 move features + fraction |
-| `prior_ids` | int64 [6, 2, 4] | row 0: ability ids, row 1: item ids (V1 hashing), by weight then id |
-| `prior_w` | f32 [6, 2, 4] | their weights |
-| `prior_feats` | f32 [6, 24] | tera weights (20 types), has sets, n consistent / n roles, fallback, Choice possible |
-| `hist_ids` (`--history`) | int64 [2] | last move used by our active, by theirs (poke-env `Pokemon.last_move`) |
-| `hist_feats` (`--history`) | f32 [8] | turns since their / our active came in, they / we switched by choice last turn, their / our protect counter, they chose the same move twice in a row, that and a Choice item possible |
-| `event_ids` (`--history-tokens K`) | int64 [K, 2] | move id (PAD for an entrance), species id of the last K events, oldest first |
-| `event_feats` (`--history-tokens K`) | f32 [K, 14] | present, ours, move, entrance, dragged, called/locked, crit, miss, super effective, resisted, immune, failed, KO, turns ago |
-| `matchup_feats` (`--matchup-tokens`) | f32 [12, 16] | rows 0-5: our mon i vs their active, 6-11: our active vs their mon j; expected damage fraction of each known move both ways, max each way, KO flags, move order |
-| `effect_feats` (`--move-effects`) | f32 [12, 4, 6] | per known move, against the opposing active: no effect, ability blocks, status fails, immune before, failed last time, failed the last two times |
-| `cand_effect_feats` (`--move-effects`) | f32 [6, K, 6] | the same per candidate move, against our active |
-
-**Move effects.** V1's move features read poke-env's type chart only
-(`Pokemon.damage_multiplier`), which ignores abilities: Earthquake into Levitate looks super
-effective, and on the ladder MiniPokeV2_1M used it into a revealed Levitate up to six turns
-in a row. `effects.py` adds, for each move (owner = the Pokémon with it, target = the
-opposing active, V1's convention):
-- **no effect**: 1 when the type chart (damaging moves and Thunder Wave), a revealed item
-  (Air Balloon, Safety Goggles) or the target's types (Fire can't be burned, Grass and
-  powder...) make it a sure miss, else **ability blocks**: the probability that the target's
-  ability stops it (Levitate, Volt Absorb, Flash Fire, Soundproof, Good as Gold, Armor Tail,
-  Insomnia... every rule is in the spec as data). The target's ability is its revealed one,
-  else its set priors' weights (opponents), else its possible abilities, uniformly; times the
-  probability that the owner is not a Mold Breaker / Teravolt / Turboblaze.
-- **status fails**: a status move inflicting a major status into a target that has one.
-- **immune before**, **failed last time / twice**: from the protocol log
-  (`history.move_outcomes`): an `|-immune|` on the other side after one of this side's
-  chosen uses of the move, on this target, since it last terastallized; the owner's last
-  one / two uses of the move followed by `|-fail|`.
-
-History reads poke-env's state (`last_move`, `_active_turns`, `protect_counter`) and
-the battle's protocol log (`Battle._replay_data`, every parsed line but `|request|`)
-for switches and chosen moves, so the encoder stays a function of the battle: re-encoding
-recorded fixtures from their lines reproduces every array. Encoding costs about 0.38 ms
-per state (V1: 0.18 ms), 0.54 ms with every option.
-
-The damage estimate (`damage.py`) is deterministic and simplified on purpose: random
-battle spreads for the opponent's stats (84 EVs, 31 IVs, neutral), STAB with tera,
-poke-env's type effectiveness, burn, sun/rain, screens, always-crit moves, the mean roll,
-mean hits, fixed-damage moves; no other ability or item.
-
-### Tokens
-
-    [actor, critic, field, 6 ours, 6 theirs,
-     move tokens: 12 × 4 known (slot-major, V1 move order), 6 × K candidates   (--move-tokens)
-     event tokens: K, oldest first                                            (--history-tokens)]
-    + after the first n_layers // 2 layers: 12 matchup tokens                 (--matchup-tokens)
-
-Move tokens carry learned embeddings of the owning Pokémon slot and of known/candidate,
-event tokens of their position in the window, matchup tokens of their pair. Every token
-after the critic is a state token: state tokens attend to each other, actor and critic
-to the state and themselves (V1's mask). Empty move, event and matchup slots are masked
-out as keys (a dense per-sample bool mask, `[B, 1, T, T]`, for SDPA: runs on MPS and
-exports to ONNX). With move tokens, the move head reads our active's 4 move tokens
-**after** the transformer, and the Pokémon tokens no longer concatenate their move
-vectors. The switch head is unchanged. With `--typed-ffn`, actor/critic, field,
-Pokémon, moves, events and matchups each get their own feed-forward block per layer.
-
-Training cost of the `small` variants (forward + backward of 512 states, M-series laptop):
-
-| | V1 | v2 | V1 + move tokens | v2 + move tokens |
-|---|---|---|---|---|
-| CPU | 88 ms | 120 ms | 269 ms | 504 ms |
-| MPS | 58 ms | 72 ms | 174 ms | 342 ms |
-| inference, 64 states, CPU | 4.0 ms | 5.6 ms | 12.3 ms | 24.8 ms |
-
-With v2 and K = 8 the move tokens make 111 tokens instead of 15. Rollouts are still
-bound by Showdown and poke-env (a few hundred states per second).
-
-### encoder_spec.json additions
-
-A V1 model's spec is unchanged, byte for byte. A v2 model's spec adds:
-- `"encoder_version": 2` (first key) and `"inputs"`: every ONNX input in order, with its
-  shape and dtype;
-- `"model"`: the config fields that shape the observation (`encoder_version`,
-  `cand_moves`, `history`, `history_tokens`, `matchup_tokens`, and `move_effects` only
-  when set, so the specs exported before it stay byte-identical);
-- `"set_priors"`: the file (`set_priors.json`), its sha256, the sha256 of the Showdown
-  sets file it came from, K, the species lookup, evidence, consistency, ranking,
-  tie-breaking, weighting and Choice rules;
-- `"history"`, `"history_tokens"`, `"matchup_tokens"`, `"move_effects"` (when used):
-  every rule, including what the C# tracker must keep beyond poke-env's state (the
-  protocol log), the damage estimate's formula and the ability, item and type rules;
-- `"orderings"`: also `prior_feats`, `cand_feats`, `hist_feats`, `event_feats`,
-  `matchup_feats`, `effect_feats`.
-
-### Auxiliary heads, rewards, exploration (from [Jaxcalibur](https://jaxcalibur.github.io/))
-
-- `--aux-action-coef C`, `--aux-set-coef C` (ppo, default 0) add training-only heads
-  (never exported: `forward()` does not run them). One predicts the opponent's action in
-  the same turn, in our view's 14-way space (switch target: its revealed slot or the
-  next unrevealed one; move: its revealed index or the next one; +4 with tera), masked
-  by the opponent's mapped legal actions. The others predict, per revealed opponent
-  Pokémon token, its item, ability, tera type (classification) and moves (multi-label).
-  Labels come from the other seat of mirror and pool games (`aux_labels.py`: decisions
-  matched by battle tag, role and turn; true sets from that seat's own request).
-  metrics.csv logs each loss and accuracy and the share of labelled steps.
-- `--reward winloss`: 1 for a win, 0 otherwise, no faint shaping, gamma 1.
-- `--uniform-kl-coef C`: adds C × KL(uniform over the legal actions || policy).
-
-### Training MiniPokeV2_4M (`wide-medium`)
-
-`MiniPokeV2_4M` is `MiniPokeV2_1M` (the `v2-mr` run) four times larger: the same
-observation (`--encoder-version 2 --history`) and the medium recipe, on `wide`'s
-transformer (256 / 3 layers / 8 heads, FFN x4) with the 51-bin value head. That is
-4.40M parameters. Its `encoder_spec.json` is V2_1M's but for its own `set_priors` hash,
-so it runs with `MiniPokeV2Encoder` as is. `--size wide-medium` sets every default
-(`--init` and `--resume` recognize it from the checkpoint), so no recipe flag is needed:
-
-```bash
-T=checkpoints/v2-mr/best.pt          # MiniPokeV2_1M's checkpoint (or v1-wide.pt, MiniPokeV1_4M's)
-python train.py distill --teacher $T --size wide-medium --encoder-version 2 --history \
-    --battles 10000 --epochs 6 --seed 1 --data data/distill-v2-hist-4m --ckpt-dir checkpoints/v2-4m
-python train.py ppo --init checkpoints/v2-4m/distill.pt --ckpt-dir checkpoints/v2-4m --run v2-4m \
-    --states 5000000 --seed 1 --showdown-cmd "node pokemon-showdown start --no-security"
-python train.py eval --ckpt checkpoints/v2-4m/best.pt --battles 1000
-python train.py eval --ckpt checkpoints/v2-4m/best.pt --vs-ckpt $T --battles 1000
-```
-
-The teacher is the strongest model so far; its encoder does not matter (the teacher plays
-from its own encoding). Distillation reuses `data/distill-v2-hist-4m` when it is run again.
-Expect about medium's speed (90-175 st/s on a laptop CPU, see above): 5M states take
-8-15 h, and `--resume checkpoints/v2-4m/ppo_latest.pt --states 10000000` extends the run
-the next night. Then release it as `2_4M` ([Releasing a new model](#releasing-a-new-model-n_size)),
-reusing the V2 encoder.
-
-### Training on an 8 GB GPU (`large`)
-
-`--size large` is sized for a Radeon RX 6600 XT (8 GB, PyTorch for ROCm), and for any other
-8 GB card. VRAM follows the activations, not the parameters: it grows with the minibatch, with
-`d_model` (mostly in the move MLP, which runs on 96 moves per state) and with the layers.
-
-Measured on that card with `--minibatch` 1024: the VRAM is the peak of a learner, its AdamW and
-the four rollout copies during PPO updates, `learn` is per ~8k states, and the last column is what
-a decision costs ElsaMina (one state, one thread):
-
-| d_model / layers | Parameters | VRAM | `learn` | inference, 48 states | ONNX | CPU |
-|---|---|---|---|---|---|---|
-| 256 / 3 (`wide-medium`) | 4.4M | 2.3 GiB | 3.4 s | 3.2 ms | 17 MiB | 1.4 ms |
-| 384 / 3 | 9.4M | 3.4 GiB | 5.5 s | 5.3 ms | 36 MiB | 3.2 ms |
-| 512 / 3 (ps-ppo's shape) | 16.2M | 4.5 GiB | 9.3 s | 6.6 ms | 62 MiB | 5.3 ms |
-| 512 / 4 | 19.3M | 4.9 GiB | 10.8 s | 7.9 ms | 74 MiB | 6.3 ms |
-| **512 / 5 (`large`)** | 22.5M | 5.5 GiB | 12 s | 8.8 ms | 86 MiB | 7.4 ms |
-| 640 / 3 | 24.9M | 5.4 GiB | 11.8 s | 9.8 ms | 95 MiB | 8.1 ms |
-| 512 / 6 | 25.7M | 6.1 GiB | 13.8 s | 10.3 ms | ~98 MiB | |
-| 768 / 3 | 35.6M | 6.7 GiB | 15.9 s | 12.7 ms | ~136 MiB | |
-
-A real run adds about 0.3 GiB and the desktop 0.3-0.6 GiB: over 80 iterations, `large` peaked at
-6.2 GiB of the card's 8.0 and stayed there for the last 30 minutes (`wide-medium`: 2.9 GiB). If the
-desktop needs more, `--minibatch` 768 saves 0.6 GiB, and `--resume` accepts it.
-
-The memory is not what stops `large` growing: models are committed to git, and GitHub warns
-above 50 MiB and refuses a file of 100 MiB. 512 / 6 and 640 / 3 are too close to that limit, 768 / 3
-is over it and leaves under 1 GiB of VRAM. Which of width and depth plays better was not measured.
-
-Train it like `MiniPokeV2_4M`, from the strongest model so far:
-
-```bash
-T=checkpoints/v2-1-4m/best.pt
-SD="node pokemon-showdown start --no-security"
-python train.py distill --teacher $T --size large --encoder-version 2 --history --move-effects \
-    --battles 10000 --epochs 6 --seed 1 --data data/distill-v2-1-large --ckpt-dir checkpoints/v2-1-large \
-    --showdown-cmd "$SD" &&
-python train.py ppo --init checkpoints/v2-1-large/distill.pt --ckpt-dir checkpoints/v2-1-large --run v2-1-large \
-    --states 10000000 --seed 1 --showdown-cmd "$SD" &&
-python train.py eval --ckpt checkpoints/v2-1-large/best.pt --vs-ckpt $T --battles 1000 --showdown-cmd "$SD"
-```
-
-Each step starts Showdown itself and stops it when it ends, so all three need `--showdown-cmd`
-unless a server is already running.
-
-`distill` trains with `--minibatch` 512 (3.2 GiB with the desktop). PPO runs at about 260 st/s,
-against 390 for `wide-medium`, mostly because `learn` takes 11-12 s instead of 3.4 s, so 10M states
-take about 11 h. Checkpoints grow with the model: `ppo_*.pt` is 270 MB (53 MB for `wide-medium`) and
-`best.pt` 90 MB, about 10 GB for a run of that length. Its export has the same inputs and
-`encoder_spec.json` as `MiniPokeV2_1_1M`, so `MiniPokeV2Encoder` runs it as is. Release it as `2_1_22M`
-([Releasing a new model](#releasing-a-new-model-n_size)) only if it beats its teacher.
-
-`MiniPokeV2_1_22M` is this run's `best.pt` at 10M states (iteration 1275). Against its teacher
-`v2-1-4m` it won 55.8% of 1,000 games (500 team pairs, 95% CI [52.9%, 58.7%]); against the heuristic,
-77.1% over 800 fresh battles (95% CI [74.1%, 79.9%]). Training on to 15M states
-(`--resume --states 15000000`, which raises the LR back up the cosine) did not help: the 15M
-`best.pt` won 48.1% against the 10M one (95% CI [45.3%, 50.9%]).
-
-## minipoke v3: bigger PPO steps, then human replays
-
-The best model on the gen9randombattle ladder, `MiniPokeV2_1_22M`, sits around 1300. v3 changes
-the training, not the model or its observation: (A) PPO takes bigger, less noisy steps; (B) the
-model learns from human ladder replays with offline RL, as Metamon did (Grigsby et al., RLC 2025,
-[arXiv:2504.04395](https://arxiv.org/abs/2504.04395): offline RL on human replays beat imitating
-them); (C) PPO then fine-tunes that model, anchored to it.
-
-### A. Bigger PPO steps
-
-PPO barely moves the policy. In `runs/v2-mr` (MiniPokeV2_1M, the medium recipe: clip 0.2, 3 epochs,
-minibatch 1024, target KL 0.03 with `--kl-stop mean`, LR 1e-4 cosine to 10%), the approx KL of an
-iteration has a median of 0.0027 (max 0.0059) and the clip fraction 2.8%; all 3 epochs run every
-iteration, so the KL stop never fires; explained variance is 0.30-0.52 (median 0.44); the greedy win
-rate against the heuristic went from 61% to 66% in the first million states and stayed there to
-2.5M. `runs/b3` (V1 recipe, a constant 2e-4) reached a median KL of 0.0115 and stopped early 16 times.
-
-| Option | Default | |
-|---|---|---|
-| `--lr`, `--lr-min-ratio`, `--warmup-iters` | per size | peak LR, floor (final / peak of the cosine), warmup |
-| `--epochs` | 3 | PPO epochs over each iteration's states, fewer when the KL stops them |
-| `--target-kl` | 0.03 | approx KL that stops the epochs (`--kl-stop mean`: the epoch's mean) |
-| `--battles-per-iter`, `--minibatch` | per size, 1024 | |
-| `--ref-ckpt`, `--ref-kl-coef C` | none, 0 | adds C × KL(policy ‖ reference) over the legal actions; the reference is frozen, on the training device, and must read the same observation |
-| `--pool-extra CKPT...` | none | checkpoints in the opponent pool for the whole run (never evicted, outside `--pool-cap`, `fixedN` in the Elo table); the learner's architecture |
-| `--recipe` | none | `v2-mr` or `v3`, below |
-
-metrics.csv adds `ref_kl` (whenever `--ref-ckpt` is given, whatever its weight) and `kl_stopped`
-(1 when the KL ended the epochs early); `epochs` is the number run. The reference KL is AlphaStar's
-anchor to its supervised policy: part C trains self-play without drifting away from what the human
-data taught.
-
-**Recipes.** `--recipe NAME` fills the options not given on the command line before the size's
-defaults do; no default changes, and a run without it trains as before. It is saved with the run, and
-so is every option it set, so `--resume` keeps them (on a resumed run it only fills options the run
-never had).
-- `v2-mr`: MiniPokeV2_1M's run exactly (`checkpoints/v2-mr/ppo_latest.pt`'s saved options): LR 1e-4,
-  10 warmup iterations, floor 0.1, 3 epochs, target KL 0.03 (mean), entropy 0.01 → 0.003, 70% mirror /
-  20% pool (pfsp) / 10% heuristic, 192 battles per iteration, minibatch 1024, `--vf-coef 0.5`, a
-  constant faint reward. It started from `checkpoints/b3/distill.pt`.
-- `v3`: `v2-mr` with LR 2e-4, floor 0.3 and 4 epochs. **Provisional**: set `RECIPES["v3"]` in
-  train.py to the winners of [the ablation](#4-ppo-step-size-on-small-minipoke-v3), which has not run
-  yet. A run logs the recipe it uses, and says when it is provisional.
-
-### B. Human replays
-
-#### Re-simulation
-
-A public replay's input log (see [Collecting human replays](#collecting-human-replays)) holds the
-server version (a git commit), the battle and team seeds, both players and every choice Showdown
-committed (a refused choice never reaches it). Run through that version's simulator, it rebuilds what
-each player's client received.
-
-- `showdown_versions.py` keeps one checkout per version under `showdown-versions/` (ignored by git):
-  a blobless bare clone of smogon/pokemon-showdown, a worktree per commit, `node build`, and one
-  `node_modules` per distinct `package-lock.json` (`npm ci --omit=dev`), shared through a symlink. A
-  version builds in ~40 s the first time (the clone and `npm ci`), ~4 s after; failures are recorded in
-  `failed.json` and not retried unless asked.
-- `resim.js` (Node, one process per version) writes the input log line by line into that version's own
-  `BattleStream` (`_writeLine`, then `sendUpdates`, as the server writes every line on its own), splits
-  each update per player with the version's own `extractChannelMessages`, and adds the `rqid` the
-  server adds to requests (`room-battle.ts`: one counter per battle, both sides, first request 2). It
-  records which input log choice answered each request. `>chat` lines are skipped.
-- `resim.py` drives the workers and judges each re-simulation: every choice accepted, the battle ended,
-  and its omniscient view (exact HP of both sides: that is what a public log is) equal to the replay's
-  log, line for line, once both are reduced to the simulator's lines (`battle_lines`). The room's own
-  lines are left out: joins and leaves, chat and chat command answers (`|error|`, plain text), `|t:|`,
-  the timer, `|badge|`, `|raw|`, `||...` messages, forfeit and inactivity messages, a player's `|player|`
-  line when leaving or rejoining, the `/offertie` hint.
-
-```bash
-python resim.py check replays/human/gen9randombattle replays/human/gen9randombattle-first-step-zipped
-python resim.py parity replays/replays          # the bot's own games against their .logs
-```
-
-Nov 2026, the Mac's 9,368 human replays (10 ids in both folders, counted once): **all 9,358 replay
-exactly**, on 6 server versions (0% dropped on each: 035c1a1f3c2e 3,210, 567c1cedddea 3,068,
-2e0a951377bb 1,599, d106d9675a90 698, cbdc8519ef95 538, 5b01be81011e 245), in 90 s with 6 workers.
-
-**Parity.** A model only plays well on the exact state it was trained on, so the bot's own ladder
-games (`-savereplays`: the replay with its input log, and the `.log` of every line ElsaMina received
-live) check the whole chain: the bot's side of the re-simulation must be the `.log`'s battle lines
-exactly (requests and their rqid included), then poke-env fed either one must make the same decisions
-with the same encodings, and the re-simulation's choices must map to the same actions as
-`analyze_replays.py`'s alignment of the `.log`. Of the 561 games in `replays/replays` (all on
-3da4dd39a2): **558 identical**, 12,271 decision points, 257,691 encoder arrays (V1 and V2.1), 12,189
-choices mapped to the same action. The other 3 are the games where Showdown refused the bot's switch
-while trapped: their `.log` has the `|error|` and a second request, which the input log cannot hold.
-`tests/test_resim.py` runs the same check on three of them (`tests/fixtures/resim`: names anonymized,
-chat removed), with their stored re-simulation always and with Node when that version is built.
-
-Two things a re-simulated side needs that the room sends: poke-env counts a battle at `|init|battle`
-(and waits for that count at `|win|`), so `resim.side_decisions` prepends it; and it reads the format
-from the room name, so the tag is `battle-<replay id>`.
-
-#### The dataset
-
-```bash
-python human_data.py replays/human/gen9randombattle replays/human/gen9randombattle-first-step-zipped \
-    --encoder-from ../../src/ElsaMina.Battles/Models/MiniPokeV2_1_22M --out data/human-v21
-```
-
-Each kept battle's sides whose player is rated `--min-player-rating` (1500) or more, by its own rating,
-are fed to poke-env 0.16.1 (`analyze_replays.ReplayPlayer`), encoded with the student's encoder
-(`--encoder-from`: a checkpoint, or a released model's folder: its flags and set priors; every V2 model
-shares the same priors, f05fb3c538a6), and each choice is mapped to the 14 actions
-(`analyze_replays.choice_to_action`). Battles forfeited or timed out before turn 3 are dropped. Rewards
-are training's (`--faint-reward` 0.1 per faint difference after each decision, ±1 at the end),
-returns discounted by `--gamma` 0.995. A decision without a usable label (an unanswered last request,
-a choice outside poke-env's mask) keeps its step, with action -1, so trajectories stay whole.
-
-Shards keep, besides the observation and the one-hot action, the fields offline RL needs to put rows
-back in trajectory order (`dataset.py` extra fields): `traj` (battle × 2 + side), `step`, `reward`,
-`done`, `rating`, `turn`, `label_ok`, `result`. Battles are split whole by upload time: the newest
-`--test-frac` 10% test, the `--val-frac` 5% before them validation (early stopping), the rest trains.
-Each chunk of 100 battles is a task (`--processes`, default 3: each ~0.6 GB plus a ~0.2 GB Node
-process; a worker is replaced after 25 chunks), and a stopped build resumes when run again
-(`<out>/chunks/`).
-
-Nov 2026, the Mac's replays: 9,259 battles kept (97 forfeited before turn 3), 18,412 sides (106 under
-1500), **554,196 decisions**, 548,042 labelled (the rest: 6,154 last requests nobody answered; no
-choice unmapped or illegal). Train 469,716 (Oct 30 – Nov 9), validation 28,060 (Nov 9-10), test
-56,420 (Nov 10-12). 93 MB, built in ~6 min with 3 processes.
-
-#### Offline RL
-
-```bash
-python train.py offline --data data/human-v21 --size wide-medium --algo bc   --ckpt-dir checkpoints/v3/bc-4m
-python train.py offline --data data/human-v21 --size wide-medium --algo awbc --ckpt-dir checkpoints/v3/awbc-4m
-python train.py offline-eval --ckpt checkpoints/v3/bc-4m/offline.pt ../../src/ElsaMina.Battles/Models/MiniPokeV2_1_22M \
-    --data data/human-v21
-```
-
-Every algorithm trains the value head on the dataset's returns (the humans' value, `--vf-coef` 0.5);
-`offline.py` has the details.
-- `bc`: -log π(a|s) of the human's action.
-- `awbc` (AWR / CRR): -w(A) log π(a|s). A is GAE (γ 0.995, λ `--gae-lambda` 0.95) along each human
-  trajectory with the value head as the critic, recomputed by an ordered pass over the training set at
-  the start of each epoch; `--weight exp`: min(exp(A / std(A) / `--beta`), `--max-weight` 20),
-  `--weight binary`: 1[A > 0]. The first `--warmup-epochs` (1) are plain BC while the critic learns.
-- `q`: the same weights with A = Q(s,a) - Σ π(a'|s) Q(s,a'), from a per-action Q head used only in
-  training (`ModelConfig.q_head`, like the auxiliary heads: never exported), trained by TD toward
-  r + γ V(s'), V from the ordered pass.
-
-Steps without a label train the value head, never the actor. The labels are one-hot, so a big model
-memorizes them: every epoch is scored on the validation battles, the best one (validation NLL) is
-`offline.pt` (`offline_last.pt` is the last), and training stops after `--patience` (2) epochs without
-a better one. `--init` starts from a checkpoint instead of a new `--size` model, which reads the
-dataset's observation and priors. At the end, the best epoch is measured on the test battles
-(`offline_metrics.json`).
-
-`offline-eval` measures checkpoints, or released models' folders (their ONNX), on a split: top-1
-agreement and NLL against players rated `--min-rating` (1700) or more and against all, the value's
-AUC at telling won from lost battles' decisions, its MSE to the return, and its calibration (by value
-bin: mean value, mean return, win rate).
-
-**First results (Nov 2026, the Mac's 9.4k battles, `small` from scratch, 8 epochs, seed 1).** One
-epoch is 80 s on the M3 (918 steps of 512), an AWBC epoch adds its ordered pass (~25 s); both runs
-were still improving their validation NLL at epoch 8. On the test battles (33,251 choices of 1700+
-players, 55,743 of all):
-
-| | top-1 (1700+) | NLL (1700+) | top-1 (all) | value AUC |
-|---|---|---|---|---|
-| MiniPokeV2_1_1M (released, self-play) | 36.6% | 4.75 | 36.6% | 0.668 |
-| MiniPokeV2_1_22M (released, self-play) | 39.7% | 5.39 | 39.8% | 0.692 |
-| BC, small | 46.0% | 1.42 | 46.5% | 0.620 |
-| AWBC (exp, β 1), small | **46.6%** | **1.41** | 47.0% | 0.615 |
-
-Paired evals, 4,000 games on 2,000 team pairs each (team seed 0, 95% intervals):
-
-| | vs heuristic | vs MiniPokeV2_1_1M | vs BC |
-|---|---|---|---|
-| MiniPokeV2_1_1M | 67.3% (65.9-68.7) | | |
-| BC, small | 59.5% (58.1-60.9) | 47.5% (46.1-49.0) | |
-| AWBC, small | 64.0% (62.6-65.5) | **53.6% (52.1-55.1)** | **55.1% (53.7-56.5)** |
-
-The self-play models put almost no probability on many human choices (NLL 4.7-5.4): they play
-another game than the humans. Human BC predicts the humans far better but plays worse than the
-self-play model it is the size of; advantage weighting, on the same data, beats BC everywhere and
-the released 1M model head to head, although the heuristic still prefers the self-play model. The
-value head learns slowly from human results (AUC 0.62 against the self-play models' 0.67-0.69: every
-battle's ~60 states share one result, so 9k battles are 9k results), and it is the critic AWBC
-weighs with: more battles (the server's 50k), or a value head started from a self-play model
-(`--init`), should help it most. The Q head (`--algo q`) is there for when weighting by the value's
-advantages stops helping.
-
-### C. Putting it together
-
-The offline model starts PPO with part A's recipe, anchored to itself by the reference KL, with the
-frozen human-BC model in the pool. Each stage on the 4M size (`wide-medium`) first, then `large` on the
-GPU box. On the Mac (16 GB), keep one training job at a time.
-
-```bash
-caffeinate -is bash -c '
-set -e
-SD="node pokemon-showdown start --no-security"
-CWD=~/Documents/minipoke/pokemon-showdown
-M=../../src/ElsaMina.Battles/Models
-# 1. Offline RL, 4M (not timed yet: small takes 80 s an epoch, expect several times that); the small
-#    runs still improved at epoch 8, so up to 15, early stopping on the validation NLL
-python train.py offline --data data/human-v21 --size wide-medium --algo bc   --epochs 15 --seed 1 --ckpt-dir checkpoints/v3/bc-4m
-python train.py offline --data data/human-v21 --size wide-medium --algo awbc --epochs 15 --seed 1 --ckpt-dir checkpoints/v3/awbc-4m
-python train.py offline-eval --ckpt checkpoints/v3/bc-4m/offline.pt checkpoints/v3/awbc-4m/offline.pt \
-    $M/MiniPokeV2_1_22M --data data/human-v21 --out runs/v3/offline-4m.json
-for c in bc-4m awbc-4m; do
-  python train.py eval --ckpt checkpoints/v3/$c/offline.pt --battles 4000 --processes 4 --showdown-cmd "$SD" --showdown-cwd "$CWD"
-  python train.py eval --ckpt checkpoints/v3/$c/offline.pt --vs-ckpt $M/MiniPokeV2_1_22M --battles 4000 --processes 4 \
-      --showdown-cmd "$SD" --showdown-cwd "$CWD"
-done
-# 2. PPO from the better offline model (here awbc), anchored to it, the BC model in the pool
-python train.py ppo --init checkpoints/v3/awbc-4m/offline.pt --recipe v3 \
-    --ref-ckpt checkpoints/v3/awbc-4m/offline.pt --ref-kl-coef 0.05 --pool-extra checkpoints/v3/bc-4m/offline.pt \
-    --states 5000000 --seed 1 --ckpt-dir checkpoints/v3/ppo-4m --run v3-ppo-4m --export-dir export/v3-ppo-4m \
-    --showdown-cmd "$SD" --showdown-cwd "$CWD"
-# 3. Paired evals (and against MiniPokeV2_1_4M: its checkpoint, checkpoints/v2-1-4m/best.pt, is on the GPU box)
-python train.py eval --ckpt checkpoints/v3/ppo-4m/best.pt --vs-ckpt $M/MiniPokeV2_1_22M --battles 4000 --processes 4 \
-    --showdown-cmd "$SD" --showdown-cwd "$CWD"
-python train.py eval --ckpt checkpoints/v3/ppo-4m/best.pt --vs-ckpt checkpoints/v3/awbc-4m/offline.pt --battles 4000 \
-    --processes 4 --showdown-cmd "$SD" --showdown-cwd "$CWD"
-python train.py eval --ckpt checkpoints/v3/ppo-4m/best.pt --battles 4000 --processes 4 --showdown-cmd "$SD" --showdown-cwd "$CWD"
-python train.py eval --ckpt checkpoints/v3/ppo-4m/best.pt --vs-ckpt $M/MiniPokeV2_1_22M --search --battles 2000 \
-    --processes 4 --showdown-cmd "$SD" --showdown-cwd "$CWD"
-'
-```
-
-`ref_kl` in metrics.csv says how far the policy moved from the offline model: if it stays near 0
-while the win rates stall, lower `--ref-kl-coef`; if the eval against the offline model falls, raise
-it. The faint reward stays training's constant 0.1 throughout (the dataset's returns, and `v2-mr` /
-`v3`'s `--faint-anneal 0`), so the value keeps the semantics search assumes
-(`MiniPokeSearchOptions.FaintReward` = 0.1): no per-model search setting is needed. A recipe that
-anneals it to 0 would need one.
-
-On the GPU box, the same commands with `--size large` (offline: watch the validation NLL, the 22M
-memorizes one-hot labels; `--dropout 0.1` for a new model is an option) and its own copy of the dataset
-(`data/` is not in git: copy it, or build it there from the server's 50k replays with `human_data.py`,
-`--processes` to fit its RAM). Release a v3 model like any other ([Releasing a new model
-N_SIZE](#releasing-a-new-model-n_size)): its observation is V2.1's, so `MiniPokeV2Encoder` runs it and
-the C# side only needs the enum value, the `RegisterMiniPoke` line, fixtures and the parity test's
-`MODELS`. It is released as `MiniPokeV3_22M` (`-strategy minipokev3-22m`), named after its training rather
-than its observation (V2.1): the large AWBC model on 258k human battles (`checkpoints/v3/awbc-large-v21b/offline.pt`,
-best epoch 5 of 6, test top-1 59.95%), without PPO. PPO from it (`--recipe v3`, `--ref-kl-coef 0.05`) lost to it:
-39% at iterations 10 and 20 (100 games each), its KL to it growing every iteration (0.195 at iteration 29).
-
-## Elo league table
-
-`elo.py` rates the learner, every pool snapshot and the scripted players. The scripted
-players are anchors with fixed ratings, so ratings compare across runs:
-
-| Anchor | Rating |
-|---|---|
-| `random` (RandomPlayer) | 0 |
-| `maxpower` (MaxBasePowerPlayer) | 410 |
-| `heuristic` (SimpleHeuristicsPlayer) | 780 |
-
-They were fitted with `python train.py elo --scripted heuristic maxpower random --anchors random=0`
-over 2,500 battles per pair on a local Showdown (Oct 2026): the heuristic beat
-maxpower 89.0% and random 99.1%, maxpower beat random 91.2% (777 and 410 by maximum
-likelihood). Refit them after a Showdown update before comparing with older runs, and
-pass `--elo-anchors random=0,maxpower=...,heuristic=...`.
-
-During PPO the table is updated after every iteration from every game against the pool
-and the heuristic, training and evaluation (mirror games carry no information): one Elo
-update per game at the batch's average score, k = `--elo-k` 16. The learner starts at the
-heuristic's rating, a new snapshot at the learner's. It is saved to `runs/<run>/elo.json`
-and in checkpoints, and `elo` in metrics.csv is the learner's rating.
-
-`python train.py elo --ckpts A B ... --scripted heuristic maxpower random --battles 200`
-plays a round-robin (models greedy, each with its own encoder) and fits Bradley-Terry
-ratings by maximum likelihood with the anchors that take part fixed (`--out` writes them).
-Every match plays the same paired teams, and `--processes P` plays P matches at once.
-
-## Measuring
-
-`eval` and `elo` play **paired teams** by default (`paired.py`): each team pair from
-Showdown's own random battle generator is played twice, the teams swapped the second time,
-and the 95% interval comes from the spread of the pair scores. Showdown's random battle
-format generates its own teams, so these games are challenged as Anything Goes with custom
-rules that make it a random battle (no team preview, HP in percent, Sleep Clause...; not
-Custom Game, which reports exact HP to both sides). `--team-seed` picks the teams, the same
-ones for every match of a round-robin; `--unpaired` goes back to independent random battles.
-A tie (Showdown's turn 1000 auto-tie, when two greedy models loop) counts as half a win.
-
-`--ckpt`, `--vs-ckpt` and `elo --ckpts` also take a released model's folder
-(`../../src/ElsaMina.Battles/Models/MiniPokeV2_1_22M`): its `minipoke.onnx` plays through
-onnxruntime with its own encoder (`offline.OnnxPolicy`), for the models whose checkpoint is on
-another machine.
-
-`--processes P` splits the team pairs (`eval`) or the matches (`elo`) over P processes on the
-same server: each process is a core's worth of poke-env and inference, which bound how fast
-games are played. With search, a decision costs about 0.3 s, so parallel processes are what
-make a search measurement take minutes instead of hours.
-
-What to expect from the numbers (Oct 2026, local server):
-- **Pairing helps less than expected between models**: the pair scores' spread is about 0.9 of
-  independent games' (the interval needs ~1.1x fewer games). Random battle outcomes between
-  two models of similar strength depend more on what happens in the game than on the teams.
-- **Seats don't matter**: MiniPokeV2_1M against itself scored 50.2% over 3,000 games
-  (48.4-52.0%) as the challenger.
-- **About the two b3 vs v1-wide measurements** (56.7% and 50.9% over 1,500 games, the same
-  weights): 1,000 paired teams give 53.9% (51.9-55.9%), between the two. Seats, ties and
-  checkpoints are ruled out; two independent 1,500-game runs are ±2.5 points each, so a
-  difference of 5.8 points is unlikely (p ≈ 0.002) but happened once among dozens of
-  comparisons. Compare models on 4,000 games or more (±1.5 points) before acting on gaps of a
-  few points: with `--processes 4` that is a few minutes.
-
-## Search at decision time
-
-`search.py` (`eval --search`) plays a model with a one-turn lookahead on Showdown's own
-simulator, scored by the model's value head. At a turn with two or more legal actions:
-
-1. our candidates are the model's 3 most likely actions (`--search-top-k`), however unlikely
-   (`--search-min-prob` 0): a model sure of a bad move still gets alternatives;
-2. `search_sim.js` (Node, `--search-workers` processes) rebuilds the position in Showdown's
-   simulator `--search-determinizations` times (2). Our team comes from the request: sets,
-   exact HP, stats, PP, disabled moves. Each rebuild guesses the opponent's hidden sets with
-   Showdown's random battle generator, made to agree with what was revealed (moves, ability,
-   item, tera type). HP, status, boosts, tera, a few volatiles, hazards, screens, weather
-   and terrain are written onto the battle. The opponent's unrevealed Pokémon are random sets
-   it never switches to; they only keep the battle from ending early;
-3. for each candidate and each of the opponent's actions (usable moves, with and without
-   tera, and switches to its revealed Pokémon), one turn is played from that state;
-4. each simulated turn is replayed into a copy of our poke-env battle and scored like
-   training scores it: the turn's faint reward (`--search-faint-reward`, 0.1, the reward the
-   model was trained with) plus 0.995 x the model's value of the new state, or +-1 when the
-   battle ended;
-5. per guess, the turn is a simultaneous zero-sum game: regret matching finds the opponent's
-   equilibrium mix, each candidate scores its expected value against it, the scores are
-   averaged over the guesses, and the best candidate is played (0.02 x log policy
-   probability breaks near ties).
-
-Forced switches and turns with a single legal action use the model alone, as does any turn
-whose search fails. A search costs about 0.3 s (some 30 simulated turns): use `--processes`.
-
-Measured on MiniPokeV2_1M (`checkpoints/v2-mr.pt`), 600 team pairs each (Oct 2026, the same
-teams across a row):
-
-| | Without search | Search (default: top 3) | Search, only candidates with 2%+ |
-|---|---|---|---|
-| vs MiniPokeV2_1M without search | 50% | **61.9%** (59.5-64.4%) | 57.2% (54.7-59.8%) |
-| vs SimpleHeuristicsPlayer | 65.8% (63.4-68.3%) | **73.5%** (71.1-75.9%) | 74.0% (71.6-76.4%) |
-
-The default searches about two decisions in three (a single legal action or a forced switch
-skip it) and changes a fifth of those; none of the 46,000 searches of these two runs failed. A search simulates
-about 40-50 turns: under a second, and 0.5 s in ElsaMina. Considering the top 3 whatever their
-probability is what makes the difference against a strong opponent: a model sure of a bad move
-(Earthquake into Levitate) then still gets alternatives. Searching more
-(`--search-top-k 4 --search-determinizations 3` with the 2% threshold) gained nothing.
-
-**In ElsaMina** each model has a search variant, `-strategy <model>+search`
-(`minipokev2-1m+search`...): the same model and guard, plus the search. The plain strategies never
-search, so the two can be compared on the ladder in the same session (`-battlestatus` counts their
-results apart). The variants are offered when `ShowdownDirectory` in config.json points to a
-pokemon-showdown package (`npm install pokemon-showdown@0.11.11`, the version of the clone here; in
-the Docker image, `/opt/showdown/node_modules/pokemon-showdown`; locally, the clone itself) and Node
-runs (`NodePath`, default `node`; set it when the bot can't find Homebrew's keg-only `node@22`). `Strategies/MiniPokeSearch` ports search.py: `ShowdownSimulator`
-runs the same `search_sim.js` (copied next to the bot), `SearchPositionBuilder` is
-`position_of`, and each simulated turn is scored by replaying the battle's lines plus the
-turn's through ElsaMina's own tracker, so the model sees exactly the state it would see live.
-The search chooses among the actions `MiniPokeActionGuard` allows; past 8 s, or if anything
-fails, the bot plays the model's choice (after 5 failures in a row the simulator turns itself off
-until the bot restarts). With `LogLevel` Debug, the log shows every decision the search changed.
-`analyze_replays.py` recognizes battles played with search: their choices are the argmax or
-one of the search's candidates.
-
-## Ablation
-
-Compare runs **at matched training states** (`--states`), not hours, and change one
-thing at a time. Read `best.pt` (confirmed over 400 battles) and the final checkpoint
-with `eval --battles 4000 --processes 4` (95% interval about ±1.5%), plus one `elo` round-robin of all
-the runs' `best.pt`. Plot with `python plot_metrics.py runs/a runs/b ...` (x = states).
-Below, `S=5000000` (about 5.5 h for small, 9 h for medium at the speeds above) and
-`--seed 1` everywhere; `--concurrency` is fixed to 32 since it does not change learning.
-
-### 1. Size × recipe at matched states (2×2)
-
-Every flag that differs between the recipes, spelled out:
-
-| | V1 recipe | medium recipe |
-|---|---|---|
-| value head (`imitate`) | `--value-bins 1` | `--value-bins 51` |
-| BC value fit (`imitate`) | `--bc-value-coef 0` | `--bc-value-coef 0.5` |
-| `ppo` | `--lr 2e-4 --warmup-iters 0 --lr-min-ratio 1.0 --ent-start 0.01 --ent-end 0.01 --mirror-share 1 --pool-share 0 --heuristic-share 0 --kl-stop last --battles-per-iter 128` | `--lr 1e-4 --warmup-iters 10 --lr-min-ratio 0.1 --ent-start 0.01 --ent-end 0.003 --mirror-share 0.7 --pool-share 0.2 --heuristic-share 0.1 --pool-sampling pfsp --kl-stop mean --battles-per-iter 192` |
-| shared | `--vf-coef 0.5 --value-ce-norm log-bins` | same |
-
-```bash
-S=5000000
-V1R="--lr 2e-4 --warmup-iters 0 --lr-min-ratio 1.0 --ent-start 0.01 --ent-end 0.01 \
-     --mirror-share 1 --pool-share 0 --heuristic-share 0 --kl-stop last --battles-per-iter 128"
-MR="--lr 1e-4 --warmup-iters 10 --lr-min-ratio 0.1 --ent-start 0.01 --ent-end 0.003 \
-    --mirror-share 0.7 --pool-share 0.2 --heuristic-share 0.1 --pool-sampling pfsp \
-    --kl-stop mean --battles-per-iter 192"
-COMMON="--states $S --seed 1 --concurrency 32 --vf-coef 0.5 --value-ce-norm log-bins"
-
-# One BC dataset (V1 observations) for the four BC models
-python train.py imitate --size small --value-bins 1 --bc-value-coef 0 --battles 10000 --epochs 6 \
-    --data data/bc-10k --ckpt-dir checkpoints/small-v1r --seed 1
-python train.py imitate --size small --value-bins 51 --bc-value-coef 0.5 --epochs 6 \
-    --data data/bc-10k --ckpt-dir checkpoints/small-mr --seed 1
-python train.py imitate --size medium --value-bins 1 --bc-value-coef 0 --epochs 6 \
-    --data data/bc-10k --ckpt-dir checkpoints/medium-v1r --seed 1
-python train.py imitate --size medium --value-bins 51 --bc-value-coef 0.5 --epochs 6 \
-    --data data/bc-10k --ckpt-dir checkpoints/medium-mr --seed 1
-
-python train.py ppo --init checkpoints/small-v1r/bc.pt  --ckpt-dir checkpoints/small-v1r  --run small-v1r  $COMMON $V1R
-python train.py ppo --init checkpoints/small-mr/bc.pt   --ckpt-dir checkpoints/small-mr   --run small-mr   $COMMON $MR
-python train.py ppo --init checkpoints/medium-v1r/bc.pt --ckpt-dir checkpoints/medium-v1r --run medium-v1r $COMMON $V1R
-python train.py ppo --init checkpoints/medium-mr/bc.pt  --ckpt-dir checkpoints/medium-mr  --run medium-mr  $COMMON $MR
-
-for c in small-v1r small-mr medium-v1r medium-mr; do
-  python train.py eval --ckpt checkpoints/$c/best.pt --battles 1000
-done
-python train.py elo --ckpts checkpoints/{small-v1r,small-mr,medium-v1r,medium-mr}/best.pt --battles 400
-```
-
-The medium recipe of the 8 h run that reached ~55% was the raw value loss, last-minibatch
-KL stop and uniform pool: add `--value-ce-norm none --vf-coef 0.1 --kl-stop last
---pool-sampling uniform` to `MR` to run that one instead.
-
-### 2. minipoke-v2 features, one at a time, on small
-
-Each student is distilled from the same V1 checkpoint (here `checkpoints/v1-small.pt`,
-MiniPokeV1_1M's), then trained with the V1 recipe (small's defaults) at matched states.
-B0 is the control: a V1 student through the same pipeline.
-
-```bash
-S=5000000; T=checkpoints/v1-small.pt
-D="--size small --battles 10000 --epochs 6 --seed 1"      # distill
-P="--states $S --seed 1 --concurrency 32"                  # ppo, V1 recipe
-
-# B0 control (V1 encoder)                            B1 set priors (v2)
-python train.py distill --teacher $T $D --data data/d-v1 --ckpt-dir checkpoints/b0
-python train.py distill --teacher $T $D --encoder-version 2 --data data/d-v2 --ckpt-dir checkpoints/b1
-# B2 = B1 + move tokens (same data)                  B3 = B1 + history features
-python train.py distill --teacher $T $D --encoder-version 2 --move-tokens --data data/d-v2 --ckpt-dir checkpoints/b2
-python train.py distill --teacher $T $D --encoder-version 2 --history --data data/d-v2-hist --ckpt-dir checkpoints/b3
-
-for b in b0 b1 b2 b3; do
-  python train.py ppo --init checkpoints/$b/distill.pt --ckpt-dir checkpoints/$b --run $b $P
-done
-```
-
-Compare B1 with B0 (priors), B2 with B1 (move tokens), B3 with B1 (history).
-
-### 3. Jaxcalibur ideas, each alone on small, from V1 distillation
-
-```bash
-# D1 auxiliary heads (V1 encoder: compare with B0)
-python train.py ppo --init checkpoints/b0/distill.pt --ckpt-dir checkpoints/d1 --run d1 $P \
-    --aux-action-coef 0.1 --aux-set-coef 0.1
-# D2 matchup tokens (needs v2: compare with B1)
-python train.py distill --teacher $T $D --encoder-version 2 --matchup-tokens --data data/d-v2-match --ckpt-dir checkpoints/d2
-python train.py ppo --init checkpoints/d2/distill.pt --ckpt-dir checkpoints/d2 --run d2 $P
-# D3 history event tokens (needs v2: compare with B1 and B3)
-python train.py distill --teacher $T $D --encoder-version 2 --history-tokens 16 --data data/d-v2-events --ckpt-dir checkpoints/d3
-python train.py ppo --init checkpoints/d3/distill.pt --ckpt-dir checkpoints/d3 --run d3 $P
-# D4 typed feed-forward blocks (V1 encoder: compare with B0; same data as B0)
-python train.py distill --teacher $T $D --typed-ffn --data data/d-v1 --ckpt-dir checkpoints/d4
-python train.py ppo --init checkpoints/d4/distill.pt --ckpt-dir checkpoints/d4 --run d4 $P
-# D5 win/loss reward, and the uniform-KL term, separately (compare with B0)
-python train.py ppo --init checkpoints/b0/distill.pt --ckpt-dir checkpoints/d5-winloss --run d5-winloss $P --reward winloss
-python train.py ppo --init checkpoints/b0/distill.pt --ckpt-dir checkpoints/d5-ukl --run d5-ukl $P --uniform-kl-coef 0.01
-```
-
-The coefficients are starting points (aux 0.1 each; uniform KL 0.01, the entropy
-coefficient's scale): sweep them only for ideas that look promising.
-
-### 4. PPO step size, on small (minipoke v3)
-
-Each change alone against MiniPokeV2_1M's run (`--recipe v2-mr`), from its starting point, at matched
-states. About 1.5 h a run on the M3 (v2-mr: 471 st/s), so one night for the queue. The control is run
-again: two runs of the same recipe show how far apart noise alone puts them.
-
-```bash
-caffeinate -is bash -c '
-set -e
-SD="node pokemon-showdown start --no-security"
-CWD=~/Documents/minipoke/pokemon-showdown
-run() {
-  name=$1; shift
-  python train.py ppo --init checkpoints/b3/distill.pt --recipe v2-mr --states 2500000 --seed 1 \
-      --concurrency 32 --showdown-cmd "$SD" --showdown-cwd "$CWD" \
-      --ckpt-dir checkpoints/v3a/$name --run v3a-$name --export-dir export/v3a-$name "$@"
-}
-run ctl                              # v2-mr again: the noise floor
-run lr2e-4      --lr 2e-4
-run lr3e-4      --lr 3e-4
-run floor0.3    --lr-min-ratio 0.3
-run epochs4     --epochs 4
-run epochs6     --epochs 6
-run bpi384      --battles-per-iter 384
-for name in ctl lr2e-4 lr3e-4 floor0.3 epochs4 epochs6 bpi384; do
-  python train.py eval --ckpt checkpoints/v3a/$name/best.pt --vs-ckpt checkpoints/v2-mr/best.pt \
-      --battles 4000 --processes 4 --showdown-cmd "$SD" --showdown-cwd $CWD
-done
-python plot_metrics.py runs/v2-mr runs/v3a-* --out runs/v3a.png
-'
-```
-
-Read, for each run: the approx KL and clip fraction (bigger steps: higher), `kl_stopped` and `epochs`
-(the target KL should limit the 4-6 epoch runs), explained variance (it must not fall), the eval curves,
-and the paired eval of its `best.pt` against v2-mr's (4,000 games: ±1.5 points; the control's own gap
-says what a gap is worth). Then set `RECIPES["v3"]` to the changes that won, together, and check the
-combination once more the same way. With 384 battles per iteration, an iteration is twice the states:
-`--eval-every`, `--snapshot-every` and `--warmup-iters` count iterations.
-
-### Suggested experiment order
-
-1. **Re-evaluate what exists**, 1000 battles each, and head to head:
-   `eval --ckpt checkpoints/v1-small.pt`, `eval --ckpt <medium>/best.pt`,
-   `eval --ckpt <medium>/best.pt --vs-ckpt checkpoints/v1-small.pt`, plus one `elo`
-   round-robin with the scripted players. 62% vs 55% may not survive 1000 battles.
-2. **The 2×2 at matched states** (section 1): is medium worse because of its size or its
-   recipe?
-3. **minipoke-v2 features one at a time on small** (section 2), each initialized by
-   distilling V1: set priors, then move tokens, then history. Then the Jaxcalibur ideas
-   (section 3), each alone.
-4. **Only then medium + v2**, with what helped on small (distill V1 into
-   `--size medium --encoder-version 2 ...`, then the recipe that won in step 2).
-
-## Files
-
-- `encoder.py` turns a poke-env `Battle` into tensors (12 Pokémon tokens, moves,
-  field) plus the 14-action mask: encoder V1, unchanged. Actions map onto poke-env's
-  `SinglesEnv` action space, so orders are always built by poke-env itself.
-- `encoder_v2.py` (minipoke-v2): V1's arrays plus set priors, history, events and
-  matchups, by flag; `encoder_for(cfg, priors)` picks a model's encoder.
-- `setpriors.py` (random battle set priors), `history.py` (protocol-log history,
-  events and move outcomes), `damage.py` (the matchup damage estimate), `effects.py` (the
-  move effect features' ability, item and type rules).
-- `model.py` holds `MiniPokeTransformer`, `ModelConfig` and the `small` / `medium` / `wide` / `wide-medium` / `large` presets.
-- `players.py` has `InferenceBatcher` (async batching, with its model's encoder),
-  `RLPlayer` (records trajectories with win ±1 and faint ±0.1 rewards, as in ps-ppo, or
-  `--reward winloss`), and the recording teachers `TeacherPlayer` (heuristic) and
-  `DistillPlayer` (a trained model, any student encoder).
-- `ppo.py` has GAE, two-hot value targets, the budget, LR/entropy schedules, the PPO
-  update (KL stop, uniform KL, auxiliary losses) and the distillation / behavior-cloning loop.
-- `dataset.py` holds the sharded on-disk dataset and its streaming loader.
-- `rollout.py` decides who plays whom in an iteration, runs the watchdog, and has the
-  scripted players, evaluation and head-to-head matches.
-- `league.py` holds the opponent pool (uniform or pfsp). `elo.py` the Elo table and the
-  round-robin fit. `aux_labels.py` labels the auxiliary heads from the other seat.
-  `checkpoint.py` saves and restores the full training state. `runtime.py` has the
-  Showdown launcher, signals, metrics CSV, checkpoint retention, inference benchmark and
-  MPS fallback detection.
-- `train.py` is the CLI. `plot_metrics.py` plots runs.
-- `export_onnx.py` exports a checkpoint to ONNX, with `encoder_spec.json`
-  (vocabularies, item hashing, one-hot orderings, feature sizes, and the v2 rules) and,
-  for v2, `set_priors.json`.
-- `tests/` (pytest; `pip install -r requirements-dev.txt`) covers the export contract (V1
-  byte-identical, every v2 flag's export and ONNX parity), the encoders on offline
-  poke-env battles (priors, history, events, matchups, action mapping), the model (masks,
-  move tokens, typed FFN, MPS), GAE and two-hot targets, the PPO loop end to end with
-  faked rollouts (budgets, confirmed best, pool, Elo, aux), distillation across
-  encoders, resume, the pool, the dataset and clean stops; for v3, the PPO step options, recipes,
-  reference KL and fixed pool opponents (`test_ppo_v3.py`), re-simulation and parity on the committed
-  fixtures (`test_resim.py`), and the human dataset and offline RL (`test_offline.py`).
-- `make_fixtures.py` records battles for ElsaMina's parity tests (V1, or v2 from a v2 spec).
-- `analyze_replays.py` analyzes the ladder battles ElsaMina saved with `-savereplays` (see
-  [Ladder replays](#ladder-replays)).
-- `collect_replays.py` downloads public human replays with their input logs (see
-  [Collecting human replays](#collecting-human-replays)).
-- `showdown_versions.py` keeps a built Showdown checkout per server version; `resim.js` re-simulates
-  input logs on one, `resim.py` judges the re-simulations (`check`) and checks them against the bot's
-  own `.log`s (`parity`); `human_data.py` turns human replays into the offline RL dataset; `offline.py`
-  has offline RL (BC, advantage-weighted BC, the Q head), the offline metrics and `OnnxPolicy` (a
-  released model as a policy) (see [minipoke v3](#minipoke-v3-bigger-ppo-steps-then-human-replays)).
-- `paired.py` plays evaluations on paired teams (see [Measuring](#measuring)); `search.py`
-  and `search_sim.js` search one turn ahead on Showdown's simulator (see
-  [Search at decision time](#search-at-decision-time)).
-- `playground/` runs an exported model in the browser on those fixtures (see
-  [Model playground](#model-playground)).
-
-## Using a model in ElsaMina
-
-Each exported model is named after its **version** (the observation it was trained with:
-`encoder.py` for 1, `encoder_v2.py` for 2, `encoder_v2.py --move-effects` for 2.1, written `2_1` in
-names) and its size in parameters: `MiniPokeV2_1_22M`, then `MiniPokeV3_22M` (V2.1's observation, named after
-its training: offline RL on human replays). Models of one encoder share their C# encoder (V2.1 and V3 models play
-with `MiniPokeV2Encoder`, which reads the move effect flag from the spec). ElsaMina only keeps the models worth
-playing: `minipokev2.1-22m+search`, by far the best (offered only with search), and `minipokev3-22m` (alone or
-`+search`, `-strategy minipoke` picks it). The older models (`MiniPokeV1_1M`, `MiniPokeV1_4M`, `MiniPokeV2_1M`,
-`MiniPokeV2_4M`, `MiniPokeV2_1_1M`) were removed in Nov 2026: git history has them. The bot starts with
-`minipokev3-22m+search`; `-strategy calc` switches to the damage calc strategy the models fall back on.
-
-The C# side reproduces what the model sees in training:
-
-| Python | C# |
-|---|---|
-| poke-env's battle tracking | `src/ElsaMina.Battles/Tracking` (shared by every version) |
-| `encoder.py`: slots, ids, item hashing, action mask | `Strategies/MiniPoke/MiniPokeEncoder.cs` (shared) |
-| `encoder.py`: feature vectors | `Strategies/MiniPokeVN/MiniPokeVNEncoder.cs` (one per version) |
-| `encoder_v2.py`: V1's arrays, then set priors and history | `Strategies/MiniPokeV2/MiniPokeV2Encoder.cs` (extends V1's) |
-| `setpriors.py`, `history.py` | `Strategies/MiniPokeV2/SetPriors.cs`, `ProtocolHistory.cs` |
-| `effects.py`, `history.move_outcomes` (`--move-effects`) | `Strategies/MiniPokeV2/MoveEffects.cs`, `MoveOutcomes.cs` |
-| `export_onnx.py` outputs | `src/ElsaMina.Battles/Models/MiniPokeVN_SIZE/` (one per model) |
-| ONNX inference, action → `/choose` | `Strategies/MiniPoke/` (shared) |
-
-Any difference between the two encoders is silent: the model still plays legal
-moves, just badly. The parity fixtures catch it.
-
-Two things happen around the model, for every version:
-- **The guard** (`Strategies/MiniPoke/MiniPokeActionGuard.cs`). The bot plays the most likely
-  legal action, unless the guard vetoes it, then the most likely one left (a model whose every
-  legal action is vetoed keeps its choice; each override is logged). It vetoes what is sure to
-  be wasted, from the battle's lines and the request: a move our active Pokémon already used on
-  the opposing active with no effect (`|-immune|`), while neither terastallized since (moves
-  whose type or immunity changes, like Tera Blast, Weather Ball or Endeavor, excepted); a move
-  that only heals at full HP; Sleep Talk and Snore while awake; a hazard the opponent's side
-  already has every layer of; and every switch after Showdown answered "Can't switch: The
-  active Pokémon is trapped" (a trapping ability the request only announces as
-  `maybeTrapped`), until either active Pokémon changes. On the ladder battles analyzed, it
-  would have changed 93 of 12,345 decisions. The parity check (fixtures) compares the model's
-  own argmax, without the guard; `analyze_replays.py` applies the same rules (`guard_vetoes`).
-- **The value calibration** (`value_calibration.json` next to the model, optional). The value
-  head learned from self-play; against humans it is optimistic (MiniPokeV2_1M: +0.18 over the
-  realized return). `analyze_replays.py --write-calibration` fits expected return = scale ×
-  value + offset on the ladder battles and writes it; ElsaMina logs the expected return next to
-  the value. Nothing plays from the value.
-
-### Replacing a released model
-
-A model trained with the same encoder flags and set priors as a released one exports the same
-`encoder_spec.json`, so it runs with that model's C# encoder as is. To replace a released model with one
-of the same observation (`MiniPokeV3_22M` here, with a later PPO checkpoint), only `minipoke.onnx` changes:
-
-```bash
-python export_onnx.py --ckpt checkpoints/v3/ppo-large/best.pt --out export/
-cp export/minipoke.onnx ../../src/ElsaMina.Battles/Models/MiniPokeV3_22M/minipoke.onnx
-git diff --stat ../../src/ElsaMina.Battles/Models/MiniPokeV3_22M/  # only minipoke.onnx
-python make_fixtures.py --version 3_22M --battles 20    # Showdown running
-```
-
-The last step is required: the parity fixtures also store the logits of the model
-they were recorded with (`MiniPokeV2ParityTest` compares them with ElsaMina's
-onnxruntime), so they must be recorded again with the new `minipoke.onnx`. The
-encoding and action checks stay the same. To keep the old model available
-side by side instead, release it as a new model (below), reusing its encoder.
-
-### Releasing a new model N_SIZE
-
-`N_SIZE` is the version and the size, `1_4M` for minipoke v1 with ~4M parameters,
-`2_1M` for a ~1M minipoke-v2 model (strategy `minipokev2-1m`), `2_1_1M` for a ~1M minipoke v2.1
-model (strategy `minipokev2.1-1m`).
-
-1. Export the checkpoint into its model directory:
-   ```bash
-   python export_onnx.py --ckpt checkpoints/best.pt --out ../../src/ElsaMina.Battles/Models/MiniPokeVN_SIZE
-   ```
-2. Record parity fixtures with the encoder this model was trained with
-   (Showdown running):
-   ```bash
-   python make_fixtures.py --version N_SIZE --battles 20
-   ```
-3. On the C# side:
-   - add `MiniPokeVN_SIZE` to `BattleDecisionStrategy`, and `MiniPokeVN_SIZE_Search` after the other
-     search variants (`RegisterMiniPoke` registers it with the model: `-strategy minipokevN-size+search`);
-   - add `RegisterMiniPoke<...>(builder, BattleDecisionStrategy.MiniPokeVN_SIZE);` to `BattlesModule`.
-     If `encoder.py`'s features did not change, reuse the previous version's encoder.
-     If they did, this is a new version: copy it to `Strategies/MiniPokeVN/MiniPokeVNEncoder.cs`
-     and port the changes;
-   - add the model to `MODELS` in its version's parity test. For a new version, copy
-     `test/.../Battles/Strategies/MiniPokeV2/MiniPokeV2ParityTest.cs` (and its
-     `FeatureNames` if the features changed) to `MiniPokeVN`.
-4. Run the tests. `MiniPokeVNParityTest` must pass for the model: every array equal
-   to what the Python encoder produced, every action mapped to the order poke-env sent,
-   and the same logits in Python's onnxruntime and ElsaMina's.
-
-**minipoke-v2.** `MiniPokeV2Encoder` keeps V1's arrays and adds the ones its
-`encoder_spec.json` lists under `"inputs"`, following the spec's rules. It loads the
-model's `set_priors.json` (the priors are the model's, not Showdown's current file; its
-sha256 must be the spec's), and `--history` reads the battle's protocol lines in order
-(`TrackedBattleState.ProtocolLines`) and poke-env's `last_move`, `_active_turns` and
-`protect_counter`, which the tracker keeps. `--history-tokens` and `--matchup-tokens` are not
-ported: the encoder refuses a spec using them, so a model trained with them needs those
-arrays (and `damage.py`) ported first. The v2 fixtures carry `"encoder_version": 2` and
-every input; `MiniPokeV2ParityTest` compares all of them. `MiniPokeV2_1M` is the `v2-mr`
-run: `--encoder-version 2 --history`, distilled from `MiniPokeV1_1M`, then the medium
-recipe for 2.5M states.
-
-Older models keep working as long as their encoder stays as it was. Their
-fixtures were recorded with their own encoder: tag the commit of each
-release (`git tag minipoke-v1-4m`) to regenerate them later.
-
-Upgrading poke-env, or changing what an encoder reads from it, means checking
-the C# tracker against new fixtures too.
-
-## Ladder replays
-
-`-savereplays` keeps, for each ladder battle, every line the bot received (`<id>.log`) and
-Showdown's public replay (`<id>.json`, with the input log). `analyze_replays.py` replays each
-log into poke-env, runs the models on every decision point and writes a report:
-
-```bash
-python analyze_replays.py replays/replays --out replays/analysis      # ~20 s, cached after
-python analyze_replays.py replays/replays --out replays/analysis --write-calibration
-```
-
-`report.md` has the key findings, results by rating, how battles ended, the parity check
-(the committed choices against the argmax of the model that played, with or without the
-guard: both are read from the choices), the value head and its calibration, and the bot's
-behavior next to the humans' (moves into immunities, failed moves, tera timing...).
-`battles.csv`, `decisions.jsonl` and `value_calibration.json` hold the numbers. The replay
-folder is only read; `PLAYED_BY` and `COMPARE_WITH` at the top of the script name the models.
+`eval` and `elo` start the server themselves with `--showdown-cmd "node pokemon-showdown start
+--no-security"`, and look for the clone in `--showdown-cwd` (default `pokemon-showdown`). With many
+battles at once, raise `exports.subprocesses` in Showdown's `config/config.js`. Re-simulation does not
+use this clone: it builds one checkout per server version.
+
+poke-env is pinned (0.16.1) on purpose: ElsaMina's battle tracker is a port of that exact version, and a
+model only plays well on the state it was trained on.
 
 ## Collecting human replays
 
-Every public replay's JSON (`https://replay.pokemonshowdown.com/<id>.json`) holds the battle's
-input log: the server version, the battle and team seeds, both players' ratings and every choice.
-Re-run through Showdown's simulator at that version, it rebuilds what each player saw, so public
-ladder games give first-person training states without guessing hidden sets. `collect_replays.py`
-downloads them, rated 1500+ by default, into `replays/human/<format>/<UTC day>/<id>.json.gz`:
+Every public replay's JSON (`https://replay.pokemonshowdown.com/<id>.json`) holds the battle's input
+log: the server version, the battle and team seeds, both players' ratings and every choice.
+`collect_replays.py` downloads them, rated 1500+ by default:
 
 ```bash
 caffeinate -is python collect_replays.py                       # runs until stopped, resumes where it stopped
@@ -1243,76 +69,538 @@ python collect_replays.py --summary                            # replays, sides 
 ```
 
 It only knows the replays in its own folder. To archive some (move or zip day folders), keep
-`state.json` where it is and pass each archive with `--skip-from` (a folder at any depth, or a
-.zip), or the replays at the edges of the moved ones are downloaded again.
+`state.json` where it is and pass each archive with `--skip-from` (a folder at any depth, or a .zip), or
+the replays at the edges of the moved ones are downloaded again.
 
 To skip a span collected on another machine, give its edges (UTC dates, or unix times):
-`--backfill-from` starts the backfill there (replays uploaded before it) and `--head-from` the
-new uploads (from it on). They never move a cursor back over what the folder already covered,
-so the same command line restarts the run. Nov 2026: the Mac's two folders hold every 1500+
-replay from 2026-10-30 13:08:14 to 2026-11-12 21:59:58 UTC, and the server continues with
+`--backfill-from` starts the backfill there (replays uploaded before it) and `--head-from` the new
+uploads (from it on). They never move a cursor back over what the folder already covered, so the same
+command line restarts the run. Nov 2026: the Mac's two folders hold every 1500+ replay from 2026-10-30
+13:08:14 to 2026-11-12 21:59:58 UTC, and the server continues with
 `--backfill-from "2026-10-30 13:08:14" --head-from "2026-11-12 21:59:58"`.
 
 It checks for new uploads every 15 minutes and otherwise pages back through older ones (up to
 `--oldest-days`, 365). It sends one request at a time, about 2 s apart (`--delay`), with its own
-User-Agent (Cloudflare refuses Python's default one). It waits on 429 and 5xx (Retry-After, or
-1 minute doubling), slows down after a 429, and stops after 4 refusals (403) in a row: wait a few
-hours, then run it again with a longer `--delay`. Training on them: `resim.py` and `human_data.py`
-([minipoke v3](#b-human-replays)). At 2 s it saves about 1,500 replays an hour while
-paging back (Nov 2026: 75-280 public gen9randombattle replays are uploaded per hour, about a
-quarter of them rated 1500+). The listed rating is the replay's, close to the players' average:
-filter on each player's own rating (its `>player` line) when building a dataset. Each server
-version needs its own Showdown checkout to re-simulate; `--summary` counts them.
+User-Agent (Cloudflare refuses Python's default one). It waits on 429 and 5xx (Retry-After, or 1 minute
+doubling), slows down after a 429, and stops after 4 refusals (403) in a row: wait a few hours, then run
+it again with a longer `--delay`. At 2 s it saves about 1,500 replays an hour while paging back (Nov
+2026: 75 to 280 public gen9randombattle replays are uploaded per hour, about a quarter of them rated
+1500+). The listed rating is the replay's, close to the players' average: the dataset filters on each
+player's own rating (its `>player` line).
+
+## Re-simulation
+
+Run through its server version's simulator, a replay's input log rebuilds what each player's client
+received (a refused choice never reaches the input log).
+
+- `showdown_versions.py` keeps one checkout per version under `showdown-versions/`: a blobless bare
+  clone of smogon/pokemon-showdown, a worktree per commit, `node build`, and one `node_modules` per
+  distinct `package-lock.json` (`npm ci --omit=dev`), shared through a symlink. A version builds in
+  ~40 s the first time, ~4 s after; failures are recorded in `failed.json` and not retried unless asked.
+- `resim.js` (Node, one process per version) writes the input log line by line into that version's own
+  `BattleStream` (`_writeLine`, then `sendUpdates`, as the server writes every line on its own), splits
+  each update per player with the version's own `extractChannelMessages`, and adds the `rqid` the server
+  adds to requests (`room-battle.ts`: one counter per battle, both sides, first request 2). It records
+  which input log choice answered each request. `>chat` lines are skipped.
+- `resim.py` drives the workers and judges each re-simulation: every choice accepted, the battle ended,
+  and its omniscient view (exact HP of both sides: that is what a public log is) equal to the replay's
+  log, line for line, once both are reduced to the simulator's lines (`battle_lines`: joins, chat,
+  timers, `|raw|` and the like are left out).
+
+```bash
+python resim.py check replays/human/gen9randombattle replays/human/gen9randombattle-first-step-zipped
+python resim.py parity replays/replays          # the bot's own games against their .logs
+```
+
+Nov 2026, the Mac's 9,368 human replays: **all 9,358 distinct ones replay exactly**, on 6 server
+versions, in 90 s with 6 workers.
+
+**Parity.** The bot's own ladder games (`-savereplays` keeps the replay with its input log, and the
+`.log` of every line ElsaMina received live) check the whole chain: the bot's side of the
+re-simulation must be the `.log`'s battle lines exactly (requests and their rqid included), poke-env fed
+either one must make the same decisions with the same encodings, and the re-simulation's choices must
+map to the same actions as `analyze_replays.py`'s alignment of the `.log`. Of 561 games: **558
+identical** (12,271 decision points). The other 3 are games where Showdown refused the bot's switch
+while trapped: their `.log` has the `|error|` and a second request, which the input log cannot hold.
+`tests/test_resim.py` runs the same check on three of them (`tests/fixtures/resim`, names anonymized).
+
+A re-simulated side needs two things the room sends: poke-env counts a battle at `|init|battle` (and
+waits for that count at `|win|`), so `resim.side_decisions` prepends it; and it reads the format from
+the room name, so the tag is `battle-<replay id>`.
+
+## The dataset
+
+```bash
+python human_data.py replays/human/gen9randombattle replays/human/gen9randombattle-first-step-zipped \
+    --encoder-from ../../src/ElsaMina.Battles/Models/MiniPokeV3_22M --out data/human-v21
+```
+
+Each kept battle's sides whose player is rated `--min-player-rating` (1500) or more, by its own rating,
+are fed to poke-env 0.16.1 (`analyze_replays.ReplayPlayer`), encoded with the student's encoder
+(`--encoder-from`: a checkpoint, or a released model's folder: its flags and set priors), and each
+choice is mapped to the 14 actions (`analyze_replays.choice_to_action`). Battles forfeited or timed out
+before turn 3 are dropped. Rewards: `--faint-reward` 0.1 per faint difference after each decision, +-1
+at the end; returns discounted by `--gamma` 0.995. The value head learns these returns, and the search
+scores its leaves with the same faint reward. A decision without a usable label (an unanswered last
+request, a choice outside poke-env's mask) keeps its step, with action -1, so trajectories stay whole.
+
+Shards keep, besides the observation and the one-hot action, the fields offline RL needs to put rows
+back in trajectory order (`dataset.py` extra fields): `traj` (battle x 2 + side), `step`, `reward`,
+`done`, `rating`, `turn`, `label_ok`, `result`. Battles are split whole by upload time: the newest
+`--test-frac` 10% test, the `--val-frac` 5% before them validation (early stopping), the rest trains.
+Each chunk of 100 battles is a task (`--processes`, default 3: each ~0.6 GB plus a ~0.2 GB Node
+process; a worker is replaced after 25 chunks), and a stopped build resumes when run again
+(`<out>/chunks/`). Shards are float16 features and int16 ids: about 170 bytes a decision.
+
+Nov 2026, the Mac's replays: 9,259 battles kept, 18,412 sides (106 under 1500), **554,196 decisions**
+(548,042 labelled; the rest are last requests nobody answered). 93 MB, built in ~6 min with 3
+processes. The GPU box's dataset (258k battles) trained `MiniPokeV3_22M`.
+
+## Offline training
+
+```bash
+python train.py offline --data data/human-v21 --size wide-medium --algo bc   --ckpt-dir checkpoints/v3/bc-4m
+python train.py offline --data data/human-v21 --size wide-medium --algo awbc --ckpt-dir checkpoints/v3/awbc-4m
+python train.py offline --resume checkpoints/v3/awbc-4m/offline_last.pt --data data/human-v21   # after a stop
+```
+
+Both algorithms train the value head on the dataset's returns (`--vf-coef` 0.5 x the value loss: MSE
+for a scalar head, the two-hot cross-entropy divided by log(bins) for a distributional one, so a fresh
+head scores 1 either way). Steps without a label train the value head, never the actor.
+- `bc`: -log pi(a|s) of the human's action.
+- `awbc` (AWR / CRR): -w(A) log pi(a|s). A is GAE (gamma 0.995, lambda `--gae-lambda` 0.95) along each
+  human trajectory with the value head as the critic, recomputed by an ordered pass over the training
+  set at the start of each epoch; `--weight exp`: min(exp(A / std(A) / `--beta`), `--max-weight` 20),
+  `--weight binary`: 1[A > 0]. The first `--warmup-epochs` (1) are plain BC while the critic learns.
+
+The labels are one-hot, so a big model memorizes them: every epoch is scored on the validation battles,
+the best one (validation NLL) is `offline.pt` (`offline_last.pt` is the last, with what `--resume`
+needs), and training stops after `--patience` (2) epochs without a better one. At the end, the best
+epoch is measured on the test battles (`offline_metrics.json`).
+
+| Option | Default | |
+|---|---|---|
+| `--size` | `wide-medium` | a new model's architecture (below); it reads the dataset's observation (encoder flags, set priors) |
+| `--init CKPT` | | start from a checkpoint instead (same observation as the dataset) |
+| `--epochs`, `--patience` | 10, 2 | |
+| `--lr`, `--lr-min-ratio`, `--warmup-steps` | 3e-4, 0.1, 200 | peak LR, cosine to that fraction of it |
+| `--minibatch` | 512 | |
+| `--dropout` | 0 | an option against memorization on a big new model |
+| `--train-min-rating` | 0 | train the actor only on players rated this or more (the dataset already starts at 1500) |
+| `--min-rating` | 1700 | the metrics' strong players |
+| `--move-tokens`, `--typed-ffn` | off | architecture options (see [The observation and the model](#the-observation-and-the-model)) |
+| `--run` | the checkpoint folder's name | `runs/<run>/train.log` |
+
+### Sizes
+
+| `--size` | d_model / layers / heads | FFN | Value head | Parameters (V2.1 observation) |
+|---|---|---|---|---|
+| `small` | 128 / 3 / 4 | x2 | scalar | 0.98M |
+| `medium` | 256 / 4 / 8 | x2 | 51-bin two-hot over [-1.6, 1.6] | 4.1M |
+| `wide` | 256 / 3 / 8 | x4 | scalar | 4.4M |
+| `wide-medium` | 256 / 3 / 8 | x4 | 51-bin | 4.4M |
+| `large` | 512 / 5 / 8 | x4 | 51-bin | 22.5M (`MiniPokeV3_22M`) |
+
+`large` is sized for an 8 GB GPU (the Radeon RX 6600 XT box): training at `--minibatch` 512 takes
+about 3.2 GiB with the desktop. What limits growth is git, not memory: models are committed, GitHub
+warns above 50 MiB and refuses 100 MiB. Measured shapes (ONNX size, and what one decision costs
+ElsaMina on one CPU thread):
+
+| d_model / layers | Parameters | ONNX | CPU per decision |
+|---|---|---|---|
+| 256 / 3 (`wide-medium`) | 4.4M | 17 MiB | 1.4 ms |
+| 384 / 3 | 9.4M | 36 MiB | 3.2 ms |
+| 512 / 3 | 16.2M | 62 MiB | 5.3 ms |
+| 512 / 4 | 19.3M | 74 MiB | 6.3 ms |
+| **512 / 5 (`large`)** | 22.5M | 86 MiB | 7.4 ms |
+| 640 / 3 | 24.9M | 95 MiB | 8.1 ms |
+
+### Results
+
+**First runs (Nov 2026, the Mac's 9.4k battles, `small` from scratch, 8 epochs).** An epoch is 80 s on
+the M3 (918 steps of 512); AWBC adds its ordered pass (~25 s). Both were still improving at epoch 8. On
+the test battles (33,251 choices of 1700+ players, 55,743 of all), next to the self-play models
+released then:
+
+| | top-1 (1700+) | NLL (1700+) | top-1 (all) | value AUC |
+|---|---|---|---|---|
+| MiniPokeV2_1_1M (self-play) | 36.6% | 4.75 | 36.6% | 0.668 |
+| MiniPokeV2_1_22M (self-play) | 39.7% | 5.39 | 39.8% | 0.692 |
+| BC, small | 46.0% | 1.42 | 46.5% | 0.620 |
+| AWBC (exp, beta 1), small | **46.6%** | **1.41** | 47.0% | 0.615 |
+
+Paired evals, 4,000 games on 2,000 team pairs each (95% intervals):
+
+| | vs heuristic | vs MiniPokeV2_1_1M | vs BC |
+|---|---|---|---|
+| MiniPokeV2_1_1M | 67.3% (65.9-68.7) | | |
+| BC, small | 59.5% (58.1-60.9) | 47.5% (46.1-49.0) | |
+| AWBC, small | 64.0% (62.6-65.5) | **53.6% (52.1-55.1)** | **55.1% (53.7-56.5)** |
+
+The self-play models put almost no probability on many human choices (NLL 4.7 to 5.4): they played
+another game than the humans. Advantage weighting, on the same data, beats BC everywhere and beat the
+self-play model its size head to head. The value head learns slowly from human results (every battle's
+~60 states share one result).
+
+**`MiniPokeV3_22M`**: `large`, AWBC on 258k human battles (`checkpoints/v3/awbc-large-v21b/offline.pt`
+on the GPU box), best epoch 5 of 6, test top-1 59.95%. With search it plays at 1800+ on the ladder. PPO
+from it (LR 2e-4, a reference KL of 0.05 to it, its BC twin in the opponent pool) lost to it: 39% at
+iterations 10 and 20 (100 games each), its KL to it growing every iteration (0.195 at iteration 29).
+That is when self-play was dropped.
+
+## Measuring
+
+### On the human test battles: `offline-eval`
+
+```bash
+python train.py offline-eval --ckpt checkpoints/v3/bc-4m/offline.pt checkpoints/v3/awbc-4m/offline.pt \
+    ../../src/ElsaMina.Battles/Models/MiniPokeV3_22M --data data/human-v21 --out runs/v3/offline-4m.json
+```
+
+It measures checkpoints, or released models' folders (their ONNX, through `offline.OnnxPolicy`), on a
+split (`--split`, default `test`: the newest battles): top-1 agreement and NLL against players rated
+`--min-rating` (1700) or more and against all, the value's AUC at telling won from lost battles'
+decisions, its MSE to the return, and its calibration (by value bin: mean value, mean return, win rate).
+Agreement with humans is not strength: confirm in games.
+
+### In games: `eval` and `elo`
+
+```bash
+python train.py eval --ckpt checkpoints/v3/awbc-4m/offline.pt --battles 4000 --processes 4      # vs the heuristic
+python train.py eval --ckpt A --vs-ckpt ../../src/ElsaMina.Battles/Models/MiniPokeV3_22M --battles 4000 --processes 4
+python train.py eval --ckpt A --vs-ckpt A --search --processes 4        # A searching vs A
+python train.py eval --ckpt A --vs-ckpt A --no-tera-before 5            # A without tera before turn 5 vs A
+python train.py elo --ckpts A B ../../src/ElsaMina.Battles/Models/MiniPokeV3_22M --scripted heuristic maxpower random \
+    --processes 4 --out runs/elo.json
+```
+
+Models play greedy (the most likely legal action), each with its own encoder. `--ckpt`, `--vs-ckpt` and
+`elo --ckpts` take checkpoints or released model folders. `eval` and `elo` play **paired teams**
+(`paired.py`): each team pair from Showdown's own random battle generator is played twice, the teams
+swapped the second time, and the 95% interval comes from the spread of the pair scores. Showdown's
+random battle format generates its own teams, so these games are challenged as Anything Goes with custom
+rules that make it a random battle (no team preview, HP in percent, Sleep Clause...; not Custom Game,
+which reports exact HP to both sides). `--team-seed` picks the teams, the same ones for every match of a
+round-robin; `--unpaired` plays independent random battles. A tie (Showdown's turn 1000 auto-tie, when
+two greedy models loop) counts as half a win. `--processes P` splits the team pairs (`eval`) or the
+matches (`elo`) over P processes on the same server.
+
+`elo` fits Bradley-Terry ratings by maximum likelihood, the scripted players fixed as anchors so
+ratings compare across round-robins (`--anchors` overrides them):
+
+| Anchor | Rating |
+|---|---|
+| `random` (RandomPlayer) | 0 |
+| `maxpower` (MaxBasePowerPlayer) | 410 |
+| `heuristic` (SimpleHeuristicsPlayer) | 780 |
+
+They were fitted over 2,500 battles per pair on a local Showdown (Oct 2026): the heuristic beat
+maxpower 89.0% and random 99.1%, maxpower beat random 91.2%. Refit them after a Showdown update.
+
+What to expect from the numbers (Oct 2026, measured between models):
+- **Compare on 4,000 games or more** (+-1.5 points) before acting on gaps of a few points: two
+  independent 1,500-game runs of the same pair once differed by 5.8 points.
+- **Pairing helps less than expected between models**: the pair scores' spread is about 0.9 of
+  independent games' (random battle outcomes depend more on the game than on the teams).
+- **Seats don't matter**: a model against itself scored 50.2% over 3,000 games as the challenger.
+- The heuristic and the old self-play models are now far weaker than `MiniPokeV3_22M`: use it (with
+  `--vs-search-depth 1` for its search) as the reference opponent, and the ladder as the final judge.
+
+## Search at decision time
+
+`search.py` (`eval --search`) plays a model with a one-turn lookahead on Showdown's own simulator,
+scored by the model's value head. At a turn with two or more legal actions:
+
+1. our candidates are the model's 3 most likely actions (`--search-top-k`), however unlikely
+   (`--search-min-prob` 0): a model sure of a bad move still gets alternatives;
+2. `search_sim.js` (Node, `--search-workers` processes) rebuilds the position in Showdown's simulator
+   `--search-determinizations` times (2). Our team comes from the request: sets, exact HP, stats, PP,
+   disabled moves. Each rebuild guesses the opponent's hidden sets with Showdown's random battle
+   generator, made to agree with what was revealed (moves, ability, item, tera type). HP, status, boosts,
+   tera, a few volatiles, hazards, screens, weather and terrain are written onto the battle. The
+   opponent's unrevealed Pokémon are random sets it never switches to;
+3. for each candidate and each of the opponent's actions (usable moves, with and without tera, and
+   switches to its revealed Pokémon), one turn is played from that state;
+4. each simulated turn is replayed into a copy of our poke-env battle and scored like the returns the
+   value learned: the turn's faint reward (`--search-faint-reward`, 0.1) plus 0.995 x the model's value
+   of the new state, or +-1 when the battle ended;
+5. per guess, the turn is a simultaneous zero-sum game: regret matching finds the opponent's
+   equilibrium mix, each candidate scores its expected value against it, the scores are averaged over
+   the guesses, and the best candidate is played (0.02 x log policy probability breaks near ties).
+
+`--search-depth 2` adds one more decision after the opponent's likeliest replies. Forced switches and
+turns with a single legal action use the model alone, as does any turn whose search fails. A search
+simulates about 40 to 50 turns: under a second, and 0.5 s in ElsaMina. Use `--processes`.
+
+Measured on `MiniPokeV2_1M` (self-play, since removed), 600 team pairs each (Oct 2026):
+
+| | Without search | Search (top 3) | Search, only candidates with 2%+ |
+|---|---|---|---|
+| vs the same model without search | 50% | **61.9%** (59.5-64.4%) | 57.2% (54.7-59.8%) |
+| vs SimpleHeuristicsPlayer | 65.8% (63.4-68.3%) | **73.5%** (71.1-75.9%) | 74.0% (71.6-76.4%) |
+
+Searching more (`--search-top-k 4 --search-determinizations 3` with the 2% threshold) gained nothing
+then; none of these settings were measured again on `MiniPokeV3_22M`.
+
+**In ElsaMina** each model has a search variant, `-strategy <model>+search`: the same model and guard,
+plus the search. The variants are offered when `ShowdownDirectory` in config.json points to a
+pokemon-showdown package (`npm install pokemon-showdown@0.11.11`; in the Docker image,
+`/opt/showdown/node_modules/pokemon-showdown`; locally, the clone itself) and Node runs (`NodePath`,
+default `node`). `Strategies/MiniPokeSearch` ports search.py: `ShowdownSimulator` runs the same
+`search_sim.js` (copied next to the bot), `SearchPositionBuilder` is `position_of`, and each simulated
+turn is scored by replaying the battle's lines plus the turn's through ElsaMina's own tracker, so the
+model sees exactly the state it would see live. The search chooses among the actions
+`MiniPokeActionGuard` allows; past 8 s, or if anything fails, the bot plays the model's choice (after 5
+failures in a row the simulator turns itself off until the bot restarts). With `LogLevel` Debug, the
+log shows every decision the search changed. Keep search.py and the C# search in step.
+
+## The observation and the model
+
+**Encoders.** `encoder.py` (V1) turns a poke-env `Battle` into 12 Pokémon tokens' ids and features,
+their moves, the field and the 14-action mask (6 switches, 4 moves, 4 moves with tera). Actions map
+onto poke-env's `SinglesEnv` action space, so orders are always built by poke-env itself.
+`encoder_v2.py` keeps V1's six arrays unchanged and adds, by flag (`encoder_for(cfg, priors)` picks a
+model's encoder):
+
+| Array | Shape | |
+|---|---|---|
+| `cand_ids` | int64 [6, K] | candidate move ids per opponent slot (rows = V1's slots 6-11), PAD = none |
+| `cand_feats` | f32 [6, K, 40] | V1's 39 move features + fraction |
+| `prior_ids` | int64 [6, 2, 4] | row 0: ability ids, row 1: item ids (V1 hashing), by weight then id |
+| `prior_w` | f32 [6, 2, 4] | their weights |
+| `prior_feats` | f32 [6, 24] | tera weights (20 types), has sets, n consistent / n roles, fallback, Choice possible |
+| `hist_ids` (`history`) | int64 [2] | last move used by our active, by theirs (poke-env `Pokemon.last_move`) |
+| `hist_feats` (`history`) | f32 [8] | turns since their / our active came in, they / we switched by choice last turn, their / our protect counter, they chose the same move twice in a row, that and a Choice item possible |
+| `effect_feats` (`move_effects`) | f32 [12, 4, 6] | per known move, against the opposing active: no effect, ability blocks, status fails, immune before, failed last time, failed the last two times |
+| `cand_effect_feats` (`move_effects`) | f32 [6, K, 6] | the same per candidate move, against our active |
+| `event_ids` (`history_tokens K`) | int64 [K, 2] | move id (PAD for an entrance), species id of the last K events, oldest first |
+| `event_feats` (`history_tokens K`) | f32 [K, 14] | present, ours, move, entrance, dragged, called/locked, crit, miss, super effective, resisted, immune, failed, KO, turns ago |
+| `matchup_feats` (`matchup_tokens`) | f32 [12, 16] | our mon i vs their active, our active vs their mon j: expected damage of each known move both ways (`damage.py`), max each way, KO flags, move order |
+
+The released observation (V2.1, `MiniPokeV3_22M`) is V2 with `history` and `move_effects`: the current
+turn, plus the summaries above of the last turn or two. History and move effects read poke-env's state
+(`last_move`, `_active_turns`, `protect_counter`) and the battle's protocol log (`Battle._replay_data`,
+every parsed line but `|request|`), so the encoder stays a function of the battle: re-encoding recorded
+fixtures from their lines reproduces every array. `history_tokens` (the last K events as tokens) and
+`matchup_tokens` exist in Python only: ElsaMina's encoder refuses a spec using them, so a model trained
+with them needs those arrays ported first. Under self-play neither gained anything; neither has been
+tried on human data. A dataset is built with one observation: `human_data.py --encoder-from` a
+checkpoint or model folder with the flags wanted.
+
+**Set priors.** `setpriors.py` loads Showdown's gen 9 random battle sets
+(`data/random-battles/gen9/sets.json` in the clone). Each species has a few roles, each with a movepool,
+abilities and tera types; **the gen 9 file has no items** (Showdown's `teams.ts` picks them in code), so
+the item prior is empty with it. For each revealed opponent Pokémon:
+
+- **Species**: its id, else its dex `battleOnly` form(s), then `baseSpecies` (Palafin-Hero → palafin).
+- **Evidence**: revealed moves, its revealed base ability, revealed item, and its tera type once
+  terastallized. Evidence outside the species' whole pool says nothing about its roles (Struggle, moves
+  called by Sleep Talk, Trace, Illusion...) and is ignored. A role is consistent when it contains every
+  remaining piece. No consistent role → every role of the species ("fallback").
+- **Candidates**: moves of the consistent roles not revealed yet, ranked by the fraction of consistent
+  roles containing them (descending), ties by move id (ascending), the first K = 8 kept. They go through
+  the same move embedding and features as known moves, plus a known/candidate flag and that fraction.
+- **Abilities, items, tera types**: weight of x = mean over consistent roles of [x in role] / |role's x|
+  (a revealed one: 1), as a weighted embedding sum (abilities, items) and a weighted multi-hot (tera).
+- **Choice item possible**: a revealed Choice item, or an unknown item, no revealed status move other
+  than Trick / Switcheroo / Healing Wish, and a consistent role that can be dealt a set without status
+  moves (as `teams.ts` hands out Choice items).
+
+Checkpoints and datasets store the priors they were built with (Showdown's sets change over time), and
+exports write them to `set_priors.json`; every V2 model so far shares the same priors (f05fb3c538a6).
+
+**Move effects.** V1's move features read poke-env's type chart only, which ignores abilities
+(Earthquake into Levitate looks super effective). `effects.py` adds, for each move against the opposing
+active: **no effect** (the type chart, a revealed Air Balloon or Safety Goggles, or the target's types
+make it a sure miss), else **ability blocks** (the probability that the target's ability stops it: its
+revealed one, else its set priors' weights, else its possible abilities, times the probability that the
+owner is not a Mold Breaker); **status fails** (a major status into a target that has one); and from
+the protocol log (`history.move_outcomes`) **immune before**, **failed last time / twice**. Every rule
+is in the spec as data.
+
+**The model** (`model.py`). Tokens `[actor, critic, field, 6 ours, 6 theirs]`: state tokens attend to
+each other, actor and critic to the state and themselves. With V2, each opponent's candidate moves go
+through the move MLP (with a known/candidate flag and their fraction), and their fraction-weighted mean,
+the ability and item prior embeddings and the prior features join its token. The policy head is a
+pointer head: switch logits from our 6 Pokémon tokens, move logits from the active Pokémon's 4 move
+vectors (normal and tera). The value head is scalar or 51-bin distributional; `forward()` always returns
+its expected value. Attention is `scaled_dot_product_attention` with a boolean mask (MPS, CUDA and ONNX
+export). Architecture options for a new model: `--move-tokens` (one token per Pokémon and move slot; the
+move head reads our active's move tokens after the transformer) and `--typed-ffn` (one feed-forward
+block per token type). They change no observation, and gained nothing under self-play.
+
+**`encoder_spec.json`.** `export_onnx.py` writes, next to `minipoke.onnx`, everything the C# encoder
+needs: vocabularies, item hashing, one-hot orderings, feature sizes, and for V2 `"encoder_version": 2`,
+every ONNX input in order with its shape, the config fields that shape the observation, the set priors
+file and its sha256, and every rule of the history and move effect features (including what the C#
+tracker must keep beyond poke-env's state). The outputs are `logits [B, 14]` and `value [B]`.
+`tests/test_export_contract.py` checks the contract.
+
+## Using a model in ElsaMina
+
+Each exported model is named after its **version** and its size in parameters: `MiniPokeV3_22M`
+(strategy `minipokev3-22m`). A version is the observation, and the training when that is what changed:
+`encoder.py` was 1, `encoder_v2.py` 2, `encoder_v2.py --move-effects` 2.1 (a minor version adds input
+flags to an encoder, written `2_1` in names, `minipokev2.1-...` as a strategy), and 3 kept V2.1's
+observation but was the first trained on human replays. Models of one encoder share their C# encoder:
+`MiniPokeV3_22M` plays with `MiniPokeV2Encoder`, which reads the flags from the spec. ElsaMina keeps
+the models worth playing: today `minipokev3-22m`, alone or `+search` (`-strategy minipoke` picks the
+latest model); the bot starts with `minipokev3-22m+search`, and `-strategy calc` switches to the damage
+calc strategy the models fall back on.
+
+The C# side reproduces what the model sees in training:
+
+| Python | C# |
+|---|---|
+| poke-env's battle tracking | `src/ElsaMina.Battles/Tracking` (shared by every version) |
+| `encoder.py`: slots, ids, item hashing, action mask | `Strategies/MiniPoke/MiniPokeEncoder.cs` (shared) |
+| `encoder.py`: feature vectors | `Strategies/MiniPokeV1/MiniPokeV1Encoder.cs` |
+| `encoder_v2.py`: V1's arrays, then set priors and history | `Strategies/MiniPokeV2/MiniPokeV2Encoder.cs` (extends V1's) |
+| `setpriors.py`, `history.py` | `Strategies/MiniPokeV2/SetPriors.cs`, `ProtocolHistory.cs` |
+| `effects.py`, `history.move_outcomes` | `Strategies/MiniPokeV2/MoveEffects.cs`, `MoveOutcomes.cs` |
+| `export_onnx.py` outputs | `src/ElsaMina.Battles/Models/MiniPokeVN_SIZE/` (one per model) |
+| ONNX inference, action → `/choose` | `Strategies/MiniPoke/` (shared) |
+
+Any difference between the two encoders is silent: the model still plays legal moves, just badly. The
+parity fixtures catch it. Never "fix" a tracker quirk toward Showdown's truth: it must match poke-env.
+
+Two things happen around the model:
+- **The guard** (`Strategies/MiniPoke/MiniPokeActionGuard.cs`). The bot plays the most likely legal
+  action, unless the guard vetoes it, then the most likely one left (each override is logged). It vetoes
+  what is sure to be wasted: a move our active Pokémon already used on the opposing active with no
+  effect (`|-immune|`), while neither terastallized since (Tera Blast, Weather Ball, Endeavor and the
+  like excepted); a move that only heals at full HP; Sleep Talk and Snore while awake; a hazard the
+  opponent's side already has every layer of; and every switch after Showdown answered "Can't switch:
+  The active Pokémon is trapped", until either active Pokémon changes. The parity fixtures compare the
+  model's own argmax, without the guard; `analyze_replays.py` applies the same rules (`guard_vetoes`):
+  change both together.
+- **The value calibration** (`value_calibration.json` next to the model, optional).
+  `analyze_replays.py --write-calibration` fits expected return = scale x value + offset on the ladder
+  battles and writes it; ElsaMina logs the expected return next to the value. Nothing plays from it.
+
+### Replacing a released model
+
+A model trained on the same observation as a released one (same encoder flags and set priors) exports
+the same `encoder_spec.json`, so only `minipoke.onnx` changes:
+
+```bash
+python export_onnx.py --ckpt checkpoints/v3/awbc-large/offline.pt --out export/v3-large
+cp export/v3-large/minipoke.onnx ../../src/ElsaMina.Battles/Models/MiniPokeV3_22M/minipoke.onnx
+git diff --stat ../../src/ElsaMina.Battles/Models/MiniPokeV3_22M/   # only minipoke.onnx
+python make_fixtures.py --version 3_22M --battles 20                # Showdown running
+```
+
+The last step is required: the parity fixtures also store the logits of the model they were recorded
+with (`MiniPokeV2ParityTest` compares them with ElsaMina's onnxruntime). To keep the old model available
+side by side instead, release the new one under its own name.
+
+### Releasing a new model N_SIZE
+
+`N_SIZE` is the version and the size: `3_4M` for a ~4M v3 model (strategy `minipokev3-4m`), `3_1_22M`
+for a minor version adding input flags to v3's observation (strategy `minipokev3.1-22m`).
+
+1. Export the checkpoint into its model directory:
+   ```bash
+   python export_onnx.py --ckpt checkpoints/<run>/offline.pt --out ../../src/ElsaMina.Battles/Models/MiniPokeVN_SIZE
+   ```
+2. Record parity fixtures (Showdown running): `python make_fixtures.py --version N_SIZE --battles 20`.
+3. On the C# side:
+   - add `MiniPokeVN_SIZE` to `BattleDecisionStrategy`, and `MiniPokeVN_SIZE_Search` after the other
+     search variants (`RegisterMiniPoke` registers it with the model);
+   - add `RegisterMiniPoke<...>(builder, BattleDecisionStrategy.MiniPokeVN_SIZE);` to `BattlesModule`,
+     with the encoder of its observation (`MiniPokeV2Encoder` for V2.1's). New input arrays mean porting
+     them to the encoder first;
+   - add the model to `MODELS` in `MiniPokeV2ParityTest` (or a new version's copy of it).
+4. Run the tests. The parity test must pass for the model: every array equal to what the Python encoder
+   produced, every action mapped to the order poke-env sent, and the same logits in Python's
+   onnxruntime and ElsaMina's.
+
+Upgrading poke-env, or changing what an encoder reads from it, means checking the C# tracker against
+new fixtures too.
+
+## Ladder replays
+
+`-savereplays` keeps, for each ladder battle, every line the bot received (`<id>.log`) and Showdown's
+public replay (`<id>.json`, with the input log). `analyze_replays.py` replays each log into poke-env,
+runs the model on every decision point and writes a report:
+
+```bash
+python analyze_replays.py replays/replays --out replays/analysis      # ~20 s, cached after
+python analyze_replays.py replays/replays --out replays/analysis --write-calibration
+```
+
+`report.md` has the key findings, results by opponent rating, how battles ended, the parity check (the
+committed choices against the argmax of the model that played, with or without the guard, or among the
+search's candidates), the value head and its calibration, and the bot's behavior next to the humans'
+(moves into immunities, failed moves, tera timing...). `battles.csv`, `decisions.jsonl` and
+`value_calibration.json` hold the numbers. The replay folder is only read. `PLAYED_BY` at the top of the
+script names the model the report is about (`MiniPokeV3_22M`); `COMPARE_WITH` (none) names another
+released model to run on the same states.
 
 ## Model playground
 
-`playground/` is a static page that runs a released model in the browser
-(onnxruntime-web 1.20.1 from jsDelivr, wasm) on the battle states of its parity
-fixtures, and lets you edit them. Serve the repository root and open it:
+`playground/` is a static page that runs a released model in the browser (onnxruntime-web 1.20.1 from
+jsDelivr, wasm) on the battle states of its parity fixtures, and lets you edit them:
 
 ```bash
 python3 -m http.server 8765        # from the repository root
 open http://localhost:8765/tools/minipoke/playground/
 ```
 
-Pick a model (the folders under `src/ElsaMina.Battles/Models/`) and one of its fixtures,
-or drop any fixture `.json.gz` on the page (refused if its encoder version is not the
-model's). Step through the decisions with the slider or the arrow keys: the page shows
-the battle log so far, the 12 Pokémon, the field and the v2 inputs, the 14 action
-probabilities (raw logits beside them, temperature for display only) and the value,
-which is the expected training return (win/loss plus faint shaping), not a win
-probability. The parity badge compares the browser's output with the logits and value
-recorded in the fixture, which only match the model that recorded that folder;
-"Check every fixture of this model" runs the whole folder. Edits (HP, status, boosts,
-weather, terrain, hazards, screens, the action mask, any raw input cell) re-run the
-model at once, with the recorded state as ghost bars and Reset to go back. An edited
-input is not re-encoded: nothing derived from it follows.
+Pick a model and one of its fixtures, or drop any fixture `.json.gz` on the page. Step through the
+decisions with the slider or the arrow keys: the page shows the battle log so far, the 12 Pokémon, the
+field and the v2 inputs, the 14 action probabilities and the value (the expected return, not a win
+probability). Edits (HP, status, boosts, weather, hazards, the action mask, any raw input cell) re-run
+the model at once; an edited input is not re-encoded. The page never encodes a battle itself: every
+input comes from a fixture.
 
-The page never encodes a battle itself: every input comes from a fixture.
+## History
 
-## What to expect
+What was tried, in order (Oct to Nov 2026), and what it gave. The code of the abandoned approaches is in
+git history.
 
-This is a proof of concept, not a reproduction of the 1900+ result. The
-original's turn history matters for hidden information (inferring sets,
-predicting switches), and so do its size and its 250M training states. A
-realistic goal for this model on a laptop is to clearly beat
-`SimpleHeuristicsPlayer` after BC plus a few hours of PPO.
+| When | Approach | Result |
+|---|---|---|
+| Oct 20 | **V1**: ps-ppo shrunk for a Mac. BC on SimpleHeuristicsPlayer, then mirror self-play PPO (`MiniPokeV1_1M`, `V1_4M`) | about 61% vs the heuristic (small) |
+| Oct 22-24 | **V2 ablations** on small at matched states: random battle set priors, history features, move tokens, history event tokens, matchup tokens, typed FFN, auxiliary heads, win/loss reward, bigger sizes, a longer recipe (opponent pool, LR schedule, 51-bin value) | set priors and history features beat V1_4M (53.9% over 1,000 team pairs); everything else added nothing |
+| Oct 24 | `MiniPokeV2_1M` (set priors + history), first ladder run | 47.9% over 535 battles, performance rating 1109; value head 0.18 too optimistic against humans; moves repeated into revealed immunities |
+| Oct 27 | **V2.1**: move effect features (ability, item and type immunities, earlier failures), and the guard | fewer wasted moves (not measured on the ladder alone) |
+| Oct 28 | **One-turn search** on Showdown's simulator | +11.9 points against the same model (61.9%); 73.5% vs the heuristic (65.8% without) |
+| Nov 4-11 | V2.1 at **22M** (`large`, distilled from the 4M, 10M PPO states on the GPU box) | 55.8% vs its 4M teacher, +5.8 points for 5x the parameters; 15M states no better (48.1%); about 1300 on the ladder |
+| Nov 11 | Diagnosis of the plateau | PPO barely moved the policy (median KL 0.0027 per iteration, target 0.03) and the heuristic win rate was flat after 1M states: the training signal, not size or time, was the limit. Options ranked: training on the search's choices, bigger PPO steps, and human data as the long shot (Metamon: offline RL on human replays reached human-level play) |
+| Nov 11-13 | **Human replays**: public replays carry input logs, re-simulated on their own server version | all 9,358 replays of the first batch replay exactly; 558 of 561 of the bot's games identical to what ElsaMina received |
+| Nov 13 | **Offline RL**, small, 9.4k battles: BC, then AWBC (the plan: a Q head only if AWBC did not beat BC) | AWBC beat BC on every metric and beat the self-play `MiniPokeV2_1_1M` head to head (53.6%); BC lost to it (47.5%). The Q head was never needed |
+| Nov 14-21 | AWBC, `large`, 258k battles: **`MiniPokeV3_22M`** | test top-1 59.95%; PPO from it lost to it (39%); with search, 1800+ on the ladder |
+| Nov 22 | Self-play PPO, the BC-from-heuristic and distillation commands, the Q head and the self-play models removed | |
 
-minipoke-v2 covers part of that gap cheaply: set priors for hidden information, a few
-history features or the last K events instead of a KV cache over 64 turns, and an
-opponent pool favouring the snapshots the learner loses to. Whether each helps is what
-the [ablation](#ablation) is for.
+Never tried: training the network on the search's choices (expert iteration), and the PPO step-size
+ablation (bigger learning rate, more epochs, bigger batches) planned for v3 before the human data
+made it moot.
 
-## Porting the original ps-ppo model to MPS instead
+## Files
 
-If you want the full 16M model on the Mac rather than this one:
-1. In `ppo_core.py`, replace the `flex_attention(...)` call in `FlexEncoderLayer`
-   with `F.scaled_dot_product_attention(q, k, v, attn_mask=dense_bool_mask)`.
-   Build the dense mask from the same rules as the block mask; sequences are
-   short, so a dense mask is cheap.
-2. Drop the `logit_soft_cap` score_mod, or apply `tanh` soft-capping by
-   writing out attention manually (softmax(QKᵀ) with the cap).
-3. In `config.py`, add `"mps" if torch.backends.mps.is_available()` to the
-   device selection, and disable any `torch.compile`/bf16 paths that fail on MPS.
-4. Lower `target_concurrent_battles` (800 → ~100-200) and shrink
-   `minibatch_size`/`batch_seq_len`, raising `grad_accum_steps` to compensate.
+- `collect_replays.py` downloads public human replays with their input logs.
+- `showdown_versions.py` keeps a built Showdown checkout per server version; `resim.js` re-simulates
+  input logs on one; `resim.py` judges the re-simulations (`check`) and checks them against the bot's
+  own `.log`s (`parity`).
+- `human_data.py` turns human replays into the dataset; `dataset.py` holds the sharded on-disk format
+  and its streaming loader.
+- `encoder.py` (V1) and `encoder_v2.py` (set priors, history, move effects, events, matchups, by flag);
+  `setpriors.py`, `history.py`, `effects.py`, `damage.py` (the matchup damage estimate).
+- `model.py`: `MiniPokeTransformer`, `ModelConfig`, the presets. `checkpoint.py` saves and loads
+  checkpoints (weights, config, optimizer, set priors).
+- `offline.py`: BC and AWBC, the value loss, the offline metrics, `OnnxPolicy` (a released model as a
+  policy).
+- `train.py`: the CLI (`offline`, `offline-eval`, `eval`, `elo`). `runtime.py`: logging, the Showdown
+  launcher, MPS fallback detection, memory reporting.
+- `players.py`: `InferenceBatcher` (batches the decisions of concurrent battles) and `ModelPlayer` (plays
+  a model greedily). `matches.py`: scripted players and matches with a watchdog. `paired.py`: paired
+  teams. `elo.py`: the round-robin fit. `search.py` and `search_sim.js`: the one-turn search.
+- `export_onnx.py` exports a checkpoint (ONNX, `encoder_spec.json`, `set_priors.json`).
+  `make_fixtures.py` records battles for ElsaMina's parity tests.
+- `analyze_replays.py` analyzes the bot's own ladder games.
+- `playground/` runs a released model in the browser on its fixtures.
+- `tests/` (pytest): the export contract, the encoders on offline poke-env battles (priors, history,
+  events, matchups, move effects, action mapping), the model, the dataset, offline RL and its metrics,
+  paired teams, the search, re-simulation and parity on committed fixtures, replay collection and
+  analysis. `python -m pytest -q`; the re-simulation tests skip without the Showdown version they need.

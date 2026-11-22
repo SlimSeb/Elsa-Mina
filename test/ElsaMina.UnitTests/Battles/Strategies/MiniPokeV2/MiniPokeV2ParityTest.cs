@@ -16,7 +16,7 @@ public class MiniPokeV2ParityTest
 {
     // Every model trained with encoder_v2.py, each with its own fixtures
     private static readonly BattleDecisionStrategy[] MODELS =
-        [BattleDecisionStrategy.MiniPokeV2_1_22M, BattleDecisionStrategy.MiniPokeV3_22M];
+        [BattleDecisionStrategy.MiniPokeV3_22M];
 
     private readonly Dictionary<BattleDecisionStrategy, MiniPokeParityChecker> _checkers = [];
 

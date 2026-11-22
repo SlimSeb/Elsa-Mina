@@ -9,13 +9,13 @@ namespace ElsaMina.UnitTests.Battles.Strategies.MiniPoke;
 public static class MiniPokeV1Spec
 {
     private static readonly string V2_SPEC_PATH =
-        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV2_1_22M", "encoder_spec.json");
+        Path.Join(AppContext.BaseDirectory, "Models", "MiniPokeV3_22M", "encoder_spec.json");
     private static readonly string[] V2_ENTRIES =
         ["encoder_version", "history", "inputs", "model", "move_effects", "set_priors"];
     private static readonly string[] V2_ORDERINGS = ["cand_feats", "effect_feats", "hist_feats", "prior_feats"];
 
     /// <summary>
-    /// The released V2.1 model's spec without its V2 entries.
+    /// The released MiniPokeV3_22M spec (V2.1's observation) without its V2 entries.
     /// </summary>
     public static JsonObject Create()
     {

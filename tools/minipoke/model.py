@@ -49,16 +49,7 @@ layers: the later layers see them as state tokens, appended after the others.
 move_effects (encoder v2): each known and candidate move's effect features
 (encoder_v2 effect_feats / cand_effect_feats: immunities from abilities, items and
 types, and whether it failed or had no effect before) join the move MLP's input, after
-the others. with_move_effects() adds them to a trained model without changing what it
-plays: their input weights start at zero.
-
-aux_heads: training-only heads read the final tokens: the opponent's next action
-(from the critic and their active's token) and, per opponent Pokémon token, its
-item, ability and moves (logits tied to the input embeddings) and tera type.
-forward() never runs them, so they are not part of the ONNX export.
-
-q_head: a training-only per-action Q head on the critic token (offline RL, train.py offline
---algo q). forward() never runs it either.
+the others.
 
 typed_ffn: each layer has one feed-forward block per token type ("cls" = actor
 and critic, "field", "mons", "moves", "events"...) instead of one shared by every token.
@@ -73,7 +64,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, NT, VOCAB_SIZES
+from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, VOCAB_SIZES
 from effects import F_EFFECT
 from encoder_v2 import F_EVENT, F_HIST, F_MATCH, F_PRIOR
 
@@ -117,16 +108,13 @@ class ModelConfig:
     history_tokens: int = 0
     # Encoder v2: 12 damage-calc matchup tokens, injected after layer n_layers // 2
     matchup_tokens: bool = False
-    # Training-only heads (opponent's next action, opponent sets); never exported
-    aux_heads: bool = False
     # Encoder v2: per-move immunity / earlier failure features, into the move MLP
     move_effects: bool = False
-    # Training-only Q head (offline RL, train.py offline --algo q): one value per action, from
-    # the critic token; never exported
-    q_head: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
+        """Fields this version no longer has (the training-only aux_heads and q_head of
+        older checkpoints) are dropped."""
         known = {f.name for f in fields(cls)}
         return cls(**{k: v for k, v in d.items() if k in known})
 
@@ -145,9 +133,9 @@ PRESETS: Dict[str, ModelConfig] = {
     "wide-medium": ModelConfig(d_model=256, n_layers=3, n_heads=8, ff_mult=4.0,
                                species_dim=64, item_dim=32, ability_dim=64, move_dim=64,
                                value_bins=51),
-    # VRAM grows with d_model, the minibatch and the layers, not with the parameters. A PPO
-    # run peaks at 6.2 GiB with the desktop (README): keep some of the 8 GiB free before
-    # growing this, and keep the ONNX export under GitHub's 100 MiB (it is 86 MiB)
+    # VRAM grows with d_model, the minibatch and the layers, not with the parameters: keep
+    # some of an 8 GiB card free before growing this, and the ONNX export under GitHub's
+    # 100 MiB (it is 86 MiB)
     "large": ModelConfig(d_model=512, n_layers=5, n_heads=8, ff_mult=4.0,
                          species_dim=64, item_dim=32, ability_dim=64, move_dim=64,
                          value_bins=51),
@@ -323,13 +311,6 @@ class MiniPokeTransformer(nn.Module):
             self.register_buffer("attn_mask_full", build_attention_mask(n_full), persistent=False)
             self.register_buffer("self_attend_full", torch.eye(n_full, dtype=torch.bool),
                                  persistent=False)
-        if cfg.aux_heads:
-            self.aux_action_head = nn.Sequential(nn.Linear(2 * d, d), nn.GELU(),
-                                                 nn.Linear(d, ACT_DIM))
-            self.aux_set_proj = nn.Linear(d, cfg.item_dim + cfg.ability_dim + cfg.move_dim)
-            self.aux_tera_head = nn.Linear(d, NT)
-        if cfg.q_head:
-            self.q_head = nn.Sequential(nn.Linear(d, d), nn.GELU(), nn.Linear(d, ACT_DIM))
 
         self.apply(self._init)
 
@@ -463,11 +444,8 @@ class MiniPokeTransformer(nn.Module):
         logits, value, _ = self.forward_train(obs)
         return logits, value
 
-    def forward_train(self, obs: Dict[str, torch.Tensor], aux: bool = False, q: bool = False):
-        """Like forward(), plus the value logits [B, bins] (None for a scalar head).
-        With `aux`, also a dict of the auxiliary heads' logits: "action" [B, 14],
-        "item" / "ability" / "moves" [B, 6, vocab] and "tera" [B, 6, types].
-        With `q` (and not `aux`), also the Q head's values [B, 14] (cfg.q_head)."""
+    def forward_train(self, obs: Dict[str, torch.Tensor]):
+        """Like forward(), plus the value logits [B, bins] (None for a scalar head)."""
         mon_feats = obs["mon_feats"]
         x, key_present, move_vec = self.embed(obs)
         B, d = x.shape[0], self.cfg.d_model
@@ -521,63 +499,7 @@ class MiniPokeTransformer(nn.Module):
         else:
             value_logits = self.value_head(critic)
             value = torch.softmax(value_logits, dim=-1) @ self.value_support
-        if q:
-            return logits, value, value_logits, self.q_head(critic)
-        if not aux:
-            return logits, value, value_logits
-        return logits, value, value_logits, self._aux_heads(x, critic, mon_feats)
-
-    def _aux_heads(self, x: torch.Tensor, critic: torch.Tensor,
-                   mon_feats: torch.Tensor) -> Dict[str, torch.Tensor]:
-        cfg = self.cfg
-        theirs = x[:, MON0 + N_SLOTS: MON0 + N_MONS]                         # [B, 6, d]
-        opp_active = mon_feats[:, N_SLOTS:, 3].argmax(dim=-1)
-        opp_tok = theirs[torch.arange(x.shape[0], device=x.device), opp_active]
-        item, ability, moves = self.aux_set_proj(theirs).split(
-            [cfg.item_dim, cfg.ability_dim, cfg.move_dim], dim=-1)
-        return {"action": self.aux_action_head(torch.cat([critic, opp_tok], dim=-1)),
-                "item": item @ self.item_emb.weight.T,
-                "ability": ability @ self.ability_emb.weight.T,
-                "moves": moves @ self.move_emb.weight.T,
-                "tera": self.aux_tera_head(theirs)}
-
-
-def with_aux_heads(model: MiniPokeTransformer) -> MiniPokeTransformer:
-    """The same model plus fresh auxiliary heads."""
-    if model.cfg.aux_heads:
-        return model
-    new = MiniPokeTransformer(replace(model.cfg, aux_heads=True))
-    missing, unexpected = new.load_state_dict(model.state_dict(), strict=False)
-    assert not unexpected and all(k.startswith("aux_") for k in missing), (missing, unexpected)
-    new.priors = model.priors
-    return new
-
-
-def with_q_head(model: MiniPokeTransformer) -> MiniPokeTransformer:
-    """The same model plus a fresh (training-only) Q head."""
-    if model.cfg.q_head:
-        return model
-    new = MiniPokeTransformer(replace(model.cfg, q_head=True))
-    missing, unexpected = new.load_state_dict(model.state_dict(), strict=False)
-    assert not unexpected and all(k.startswith("q_head") for k in missing), (missing, unexpected)
-    new.priors = model.priors
-    return new
-
-
-def with_move_effects(model: MiniPokeTransformer) -> MiniPokeTransformer:
-    """The same model reading the move effect features, which start with zero weight in
-    the move MLP's first layer: it plays exactly like `model` until it is trained."""
-    if model.cfg.move_effects:
-        return model
-    new = MiniPokeTransformer(replace(model.cfg, move_effects=True))
-    state = model.state_dict()
-    first = "move_net.0.weight"
-    weight = torch.zeros_like(new.state_dict()[first])
-    weight[:, :state[first].shape[1]] = state[first]
-    state[first] = weight
-    new.load_state_dict(state)
-    new.priors = model.priors
-    return new
+        return logits, value, value_logits
 
 
 def to_tensors(batch, device) -> Dict[str, torch.Tensor]:
@@ -615,11 +537,16 @@ def describe(model: nn.Module) -> str:
     return f"{count_params(model):,} params ({parts})"
 
 
+# Weights of the training-only heads older checkpoints may hold (self-play's auxiliary heads,
+# offline RL's Q head): never part of what the model plays, dropped when loading
+RETIRED_PREFIXES = ("aux_", "q_head.")
+
+
 def build_model(state: dict) -> MiniPokeTransformer:
     """Rebuilds a model from a checkpoint dict ({"model": state_dict, "cfg": {...}},
     plus "set_priors" for an encoder v2 model)."""
     model = MiniPokeTransformer(ModelConfig.from_dict(state["cfg"]))
-    model.load_state_dict(state["model"])
+    model.load_state_dict({k: v for k, v in state["model"].items() if not k.startswith(RETIRED_PREFIXES)})
     if state.get("set_priors") is not None:
         from setpriors import SetPriors
         model.priors = SetPriors.from_dict(state["set_priors"])

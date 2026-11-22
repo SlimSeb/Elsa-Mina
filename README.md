@@ -260,12 +260,12 @@ damage-based choice.
   `-useteam`, or else a saved team the server validates. Without one, the bot rejects the challenge and says why.
 - **Laddering**: `-laddering <format>` searches a new battle after each one ends, staying under Showdown's search
   rate limit (`-laddering off` stops it). `-search <format>` starts a single search.
-- **minipoke strategies**: small transformer models (~22M parameters) trained in [`tools/minipoke`](tools/minipoke/README.md)
-  and exported to ONNX, run inside the bot:
-  - `minipokev3-22m`: trained offline on human ladder replays
+- **minipoke strategies**: a small transformer model (~22M parameters) trained in [`tools/minipoke`](tools/minipoke/README.md)
+  on human ladder replays and exported to ONNX, run inside the bot:
+  - `minipokev3-22m`: the model alone
   - `minipokev3-22m+search` (default): the same model, looking one turn ahead on Showdown's simulator and playing
-    the option its value head scores best (needs `ShowdownDirectory` and Node.js)
-  - `minipokev2.1-22m+search`: the previous model, trained by self-play, with search
+    the option its value head scores best (needs `ShowdownDirectory` and Node.js); 1800+ on the gen9randombattle
+    ladder
   - `damagecalc`: a damage-calc search of the turn, also what the models fall back on
 - **Action guard**: vetoes moves that are sure to be wasted (healing at full HP, a maxed hazard, a move that already
   failed on the same target...)

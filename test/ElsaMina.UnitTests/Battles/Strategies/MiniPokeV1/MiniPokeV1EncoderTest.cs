@@ -25,7 +25,7 @@ public class MiniPokeV1EncoderTest
     {
         var directory = Directory.CreateTempSubdirectory("minipoke-v1").FullName;
         MiniPokeV1Spec.WriteTo(directory);
-        _options = new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV2_1_22M, directory);
+        _options = new MiniPokeModelOptions(BattleDecisionStrategy.MiniPokeV3_22M, directory);
     }
 
     [OneTimeTearDown]
