@@ -146,7 +146,20 @@ request, a choice outside poke-env's mask) keeps its step, with action -1, so tr
 
 Shards keep, besides the observation and the one-hot action, the fields offline RL needs to put rows
 back in trajectory order (`dataset.py` extra fields): `traj` (battle x 2 + side), `step`, `reward`,
-`done`, `rating`, `turn`, `label_ok`, `result`. Battles are split whole by upload time: the newest
+`done`, `rating`, `turn`, `label_ok`, `result`, and the targets of the opponent heads
+(`opp_targets.py`, -1 = none; see [The observation and the model](#the-observation-and-the-model)):
+
+| Field | Shape, dtype | |
+|---|---|---|
+| `opp_act` | int16 | the opponent's choice from the same state, one of 12 + K classes in our view's terms |
+| `opp_tera` | int8 | it terastallized (a move choice, when it could) |
+| `opp_item` | int16 [6] | per opposing slot of our view: its real item, hashed like `encoder.item_id` |
+| `opp_ability` | int16 [6] | its real base ability (`ABILITY_VOCAB`) |
+| `opp_tera_type` | int8 [6] | its real tera type (an index into `encoder.TYPES`) |
+| `opp_moves` | int16 [6, 4] | its real moves (`MOVE_VOCAB`, 0 = none) |
+
+Datasets built before them (Nov 22, 2026) have none: they still train everything else, and need
+rebuilding with `human_data.py` to train the opponent heads. Battles are split whole by upload time: the newest
 `--test-frac` 10% test, the `--val-frac` 5% before them validation (early stopping), the rest trains.
 Each chunk of 100 battles is a task (`--processes`, default 3: each ~0.6 GB plus a ~0.2 GB Node
 process; a worker is replaced after 25 chunks), and a stopped build resumes when run again
@@ -173,6 +186,9 @@ head scores 1 either way). Steps without a label train the value head, never the
   set at the start of each epoch; `--weight exp`: min(exp(A / std(A) / `--beta`), `--max-weight` 20),
   `--weight binary`: 1[A > 0]. The first `--warmup-epochs` (1) are plain BC while the critic learns.
 
+A model with opponent heads also trains them (`--opp-coef` x their loss, see
+[The observation and the model](#the-observation-and-the-model)).
+
 The labels are one-hot, so a big model memorizes them: every epoch is scored on the validation battles,
 the best one (validation NLL) is `offline.pt` (`offline_last.pt` is the last, with what `--resume`
 needs), and training stops after `--patience` (2) epochs without a better one. At the end, the best
@@ -189,6 +205,9 @@ epoch is measured on the test battles (`offline_metrics.json`).
 | `--train-min-rating` | 0 | train the actor only on players rated this or more (the dataset already starts at 1500) |
 | `--min-rating` | 1700 | the metrics' strong players |
 | `--move-tokens`, `--typed-ffn` | off | architecture options (see [The observation and the model](#the-observation-and-the-model)) |
+| `--move-pool` | `concat` | how a new model's Pokémon tokens read their known moves: `concat` (V3's) or `meanmax` (below); with `--init`, only the checkpoint's own |
+| `--opp-heads` | off | training-only opponent heads (below), on a new model or added to `--init`'s; the dataset needs their targets |
+| `--opp-coef` | 0.5 | x the opponent heads' loss, for a model that has them (0: not trained) |
 | `--run` | the checkpoint folder's name | `runs/<run>/train.log` |
 
 ### Sizes
@@ -261,6 +280,8 @@ It measures checkpoints, or released models' folders (their ONNX, through `offli
 split (`--split`, default `test`: the newest battles): top-1 agreement and NLL against players rated
 `--min-rating` (1700) or more and against all, the value's AUC at telling won from lost battles'
 decisions, its MSE to the return, and its calibration (by value bin: mean value, mean return, win rate).
+For a checkpoint with opponent heads, on a dataset with their targets, it adds their metrics
+(`offline.opp_metrics`).
 Agreement with humans is not strength: confirm in games.
 
 ### In games: `eval` and `elo`
@@ -429,6 +450,41 @@ export). Architecture options for a new model: `--move-tokens` (one token per Po
 move head reads our active's move tokens after the transformer) and `--typed-ffn` (one feed-forward
 block per token type). They change no observation, and gained nothing under self-play.
 
+**Move pooling (`--move-pool`, not measured yet).** Without move tokens, a Pokémon token reads its 4
+known move vectors end to end (`concat`, 4 x d_model inputs: V3's). The slots come from poke-env's
+`mon.moves` order: the request's for our Pokémon, the order they were revealed in for the opponent's, so
+the same set gives different tokens depending on the order it was seen in. `meanmax` reads their mean
+and max over the slots that hold a move instead (2 x d_model; zero for a Pokémon with no known move),
+the same in any order. The move head still scores each slot, so the actions don't change. `large` with
+the V2.1 observation has 1.05M fewer parameters. The export's inputs, outputs and `encoder_spec.json`
+are the same either way. An option for new models: `--init` keeps its checkpoint's.
+
+**Opponent heads (`--opp-heads`, training only, not measured yet).** A re-simulated replay holds both
+sides' requests and choices, so each decision can also learn what its player could not see
+(`opp_targets.py`). Showdown sends both sides a request in each batch (a `wait` one to the side with
+nothing to choose), so the k-th requests of the two sides pair up; a battle whose sides have different
+counts gets no choice targets. The targets, in our view's terms:
+- the opponent's choice from the same state: switch to one of our view's 6 opposing slots (0-5), to a
+  Pokémon not revealed yet (6), its active's known move j (7-10), candidate move k from the set priors
+  (11 to 10 + K; K = 0 in V1), or any other move (11 + K). None for a wait, a recharge, or a move while
+  our view has no opposing active. And whether it terastallized, when it could;
+- each revealed opposing Pokémon's real item (hashed as the encoder does), ability, tera type and
+  moves, from the opponent's first request (items not consumed yet).
+
+The heads read the final tokens: a query from the actor and critic tokens; a pointer over the 6
+opposing Pokémon tokens for switches, and over their active's known and candidate move vectors (before
+the transformer) for moves, classes our view rules out masked; one linear for "a Pokémon not revealed
+yet" and "another move"; and per opposing token, linear heads over items, abilities, tera types and
+moves. The loss adds `--opp-coef` (0.5) x the mean of their six cross-entropies, each divided by
+log(classes) (about 1 at init, like the value loss). `forward()` never reads them: the export is the
+same model's without them (same ONNX inputs, outputs and weights, same `encoder_spec.json`). `--init`
+adds fresh heads to a checkpoint, e.g. to fine-tune `MiniPokeV3_22M` with them. Each epoch logs their
+loss (`opp`) and the opponent's choice top-1 on validation; the test metrics and `offline-eval` add
+the choice's top-1 and NLL, tera accuracy, top-1 on the items and abilities not revealed yet, tera
+type top-1, and recall@4 of the moves not revealed yet (the 4 likeliest among those our view does not
+show). They are not the auxiliary heads of the V2 ablations (self-play, Oct 2026), whose `aux_*`
+weights old checkpoints drop when they load.
+
 **`encoder_spec.json`.** `export_onnx.py` writes, next to `minipoke.onnx`, everything the C# encoder
 needs: vocabularies, item hashing, one-hot orderings, feature sizes, and for V2 `"encoder_version": 2`,
 every ONNX input in order with its shape, the config fields that shape the observation, the set priors
@@ -572,6 +628,7 @@ git history.
 | Nov 13 | **Offline RL**, small, 9.4k battles: BC, then AWBC (the plan: a Q head only if AWBC did not beat BC) | AWBC beat BC on every metric and beat the self-play `MiniPokeV2_1_1M` head to head (53.6%); BC lost to it (47.5%). The Q head was never needed |
 | Nov 14-21 | AWBC, `large`, 258k battles: **`MiniPokeV3_22M`** | test top-1 59.95%; PPO from it lost to it (39%); with search, 1800+ on the ladder |
 | Nov 22 | Self-play PPO, the BC-from-heuristic and distillation commands, the Q head and the self-play models removed | |
+| Nov 22 | **Move pooling that ignores slot order** (`--move-pool meanmax`) and **training-only opponent heads** (`--opp-heads`: the opponent's choice and real sets, from both sides of the re-simulations) | not measured yet |
 
 Never tried: training the network on the search's choices (expert iteration), and the PPO step-size
 ablation (bigger learning rate, more epochs, bigger batches) planned for v3 before the human data
@@ -584,7 +641,8 @@ made it moot.
   input logs on one; `resim.py` judges the re-simulations (`check`) and checks them against the bot's
   own `.log`s (`parity`).
 - `human_data.py` turns human replays into the dataset; `dataset.py` holds the sharded on-disk format
-  and its streaming loader.
+  and its streaming loader; `opp_targets.py` reads the opponent heads' targets (the opponent's choice
+  and real sets) from a re-simulation.
 - `encoder.py` (V1) and `encoder_v2.py` (set priors, history, move effects, events, matchups, by flag);
   `setpriors.py`, `history.py`, `effects.py`, `damage.py` (the matchup damage estimate).
 - `model.py`: `MiniPokeTransformer`, `ModelConfig`, the presets. `checkpoint.py` saves and loads
@@ -601,6 +659,7 @@ made it moot.
 - `analyze_replays.py` analyzes the bot's own ladder games.
 - `playground/` runs a released model in the browser on its fixtures.
 - `tests/` (pytest): the export contract, the encoders on offline poke-env battles (priors, history,
-  events, matchups, move effects, action mapping), the model, the dataset, offline RL and its metrics,
+  events, matchups, move effects, action mapping), the model (move pooling, the opponent heads and
+  their targets), the dataset, offline RL and its metrics,
   paired teams, the search, re-simulation and parity on committed fixtures, replay collection and
   analysis. `python -m pytest -q`; the re-simulation tests skip without the Showdown version they need.

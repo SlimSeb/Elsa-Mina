@@ -53,6 +53,19 @@ the others.
 
 typed_ffn: each layer has one feed-forward block per token type ("cls" = actor
 and critic, "field", "mons", "moves", "events"...) instead of one shared by every token.
+
+move_pool: how a Pokémon token reads its 4 known move vectors (without move tokens).
+"concat" (V3) puts them end to end (4 x d), so the slot order matters: our moves come in
+the request's order, the opponent's in the order they were revealed, and the same set gives
+different tokens. "meanmax" pools them into [mean, max] over the slots that hold a move
+(2 x d, 0 for a Pokémon with no known move), the same whatever the order. The move head
+still scores each slot, so the actions don't change.
+
+opp_heads (training only): heads that predict what our view hides, from re-simulated
+replays (opp_targets.py): the opponent's choice this turn (a pointer over its 6 Pokémon
+tokens and its active's known and candidate move vectors, plus "a Pokémon not revealed yet"
+and "another move"), whether it terastallizes, and each opposing Pokémon's real item,
+ability, tera type and moves. forward() never reads them, so the ONNX export is unchanged.
 """
 
 from __future__ import annotations
@@ -64,15 +77,19 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, VOCAB_SIZES
+from encoder import ACT_DIM, F_FIELD, F_MON, F_MOVE, N_MONS, N_MOVES, N_SLOTS, NT, VOCAB_SIZES
 from effects import F_EFFECT
 from encoder_v2 import F_EVENT, F_HIST, F_MATCH, F_PRIOR
+from opp_targets import OPP_CAND0, OPP_MOVE0, OPP_SWITCH0, OPP_UNREVEALED, n_opp_classes, opp_other
 
 N_TOKENS = 3 + N_MONS
 ACTOR, CRITIC, FIELD_TOK = 0, 1, 2
 MON0 = 3
 MOVE0 = N_TOKENS        # first move token (move_tokens)
 Segment = Tuple[str, int, int]   # token type, first token, end (exclusive)
+MOVE_POOLS = ("concat", "meanmax")
+OPP_HEADS = ("opp_query", "opp_switch", "opp_move", "opp_extra", "opp_tera", "opp_item",
+             "opp_ability", "opp_tera_type", "opp_moves")
 
 
 @dataclass
@@ -110,11 +127,15 @@ class ModelConfig:
     matchup_tokens: bool = False
     # Encoder v2: per-move immunity / earlier failure features, into the move MLP
     move_effects: bool = False
+    # How a Pokémon token reads its known moves: "concat" (in slot order) or "meanmax"
+    move_pool: str = "concat"
+    # Training-only heads predicting the opponent's choice and real sets (never in forward())
+    opp_heads: bool = False
 
     @classmethod
     def from_dict(cls, d: dict) -> "ModelConfig":
-        """Fields this version no longer has (the training-only aux_heads and q_head of
-        older checkpoints) are dropped."""
+        """Fields this version no longer has (the retired training-only aux_heads and q_head
+        of older checkpoints) are dropped."""
         known = {f.name for f in fields(cls)}
         return cls(**{k: v for k, v in d.items() if k in known})
 
@@ -234,6 +255,8 @@ class MiniPokeTransformer(nn.Module):
 
         if cfg.encoder_version not in (1, 2):
             raise ValueError(f"unknown encoder_version {cfg.encoder_version}")
+        if cfg.move_pool not in MOVE_POOLS:
+            raise ValueError(f"unknown move_pool {cfg.move_pool!r}: one of {', '.join(MOVE_POOLS)}")
         if (cfg.history or cfg.history_tokens or cfg.matchup_tokens or cfg.move_effects) \
                 and cfg.encoder_version < 2:
             raise ValueError("history features, history and matchup tokens and move effects are "
@@ -259,10 +282,11 @@ class MiniPokeTransformer(nn.Module):
         # v2: + known/candidate flag and fraction of consistent roles (1 for known moves)
         self.move_net = mlp(cfg.move_dim + F_MOVE + (2 if self.v2 else 0)
                             + (F_EFFECT if cfg.move_effects else 0), d)
-        moves_in = 0 if cfg.move_tokens else N_MOVES * d   # move tokens: moves are tokens
+        # Known moves: none with move tokens (moves are tokens), 4 x d end to end, or [mean, max]
+        moves_in = 0 if cfg.move_tokens else (2 * d if cfg.move_pool == "meanmax" else N_MOVES * d)
         mon_in = cfg.species_dim + cfg.item_dim + cfg.ability_dim + F_MON + moves_in
         if self.v2:  # candidate moves' weighted mean, ability / item priors, prior features
-            mon_in += moves_in // N_MOVES + cfg.ability_dim + cfg.item_dim + F_PRIOR
+            mon_in += (0 if cfg.move_tokens else d) + cfg.ability_dim + cfg.item_dim + F_PRIOR
         self.mon_net = mlp(mon_in, d)
         # Shared, not a parameter: what encoder_v2 needs to rebuild this model's
         # observations (saved in checkpoints and exported as set_priors.json).
@@ -313,6 +337,30 @@ class MiniPokeTransformer(nn.Module):
                                  persistent=False)
 
         self.apply(self._init)
+        # After the others' initialization: a model with the heads has the same other weights
+        # as one without, built from the same seed
+        if cfg.opp_heads:
+            self._add_opp_heads()
+
+    def _add_opp_heads(self) -> None:
+        """The opponent heads, freshly initialized (on the model's device)."""
+        d = self.cfg.d_model
+        heads = {
+            "opp_query": mlp(2 * d, d),                                    # [actor, critic] -> q
+            "opp_switch": nn.Sequential(nn.Linear(2 * d, d), nn.GELU(), nn.Linear(d, 1)),
+            "opp_move": nn.Sequential(nn.Linear(3 * d, d), nn.GELU(), nn.Linear(d, 1)),
+            "opp_extra": nn.Linear(d, 2),                  # a Pokémon not revealed yet, another move
+            "opp_tera": nn.Sequential(nn.Linear(2 * d, d), nn.GELU(), nn.Linear(d, 1)),
+            "opp_item": nn.Linear(d, VOCAB_SIZES["item"]),
+            "opp_ability": nn.Linear(d, VOCAB_SIZES["ability"]),
+            "opp_tera_type": nn.Linear(d, NT),
+            "opp_moves": nn.Linear(d, VOCAB_SIZES["move"]),
+        }
+        assert tuple(heads) == OPP_HEADS
+        device = next(self.parameters()).device
+        for name, head in heads.items():
+            head.apply(self._init)
+            setattr(self, name, head.to(device))
 
     @staticmethod
     def _init(m: nn.Module) -> None:
@@ -381,8 +429,27 @@ class MiniPokeTransformer(nn.Module):
             key_present = present.new_ones(x.shape[0], x.shape[1])
         return torch.cat([x, matchups], dim=1), torch.cat([key_present, present], dim=1)
 
+    def _pool_moves(self, move_vec: torch.Tensor, present: torch.Tensor) -> torch.Tensor:
+        """A Pokémon token's known move input: [B, 12, 4 x d] in slot order ("concat"), or
+        [B, 12, 2 x d], the mean and max over the slots holding a move ("meanmax", 0 when there
+        is none). move_vec is already 0 in empty slots; present [B, 12, 4, 1]."""
+        B, d = move_vec.shape[0], self.cfg.d_model
+        if self.cfg.move_pool == "concat":
+            return move_vec.reshape(B, N_MONS, N_MOVES * d)
+        held = present > 0
+        count = present.sum(2)                                            # [B, 12, 1]
+        mean = move_vec.sum(2) / count.clamp_min(1.0)
+        # masked_fill + amax rather than a masked max: exports to ONNX (Where, ReduceMax)
+        top = move_vec.masked_fill(~held, -1e4).amax(2) * (count > 0).to(move_vec.dtype)
+        return torch.cat([mean, top], dim=-1)
+
     def embed(self, obs: Dict[str, torch.Tensor]):
         """-> (tokens [B, T, d], key_present [B, T] or None, move_vec [B, 12, 4, d])."""
+        x, key_present, move_vec, _ = self._embed(obs)
+        return x, key_present, move_vec
+
+    def _embed(self, obs: Dict[str, torch.Tensor]):
+        """embed(), plus the opponents' candidate move vectors [B, 6, K, d] (None in V1)."""
         mon_ids, move_ids = obs["mon_ids"], obs["move_ids"]
         mon_feats, move_feats = obs["mon_feats"], obs["move_feats"]
         B = mon_ids.shape[0]
@@ -407,7 +474,7 @@ class MiniPokeTransformer(nn.Module):
             mon_feats,
         ]
         if not self.cfg.move_tokens:
-            parts.append(move_vec.reshape(B, N_MONS, N_MOVES * d))
+            parts.append(self._pool_moves(move_vec, move_present))
         if self.v2:
             theirs = self._prior_inputs(obs, None if self.cfg.move_tokens else cand_vec)
             parts.append(torch.cat([torch.zeros_like(theirs), theirs], dim=1))
@@ -437,17 +504,20 @@ class MiniPokeTransformer(nn.Module):
         key_present = None
         if present:
             key_present = torch.cat([present[0].new_ones(B, N_TOKENS)] + present, dim=1)
-        return torch.cat(tokens, dim=1), key_present, move_vec
+        return torch.cat(tokens, dim=1), key_present, move_vec, cand_vec
 
     def forward(self, obs: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
         """Returns masked policy logits [B, 14] and value [B] (a scalar expected return)."""
         logits, value, _ = self.forward_train(obs)
         return logits, value
 
-    def forward_train(self, obs: Dict[str, torch.Tensor]):
-        """Like forward(), plus the value logits [B, bins] (None for a scalar head)."""
+    def forward_train(self, obs: Dict[str, torch.Tensor], opp: bool = False):
+        """Like forward(), plus the value logits [B, bins] (None for a scalar head). With `opp`,
+        a 4th output: the opponent heads' outputs (opp_logits)."""
+        if opp and not self.cfg.opp_heads:
+            raise ValueError("this model has no opponent heads (ModelConfig.opp_heads)")
         mon_feats = obs["mon_feats"]
-        x, key_present, move_vec = self.embed(obs)
+        x, key_present, move_vec, cand_vec = self._embed(obs)
         B, d = x.shape[0], self.cfg.d_model
         mask = self.attention_mask(key_present)
         segments = self.segments
@@ -499,7 +569,55 @@ class MiniPokeTransformer(nn.Module):
         else:
             value_logits = self.value_head(critic)
             value = torch.softmax(value_logits, dim=-1) @ self.value_support
+        if opp:
+            return logits, value, value_logits, self.opp_logits(obs, x, move_vec, cand_vec)
         return logits, value, value_logits
+
+    def opp_logits(self, obs: Dict[str, torch.Tensor], x: torch.Tensor, move_vec: torch.Tensor,
+                   cand_vec: Optional[torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """The opponent heads, from the final tokens x [B, T, d] and the move vectors before the
+        transformer. Returns:
+          opp_act       [B, 12 + K] logits of the opponent's choice (opp_targets' classes:
+                        switch to opposing slot j, to a Pokémon not revealed yet, its active's
+                        known move j, candidate move k, another move), -1e9 where impossible
+          opp_act_mask  [B, 12 + K] the possible ones: slot present, a slot not revealed yet,
+                        move present, and an opposing active for every move class
+          opp_tera      [B] logit that it terastallizes (a move choice)
+          opp_item, opp_ability, opp_tera_type, opp_moves  [B, 6, vocabulary] logits per
+                        opposing slot (items: encoder.item_id's ids, tera types: encoder.TYPES)"""
+        B = x.shape[0]
+        mon_feats = obs["mon_feats"]
+        ar = torch.arange(B, device=x.device)
+        q = self.opp_query(torch.cat([x[:, ACTOR], x[:, CRITIC]], dim=-1))       # [B, d]
+        theirs = x[:, MON0 + N_SLOTS: MON0 + N_MONS]                             # [B, 6, d]
+        present = mon_feats[:, N_SLOTS:, 0] > 0                                  # [B, 6]
+        active_flag = mon_feats[:, N_SLOTS:, 3]
+        has_active = active_flag.amax(dim=-1) > 0                                # [B]
+        active = active_flag.argmax(dim=-1)
+        act_tok = theirs[ar, active]                                             # [B, d]
+
+        switch = self.opp_switch(torch.cat([q.unsqueeze(1).expand(-1, N_SLOTS, -1), theirs], dim=-1))
+        moves = move_vec[ar, N_SLOTS + active]                                   # [B, 4, d]
+        move_present = obs["move_feats"][ar, N_SLOTS + active, :, 0] > 0         # [B, 4]
+        if cand_vec is not None:
+            moves = torch.cat([moves, cand_vec[ar, active]], dim=1)              # [B, 4 + K, d]
+            move_present = torch.cat([move_present, obs["cand_feats"][ar, active, :, 0] > 0], dim=1)
+        n = moves.shape[1]
+        move = self.opp_move(torch.cat([q.unsqueeze(1).expand(-1, n, -1),
+                                        act_tok.unsqueeze(1).expand(-1, n, -1), moves], dim=-1))
+        extra = self.opp_extra(q)                                                # [B, 2]
+        logits = torch.cat([switch.squeeze(-1), extra[:, :1], move.squeeze(-1), extra[:, 1:]], dim=-1)
+        mask = torch.cat([present, ~present.all(dim=-1, keepdim=True),
+                          move_present & has_active.unsqueeze(1), has_active.unsqueeze(1)], dim=-1)
+        return {
+            "opp_act": logits.masked_fill(~mask, -1e9),
+            "opp_act_mask": mask,
+            "opp_tera": self.opp_tera(torch.cat([q, act_tok], dim=-1)).squeeze(-1),
+            "opp_item": self.opp_item(theirs),
+            "opp_ability": self.opp_ability(theirs),
+            "opp_tera_type": self.opp_tera_type(theirs),
+            "opp_moves": self.opp_moves(theirs),
+        }
 
 
 def to_tensors(batch, device) -> Dict[str, torch.Tensor]:
@@ -542,6 +660,15 @@ def describe(model: nn.Module) -> str:
 RETIRED_PREFIXES = ("aux_", "q_head.")
 
 
+def with_opp_heads(model: MiniPokeTransformer) -> MiniPokeTransformer:
+    """`model` with freshly initialized opponent heads (a model that has them is returned as is),
+    e.g. to fine-tune MiniPokeV3_22M with them (train.py offline --init ... --opp-heads)."""
+    if not model.cfg.opp_heads:
+        model.cfg = replace(model.cfg, opp_heads=True)
+        model._add_opp_heads()
+    return model
+
+
 def build_model(state: dict) -> MiniPokeTransformer:
     """Rebuilds a model from a checkpoint dict ({"model": state_dict, "cfg": {...}},
     plus "set_priors" for an encoder v2 model)."""
@@ -554,3 +681,7 @@ def build_model(state: dict) -> MiniPokeTransformer:
 
 
 assert ACT_DIM == N_SLOTS + 2 * N_MOVES
+# opp_logits concatenates [6 switches, unrevealed switch, 4 known moves, K candidates, other move]
+assert (OPP_SWITCH0, OPP_UNREVEALED, OPP_MOVE0) == (0, N_SLOTS, N_SLOTS + 1)
+assert OPP_CAND0 == OPP_MOVE0 + N_MOVES
+assert all(opp_other(k) == OPP_CAND0 + k and n_opp_classes(k) == opp_other(k) + 1 for k in (0, 8))

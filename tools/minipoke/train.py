@@ -35,7 +35,8 @@ from elo import fit_ratings, parse_anchors, round_robin_pairs
 from encoder_v2 import model_encoder
 from export_onnx import model_inputs, random_inputs
 from matches import SCRIPTED, MatchResult, evaluate, frozen_copy, make_kwargs
-from model import PRESETS, MiniPokeTransformer, build_model, describe, pick_device, preset
+from model import (MOVE_POOLS, PRESETS, MiniPokeTransformer, build_model, describe, pick_device, preset,
+                   with_opp_heads)
 from paired import TeamPairs, summarize
 from players import InferenceBatcher, ModelPlayer
 from runtime import ShowdownServer, peak_rss_mb
@@ -151,9 +152,15 @@ def offline_model(args, data) -> MiniPokeTransformer:
     flags = {k: v for k, v in (data.meta.get("model_flags") or {}).items()}
     if args.init:
         model = build_model(load_checkpoint(args.init))
+        if args.move_pool is not None and args.move_pool != model.cfg.move_pool:
+            raise SystemExit(f"--move-pool {args.move_pool}: {args.init} pools its moves with "
+                             f"{model.cfg.move_pool!r}, and --move-pool only shapes new models")
+        if args.opp_heads:
+            model = with_opp_heads(model)
     else:
         cfg = preset(args.size, dropout=args.dropout, value_bins=args.value_bins,
-                     move_tokens=args.move_tokens or None, typed_ffn=args.typed_ffn or None, **flags)
+                     move_tokens=args.move_tokens or None, typed_ffn=args.typed_ffn or None,
+                     move_pool=args.move_pool, opp_heads=args.opp_heads or None, **flags)
         model = MiniPokeTransformer(cfg)
         if data.meta.get("set_priors"):
             model.priors = SetPriors.from_dict(data.meta["set_priors"])
@@ -166,8 +173,16 @@ def offline_model(args, data) -> MiniPokeTransformer:
     return model
 
 
+def opp_report(model, split, device):
+    """The opponent heads' metrics on a split (offline.opp_metrics), or None when the model has no
+    heads or the split no targets."""
+    from offline import has_opp_heads, has_opp_targets, opp_metrics
+    return opp_metrics(model, split, device) if has_opp_heads(model) and has_opp_targets(split) else None
+
+
 def cmd_offline(args) -> None:
-    from offline import ALGOS, HumanData, OfflineConfig, describe_metrics, offline_metrics, offline_train
+    from offline import (ALGOS, HumanData, OfflineConfig, describe_metrics, describe_opp_metrics,
+                         offline_metrics, offline_train)
     resumed = load_checkpoint(args.resume) if args.resume else None
     if resumed is not None and not (resumed.get("offline") or {}).get("config"):
         raise SystemExit(f"{args.resume} is not a checkpoint of train.py offline")
@@ -194,7 +209,8 @@ def cmd_offline(args) -> None:
                             value_ce_norm=args.value_ce_norm == "log-bins", epochs=args.epochs,
                             minibatch=args.minibatch, lr=args.lr, lr_min_ratio=args.lr_min_ratio,
                             warmup_steps=args.warmup_steps, patience=args.patience,
-                            min_rating=args.min_rating, train_min_rating=args.train_min_rating)
+                            min_rating=args.min_rating, train_min_rating=args.train_min_rating,
+                            opp_coef=args.opp_coef if model.cfg.opp_heads else 0.0)
     log.info("[offline] model: %s on %s; data %s: %s", describe(model), device, args.data,
              {k: len(v) for k, v in data.splits.items()})
     runtime.mps_self_check(model, device, sample_batch(8, model))
@@ -207,13 +223,17 @@ def cmd_offline(args) -> None:
     best = build_model(load_checkpoint(out / "offline.pt")).to(device)
     metrics = offline_metrics(best, data["test"], device, args.min_rating)
     log.info("[offline] test battles, best epoch (%d):\n%s", result["best_epoch"], describe_metrics(metrics))
+    opp = opp_report(best, data["test"], device)
+    if opp is not None:
+        metrics["opp"] = opp
+        log.info("[offline] opponent heads, test battles:\n%s", describe_opp_metrics(opp))
     (out / "offline_metrics.json").write_text(json.dumps({**result, "test": metrics, "args": {
         k: v for k, v in vars(args).items() if k != "fn"}}, indent=1, default=str))
     log.info("[offline] wrote %s; peak RSS %.0f MB", out / "offline_metrics.json", peak_rss_mb() or -1)
 
 
 def cmd_offline_eval(args) -> None:
-    from offline import HumanData, describe_metrics, offline_metrics
+    from offline import HumanData, describe_metrics, describe_opp_metrics, offline_metrics
     from encoder_v2 import model_encoder as encoder_of
     device = setup(args)
     data = HumanData(args.data)
@@ -229,6 +249,10 @@ def cmd_offline_eval(args) -> None:
         metrics = offline_metrics(model, data[args.split], on, args.min_rating)
         results[str(path)] = metrics
         print(f"{path} ({describe_policy(model)}), {args.split} battles:\n{describe_metrics(metrics)}")
+        opp = opp_report(model, data[args.split], on)
+        if opp is not None:
+            metrics["opp"] = opp
+            print(describe_opp_metrics(opp))
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(results, indent=1))
@@ -485,6 +509,15 @@ def build_parser() -> argparse.ArgumentParser:
                         "tokens after the transformer")
     p.add_argument("--typed-ffn", action="store_true",
                    help="one feed-forward block per token type in every layer")
+    p.add_argument("--move-pool", default=None, choices=list(MOVE_POOLS),
+                   help="how a new model's Pokémon tokens read their known moves: concat (in slot "
+                        "order, V3's; the default) or meanmax (their mean and max, whatever the order). "
+                        "With --init, only the checkpoint's own")
+    p.add_argument("--opp-heads", action="store_true",
+                   help="training-only heads predicting the opponent's choice and real sets (a new "
+                        "model, or added to --init's); the dataset needs human_data.py's opponent targets")
+    p.add_argument("--opp-coef", type=float, default=0.5,
+                   help="x the opponent heads' loss, for a model that has them (0: not trained)")
     p.add_argument("--run", default=None, help="name under runs/ (train.log; default the ckpt dir's)")
     p.add_argument("--algo", default="bc", choices=["bc", "awbc"],
                    help="bc: imitate the human choices; awbc: weight them by w(A), A by GAE with the "

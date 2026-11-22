@@ -20,6 +20,11 @@ one, and the result on the last (+1 win, -1 loss, 0 tie). `ret` is the discounte
 (--gamma). The value head learns that return, and the search (search.py, MiniPokeTurnSearch.cs)
 scores its leaves with the same faint reward, 0.1.
 
+Opponent targets (opp_targets.py, for the training-only opponent heads): the re-simulation also
+holds the opponent's requests and choices, so each decision keeps what its player could not see:
+the opponent's choice from the same state, in our view's terms, whether it terastallized, and
+each revealed opposing Pokémon's real item, ability, tera type and moves.
+
 Battles are split by upload time, whole: the most recent --test-frac are the test set, the
 --val-frac before them the validation set (early stopping), the rest trains.
 
@@ -27,7 +32,8 @@ Battles are split by upload time, whole: the most recent --test-frac are the tes
         observation + probs (one-hot of the human's action; zeros unlabelled), action (-1:
         unlabelled), ret, value (0), and the extra fields traj (battle index x 2 + side), step,
         reward, done (last decision of its trajectory), rating, turn, label_ok, result (the
-        side's result: 1 win, -1 loss, 0 tie)
+        side's result: 1 win, -1 loss, 0 tie), and the opponent targets opp_act, opp_tera,
+        opp_item, opp_ability, opp_tera_type, opp_moves (opp_targets.OPP_EXTRA, -1 = none)
     <out>/meta.json   counts, filters, splits and their dates, gamma, faint reward, the encoder's
         flags (`model_flags`) and set priors (`set_priors`): a new model trains with these
     <out>/battles.jsonl   one line per battle: id, version, upload time, split, status, sides kept
@@ -53,6 +59,7 @@ from typing import Callable, Dict, Iterator, List, Optional, Sequence, Tuple
 import numpy as np
 
 from dataset import ShardWriter, discounted_returns, write_meta
+from opp_targets import OPP_EXTRA, side_targets
 from resim import (SIDES, ResimWorker, answered_choices, as_choice, judge, read_replay,
                    replay_files, side_decisions)
 from showdown_versions import BuildFailed, DEFAULT_ROOT, ShowdownVersions, short
@@ -62,7 +69,7 @@ FORMAT = "gen9randombattle"
 SPLITS = ("train", "val", "test")
 EXTRA = {"traj": ((), "int32"), "step": ((), "int16"), "reward": ((), "float16"),
          "done": ((), "uint8"), "rating": ((), "int16"), "turn": ((), "int16"),
-         "label_ok": ((), "uint8"), "result": ((), "int8")}
+         "label_ok": ((), "uint8"), "result": ((), "int8"), **OPP_EXTRA}
 # Chunks a worker process does before it is replaced (pool_rounds)
 CHUNKS_PER_WORKER = 25
 # Rows per shard: a writer preallocates them (V2.1: 11.7 KB a row, 47 MB a shard). Not much more:
@@ -141,7 +148,8 @@ def last_turn(lines: Sequence[str]) -> int:
 
 def encode_side(res, side: str, encoder, result: float, faint_reward: float, gamma: float):
     """(rows, stats) of one side of a kept re-simulation: rows = (obs, action, label_ok, reward,
-    ret, done, turn) per decision point, in order."""
+    ret, done, turn, opponent targets) per decision point, in order (the targets: a dict of
+    opp_targets.OPP_EXTRA's fields)."""
     import encoder as E
     from analyze_replays import choice_to_action
     stats = Counter()
@@ -155,6 +163,9 @@ def encode_side(res, side: str, encoder, result: float, faint_reward: float, gam
         return [], stats
     rewards = side_rewards([d["fainted"] for d in decisions], dec["final_fainted"], result, faint_reward)
     rets = discounted_returns(rewards, gamma)
+    targets, paired = side_targets(res, side, decisions)
+    if not paired:
+        stats["side_unpaired_requests"] += 1
     rows = []
     for t, d in enumerate(decisions):
         obs = d["obs"]["s"]
@@ -167,8 +178,9 @@ def encode_side(res, side: str, encoder, result: float, faint_reward: float, gam
                                    else (problem or "unmapped"))] += 1
         stats["decisions"] += 1
         stats["labelled"] += int(ok)
+        stats["opp_act_targets"] += int(targets[t]["opp_act"] >= 0)
         rows.append((obs, action if ok else -1, ok, rewards[t], float(rets[t]),
-                     t == len(decisions) - 1, d["turn"]))
+                     t == len(decisions) - 1, d["turn"], targets[t]))
     assert E.ACT_DIM == len(obs["mask"])
     return rows, stats
 
@@ -249,13 +261,13 @@ def process_chunk(task: dict) -> dict:
                 writers[split] = ShardWriter(out / split / f"c{chunk:05d}", shard_size=SHARD_ROWS,
                                              obs_layout=encoder.layout, extra=EXTRA)
             traj = item["index"] * 2 + k
-            for step, (obs, action, ok, reward, ret, done, turn) in enumerate(rows):
+            for step, (obs, action, ok, reward, ret, done, turn, opp) in enumerate(rows):
                 probs = np.zeros(len(obs["mask"]), dtype=np.float32)
                 if ok:
                     probs[action] = 1.0
                 writers[split].add(obs, probs, action, 0.0, ret, traj=traj, step=step, reward=reward,
                                    done=int(done), rating=rating, turn=turn, label_ok=int(ok),
-                                   result=int(results[side]))
+                                   result=int(results[side]), **opp)
         records.append(record)
     shards = {}
     for split, writer in writers.items():
@@ -432,7 +444,8 @@ def describe(summary: dict) -> str:
     lines = [f"samples: {summary['samples']}  ({summary.get('seconds', 0):.0f} s)",
              "battles: " + ", ".join(f"{k[7:]} {v}" for k, v in sorted(s.items()) if k.startswith("battle_")),
              "sides: " + ", ".join(f"{k[5:]} {v}" for k, v in sorted(s.items()) if k.startswith("side_")),
-             f"decisions: {s.get('decisions', 0)}, labelled {s.get('labelled', 0)}"
+             f"decisions: {s.get('decisions', 0)}, labelled {s.get('labelled', 0)}, "
+             f"with the opponent's choice {s.get('opp_act_targets', 0)}"
              + "".join(f"; {k[11:]} {v}" for k, v in sorted(s.items()) if k.startswith("unlabelled_")),
              "splits by upload time: " + ", ".join(f"{k} {v[0]} .. {v[1]}" for k, v in summary["dates"].items() if v)]
     if summary.get("build_failed"):
