@@ -1,4 +1,4 @@
-using ElsaMina.Battles.Strategies.MiniPoke;
+using ElsaMina.Battles.Strategies.Gladion;
 using ElsaMina.Logging;
 
 namespace ElsaMina.Battles.Strategies;
@@ -6,26 +6,26 @@ namespace ElsaMina.Battles.Strategies;
 public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionService
 {
     private readonly CalcBasedBattleDecisionService _calcService;
-    private readonly Dictionary<BattleDecisionStrategy, MiniPokeBattleDecisionService> _miniPokeServices;
+    private readonly Dictionary<BattleDecisionStrategy, GladionBattleDecisionService> _gladionServices;
 
     public BattleDecisionManager(
         CalcBasedBattleDecisionService calcService,
-        IEnumerable<MiniPokeBattleDecisionService> miniPokeServices)
+        IEnumerable<GladionBattleDecisionService> gladionServices)
     {
         _calcService = calcService;
-        // One per minipoke model registered in BattlesModule
-        _miniPokeServices = miniPokeServices.ToDictionary(service => service.Strategy);
+        // One per Gladion model registered in BattlesModule
+        _gladionServices = gladionServices.ToDictionary(service => service.Strategy);
     }
 
-    public BattleDecisionStrategy ActiveStrategy { get; set; } = BattleDecisionStrategy.MiniPokeV3_22M_Search;
+    public BattleDecisionStrategy ActiveStrategy { get; set; } = BattleDecisionStrategy.GladionV1_22M_Search;
 
     /// <summary>
-    /// The damage calc, every minipoke model, and their search variants when Showdown's simulator is configured.
+    /// The damage calc, every Gladion model, and their search variants when Showdown's simulator is configured.
     /// </summary>
     public IReadOnlyList<BattleDecisionStrategy> AvailableStrategies =>
     [
         BattleDecisionStrategy.DamageCalc,
-        .._miniPokeServices.Where(pair => IsPlayable(pair.Value)).Select(pair => pair.Key).Order()
+        .._gladionServices.Where(pair => IsPlayable(pair.Value)).Select(pair => pair.Key).Order()
     ];
 
     public bool TrySetStrategy(string strategyName, out BattleDecisionStrategy strategy)
@@ -42,12 +42,12 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
             case "calc" or "damagecalc" or "damage-calc" or "minimax" or "simulation" or "calcbased":
                 strategy = BattleDecisionStrategy.DamageCalc;
                 break;
-            case "minipoke" when _miniPokeServices.Keys.Any(candidate => !candidate.IsSearch()):
+            case "gladion" when _gladionServices.Keys.Any(candidate => !candidate.IsSearch()):
                 // The latest model
-                strategy = _miniPokeServices.Keys.Where(candidate => !candidate.IsSearch()).Max();
+                strategy = _gladionServices.Keys.Where(candidate => !candidate.IsSearch()).Max();
                 break;
             default:
-                if (!TryFindMiniPokeStrategy(normalized, out strategy))
+                if (!TryFindGladionStrategy(normalized, out strategy))
                 {
                     strategy = ActiveStrategy;
                     return false;
@@ -62,11 +62,11 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
     }
 
     /// <summary>
-    /// A minipoke model by its strategy name ("minipokev3-22m").
+    /// A Gladion model by its strategy name ("gladionv1-22m").
     /// </summary>
-    private bool TryFindMiniPokeStrategy(string name, out BattleDecisionStrategy strategy)
+    private bool TryFindGladionStrategy(string name, out BattleDecisionStrategy strategy)
     {
-        var matches = _miniPokeServices
+        var matches = _gladionServices
             .Where(pair => pair.Key.GetName() == name && IsPlayable(pair.Value))
             .Select(pair => pair.Key)
             .ToList();
@@ -77,14 +77,14 @@ public class BattleDecisionManager : IBattleDecisionManager, IBattleDecisionServ
     /// <summary>
     /// A search variant only plays when it can search: without the simulator it would be its model alone.
     /// </summary>
-    private static bool IsPlayable(MiniPokeBattleDecisionService service) =>
+    private static bool IsPlayable(GladionBattleDecisionService service) =>
         !service.Strategy.IsSearch() || service.CanSearch;
 
     /// <summary>
-    /// The service playing the active strategy: the damage calc one when its minipoke model is not registered.
+    /// The service playing the active strategy: the damage calc one when its Gladion model is not registered.
     /// </summary>
     public IBattleDecisionService GetCurrentService() =>
-        _miniPokeServices.TryGetValue(ActiveStrategy, out var miniPokeService) ? miniPokeService : _calcService;
+        _gladionServices.TryGetValue(ActiveStrategy, out var gladionService) ? gladionService : _calcService;
 
     public Task<BattleDecision> GetDecisionAsync(BattleContext context, CancellationToken cancellationToken = default)
     {

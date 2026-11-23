@@ -1,7 +1,7 @@
 # Showdown battle assistant
 
-A Firefox extension that shows, during your own Pokémon Showdown battles, what ElsaMina's latest minipoke model
-(`minipokev3-22m`) would play: every legal choice with the model's probability, the model's evaluation of the
+A Firefox extension that shows, during your own Pokémon Showdown battles, what ElsaMina's latest Gladion model
+(`gladionv1-22m`) would play: every legal choice with the model's probability, the model's evaluation of the
 position, and an outline on the Showdown button it recommends.
 
 ```
@@ -9,10 +9,10 @@ play.pokemonshowdown.com                           your machine
 ┌───────────────────────────────────────┐          ┌────────────────────────────────────┐
 │ hook.js        copies battle messages │  frames  │ ElsaMina.BattleAssistant (server/) │
 │ background.js  calls the server       │  ─────►  │   BattleMessageParser              │
-│ content.js     panel, button outline  │  ◄─────  │   MiniPokeV2Encoder                │
-└───────────────────────────────────────┘  advice  │   minipoke.onnx                    │
-                                                   │   MiniPokeActionGuard              │
-                                                   │   MiniPokeTurnSearch (optional)    │
+│ content.js     panel, button outline  │  ◄─────  │   GladionEncoderV2                 │
+└───────────────────────────────────────┘  advice  │   gladion.onnx                     │
+                                                   │   GladionActionGuard               │
+                                                   │   GladionTurnSearch (optional)     │
                                                    └────────────────────────────────────┘
 ```
 
@@ -31,14 +31,14 @@ mismatch there would not show: the model still suggests legal moves, it just pla
    dotnet run
    ```
 
-   It listens on `http://127.0.0.1:7685` and logs `minipokev3-22m loaded`. Options (they override
+   It listens on `http://127.0.0.1:7685` and logs `gladionv1-22m loaded`. Options (they override
    `appsettings.json`):
 
    | Option | Default | |
    |---|---|---|
    | `--ShowdownDirectory <dir>` | empty | A pokemon-showdown package (its `dist/sim`, e.g. `node_modules/pokemon-showdown`). Turns on the one-turn search, which the bot measured as stronger than the model alone. Needs Node. |
    | `--NodePath <path>` | `node` | The Node executable the search runs. |
-   | `--Model <name>` | `MiniPokeV3_22M` | The model giving the advice: a folder of `src/ElsaMina.Battles/Models` played with the V2 encoder (only `MiniPokeV3_22M` is released). |
+   | `--Model <name>` | `GladionV1_22M` | The model giving the advice: a folder of `src/ElsaMina.Battles/Models` played with the V2 encoder (only `GladionV1_22M` is released). |
    | `--urls <url>` | `http://127.0.0.1:7685` | Where it listens. Change the extension's server address to match. |
 
 2. **Extension** (Firefox 128 or later): open `about:debugging#/runtime/this-firefox`, click
@@ -96,7 +96,7 @@ The server only listens on 127.0.0.1, and it only answers cross-origin calls fro
 - The server is not in `ElsaMina.slnx`: the Docker image restores the solution with only `src/` and `test/` copied.
   Build it after changing `ElsaMina.Battles`: `dotnet build tools/showdown-assistant/server`.
 - `tests/replay_fixtures.py` replays the parity fixtures through the HTTP API and compares the advice with what
-  Python recorded. On the 40 MiniPokeV3_22M fixtures (1,303 decisions), the recommendation matches everywhere except
+  Python recorded. On the 40 GladionV1_22M fixtures (1,303 decisions), the recommendation matches everywhere except
   the 5 decisions where the guard vetoes the model's pick.
 - `tests/extension_harness.mjs` runs `hook.js`, `background.js` and `content.js` in Node against a running server,
   in a fake page of either client (`new`, the default, or `classic` as its last argument). It checks the panel, the

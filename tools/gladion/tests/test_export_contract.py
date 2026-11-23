@@ -1,0 +1,250 @@
+"""The deployed interface: ElsaMina reimplements encoder.py and feeds gladion.onnx.
+
+Every model size must export to the same graph signature, and the encoder spec
+must not change by a single byte (the C# encoder is a port of it).
+"""
+
+from pathlib import Path
+
+import onnx
+import pytest
+import torch
+
+import encoder as E
+from export_onnx import export, parity
+from model import PRESETS, GladionTransformer, ModelConfig, build_model
+
+# The released V1 models' encoder_spec.json (MiniPokeV1_1M's and MiniPokeV1_4M's, byte-identical): the one ElsaMina's
+# C# encoder ports, kept here since no V1 model is released anymore
+REFERENCE_V1_SPEC = Path(__file__).resolve().parent / "fixtures" / "encoder_spec.json"
+# The model ElsaMina plays (a V2.1 observation: V1's six inputs, then V2's), and the checkpoint it was exported
+# from (on the GPU box)
+DEPLOYED = Path(__file__).resolve().parents[3] / "src/ElsaMina.Battles/Models/GladionV1_22M"
+DEPLOYED_CHECKPOINT = Path(__file__).resolve().parents[1] / "checkpoints/v3/awbc-large-v21b/offline.pt"
+
+F, I64, B = onnx.TensorProto.FLOAT, onnx.TensorProto.INT64, onnx.TensorProto.BOOL
+CONTRACT_INPUTS = [
+    ("mon_ids", I64, ["batch", E.N_MONS, 3]),
+    ("move_ids", I64, ["batch", E.N_MONS, E.N_MOVES]),
+    ("mon_feats", F, ["batch", E.N_MONS, 84]),
+    ("move_feats", F, ["batch", E.N_MONS, E.N_MOVES, 39]),
+    ("field", F, ["batch", 81]),
+    ("mask", B, ["batch", 14]),
+]
+CONTRACT_OUTPUTS = [("logits", F, ["batch", 14]), ("value", F, ["batch"])]
+
+
+def signature(values):
+    return [(v.name, v.type.tensor_type.elem_type,
+             [d.dim_param or d.dim_value for d in v.type.tensor_type.shape.dim]) for v in values]
+
+
+@pytest.fixture(scope="module", params=list(PRESETS))
+def exported(request, tmp_path_factory):
+    torch.manual_seed(0)
+    model = GladionTransformer(PRESETS[request.param]).eval()
+    out = tmp_path_factory.mktemp(request.param)
+    return model, export(model, out), out
+
+
+def test_export_has_the_deployed_signature(exported):
+    _, onnx_path, _ = exported
+    graph = onnx.load(str(onnx_path)).graph
+    assert signature(graph.input) == CONTRACT_INPUTS
+    assert signature(graph.output) == CONTRACT_OUTPUTS
+
+
+@pytest.fixture(scope="module")
+def deployed_graph():
+    return onnx.load(str(DEPLOYED / "gladion.onnx"), load_external_data=False).graph
+
+
+@pytest.mark.skipif(not DEPLOYED.exists(), reason="ElsaMina's GladionV1_22M model not found")
+def test_export_matches_the_deployed_graph_signature(exported, deployed_graph):
+    _, onnx_path, _ = exported
+    ours = onnx.load(str(onnx_path)).graph
+    assert signature(ours.input) == signature(deployed_graph.input)[:len(CONTRACT_INPUTS)]
+    assert signature(ours.output) == signature(deployed_graph.output)
+
+
+def test_export_runs_any_batch_size_and_matches_pytorch(exported):
+    model, onnx_path, _ = exported
+    diff = parity(model, onnx_path, batch=37)
+    assert diff["logits"] < 1e-4 and diff["value"] < 1e-5
+
+
+def test_encoder_spec_is_byte_identical_to_the_reference(exported):
+    _, _, out = exported
+    assert (out / "encoder_spec.json").read_bytes() == REFERENCE_V1_SPEC.read_bytes()
+
+
+def test_encoder_layout_is_unchanged():
+    assert (E.N_MONS, E.N_MOVES, E.F_MON, E.F_MOVE, E.F_FIELD, E.ACT_DIM) == (12, 4, 84, 39, 81, 14)
+
+
+def test_value_output_is_the_expectation_of_the_distributional_head():
+    torch.manual_seed(0)
+    model = GladionTransformer(PRESETS["medium"]).eval()
+    from export_onnx import random_inputs, INPUTS
+    obs = dict(zip(INPUTS, random_inputs(5)))
+    with torch.no_grad():
+        _, value, value_logits = model.forward_train(obs)
+    expected = (torch.softmax(value_logits, -1) * model.value_support).sum(-1)
+    assert value.shape == (5,)
+    torch.testing.assert_close(value, expected)
+
+
+def test_v1_checkpoints_without_the_new_config_fields_still_load():
+    old_cfg = {"d_model": 128, "n_layers": 3, "n_heads": 4, "ff_mult": 2.0, "dropout": 0.0,
+               "species_dim": 32, "item_dim": 16, "ability_dim": 16, "move_dim": 32}
+    old_state = GladionTransformer(ModelConfig(**old_cfg)).state_dict()
+    model = build_model({"cfg": old_cfg, "model": old_state})
+    assert model.cfg == PRESETS["small"]
+    assert not model.distributional
+
+
+def test_medium_preset_is_in_the_target_size():
+    n = sum(p.numel() for p in GladionTransformer(PRESETS["medium"]).parameters())
+    assert 3.5e6 <= n <= 4.5e6
+
+
+def test_size_is_recognised_from_a_checkpoint_config():
+    from dataclasses import replace
+    from model import size_of
+    assert size_of(PRESETS["medium"]) == "medium"
+    assert size_of(replace(PRESETS["medium"], value_bins=1, dropout=0.05)) == "medium"
+    assert size_of(ModelConfig.from_dict({"d_model": 128, "n_layers": 3})) == "small"
+    assert size_of(PRESETS["wide"]) == "wide"
+    assert size_of(PRESETS["wide-medium"]) == "wide-medium"
+    assert size_of(replace(PRESETS["wide-medium"], encoder_version=2, history=True)) == "wide-medium"
+    assert size_of(replace(PRESETS["large"], encoder_version=2, history=True, move_effects=True)) == "large"
+
+
+def test_wide_medium_v2_is_in_the_target_size():
+    from model import preset
+    n = sum(p.numel() for p in GladionTransformer(
+        preset("wide-medium", encoder_version=2, history=True)).parameters())
+    assert 3.5e6 <= n <= 4.5e6
+
+
+def test_large_v2_fits_in_the_gpu_and_in_a_github_file():
+    # ~4 bytes per parameter in the ONNX export: 25M is 95 MiB, GitHub refuses 100 MiB
+    from model import preset
+    n = sum(p.numel() for p in GladionTransformer(
+        preset("large", encoder_version=2, history=True, move_effects=True)).parameters())
+    assert 20e6 <= n <= 25e6
+
+
+# --------------------------------------------------------------------------
+# Encoder v2 (encoder_version 2): its own inputs and spec, same outputs
+# --------------------------------------------------------------------------
+V2_MODELS = {
+    "v2-small": dict(size="small", encoder_version=2),
+    "v2-medium": dict(size="medium", encoder_version=2),
+    "v2-move-tokens": dict(size="small", encoder_version=2, move_tokens=True),
+    "v2-history": dict(size="small", encoder_version=2, history=True),
+    "v2-wide-medium-history": dict(size="wide-medium", encoder_version=2, history=True),
+    "v2-typed-ffn": dict(size="small", encoder_version=2, move_tokens=True, typed_ffn=True),
+    "v2-history-tokens": dict(size="small", encoder_version=2, history_tokens=8, typed_ffn=True),
+    "v2-matchups": dict(size="small", encoder_version=2, matchup_tokens=True),
+    "v2-history-effects": dict(size="small", encoder_version=2, history=True, move_effects=True),
+    "v2-move-tokens-effects": dict(size="small", encoder_version=2, move_tokens=True,
+                                   move_effects=True),
+    "v2-everything": dict(size="medium", encoder_version=2, move_tokens=True, history_tokens=8,
+                          matchup_tokens=True, typed_ffn=True),
+}
+
+
+@pytest.fixture(scope="module", params=list(V2_MODELS))
+def exported_v2(request, tmp_path_factory):
+    from tests.helpers import make_model
+    cfg = dict(V2_MODELS[request.param])
+    model = make_model(cfg.pop("size"), **cfg).eval()
+    out = tmp_path_factory.mktemp(request.param)
+    return model, export(model, out), out
+
+
+def test_v2_export_takes_v1s_inputs_then_its_own(exported_v2):
+    from encoder_v2 import model_encoder
+    model, onnx_path, _ = exported_v2
+    graph = onnx.load(str(onnx_path)).graph
+    got = signature(graph.input)
+    assert got[:6] == CONTRACT_INPUTS
+    dtypes = {"int64": I64, "float32": F, "bool": B}
+    assert got[6:] == [(n, dtypes[dt], ["batch", *shape])
+                       for n, (shape, dt) in list(model_encoder(model).layout.items())[6:]]
+    assert [n for n, *_ in got[6:11]] == ["cand_ids", "cand_feats", "prior_ids", "prior_w",
+                                          "prior_feats"]
+    extra = [n for n, *_ in got[11:]]
+    assert ("hist_ids" in extra) == (model.cfg.history and not model.cfg.history_tokens)
+    assert ("event_ids" in extra) == bool(model.cfg.history_tokens)
+    assert ("matchup_feats" in extra) == model.cfg.matchup_tokens
+    assert ("effect_feats" in extra) == ("cand_effect_feats" in extra) == model.cfg.move_effects
+    assert signature(graph.output) == CONTRACT_OUTPUTS
+
+
+def test_v2_export_matches_pytorch(exported_v2):
+    model, onnx_path, _ = exported_v2
+    diff = parity(model, onnx_path, batch=37)
+    assert diff["logits"] < 1e-4 and diff["value"] < 1e-5
+
+
+def test_v2_spec_documents_the_encoder_and_ships_the_priors(exported_v2):
+    import hashlib
+    import json
+    model, _, out = exported_v2
+    spec = json.loads((out / "encoder_spec.json").read_text())
+    v1 = json.loads(REFERENCE_V1_SPEC.read_text())
+    assert spec["encoder_version"] == 2
+    assert {k: spec[k] for k in v1 if k != "orderings"} == {k: v for k, v in v1.items()
+                                                            if k != "orderings"}
+    assert all(spec["orderings"][k] == v for k, v in v1["orderings"].items())
+    assert [i["name"] for i in spec["inputs"]][:6] == [n for n, *_ in CONTRACT_INPUTS]
+    priors = spec["set_priors"]
+    assert priors["candidate_moves_k"] == 8 and "ties by move id" in priors["candidate_ranking"]
+    data = (out / "set_priors.json").read_bytes()
+    assert hashlib.sha256(data).hexdigest() == priors["sha256"] == model.priors.sha256
+    assert priors["source_sha256"] == model.priors.source_sha256
+    assert spec["model"]["history"] == model.cfg.history
+    assert ("history" in spec) == model.cfg.history
+    if model.cfg.history:  # what the C# tracker needs on top of poke-env's state
+        assert "_replay_data" in spec["history"]["protocol_log"]
+        assert len(spec["orderings"]["hist_feats"]) == 8
+    # Only a model with move effects says so: older specs stay byte-identical
+    assert spec["model"].get("move_effects", False) == model.cfg.move_effects
+    assert ("move_effects" in spec) == model.cfg.move_effects
+    if model.cfg.move_effects:
+        assert spec["move_effects"]["ability_rules"]["levitate"]["types"] == ["ground"]
+        assert len(spec["orderings"]["effect_feats"]) == 6
+
+
+@pytest.mark.skipif(not DEPLOYED_CHECKPOINT.exists(), reason="GladionV1_22M's checkpoint not found")
+def test_reexporting_the_deployed_model_gives_its_released_spec(tmp_path):
+    from checkpoint import load_checkpoint
+    export(build_model(load_checkpoint(DEPLOYED_CHECKPOINT)), tmp_path)
+    for name in ("encoder_spec.json", "set_priors.json"):
+        assert (tmp_path / name).read_bytes() == (DEPLOYED / name).read_bytes(), name
+
+
+def test_v2_checkpoints_round_trip_with_their_priors(tmp_path):
+    from checkpoint import load_checkpoint, save_checkpoint
+    from export_onnx import export_checkpoint
+    from tests.helpers import make_model
+    model = make_model("small", encoder_version=2)
+    save_checkpoint(tmp_path / "v2.pt", model)
+    again = build_model(load_checkpoint(tmp_path / "v2.pt"))
+    assert again.cfg.encoder_version == 2 and again.priors.sha256 == model.priors.sha256
+    diff = export_checkpoint(tmp_path / "v2.pt", tmp_path / "export")
+    assert diff["logits"] < 1e-4
+    assert (tmp_path / "export" / "set_priors.json").exists()
+
+
+def test_v1_move_token_model_keeps_v1s_signature_and_matches_pytorch(tmp_path):
+    from tests.helpers import make_model
+    model = make_model("small", move_tokens=True).eval()
+    onnx_path = export(model, tmp_path)
+    graph = onnx.load(str(onnx_path)).graph
+    assert signature(graph.input) == CONTRACT_INPUTS
+    assert signature(graph.output) == CONTRACT_OUTPUTS
+    diff = parity(model, onnx_path, batch=19)
+    assert diff["logits"] < 1e-4 and diff["value"] < 1e-5

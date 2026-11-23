@@ -67,7 +67,7 @@ public class BattleContext
     public OpponentPokemonState ActiveOpponent => OpponentPokemon.FirstOrDefault(p => p.IsActive);
 
     /// <summary>
-    /// The battle as poke-env tracks it, for the minipoke strategies (see <see cref="TrackedBattleState"/>).
+    /// The battle as poke-env tracks it, for the Gladion strategies (see <see cref="TrackedBattleState"/>).
     /// </summary>
     public TrackedBattleState Tracked { get; } = new();
 

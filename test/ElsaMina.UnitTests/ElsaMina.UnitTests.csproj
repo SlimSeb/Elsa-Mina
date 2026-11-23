@@ -41,8 +41,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <!-- Battles recorded by tools/minipoke/make_fixtures.py for each minipoke version's parity test -->
-      <None Update="Battles\Strategies\MiniPoke*\Fixtures\*.json.gz">
+      <!-- Battles recorded by tools/gladion/make_fixtures.py for each Gladion version's parity test -->
+      <None Update="Battles\Strategies\Gladion*\Fixtures\*.json.gz">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

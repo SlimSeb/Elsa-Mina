@@ -7,7 +7,7 @@
 // choice, hidden room and battle end paths. Start the server first, then, from the repository root:
 //
 //   node tools/showdown-assistant/tests/extension_harness.mjs tools/showdown-assistant/extension \
-//     http://127.0.0.1:7685 test/ElsaMina.UnitTests/Battles/Strategies/MiniPokeV3_22M/Fixtures/battle-gen9randombattle-995044-p1.json.gz [new|classic]
+//     http://127.0.0.1:7685 test/ElsaMina.UnitTests/Battles/Strategies/GladionV1_22M/Fixtures/battle-gen9randombattle-995044-p1.json.gz [new|classic]
 import fs from 'node:fs';
 import vm from 'node:vm';
 import zlib from 'node:zlib';

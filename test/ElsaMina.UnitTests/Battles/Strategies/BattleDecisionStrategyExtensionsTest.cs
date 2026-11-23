@@ -6,8 +6,8 @@ namespace ElsaMina.UnitTests.Battles.Strategies;
 public class BattleDecisionStrategyExtensionsTest
 {
     [TestCase(BattleDecisionStrategy.DamageCalc, "damagecalc")]
-    [TestCase(BattleDecisionStrategy.MiniPokeV3_22M, "minipokev3-22m")]
-    [TestCase(BattleDecisionStrategy.MiniPokeV3_22M_Search, "minipokev3-22m+search")]
+    [TestCase(BattleDecisionStrategy.GladionV1_22M, "gladionv1-22m")]
+    [TestCase(BattleDecisionStrategy.GladionV1_22M_Search, "gladionv1-22m+search")]
     public void Test_GetName_ShouldSeparateTheSizeWithADash(BattleDecisionStrategy strategy,
         string expectedName)
     {
@@ -24,15 +24,15 @@ public class BattleDecisionStrategyExtensionsTest
         // Act & Assert
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(BattleDecisionStrategy.MiniPokeV3_22M.WithSearch(),
-                Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
-            Assert.That(BattleDecisionStrategy.MiniPokeV3_22M_Search.IsSearch(), Is.True);
-            Assert.That(BattleDecisionStrategy.MiniPokeV3_22M.IsSearch(), Is.False);
+            Assert.That(BattleDecisionStrategy.GladionV1_22M.WithSearch(),
+                Is.EqualTo(BattleDecisionStrategy.GladionV1_22M_Search));
+            Assert.That(BattleDecisionStrategy.GladionV1_22M_Search.IsSearch(), Is.True);
+            Assert.That(BattleDecisionStrategy.GladionV1_22M.IsSearch(), Is.False);
         }
     }
 
     [TestCase(BattleDecisionStrategy.DamageCalc)]
-    [TestCase(BattleDecisionStrategy.MiniPokeV3_22M_Search)]
+    [TestCase(BattleDecisionStrategy.GladionV1_22M_Search)]
     public void Test_WithSearch_ShouldBeNull_WhenTheStrategyHasNoSearchVariant(BattleDecisionStrategy strategy)
     {
         // Act & Assert

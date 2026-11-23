@@ -4,15 +4,15 @@ using ElsaMina.Battles.Strategies;
 namespace ElsaMina.BattleAssistant;
 
 /// <summary>
-/// The server's settings: appsettings.json, overridden on the command line (--Model MiniPokeV3_22M,
+/// The server's settings: appsettings.json, overridden on the command line (--Model GladionV1_22M,
 /// --ShowdownDirectory ~/showdown/node_modules/pokemon-showdown, --urls http://127.0.0.1:7700).
 /// </summary>
 public sealed class AssistantOptions : IBattlesConfiguration
 {
     /// <summary>
-    /// The minipoke model giving the advice, one of the models played with the V2 encoder.
+    /// The Gladion model giving the advice, one of the models played with the V2 encoder.
     /// </summary>
-    public BattleDecisionStrategy Model { get; set; } = BattleDecisionStrategy.MiniPokeV3_22M;
+    public BattleDecisionStrategy Model { get; set; } = BattleDecisionStrategy.GladionV1_22M;
 
     /// <summary>
     /// The pokemon-showdown package the one-turn search simulates on. Empty: advice from the model alone.

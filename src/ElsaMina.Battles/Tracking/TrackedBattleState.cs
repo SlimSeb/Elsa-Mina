@@ -1,7 +1,7 @@
 namespace ElsaMina.Battles.Tracking;
 
 /// <summary>
-/// The battle as poke-env 0.16.1 sees it (poke_env.battle.Battle), which is what minipoke was trained on. Kept
+/// The battle as poke-env 0.16.1 sees it (poke_env.battle.Battle), which is what Gladion was trained on. Kept
 /// next to the rest of <see cref="BattleContext"/>, which the other strategies read and which tracks some of the
 /// same things differently.
 /// </summary>
@@ -71,7 +71,7 @@ public class TrackedBattleState
     /// <summary>
     /// The |turn|, |move|, |switch|, |drag|, |replace|, |faint|, |cant|, |upkeep|, |-fail|, |-immune| and
     /// |-terastallize| lines in the order received, split on '|': the part of poke-env's protocol log
-    /// (battle._replay_data) that minipoke-v2's history and move effect features read.
+    /// (battle._replay_data) that encoder v2's history and move effect features read.
     /// </summary>
     public List<string[]> ProtocolLines { get; } = [];
 

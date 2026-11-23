@@ -39,7 +39,7 @@ public class BattleStatusCommandTest
 
         _ladderingService.Status.Returns(OFF);
         _battleService.GetBattlesInProgress().Returns([]);
-        battleDecisionManager.ActiveStrategy.Returns(BattleDecisionStrategy.MiniPokeV3_22M_Search);
+        battleDecisionManager.ActiveStrategy.Returns(BattleDecisionStrategy.GladionV1_22M_Search);
         _battleResultsService.GetRecords().Returns([]);
         _replaySavingService.Status.Returns(new ReplaySavingStatus(false, "/bot/replays", 0, 0, 0, null));
         clockService.CurrentUtcDateTimeOffset.Returns(NOW);
@@ -59,7 +59,7 @@ public class BattleStatusCommandTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(_reply, Does.StartWith("!code "));
-            Assert.That(_reply, Does.Contain("Strategy:    minipokev3-22m+search"));
+            Assert.That(_reply, Does.Contain("Strategy:    gladionv1-22m+search"));
             Assert.That(_reply, Does.Contain("Laddering:   off"));
             Assert.That(_reply, Does.Contain("Playing:     none"));
             Assert.That(_reply, Does.Contain("no battle played since the bot started"));
@@ -80,11 +80,11 @@ public class BattleStatusCommandTest
         _battleService.GetBattlesInProgress().Returns([battle]);
         _battleResultsService.GetRecords().Returns(
         [
-            new BattleRecord(FORMAT, BattleDecisionStrategy.MiniPokeV3_22M_Search, 10, 5, 0),
-            new BattleRecord(FORMAT, BattleDecisionStrategy.MiniPokeV3_22M, 5, 4, 1)
+            new BattleRecord(FORMAT, BattleDecisionStrategy.GladionV1_22M_Search, 10, 5, 0),
+            new BattleRecord(FORMAT, BattleDecisionStrategy.GladionV1_22M, 5, 4, 1)
         ]);
         _battleResultsService.LastResult.Returns(new BattleResult("battle-gen9randombattle-8", FORMAT,
-            BattleDecisionStrategy.MiniPokeV3_22M_Search, BattleOutcome.Won, 23, NOW.AddSeconds(-250)));
+            BattleDecisionStrategy.GladionV1_22M_Search, BattleOutcome.Won, 23, NOW.AddSeconds(-250)));
         _ladderRatingService.GetRatingsAsync(Arg.Any<CancellationToken>()).Returns(
             new Dictionary<string, UserDataRankingDto>
             {
@@ -104,10 +104,10 @@ public class BattleStatusCommandTest
             Assert.That(_reply, Does.Contain(
                 "Ladder:      gen9randombattle: Elo 1342, GXE 61.2, Glicko 1620 ± 45, 30-18"));
             Assert.That(_reply, Does.Contain("Session:     15-9-1 (60.0% won) in 25 battles"));
-            Assert.That(_reply, Does.Contain("gen9randombattle, minipokev3-22m+search: 10-5 (66.7% won)"));
-            Assert.That(_reply, Does.Contain("gen9randombattle, minipokev3-22m: 5-4-1 (50.0% won)"));
+            Assert.That(_reply, Does.Contain("gen9randombattle, gladionv1-22m+search: 10-5 (66.7% won)"));
+            Assert.That(_reply, Does.Contain("gen9randombattle, gladionv1-22m: 5-4-1 (50.0% won)"));
             Assert.That(_reply, Does.Contain(
-                "Last battle: won battle-gen9randombattle-8 in 23 turns with minipokev3-22m+search, 4m 10s ago"));
+                "Last battle: won battle-gen9randombattle-8 in 23 turns with gladionv1-22m+search, 4m 10s ago"));
             Assert.That(_reply, Does.Contain(
                 "Replays:     saving to /bot/replays (24 saved, 1 failed, 1 waiting, last gen9randombattle-8)"));
         }

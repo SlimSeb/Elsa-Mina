@@ -1,10 +1,10 @@
 r"""
-Replays the parity fixtures (battles recorded by tools/minipoke/make_fixtures.py) through the assistant server's HTTP
+Replays the parity fixtures (battles recorded by tools/gladion/make_fixtures.py) through the assistant server's HTTP
 API and compares its advice with what Python recorded: the probabilities, and the recommended action (it can only
 differ where the guard vetoes the model's choice). Start the server first, then, from the repository root:
 
     python3 tools/showdown-assistant/tests/replay_fixtures.py http://127.0.0.1:7685 \
-        test/ElsaMina.UnitTests/Battles/Strategies/MiniPokeV3_22M/Fixtures/*.json.gz
+        test/ElsaMina.UnitTests/Battles/Strategies/GladionV1_22M/Fixtures/*.json.gz
 """
 import gzip
 import json

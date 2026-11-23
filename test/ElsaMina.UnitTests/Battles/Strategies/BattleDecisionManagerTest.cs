@@ -1,7 +1,7 @@
 using ElsaMina.Battles;
 using ElsaMina.Battles.Strategies;
-using ElsaMina.Battles.Strategies.MiniPoke;
-using ElsaMina.Battles.Strategies.MiniPokeSearch;
+using ElsaMina.Battles.Strategies.Gladion;
+using ElsaMina.Battles.Strategies.GladionSearch;
 using ElsaMina.Battles.Strategies.Prediction;
 using ElsaMina.Battles.Strategies.Search;
 using ElsaMina.Battles.Tracking;
@@ -15,15 +15,15 @@ public class BattleDecisionManagerTest
 {
     private static readonly BattleDecisionStrategy[] REGISTERED_STRATEGIES =
     [
-        BattleDecisionStrategy.DamageCalc, BattleDecisionStrategy.MiniPokeV3_22M,
-        BattleDecisionStrategy.MiniPokeV3_22M_Search
+        BattleDecisionStrategy.DamageCalc, BattleDecisionStrategy.GladionV1_22M,
+        BattleDecisionStrategy.GladionV1_22M_Search
     ];
 
     private CalcBasedBattleDecisionService _calcService;
-    private MiniPokeActionGuard _guard;
-    private MiniPokeTurnSearch _search;
-    private MiniPokeBattleDecisionService _miniPokeV322MService;
-    private MiniPokeBattleDecisionService _miniPokeV322MSearchService;
+    private GladionActionGuard _guard;
+    private GladionTurnSearch _search;
+    private GladionBattleDecisionService _gladionV1Service;
+    private GladionBattleDecisionService _gladionV1SearchService;
     private IShowdownSimulator _simulator;
     private BattleDecisionManager _manager;
 
@@ -35,20 +35,20 @@ public class BattleDecisionManagerTest
         var searchAlgorithm = Substitute.For<IBattleSearchAlgorithm>();
 
         _calcService = new CalcBasedBattleDecisionService(randomService, opponentMovesPredictor, searchAlgorithm);
-        _guard = new MiniPokeActionGuard(Substitute.For<IBattleDex>());
+        _guard = new GladionActionGuard(Substitute.For<IBattleDex>());
         _simulator = Substitute.For<IShowdownSimulator>();
         _simulator.IsAvailable.Returns(true);
-        _search = new MiniPokeTurnSearch(_simulator, Substitute.For<IBattleMessageParser>());
+        _search = new GladionTurnSearch(_simulator, Substitute.For<IBattleMessageParser>());
 
         // As BattlesModule registers them: the model alone and with search
-        _miniPokeV322MService = Service(BattleDecisionStrategy.MiniPokeV3_22M, "MiniPokeV3_22M");
-        _miniPokeV322MSearchService = Service(BattleDecisionStrategy.MiniPokeV3_22M_Search, "MiniPokeV3_22M");
-        _manager = new BattleDecisionManager(_calcService, [_miniPokeV322MService, _miniPokeV322MSearchService]);
+        _gladionV1Service = Service(BattleDecisionStrategy.GladionV1_22M, "GladionV1_22M");
+        _gladionV1SearchService = Service(BattleDecisionStrategy.GladionV1_22M_Search, "GladionV1_22M");
+        _manager = new BattleDecisionManager(_calcService, [_gladionV1Service, _gladionV1SearchService]);
     }
 
-    private MiniPokeBattleDecisionService Service(BattleDecisionStrategy strategy, string model) =>
-        new(Substitute.For<IMiniPokeModel>(), Substitute.For<IMiniPokeEncoder>(), _calcService, _guard, _search,
-            new MiniPokeModelOptions(strategy, $"Models/{model}", strategy.IsSearch()));
+    private GladionBattleDecisionService Service(BattleDecisionStrategy strategy, string model) =>
+        new(Substitute.For<IGladionModel>(), Substitute.For<IGladionEncoder>(), _calcService, _guard, _search,
+            new GladionModelOptions(strategy, $"Models/{model}", strategy.IsSearch()));
 
     [Test]
     public void Test_TrySetStrategy_ShouldSwitchToTheSearchVariant_WhenInputNamesIt()
@@ -57,15 +57,15 @@ public class BattleDecisionManagerTest
         _manager.ActiveStrategy = BattleDecisionStrategy.DamageCalc;
 
         // Act
-        var result = _manager.TrySetStrategy("minipokev3-22m+search", out var strategy);
+        var result = _manager.TrySetStrategy("gladionv1-22m+search", out var strategy);
 
         // Assert
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
-            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
-            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
-            Assert.That(((MiniPokeBattleDecisionService)_manager.GetCurrentService()).CanSearch, Is.True);
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.GladionV1_22M_Search));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.GladionV1_22M_Search));
+            Assert.That(((GladionBattleDecisionService)_manager.GetCurrentService()).CanSearch, Is.True);
         }
     }
 
@@ -76,29 +76,29 @@ public class BattleDecisionManagerTest
         _simulator.IsAvailable.Returns(false);
 
         // Act
-        var result = _manager.TrySetStrategy("minipokev3-22m+search", out _);
+        var result = _manager.TrySetStrategy("gladionv1-22m+search", out _);
 
         // Assert
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.False);
             Assert.That(_manager.AvailableStrategies.Where(strategy => strategy.IsSearch()), Is.Empty);
-            Assert.That(_manager.AvailableStrategies, Does.Contain(BattleDecisionStrategy.MiniPokeV3_22M));
+            Assert.That(_manager.AvailableStrategies, Does.Contain(BattleDecisionStrategy.GladionV1_22M));
         }
     }
 
     [Test]
-    public void Test_ActiveStrategy_ShouldDefaultToMiniPokeV322MWithSearch()
+    public void Test_ActiveStrategy_ShouldDefaultToGladionV1WithSearch()
     {
         using (Assert.EnterMultipleScope())
         {
-            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
-            Assert.That(_manager.GetCurrentService(), Is.SameAs(_miniPokeV322MSearchService));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.GladionV1_22M_Search));
+            Assert.That(_manager.GetCurrentService(), Is.SameAs(_gladionV1SearchService));
         }
     }
 
     [Test]
-    public void Test_GetCurrentService_ShouldReturnCalcService_WhenActiveMiniPokeModelIsNotRegistered()
+    public void Test_GetCurrentService_ShouldReturnCalcService_WhenActiveGladionModelIsNotRegistered()
     {
         // Arrange
         var manager = new BattleDecisionManager(_calcService, []);
@@ -123,10 +123,10 @@ public class BattleDecisionManagerTest
         }
     }
 
-    [TestCase("minipokev3-22m")]
-    [TestCase(" MiniPokeV3-22M ")]
-    [TestCase("minipoke")]
-    public void Test_TrySetStrategy_ShouldSwitchToMiniPokeV322M_WhenInputNamesItOrAsksForTheLatest(string input)
+    [TestCase("gladionv1-22m")]
+    [TestCase(" GladionV1-22M ")]
+    [TestCase("gladion")]
+    public void Test_TrySetStrategy_ShouldSwitchToGladionV1_WhenInputNamesItOrAsksForTheLatest(string input)
     {
         // Act
         var result = _manager.TrySetStrategy(input, out var strategy);
@@ -135,27 +135,27 @@ public class BattleDecisionManagerTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.True);
-            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M));
-            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M));
-            Assert.That(_manager.GetCurrentService(), Is.SameAs(_miniPokeV322MService));
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.GladionV1_22M));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.GladionV1_22M));
+            Assert.That(_manager.GetCurrentService(), Is.SameAs(_gladionV1Service));
         }
     }
 
     [Test]
-    public void Test_TrySetStrategy_ShouldReturnFalse_WhenMiniPokeVersionIsNotRegistered()
+    public void Test_TrySetStrategy_ShouldReturnFalse_WhenGladionVersionIsNotRegistered()
     {
         // Arrange
         var manager = new BattleDecisionManager(_calcService, []);
 
         // Act
-        var result = manager.TrySetStrategy("minipokev3-22m", out _);
+        var result = manager.TrySetStrategy("gladionv1-22m", out _);
 
         // Assert
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.False);
-            Assert.That(manager.AvailableStrategies, Does.Not.Contain(BattleDecisionStrategy.MiniPokeV3_22M));
-            Assert.That(manager.TrySetStrategy("minipoke", out _), Is.False);
+            Assert.That(manager.AvailableStrategies, Does.Not.Contain(BattleDecisionStrategy.GladionV1_22M));
+            Assert.That(manager.TrySetStrategy("gladion", out _), Is.False);
         }
     }
 
@@ -176,8 +176,8 @@ public class BattleDecisionManagerTest
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result, Is.False);
-            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
-            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.MiniPokeV3_22M_Search));
+            Assert.That(strategy, Is.EqualTo(BattleDecisionStrategy.GladionV1_22M_Search));
+            Assert.That(_manager.ActiveStrategy, Is.EqualTo(BattleDecisionStrategy.GladionV1_22M_Search));
         }
     }
 

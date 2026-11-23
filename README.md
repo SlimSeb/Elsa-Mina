@@ -80,11 +80,11 @@ dotnet ef migrations remove --project src/ElsaMina.DataAccess
 | `ElsaMina.Console` | Entry point: reads `config.json`, builds the Autofac container, runs the bot |
 | `ElsaMina.Core` | Bot runtime: connection, per-room message dispatch, handlers, commands, rooms, templates, shared services |
 | `ElsaMina.Commands` | Every chat feature: commands, handlers and their services, one folder per feature |
-| `ElsaMina.Battles` | Autonomous battle bot: protocol parsing, battle tracking, decision strategies (minipoke models) |
+| `ElsaMina.Battles` | Autonomous battle bot: protocol parsing, battle tracking, decision strategies (Gladion models) |
 | `ElsaMina.DataAccess` | EF Core models, migrations and repositories (PostgreSQL) |
 | `ElsaMina.Cloud` | S3 uploads, Google Drive and Google Sheets |
 | `ElsaMina.Logging` | Logging abstraction over Serilog |
-| `tools/minipoke` | Python training code for the battle models (see [its README](tools/minipoke/README.md)) |
+| `tools/gladion` | Python training code for the battle models (see [its README](tools/gladion/README.md)) |
 
 Dependencies between projects are checked by a unit test: Core knows no feature or infrastructure project, and
 `Commands` and `Battles` never reference each other. See [CLAUDE.md](CLAUDE.md) and [CONTRIBUTING.md](CONTRIBUTING.md)
@@ -93,7 +93,7 @@ for the architecture and conventions.
 ## Testing
 The code is unit-tested with NUnit and NSubstitute. Two test projects are available:
 - `ElsaMina.UnitTests` for unit tests, including architecture rules, a container smoke test that resolves every
-  command and handler, and parity tests that replay recorded battles through the minipoke encoders.
+  command and handler, and parity tests that replay recorded battles through the Gladion encoders.
 - `ElsaMina.IntegrationTests` for more complex integration tests.
 
 To run the tests, run the following command in the root directory:
@@ -260,10 +260,10 @@ damage-based choice.
   `-useteam`, or else a saved team the server validates. Without one, the bot rejects the challenge and says why.
 - **Laddering**: `-laddering <format>` searches a new battle after each one ends, staying under Showdown's search
   rate limit (`-laddering off` stops it). `-search <format>` starts a single search.
-- **minipoke strategies**: a small transformer model (~22M parameters) trained in [`tools/minipoke`](tools/minipoke/README.md)
+- **Gladion strategies**: a small transformer model (~22M parameters) trained in [`tools/gladion`](tools/gladion/README.md)
   on human ladder replays and exported to ONNX, run inside the bot:
-  - `minipokev3-22m`: the model alone
-  - `minipokev3-22m+search` (default): the same model, looking one turn ahead on Showdown's simulator and playing
+  - `gladionv1-22m`: the model alone
+  - `gladionv1-22m+search` (default): the same model, looking one turn ahead on Showdown's simulator and playing
     the option its value head scores best (needs `ShowdownDirectory` and Node.js); 1800+ on the gen9randombattle
     ladder
   - `damagecalc`: a damage-calc search of the turn, also what the models fall back on

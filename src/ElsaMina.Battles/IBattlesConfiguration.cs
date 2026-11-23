@@ -11,7 +11,7 @@ public interface IBattlesConfiguration
     string ReplaysDirectory { get; }
 
     /// <summary>
-    /// The pokemon-showdown package (its dist/sim) the minipoke strategies search with: one turn ahead on Showdown's
+    /// The pokemon-showdown package (its dist/sim) the Gladion strategies search with: one turn ahead on Showdown's
     /// simulator. Empty: they play the model's choice without searching.
     /// </summary>
     string ShowdownDirectory { get; }

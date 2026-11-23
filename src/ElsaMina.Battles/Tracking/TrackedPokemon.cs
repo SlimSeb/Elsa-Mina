@@ -3,7 +3,7 @@ using ElsaMina.Battles.Dtos;
 namespace ElsaMina.Battles.Tracking;
 
 /// <summary>
-/// A Pokémon tracked exactly like poke-env 0.16.1's Pokemon, the state minipoke was trained on. Method names
+/// A Pokémon tracked exactly like poke-env 0.16.1's Pokemon, the state Gladion was trained on. Method names
 /// follow poke-env's so the two can be compared line by line; this only keeps what the encoder reads and what
 /// changes it.
 /// </summary>

@@ -3,7 +3,7 @@ namespace ElsaMina.Battles.Tracking;
 /// <summary>
 /// The enumerations of poke-env 0.16.1 (Weather, Field, SideCondition, Status, PokemonType, MoveCategory, Effect),
 /// as the upper-case member names poke-env uses, and its parsing of Showdown messages into them. The tracker
-/// stores these names; the minipoke encoders map them to one-hot positions using encoder_spec.json and check that
+/// stores these names; the Gladion encoders map them to one-hot positions using encoder_spec.json and check that
 /// both sides agree on the names.
 /// </summary>
 public static class PokeEnvNames
