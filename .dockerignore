@@ -19,5 +19,5 @@ credentials.json
 .env
 .env.*
 
-# minipoke training code (Python): its venv, checkpoints and Showdown clone live there
+# Gladion training code (Python): its venv, checkpoints and Showdown clone live there
 tools/

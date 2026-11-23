@@ -38,7 +38,7 @@ public sealed class SidePokemon
     public bool Reviving { get; set; }
 
     /// <summary>
-    /// The type it terastallizes into ("Water"); what the minipoke search plays tera with.
+    /// The type it terastallizes into ("Water"); what the Gladion search plays tera with.
     /// </summary>
     [JsonPropertyName("teraType")]
     public string TeraType { get; set; } = "";

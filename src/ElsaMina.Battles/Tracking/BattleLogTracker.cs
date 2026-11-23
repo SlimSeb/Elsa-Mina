@@ -4,7 +4,7 @@ namespace ElsaMina.Battles.Tracking;
 
 /// <summary>
 /// Applies battle log lines to a <see cref="TrackedBattleState"/> exactly like poke-env 0.16.1's
-/// AbstractBattle.parse_message, quirks included (it is what minipoke learned from). Lines poke-env ignores, or
+/// AbstractBattle.parse_message, quirks included (it is what Gladion learned from). Lines poke-env ignores, or
 /// that only matter to other formats (team preview, Mega Evolution, Z-Moves, Dynamax), are skipped. When poke-env
 /// would raise, the rest of the line is skipped and what it already changed stays.
 /// </summary>

@@ -10,7 +10,7 @@ namespace ElsaMina.Battles.Replays;
 /// Saves each battle the bot plays, once over, as two files named after Showdown's replay id:
 /// <list type="bullet">
 /// <item>{id}.log: every line the bot received in the battle room. Unlike the replay, it has our |request| lines
-/// (our team's moves, stats and items), which minipoke needs to rebuild what the bot saw.</item>
+/// (our team's moves, stats and items), which Gladion needs to rebuild what the bot saw.</item>
 /// <item>{id}.json: the replay Showdown uploads on /savereplay (log, players, rating, upload time), downloaded once
 /// the server's popup gives its address.</item>
 /// </list>

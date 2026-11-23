@@ -25,12 +25,12 @@ public class BattleStrategyCommandTest
     {
         // Arrange
         _context.Target.Returns(string.Empty);
-        _decisionManager.ActiveStrategy.Returns(BattleDecisionStrategy.MiniPokeV3_22M_Search);
+        _decisionManager.ActiveStrategy.Returns(BattleDecisionStrategy.GladionV1_22M_Search);
         _decisionManager.AvailableStrategies.Returns(
         [
             BattleDecisionStrategy.DamageCalc,
-            BattleDecisionStrategy.MiniPokeV3_22M,
-            BattleDecisionStrategy.MiniPokeV3_22M_Search
+            BattleDecisionStrategy.GladionV1_22M,
+            BattleDecisionStrategy.GladionV1_22M_Search
         ]);
 
         // Act
@@ -38,8 +38,8 @@ public class BattleStrategyCommandTest
 
         // Assert
         _context.Received(1).Reply(Arg.Is<string>(msg =>
-            msg.Contains("Current battle decision strategy: **MiniPokeV3_22M_Search**") &&
-            msg.Contains("damagecalc, minipokev3-22m, minipokev3-22m+search")));
+            msg.Contains("Current battle decision strategy: **GladionV1_22M_Search**") &&
+            msg.Contains("damagecalc, gladionv1-22m, gladionv1-22m+search")));
     }
 
     [Test]
@@ -72,8 +72,8 @@ public class BattleStrategyCommandTest
         _decisionManager.AvailableStrategies.Returns(
         [
             BattleDecisionStrategy.DamageCalc,
-            BattleDecisionStrategy.MiniPokeV3_22M,
-            BattleDecisionStrategy.MiniPokeV3_22M_Search
+            BattleDecisionStrategy.GladionV1_22M,
+            BattleDecisionStrategy.GladionV1_22M_Search
         ]);
 
         // Act

@@ -3,14 +3,14 @@ using System.Text.Json.Serialization;
 using ElsaMina.BattleAssistant;
 using ElsaMina.Battles;
 using ElsaMina.Battles.Strategies;
-using ElsaMina.Battles.Strategies.MiniPoke;
-using ElsaMina.Battles.Strategies.MiniPokeSearch;
-using ElsaMina.Battles.Strategies.MiniPokeV2;
+using ElsaMina.Battles.Strategies.Gladion;
+using ElsaMina.Battles.Strategies.GladionSearch;
+using ElsaMina.Battles.Strategies.GladionObservationV2;
 using ElsaMina.Battles.Tracking;
 using ElsaMina.Logging;
 
 // The local server behind the Firefox extension: it follows the player's battles with the bot's own tracker and
-// scores each decision with a minipoke model (see ../README.md)
+// scores each decision with a Gladion model (see ../README.md)
 const string extensionOriginPrefix = "moz-extension://";
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,25 +18,25 @@ var options = builder.Configuration.Get<AssistantOptions>() ?? new AssistantOpti
 if (options.Model.IsSearch() || options.Model == BattleDecisionStrategy.DamageCalc)
 {
     throw new InvalidOperationException(
-        $"--Model must be a minipoke model (MiniPokeV3_22M), not {options.Model}");
+        $"--Model must be a Gladion model (GladionV1_22M), not {options.Model}");
 }
 
 Log.Configuration = new AssistantLoggingConfiguration();
 var dexManager = new ShowdownDataDexManager();
 await dexManager.LoadDexAsync();
 var dex = new BattleDex(dexManager);
-var modelOptions = new MiniPokeModelOptions(options.Model,
+var modelOptions = new GladionModelOptions(options.Model,
     Path.Join(AppContext.BaseDirectory, "Models", options.Model.ToString()));
 
 builder.Services.AddSingleton<IBattleDex>(dex);
 builder.Services.AddSingleton(modelOptions);
 builder.Services.AddSingleton<IBattlesConfiguration>(options);
 builder.Services.AddSingleton<IBattleMessageParser>(_ => new BattleMessageParser(dex));
-builder.Services.AddSingleton<IMiniPokeModel>(_ => new MiniPokeOnnxModel(modelOptions));
-builder.Services.AddSingleton<IMiniPokeEncoder>(_ => new MiniPokeV2Encoder(modelOptions, dex));
-builder.Services.AddSingleton(_ => new MiniPokeActionGuard(dex));
+builder.Services.AddSingleton<IGladionModel>(_ => new GladionOnnxModel(modelOptions));
+builder.Services.AddSingleton<IGladionEncoder>(_ => new GladionEncoderV2(modelOptions, dex));
+builder.Services.AddSingleton(_ => new GladionActionGuard(dex));
 builder.Services.AddSingleton<IShowdownSimulator>(_ => new ShowdownSimulator(options));
-builder.Services.AddSingleton(services => new MiniPokeTurnSearch(services.GetRequiredService<IShowdownSimulator>(),
+builder.Services.AddSingleton(services => new GladionTurnSearch(services.GetRequiredService<IShowdownSimulator>(),
     services.GetRequiredService<IBattleMessageParser>()));
 builder.Services.AddSingleton<BattleAdvisor>();
 builder.Services.ConfigureHttpJsonOptions(json =>
@@ -71,7 +71,7 @@ app.MapDelete("/battles/{roomId}", (string roomId, BattleAdvisor advisor) =>
 
 // Load the model now rather than on the first battle
 var status = app.Services.GetRequiredService<BattleAdvisor>().GetStatus();
-app.Services.GetRequiredService<IMiniPokeEncoder>();
+app.Services.GetRequiredService<IGladionEncoder>();
 Log.Information("{Model} {State}; one-turn search {Search}", status.Model,
     status.Loaded ? "loaded" : "NOT loaded", status.CanSearch ? "on" : "off (no --ShowdownDirectory)");
 

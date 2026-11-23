@@ -5,7 +5,7 @@ using ElsaMina.Battles.Tracking;
 namespace ElsaMina.UnitTests.Battles;
 
 /// <summary>
-/// The poke-env-like state <see cref="BattleMessageParser"/> tracks for the minipoke strategies
+/// The poke-env-like state <see cref="BattleMessageParser"/> tracks for the Gladion strategies
 /// (<see cref="BattleContext.Tracked"/>). We play p1: Garchomp leads, with Pelipper and Gholdengo in the back.
 /// </summary>
 public class BattleMessageParserTrackingTest
@@ -459,7 +459,7 @@ public class BattleMessageParserTrackingTest
     [Test]
     public void Test_TryApplyMessage_ShouldNotKnowOurTeraType_UntilWeTerastallize()
     {
-        // Arrange: poke-env never reads the request's teraType, and minipoke was trained that way
+        // Arrange: poke-env never reads the request's teraType, and Gladion was trained that way
         StartBattle();
         Assert.That(Garchomp.TeraType, Is.Null);
 
@@ -741,7 +741,7 @@ public class BattleMessageParserTrackingTest
     }
 
     [Test]
-    public void Test_TryApplyMessage_ShouldKeepExistingOpponentTracking_WhenTrackingForMiniPoke()
+    public void Test_TryApplyMessage_ShouldKeepExistingOpponentTracking_WhenTrackingForGladion()
     {
         // Arrange
         StartBattle();

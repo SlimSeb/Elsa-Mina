@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using ElsaMina.Battles;
 using ElsaMina.Battles.Strategies;
-using ElsaMina.Battles.Strategies.MiniPoke;
-using ElsaMina.Battles.Strategies.MiniPokeSearch;
+using ElsaMina.Battles.Strategies.Gladion;
+using ElsaMina.Battles.Strategies.GladionSearch;
 using ElsaMina.Battles.Tracking;
 using ElsaMina.Logging;
 
@@ -11,7 +11,7 @@ namespace ElsaMina.BattleAssistant;
 /// <summary>
 /// Follows the battles the extension forwards the way the bot follows its own (BattleService): every line goes through
 /// <see cref="BattleMessageParser"/> into the room's <see cref="BattleContext"/>, and each request the player must
-/// answer is encoded and scored by the model, then checked by the guard, as MiniPokeBattleDecisionService does.
+/// answer is encoded and scored by the model, then checked by the guard, as GladionBattleDecisionService does.
 /// Instead of playing the best action, it describes every legal one: its probability, the guard's veto, the button
 /// it stands for. The one-turn search runs on demand, on its own copy of the battle, so it never blocks the room.
 /// </summary>
@@ -30,20 +30,20 @@ public sealed class BattleAdvisor
 
     private readonly ConcurrentDictionary<string, BattleSession> _sessions = new(StringComparer.Ordinal);
     private readonly IBattleMessageParser _parser;
-    private readonly IMiniPokeEncoder _encoder;
-    private readonly IMiniPokeModel _model;
-    private readonly MiniPokeActionGuard _guard;
-    private readonly MiniPokeTurnSearch _search;
+    private readonly IGladionEncoder _encoder;
+    private readonly IGladionModel _model;
+    private readonly GladionActionGuard _guard;
+    private readonly GladionTurnSearch _search;
     private readonly IBattleDex _dex;
-    private readonly MiniPokeModelOptions _options;
+    private readonly GladionModelOptions _options;
 
     public BattleAdvisor(IBattleMessageParser parser,
-        IMiniPokeEncoder encoder,
-        IMiniPokeModel model,
-        MiniPokeActionGuard guard,
-        MiniPokeTurnSearch search,
+        IGladionEncoder encoder,
+        IGladionModel model,
+        GladionActionGuard guard,
+        GladionTurnSearch search,
         IBattleDex dex,
-        MiniPokeModelOptions options)
+        GladionModelOptions options)
     {
         _parser = parser;
         _encoder = encoder;

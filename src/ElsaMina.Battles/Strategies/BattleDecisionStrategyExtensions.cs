@@ -6,9 +6,9 @@ public static class BattleDecisionStrategyExtensions
     private const string SEARCH_NAME_SUFFIX = "+search";
 
     /// <summary>
-    /// The name staff type to pick the strategy: "damagecalc", "minipokev3-22m" for MiniPokeV3_22M (the last underscore
-    /// comes before the size, the others split a minor version: MiniPokeV2_1_22M would be "minipokev2.1-22m"), and
-    /// "minipokev3-22m+search" for the search variant MiniPokeV3_22M_Search.
+    /// The name staff type to pick the strategy: "damagecalc", "gladionv1-22m" for GladionV1_22M (the last underscore
+    /// comes before the size, the others split a minor version: GladionV1_1_22M would be "gladionv1.1-22m"), and
+    /// "gladionv1-22m+search" for the search variant GladionV1_22M_Search.
     /// </summary>
     public static string GetName(this BattleDecisionStrategy strategy)
     {
@@ -25,7 +25,7 @@ public static class BattleDecisionStrategyExtensions
     }
 
     /// <summary>
-    /// A model's search variant (MiniPokeV3_22M_Search): the same model, searching one turn ahead.
+    /// A model's search variant (GladionV1_22M_Search): the same model, searching one turn ahead.
     /// </summary>
     public static bool IsSearch(this BattleDecisionStrategy strategy) =>
         strategy.ToString().EndsWith(SEARCH_SUFFIX, StringComparison.Ordinal);

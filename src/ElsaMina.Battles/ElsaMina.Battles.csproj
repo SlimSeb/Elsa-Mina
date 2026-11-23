@@ -20,12 +20,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- minipoke strategies: each model version exports minipoke.onnx and encoder_spec.json to Models/{Strategy} -->
+        <!-- Gladion strategies: each model version exports gladion.onnx and encoder_spec.json to Models/{Strategy} -->
         <None Update="Models\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <!-- minipoke search: the one-turn simulations, shared with tools/minipoke/search.py -->
-        <None Include="..\..\tools\minipoke\search_sim.js" Link="Search\search_sim.js">
+        <!-- Gladion search: the one-turn simulations, shared with tools/gladion/search.py -->
+        <None Include="..\..\tools\gladion\search_sim.js" Link="Search\search_sim.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

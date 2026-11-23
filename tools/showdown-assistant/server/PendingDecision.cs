@@ -1,4 +1,4 @@
-using ElsaMina.Battles.Strategies.MiniPoke;
+using ElsaMina.Battles.Strategies.Gladion;
 
 namespace ElsaMina.BattleAssistant;
 

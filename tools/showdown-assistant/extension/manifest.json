@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ElsaMina Battle Assistant",
   "version": "1.1.0",
-  "description": "Shows what ElsaMina's minipoke battle model would play in your Pokémon Showdown random battles. Needs the local assistant server.",
+  "description": "Shows what ElsaMina's Gladion battle model would play in your Pokémon Showdown random battles. Needs the local assistant server.",
   "browser_specific_settings": {
     "gecko": {
       "id": "battle-assistant@elsamina.local",
