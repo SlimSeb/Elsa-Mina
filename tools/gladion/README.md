@@ -81,9 +81,17 @@ the replays at the edges of the moved ones are downloaded again.
 To skip a span collected on another machine, give its edges (UTC dates, or unix times):
 `--backfill-from` starts the backfill there (replays uploaded before it) and `--head-from` the new
 uploads (from it on). They never move a cursor back over what the folder already covered, so the same
-command line restarts the run. Nov 2026: the Mac's two folders hold every 1500+ replay from 2026-10-30
-13:08:14 to 2026-11-12 21:59:58 UTC, and the server continues with
-`--backfill-from "2026-10-30 13:08:14" --head-from "2026-11-12 21:59:58"`.
+command line restarts the run. Nov 2026:
+- The Mac's two folders hold every 1500+ replay from 2026-10-30 13:08:14 to 2026-11-12 21:59:58 UTC.
+  The server skipped that span (`--backfill-from "2026-10-30 13:08:14" --head-from "2026-11-12 21:59:58"`).
+- The server's folders, copied to the GPU box, hold every 1500+ replay from 2026-02-14 11:34:23 to
+  2026-11-19 17:48:21 UTC, except the Mac's span: `gen9randombattle` (104,225 replays, Jul 30 to Nov 15)
+  and `gen9randombattle-new` (156,747 replays, collected with `--skip-from` the first folder). They are
+  the 258k battles `GladionV1_22M` trained on. The Mac's replays were never added to them.
+- A new round goes on from those edges, into a new folder (a dataset build in progress refuses a
+  folder whose files change):
+  `--head-from "2026-11-19 17:48:21" --backfill-from "2026-02-14 11:34:23"`, with one `--skip-from` per
+  folder already collected.
 
 It checks for new uploads every 15 minutes and otherwise pages back through older ones (up to
 `--oldest-days`, 365). It sends one request at a time, about 2 s apart (`--delay`), with its own
@@ -119,7 +127,8 @@ python resim.py parity replays/replays          # the bot's own games against th
 ```
 
 Nov 2026, the Mac's 9,368 human replays: **all 9,358 distinct ones replay exactly**, on 6 server
-versions, in 90 s with 6 workers.
+versions, in 90 s with 6 workers. The server's first 104,225 replays (Jul 30 to Nov 15): **all replay
+exactly** too, on 29 server versions, in 635 s with 8 workers on the GPU box.
 
 **Parity.** The bot's own ladder games (`-savereplays` keeps the replay with its input log, and the
 `.log` of every line ElsaMina received live) check the whole chain: the bot's side of the
@@ -168,12 +177,23 @@ Datasets built before them (Nov 22, 2026) have none: they still train everything
 rebuilding with `human_data.py` to train the opponent heads. Battles are split whole by upload time: the newest
 `--test-frac` 10% test, the `--val-frac` 5% before them validation (early stopping), the rest trains.
 Each chunk of 100 battles is a task (`--processes`, default 3: each ~0.6 GB plus a ~0.2 GB Node
-process; a worker is replaced after 25 chunks), and a stopped build resumes when run again
-(`<out>/chunks/`). Shards are float16 features and int16 ids: about 170 bytes a decision.
+process). Workers are replaced every 25 chunks by starting a new pool for each round of processes x 25
+chunks: Python's `max_tasks_per_child` hangs once every worker has retired (CPython gh-115634). A stopped
+build resumes when run again with the same command line (`<out>/chunks/`), as long as the replay
+folders don't change. Shards are float16 features and int16 ids: about 170 bytes a decision.
 
-Nov 2026, the Mac's replays: 9,259 battles kept, 18,412 sides (106 under 1500), **554,196 decisions**
-(548,042 labelled; the rest are last requests nobody answered). 93 MB, built in ~6 min with 3
-processes. The GPU box's dataset (258k battles) trained `GladionV1_22M`.
+Nov 2026:
+
+| Dataset | Replays | Battles kept | Decisions | Train / val / test states | Splits (UTC) |
+|---|---|---|---|---|---|
+| The Mac's | 9,368 | 9,259 | 554,196 | | |
+| `data/human-v21` (GPU box) | 104,225 | 103,281 | 6.21M | 5.29M / 314k / 611k | train Jul 30 to Oct 16, val to Oct 20, test to Nov 15 |
+| `data/human-v21b` (GPU box) | 260,972 | 258,474 | 15.40M | 13.05M / 793k / 1.56M | train Feb 14 to Sep 28, val to Oct 9, test to Nov 19 |
+
+The Mac's: 18,412 sides (106 under 1500), 548,042 decisions labelled (the rest are last requests nobody
+answered), 93 MB, built in ~6 min with 3 processes. `human-v21` takes 1.1 GB. On the GPU box a build
+does about 18 chunks a minute with 4 processes. `human-v21b` (both of the server's folders) trained
+`GladionV1_22M`.
 
 ## Offline training
 
@@ -199,6 +219,14 @@ The labels are one-hot, so a big model memorizes them: every epoch is scored on 
 the best one (validation NLL) is `offline.pt` (`offline_last.pt` is the last, with what `--resume`
 needs), and training stops after `--patience` (2) epochs without a better one. At the end, the best
 epoch is measured on the test battles (`offline_metrics.json`).
+
+The log prints one line per epoch and nothing in between, so a long epoch can look like a hang. On the
+GPU box `large` trains at about 12 minutes per million training states: 48 min a BC epoch on
+`human-v21`, about 65 min an AWBC epoch (its ordered pass comes on top), 2 h 40 min an AWBC epoch on
+`human-v21b`. The first AWBC epoch is shorter, because it is plain BC. To stop a run, press Ctrl-C about
+30 s after an `epoch N/M` line, once its checkpoints are saved. `--resume` then continues exactly: the
+optimizer, the LR schedule, early stopping and the shuffling. On a finished run it only recomputes the
+test metrics.
 
 | Option | Default | |
 |---|---|---|
@@ -267,12 +295,42 @@ another game than the humans. Advantage weighting, on the same data, beats BC ev
 self-play model its size head to head. The value head learns slowly from human results (every battle's
 ~60 states share one result).
 
-**`GladionV1_22M`** (released as minipoke v3, `MiniPokeV3_22M`): `large`, AWBC on 258k human battles
-(`checkpoints/v3/awbc-large-v21b/offline.pt`
-on the GPU box), best epoch 5 of 6, test top-1 59.95%. With search it plays at 1800+ on the ladder. PPO
-from it (LR 2e-4, a reference KL of 0.05 to it, its BC twin in the opponent pool) lost to it: 39% at
-iterations 10 and 20 (100 games each), its KL to it growing every iteration (0.195 at iteration 29).
-That is when self-play was dropped.
+**`GladionV1_22M`** (released as minipoke v3, `MiniPokeV3_22M`) took two rounds of `large` on the GPU
+box (Nov 15 to 21):
+1. **`human-v21` (103k battles).** BC peaked at epoch 9 (val NLL 1.088, top-1 59.2%), then memorized
+   and early stopping ended it at epoch 11. AWBC on the same data was stopped after epoch 6 (val NLL
+   1.139), still improving, when the second dataset was ready.
+2. **`human-v21b` (258k battles).** AWBC, `--epochs 6`, the defaults otherwise
+   (`checkpoints/v3/awbc-large-v21b/offline.pt`). The best epoch is 5 (val NLL 1.065); epoch 6 was
+   slightly worse. On its own test battles (Oct 9 to Nov 19, 1.54M choices) it scores top-1 59.95% and
+   NLL 1.071 (1700+: 60.1%, 1.064), with value AUC 0.761.
+
+On `human-v21`'s test battles (Oct 20 to Nov 15, 603,903 choices, 466,265 of them by 1700+ players),
+which none of these models trained on:
+
+| | top-1 (1700+) | NLL (1700+) | top-1 (all) | value AUC |
+|---|---|---|---|---|
+| MiniPokeV2_1_22M (self-play) | 39.8% | 5.28 | 40.2% | 0.723 |
+| BC, `human-v21` | 59.4% | 1.079 | 59.2% | 0.752 |
+| AWBC, `human-v21`, 6 epochs | 57.5% | 1.135 | 57.3% | 0.748 |
+| **AWBC, `human-v21b` (`GladionV1_22M`)** | **60.0%** | **1.066** | **59.8%** | **0.757** |
+
+2.5 times the battles moved top-1 by only 0.6 points. That figure undersells the gain: NLL cannot fall
+below how unpredictable humans are, while strength can keep improving. Value AUC went from 0.62 (`small`,
+the Mac's 9.4k battles) to 0.76 (`large`, 258k), on different test battles: a trend, not a measurement.
+In games:
+- Paired, 4,000 games on 2,000 team pairs (greedy), `GladionV1_22M` beat `MiniPokeV2_1_22M`, the best
+  self-play model, **82.3%** (81.2-83.4%).
+- Against SimpleHeuristicsPlayer, PPO's iteration 10 (107k states of PPO from it; the model itself was
+  not measured alone) won 93.5% of 2,000 battles. `MiniPokeV2_1_22M` won 77.1% of 800.
+- With search, `GladionV1_22M` plays at 1800+ on the ladder.
+
+PPO from it (`--recipe v3`, still the provisional LR 2e-4, a reference KL of 0.05 to it, the BC model
+of `human-v21` as a fixed pool opponent) made it worse. In training it won 39% against its starting
+point at iterations 10 and 20 (100 games each), and 45% at iteration 30. Its KL to the starting point
+grew to 0.2 by iteration 30 and stayed there: the anchor did not hold it. The heuristic win rate stayed
+flat (90.5-94.5%). Paired, its iteration 60 (636k states) won **44.7%** (43.3-46.2%) against
+`GladionV1_22M`. That is when self-play was dropped.
 
 ## Measuring
 
@@ -643,7 +701,7 @@ v3 is Gladion v1; no earlier minipoke model is still released.
 | Nov 11 | Diagnosis of the plateau | PPO barely moved the policy (median KL 0.0027 per iteration, target 0.03) and the heuristic win rate was flat after 1M states: the training signal, not size or time, was the limit. Options ranked: training on the search's choices, bigger PPO steps, and human data as the long shot (Metamon: offline RL on human replays reached human-level play) |
 | Nov 11-13 | **Human replays**: public replays carry input logs, re-simulated on their own server version | all 9,358 replays of the first batch replay exactly; 558 of 561 of the bot's games identical to what ElsaMina received |
 | Nov 13 | **Offline RL**, small, 9.4k battles: BC, then AWBC (the plan: a Q head only if AWBC did not beat BC) | AWBC beat BC on every metric and beat the self-play `MiniPokeV2_1_1M` head to head (53.6%); BC lost to it (47.5%). The Q head was never needed |
-| Nov 14-21 | AWBC, `large`, 258k battles: **minipoke v3, `MiniPokeV3_22M`** (`minipokev3-22m`) | test top-1 59.95%; PPO from it lost to it (39%); with search, 1800+ on the ladder |
+| Nov 15-21 | `large` on the GPU box: BC and AWBC on 103k battles, then AWBC on 258k: **minipoke v3, `MiniPokeV3_22M`** (`minipokev3-22m`) | test top-1 59.95%; beat `MiniPokeV2_1_22M` 82.3%; PPO from it lost to it (44.7% at iteration 60); with search, 1800+ on the ladder |
 | Nov 22 | Self-play PPO, the BC-from-heuristic and distillation commands, the Q head and the self-play models removed | |
 | Nov 22 | **Move pooling that ignores slot order** (`--move-pool meanmax`) and **training-only opponent heads** (`--opp-heads`: the opponent's choice and real sets, from both sides of the re-simulations) | not measured yet |
 | Nov 23 | **minipoke renamed Gladion**: minipoke v3 becomes Gladion v1 (`GladionV1_22M`, strategy `gladionv1-22m`, same weights), the code moves to `tools/gladion` and `Strategies/Gladion*` | |
@@ -680,4 +738,5 @@ data made it moot.
   events, matchups, move effects, action mapping), the model (move pooling, the opponent heads and
   their targets), the dataset, offline RL and its metrics,
   paired teams, the search, re-simulation and parity on committed fixtures, replay collection and
-  analysis. `python -m pytest -q`; the re-simulation tests skip without the Showdown version they need.
+  analysis. `python -m pytest -q`. The re-simulation tests skip without the Showdown version they need.
+

@@ -65,7 +65,9 @@ The collector runs there (`collect_replays.py`, see the README). Re-simulation b
 checkout per server version under `showdown-versions/` (git, npm and Node needed, ~40 s for the first,
 a few seconds for each next one). The Mac's replays (Oct 30 to Nov 12) go into their own folder, not
 into the server's `replays/human/gen9randombattle`: the Mac's `state.json` would replace the running
-collector's cursors. Ids both machines have are counted once.
+collector's cursors. Ids both machines have are counted once. The server skipped the Mac's span, and
+`GladionV1_22M`'s dataset was built without the Mac's folder, so those 9.4k battles are missing from it.
+Add the folder to the next build.
 
 ```bash
 # From the Mac, once
@@ -94,40 +96,51 @@ python human_data.py replays/human/gen9randombattle replays/human-mac \
 
 `D` is the dataset copied in step 1. Each `offline` run early-stops on the validation NLL and writes
 `offline.pt` (best epoch), `offline_last.pt` (last epoch, for `--resume`) and `offline_metrics.json`.
+The runs are named after the dataset (`R`): `checkpoints/v3/` and `runs/v3/` already hold Gladion v1's
+runs, and a new run in a used folder starts over and overwrites its `offline.pt`. `--run` keeps the logs
+apart too, since by default a run appends to `runs/<checkpoint folder name>/train.log`.
 
 ```bash
 systemd-inhibit --what=idle:sleep --who=gladion --why="gladion offline" bash -c '
 set -e
 D=data/human-v21-<date>
+R=$(basename $D)
 SD="node pokemon-showdown start --no-security"
 M=../../src/ElsaMina.Battles/Models
-python train.py offline --data $D --size large --algo bc   --epochs 15 --seed 1 --ckpt-dir checkpoints/v3/bc-large
-python train.py offline --data $D --size large --algo awbc --epochs 15 --seed 1 --ckpt-dir checkpoints/v3/awbc-large
-python train.py offline-eval --ckpt checkpoints/v3/bc-large/offline.pt checkpoints/v3/awbc-large/offline.pt \
-    $M/GladionV1_22M --data $D --out runs/v3/offline-large.json
+python train.py offline --data $D --size large --algo bc   --epochs 6 --seed 1 --ckpt-dir checkpoints/$R/bc-large --run $R-bc-large
+python train.py offline --data $D --size large --algo awbc --epochs 6 --seed 1 --ckpt-dir checkpoints/$R/awbc-large --run $R-awbc-large
+python train.py offline-eval --ckpt checkpoints/$R/bc-large/offline.pt checkpoints/$R/awbc-large/offline.pt \
+    $M/GladionV1_22M --data $D --out runs/$R/offline-large.json
 for c in bc-large awbc-large; do
-  python train.py eval --ckpt checkpoints/v3/$c/offline.pt --vs-ckpt $M/GladionV1_22M --battles 4000 --processes 4 \
+  python train.py eval --ckpt checkpoints/$R/$c/offline.pt --vs-ckpt $M/GladionV1_22M --battles 4000 --processes 4 \
       --showdown-cmd "$SD" --showdown-cwd "$SHOWDOWN"
 done
-python train.py eval --ckpt checkpoints/v3/awbc-large/offline.pt --vs-ckpt $M/GladionV1_22M --search --vs-search-depth 1 \
+python train.py eval --ckpt checkpoints/$R/awbc-large/offline.pt --vs-ckpt $M/GladionV1_22M --search --vs-search-depth 1 \
     --battles 2000 --processes 4 --showdown-cmd "$SD" --showdown-cwd "$SHOWDOWN"
 '
 ```
 
+- `--epochs 6` is what trained `GladionV1_22M` on 258k battles: its best epoch was the 5th. The LR
+  schedule spans the epochs asked for, so asking for more than early stopping will allow wastes the
+  end of the schedule. BC only serves as the comparison: drop its line to halve the time.
+- An epoch takes about 12 minutes per million training states (2 h 40 min for 258k battles), and the
+  log prints nothing between epoch lines. To stop, press Ctrl-C about 30 s after an `epoch N/6` line.
+- If a run stops, continue it with `python train.py offline --resume checkpoints/$R/<run>/offline_last.pt --data $D`.
+  On a finished run it only recomputes the test metrics, so the same queue can be rerun with each
+  `offline` line replaced by its `--resume` once `offline_last.pt` exists.
 - The 22M memorizes one-hot labels: watch the validation NLL (`runs/<run>/train.log`); `--dropout 0.1`
   is an option for a new model. `--size wide-medium` (4.4M) trains much faster for quick comparisons.
 - `--minibatch` 512 takes about 3.2 GiB with the desktop.
-- If a run stops, continue it with `python train.py offline --resume checkpoints/v3/<run>/offline_last.pt --data $D`.
 
 ## Back to the Mac
 
 What a release needs is the checkpoint and its logs:
 
 ```bash
-# From the Mac, in tools/gladion
-mkdir -p checkpoints/v3/awbc-large runs
-scp gpu-box:Elsa-Mina/tools/gladion/checkpoints/v3/awbc-large/offline.pt checkpoints/v3/awbc-large/
-rsync -a gpu-box:Elsa-Mina/tools/gladion/runs/v3 runs/
+# From the Mac, in tools/gladion; R = the run folder from step 2
+mkdir -p checkpoints/$R/awbc-large runs
+scp gpu-box:Elsa-Mina/tools/gladion/checkpoints/$R/awbc-large/offline.pt checkpoints/$R/awbc-large/
+rsync -a gpu-box:Elsa-Mina/tools/gladion/runs/$R runs/
 ```
 
 Then release it as the README says ([Replacing a released model](../README.md#replacing-a-released-model)
