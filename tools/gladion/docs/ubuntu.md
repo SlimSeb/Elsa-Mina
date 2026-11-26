@@ -1,16 +1,14 @@
 # Gladion on the Ubuntu machines
 
 The README's pipeline on the two Ubuntu machines: the replay server (it collects the human replays and
-builds the dataset) and the GPU box (Radeon RX 6600 XT, 8 GB, PyTorch for ROCm; it trains). What
-changes from the Mac:
+builds the dataset) and the GPU box (Radeon RX 6600 XT, 8 GB, PyTorch for ROCm; it trains).
 
-| Mac | Ubuntu |
-|---|---|
-| `caffeinate -is bash -c '...'` | `systemd-inhibit --what=idle:sleep --who=gladion --why=... bash -c '...'` |
-| a terminal window | a `tmux` session: the queue stays a blocking foreground command, and survives SSH disconnects |
-| Showdown clone in `tools/gladion/pokemon-showdown` | wherever it is: `$SHOWDOWN` below |
-| no GPU: `--device auto` trains on the CPU | `--device auto` picks the GPU (ROCm's PyTorch calls it `cuda`) |
-| 16 GB, 3 data processes | `--processes` sized to the machine's RAM: ~0.8 GB per data process |
+- Long queues run in a `tmux` session (they stay blocking foreground commands, and survive SSH
+  disconnects), under `systemd-inhibit --what=idle:sleep --who=gladion --why=... bash -c '...'` so the
+  machine does not sleep.
+- The Showdown clone can be anywhere: `$SHOWDOWN` below.
+- `--device auto` picks the GPU box's GPU (ROCm's PyTorch calls it `cuda`).
+- Size `--processes` to the machine's RAM: about 0.8 GB per data process.
 
 Every command runs from `tools/gladion`, in the venv, with `$SHOWDOWN` exported (step 0). `ubuntu`
 and `gpu-box` stand for your SSH host names.
@@ -136,12 +134,12 @@ python train.py eval --ckpt checkpoints/$R/awbc-large/offline.pt --vs-ckpt $M/Gl
   epoch both ways before using it there.
 - If a run stops, continue it with `python train.py offline --resume checkpoints/v3/<run>/offline_last.pt --data $D`.
 
-## Back to the Mac
+## Back to the dev machine
 
 What a release needs is the checkpoint and its logs:
 
 ```bash
-# From the Mac, in tools/gladion; R = the run folder from step 2
+# From the dev machine, in tools/gladion; R = the run folder from step 2
 mkdir -p checkpoints/$R/awbc-large runs
 scp gpu-box:Elsa-Mina/tools/gladion/checkpoints/$R/awbc-large/offline.pt checkpoints/$R/awbc-large/
 rsync -a gpu-box:Elsa-Mina/tools/gladion/runs/$R runs/

@@ -33,17 +33,17 @@ old numbering (`checkpoints/v3/`, `runs/v3/`: Gladion v1's runs).
 | 7. Analyze the bot's own ladder games | `analyze_replays.py` | `replays/analysis/report.md` |
 
 `replays/`, `data/`, `checkpoints/`, `runs/`, `export/`, `showdown-versions/` and the Showdown clone
-stay in this directory, ignored by git. The Mac has 16 GB: keep data jobs to about 3 processes.
+stay in this directory, ignored by git.
 [docs/ubuntu.md](docs/ubuntu.md) runs steps 1 to 5 on the replay server and the GPU box.
 
-## Setup (macOS, Apple Silicon)
+## Setup
 
 ```bash
 cd tools/gladion
 
 # 1. Python env
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt          # on macOS, torch runs on the CPU only: train on a CUDA GPU
+pip install -r requirements.txt
 pip install -r requirements-dev.txt      # + pytest, matplotlib, psutil
 
 # 2. One local Showdown server (current Showdown needs Node 22+), for eval, elo, the search,
@@ -68,7 +68,7 @@ log: the server version, the battle and team seeds, both players' ratings and ev
 `collect_replays.py` downloads them, rated 1500+ by default:
 
 ```bash
-caffeinate -is python collect_replays.py                       # runs until stopped, resumes where it stopped
+python collect_replays.py                                      # runs until stopped, resumes where it stopped
 python collect_replays.py --min-rating 1600 --oldest-days 90
 python collect_replays.py --skip-from replays/human/old-batch --skip-from old-batch-2.zip
 python collect_replays.py --summary                            # replays, sides by rating, server versions
@@ -229,7 +229,7 @@ optimizer, the LR schedule, early stopping and the shuffling. On a finished run 
 test metrics.
 
 Training targets a CUDA GPU: `--device auto` picks it when PyTorch sees one (ROCm's PyTorch also calls
-its GPU `cuda`), else the CPU. On the GPU, float32 matmuls use TF32 (the tensor cores of NVIDIA Ampere
+its GPU `cuda`). On the GPU, float32 matmuls use TF32 (the tensor cores of NVIDIA Ampere
 and newer), batches are copied through pinned memory, and nothing in an epoch waits for the GPU but the
 finite-loss check, so the next batch is prepared while the GPU computes. Each epoch's log line gives the
 most GPU memory the run held (`gpu_peak_mib` in the history). `--amp bf16` runs the training forward
@@ -251,7 +251,7 @@ On the test datasets its losses stay within 0.3% of float32's; it is not measure
 | `--opp-heads` | off | training-only opponent heads (below), on a new model or added to `--init`'s; the dataset needs their targets |
 | `--opp-coef` | 0.5 | x the opponent heads' loss, for a model that has them (0: not trained) |
 | `--run` | the checkpoint folder's name | `runs/<run>/train.log` |
-| `--device` | `auto` | `auto` (the GPU, else the CPU), `cuda`, `cuda:N` or `cpu` |
+| `--device` | `auto` | `auto` (the GPU PyTorch sees), `cuda` or `cuda:N` |
 | `--amp` | `off` | `bf16`: bfloat16 autocast for the training forward passes (NVIDIA Ampere or newer); also applies to `--resume` |
 
 ### Sizes
@@ -280,10 +280,9 @@ ElsaMina on one CPU thread):
 
 ### Results
 
-**First runs (Nov 2026, the Mac's 9.4k battles, `small` from scratch, 8 epochs).** An epoch is 80 s on
-the M3 (918 steps of 512); AWBC adds its ordered pass (~25 s). Both were still improving at epoch 8. On
-the test battles (33,251 choices of 1700+ players, 55,743 of all), next to the self-play models
-released then:
+**First runs (Nov 2026, the Mac's 9.4k battles, `small` from scratch, 8 epochs).** Both were still
+improving at epoch 8. On the test battles (33,251 choices of 1700+ players, 55,743 of all), next to the
+self-play models released then:
 
 | | top-1 (1700+) | NLL (1700+) | top-1 (all) | value AUC |
 |---|---|---|---|---|
@@ -702,7 +701,7 @@ v3 is Gladion v1; no earlier minipoke model is still released.
 
 | When | Approach | Result |
 |---|---|---|
-| Oct 20 | **minipoke V1**: ps-ppo shrunk for a Mac. BC on SimpleHeuristicsPlayer, then mirror self-play PPO (`MiniPokeV1_1M`, `V1_4M`) | about 61% vs the heuristic (small) |
+| Oct 20 | **minipoke V1**: ps-ppo, shrunk. BC on SimpleHeuristicsPlayer, then mirror self-play PPO (`MiniPokeV1_1M`, `V1_4M`) | about 61% vs the heuristic (small) |
 | Oct 22-24 | **V2 ablations** on small at matched states: random battle set priors, history features, move tokens, history event tokens, matchup tokens, typed FFN, auxiliary heads, win/loss reward, bigger sizes, a longer recipe (opponent pool, LR schedule, 51-bin value) | set priors and history features beat V1_4M (53.9% over 1,000 team pairs); everything else added nothing |
 | Oct 24 | `MiniPokeV2_1M` (set priors + history), first ladder run | 47.9% over 535 battles, performance rating 1109; value head 0.18 too optimistic against humans; moves repeated into revealed immunities |
 | Oct 27 | **V2.1**: move effect features (ability, item and type immunities, earlier failures), and the guard | fewer wasted moves (not measured on the ladder alone) |
