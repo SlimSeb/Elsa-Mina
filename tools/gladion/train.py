@@ -23,9 +23,7 @@ import os
 import random
 import subprocess
 from pathlib import Path
-from typing import Dict, Optional
-
-os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")  # must precede torch import
+from typing import Optional
 
 import torch
 
@@ -33,7 +31,6 @@ import runtime
 from checkpoint import load_checkpoint, save_checkpoint, seed_everything
 from elo import fit_ratings, parse_anchors, round_robin_pairs
 from encoder_v2 import model_encoder
-from export_onnx import model_inputs, random_inputs
 from matches import SCRIPTED, MatchResult, evaluate, frozen_copy, make_kwargs
 from model import (MOVE_POOLS, PRESETS, GladionTransformer, build_model, describe, pick_device, preset,
                    with_opp_heads)
@@ -47,13 +44,13 @@ log = logging.getLogger("gladion")
 
 def setup(args, run_dir: Optional[Path] = None) -> torch.device:
     runtime.setup_logging(run_dir / "train.log" if run_dir else None)
-    runtime.install_mps_fallback_warning()
     torch.set_num_threads(max(1, (os.cpu_count() or 4) // 2))
-    return pick_device(args.device)
-
-
-def sample_batch(n: int, model) -> Dict[str, torch.Tensor]:
-    return dict(zip(model_inputs(model), random_inputs(n, model=model)))
+    try:
+        device = pick_device(args.device)
+    except ValueError as e:
+        raise SystemExit(f"--device: {e}")
+    runtime.configure_cuda(device)
+    return device
 
 
 def load_policy(path):
@@ -213,13 +210,14 @@ def cmd_offline(args) -> None:
                             opp_coef=args.opp_coef if model.cfg.opp_heads else 0.0)
     log.info("[offline] model: %s on %s; data %s: %s", describe(model), device, args.data,
              {k: len(v) for k, v in data.splits.items()})
-    runtime.mps_self_check(model, device, sample_batch(8, model))
+    runtime.warn_slow_amp(args.amp, device)
 
     def save(path, m, optimizer, **extra):
         save_checkpoint(path, m, optimizer, **extra)
 
     result = offline_train(model, data, cfg, device, out, save, seed=args.seed or 0, log=log.info,
-                           resume={**resumed["offline"], "opt": resumed.get("opt")} if resumed else None)
+                           resume={**resumed["offline"], "opt": resumed.get("opt")} if resumed else None,
+                           amp=args.amp)
     best = build_model(load_checkpoint(out / "offline.pt")).to(device)
     metrics = offline_metrics(best, data["test"], device, args.min_rating)
     log.info("[offline] test battles, best epoch (%d):\n%s", result["best_epoch"], describe_metrics(metrics))
@@ -262,9 +260,10 @@ def cmd_offline_eval(args) -> None:
 # --------------------------------------------------------------------------
 # Games: eval and elo
 # --------------------------------------------------------------------------
-EVAL_SPEC = ("ckpt", "vs_ckpt", "opponent", "concurrency", "no_tera_before", "stall_timeout",
-             "search", "search_top_k", "search_min_prob", "search_determinizations", "search_samples",
-             "search_workers", "search_faint_reward", "search_depth", "vs_search_depth", "showdown_cwd")
+EVAL_SPEC = ("ckpt", "vs_ckpt", "opponent", "infer_device", "concurrency", "no_tera_before",
+             "stall_timeout", "search", "search_top_k", "search_min_prob", "search_determinizations",
+             "search_samples", "search_workers", "search_faint_reward", "search_depth", "vs_search_depth",
+             "showdown_cwd")
 
 
 def _eval_worker(spec: dict) -> dict:
@@ -274,7 +273,7 @@ def _eval_worker(spec: dict) -> dict:
     from matches import run_match
     logging.basicConfig(level=logging.WARNING)
     torch.set_num_threads(1)
-    infer = torch.device("cpu")
+    infer = torch.device(spec["infer_device"] or "cpu")
     tag = f"{spec['tag']}{spec['worker']}"
     account = lambda side: AccountConfiguration(f"Ev{tag}{side}", None)
     kwargs = lambda side: dict(account_configuration=account(side), **make_kwargs(spec["concurrency"]))
@@ -387,7 +386,7 @@ def _matchup_worker(spec: dict) -> dict:
     from poke_env import AccountConfiguration
     from matches import run_match
     torch.set_num_threads(1)
-    infer = torch.device("cpu")
+    infer = torch.device(spec["infer_device"] or "cpu")
 
     sims = []
 
@@ -435,6 +434,7 @@ def cmd_elo(args) -> None:
     matchups = round_robin_pairs(players)
     tag = random.randrange(1000, 10000)
     specs = [{"a": players[a], "b": players[b], "index": i, "tag": tag, "battles": args.battles,
+              "infer_device": args.infer_device,
               "concurrency": args.concurrency, "stall_timeout": args.stall_timeout,
               "showdown_cwd": args.showdown_cwd, "search_workers": args.search_workers,
               "search_faint_reward": args.search_faint_reward,
@@ -471,12 +471,15 @@ def build_parser() -> argparse.ArgumentParser:
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     def common(p):
-        p.add_argument("--device", default="auto", help="training / inference device: auto|mps|cuda|cpu")
+        p.add_argument("--device", default="auto",
+                       help="training / inference device: auto (the GPU if PyTorch sees one, else the "
+                            "CPU), cuda, cuda:N or cpu")
         p.add_argument("--seed", type=int, default=None)
 
     def games(p):
         """The options of the commands that play games (eval, elo)."""
-        p.add_argument("--infer-device", default=None, help="inference device of the players (default cpu)")
+        p.add_argument("--infer-device", default=None,
+                       help="inference device of the players, in every --processes worker (default cpu)")
         p.add_argument("--concurrency", type=int, default=32, help="concurrent battles per seat pair")
         p.add_argument("--stall-timeout", type=float, default=180.0,
                        help="end a match if no battle finishes for this long (s)")
@@ -535,6 +538,9 @@ def build_parser() -> argparse.ArgumentParser:
                         "scalar head's MSE); none = the raw cross-entropy")
     p.add_argument("--epochs", type=int, default=10)
     p.add_argument("--minibatch", type=int, default=512)
+    p.add_argument("--amp", default="off", choices=["off", "bf16"],
+                   help="bf16: the training forward passes in bfloat16 autocast (NVIDIA Ampere or "
+                        "newer); losses, weights and validation stay float32. Also applies to --resume")
     p.add_argument("--lr", type=float, default=3e-4, help="peak LR (cosine to --lr-min-ratio)")
     p.add_argument("--lr-min-ratio", type=float, default=0.1)
     p.add_argument("--warmup-steps", type=int, default=200)

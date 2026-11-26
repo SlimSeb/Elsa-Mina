@@ -1,6 +1,7 @@
 """
-GladionTransformer — a small take on ps-ppo's PokeTransformer that runs on
-Apple Silicon (MPS), CUDA or CPU. Presets: "small" (~0.9M parameters, the
+GladionTransformer: a small take on ps-ppo's PokeTransformer that trains on
+a CUDA GPU (or ROCm, whose PyTorch also calls its GPU `cuda`) or the CPU.
+Presets: "small" (~0.9M parameters, the
 MiniPokeV1_1M architecture), "medium" (~3.8M), "wide" (~4.1M, the
 MiniPokeV1_4M architecture), "wide-medium" (wide's transformer with medium's
 distributional value head, for medium's training recipe) and "large" (~22M, the
@@ -8,7 +9,7 @@ most a training run fits on an 8 GB GPU, with medium's value head and recipe).
 
 Differences from the original:
   * No flex_attention / Triton: plain F.scaled_dot_product_attention with a
-    boolean mask (supported on MPS).
+    boolean mask (CUDA, CPU and ONNX export).
   * d_model 128 (small) or 256 (medium, wide) instead of 512. FFN x2, except
     wide, whose layers (3), heads (8), FFN x4 and embedding sizes match the original.
     large has the original's d_model, heads, FFN and embedding sizes, and 5 layers.
@@ -39,7 +40,8 @@ their move vectors.
 
 history_tokens K (encoder v2): the last K battle events (encoder_v2 event_ids /
 event_feats) as K more state tokens after the move tokens, with a learned
-embedding of their position in the window. They replace the `history` features.
+embedding of their position in the window. With `history` too, the field token still
+reads the history features.
 
 matchup_tokens (encoder v2): 12 tokens from damage.py's estimates (encoder_v2
 matchup_feats: each of our Pokémon against their active, our active against each
@@ -73,6 +75,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, fields, replace
 from typing import Dict, List, Optional, Sequence, Tuple
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -121,7 +124,7 @@ class ModelConfig:
     history: bool = False
     # One feed-forward block per token type in every layer
     typed_ffn: bool = False
-    # Encoder v2: the last K battle events as tokens (replaces `history`)
+    # Encoder v2: the last K battle events as tokens (with or without `history`)
     history_tokens: int = 0
     # Encoder v2: 12 damage-calc matchup tokens, injected after layer n_layers // 2
     matchup_tokens: bool = False
@@ -200,7 +203,7 @@ def build_attention_mask(n_tokens: int = N_TOKENS) -> torch.Tensor:
 
 
 class EncoderLayer(nn.Module):
-    """Pre-LN transformer block using SDPA (works on MPS). With `token_types`, one
+    """Pre-LN transformer block using SDPA. With `token_types`, one
     feed-forward block per type, applied to that type's (contiguous) tokens."""
 
     def __init__(self, d: int, n_heads: int, ff_mult: float, dropout: float,
@@ -261,7 +264,7 @@ class GladionTransformer(nn.Module):
                 and cfg.encoder_version < 2:
             raise ValueError("history features, history and matchup tokens and move effects are "
                              "part of encoder v2 (--encoder-version 2)")
-        self.hist_features = cfg.history and not cfg.history_tokens
+        self.hist_features = cfg.history
         self.v2 = cfg.encoder_version == 2
         self.n_move_tokens = 0
         if cfg.move_tokens:
@@ -620,6 +623,17 @@ class GladionTransformer(nn.Module):
         }
 
 
+def to_device(value, device) -> torch.Tensor:
+    """A numpy array or CPU tensor on `device`. To a GPU, through pinned memory and without
+    blocking: a copy from pageable memory first waits for the GPU's queued work, so the next
+    batch could not be prepared while the GPU runs the current one."""
+    t = torch.from_numpy(value) if isinstance(value, np.ndarray) else value
+    device = torch.device(device)
+    if device.type == "cuda" and t.device.type == "cpu":
+        return t.pin_memory().to(device, non_blocking=True)
+    return t.to(device)
+
+
 def to_tensors(batch, device) -> Dict[str, torch.Tensor]:
     """numpy batch (from encoder.collate) -> tensors on device."""
     out = {}
@@ -627,18 +641,21 @@ def to_tensors(batch, device) -> Dict[str, torch.Tensor]:
         t = torch.from_numpy(v)
         if t.dtype == torch.float64:
             t = t.float()
-        out[k] = t.to(device, non_blocking=True)
+        out[k] = to_device(t, device)
     return out
 
 
 def pick_device(pref: str = "auto") -> torch.device:
-    if pref != "auto":
-        return torch.device(pref)
-    if torch.backends.mps.is_available():
-        return torch.device("mps")
-    if torch.cuda.is_available():
-        return torch.device("cuda")
-    return torch.device("cpu")
+    """`auto`: the GPU when PyTorch sees one (CUDA, or ROCm, whose PyTorch also calls it
+    `cuda`), else the CPU. Otherwise `cuda`, `cuda:N` or `cpu`."""
+    if pref == "auto":
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(pref)
+    if device.type not in ("cuda", "cpu"):
+        raise ValueError(f"device {pref!r}: auto, cuda, cuda:N or cpu")
+    if device.type == "cuda" and not torch.cuda.is_available():
+        raise ValueError(f"device {pref!r}: PyTorch sees no GPU (torch.cuda.is_available() is False)")
+    return device
 
 
 def count_params(model: nn.Module) -> int:

@@ -139,9 +139,12 @@ def test_recent_events():
     assert [e.called for e in recent_events(called, 4)] == [False, True]
 
 
-def test_event_arrays_replace_the_history_features():
+def test_event_arrays_come_after_the_history_features():
     enc = EncoderV2(hand_priors(), history=True, history_tokens=6)
-    assert "hist_ids" not in enc.layout and enc.layout["event_ids"][0] == (6, 2)
+    names = list(enc.layout)
+    assert names.index("hist_feats") < names.index("event_ids")
+    assert enc.layout["event_ids"][0] == (6, 2)
+    assert "hist_ids" not in EncoderV2(hand_priors(), history_tokens=6).layout
     battle = make_battle(default_team(), EVENT_LINES[1:-2])     # up to the crit, Garchomp alive
     obs = enc.encode(battle)
     ids, feats = obs["event_ids"], obs["event_feats"]
@@ -165,7 +168,7 @@ def test_history_tokens_model():
     with pytest.raises(ValueError):
         GladionTransformer(ModelConfig(history_tokens=8))
     model = make_model("small", encoder_version=2, history=True, history_tokens=8).eval()
-    assert not model.hist_features and model.n_tokens == 15 + 8
+    assert model.hist_features and model.n_tokens == 15 + 8
     assert [t for t, _, _ in model.segments][-1] == "events"
     obs = batch_for(model)
     obs["event_feats"][0, :3, 0] = 0.0

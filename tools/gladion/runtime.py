@@ -1,23 +1,20 @@
 """
-Helpers for train.py: logging, MPS fallback detection, the local Showdown server and
-memory reporting.
+Helpers for train.py: logging, the CUDA setup, the local Showdown server and memory
+reporting.
 """
 
 from __future__ import annotations
 
-import copy
 import logging
 import os
-import re
 import shlex
 import signal
 import socket
 import subprocess
 import sys
 import time
-import warnings
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 import torch
 
@@ -41,47 +38,30 @@ def setup_logging(log_file: Optional[Path] = None) -> None:
 
 
 # --------------------------------------------------------------------------
-# MPS: PYTORCH_ENABLE_MPS_FALLBACK=1 keeps unsupported ops running (on the CPU,
-# slowly) instead of crashing. Make every fallback loud.
+# CUDA (ROCm's PyTorch also calls its GPU `cuda`)
 # --------------------------------------------------------------------------
-_MPS_FALLBACK = re.compile(r"not currently supported on the MPS backend and will fall back")
-mps_fallback_ops: List[str] = []
-
-
-def install_mps_fallback_warning() -> None:
-    previous = warnings.showwarning
-
-    def show(message, category, filename, lineno, file=None, line=None):
-        text = str(message)
-        if _MPS_FALLBACK.search(text):
-            op = re.search(r"'([^']+)'", text)
-            name = op.group(1) if op else text
-            if name not in mps_fallback_ops:
-                mps_fallback_ops.append(name)
-                log.warning("[mps-fallback] %s runs on the CPU (PYTORCH_ENABLE_MPS_FALLBACK); "
-                            "this slows training down", name)
-            return
-        previous(message, category, filename, lineno, file, line)
-
-    warnings.showwarning = show
-    warnings.filterwarnings("always", message=".*MPS backend.*fall back.*")
-
-
-def mps_self_check(model: torch.nn.Module, device: torch.device, sample: Dict[str, torch.Tensor]) -> None:
-    """One forward + backward on the training device, to surface any CPU fallback
-    at startup rather than hours into a run."""
-    if device.type != "mps":
+def configure_cuda(device: torch.device) -> None:
+    """TF32 float32 matmuls (tensor cores on Ampere and newer NVIDIA GPUs, inputs rounded to a
+    10-bit mantissa; no effect elsewhere) and a line naming the GPU."""
+    if device.type != "cuda":
         return
-    m = copy.deepcopy(model).to(device).train()
-    before = len(mps_fallback_ops)
-    logits, values, value_logits = m.forward_train({k: v.to(device) for k, v in sample.items()})
-    loss = torch.log_softmax(logits, -1).mean() + values.mean()
-    if value_logits is not None:
-        loss = loss + torch.log_softmax(value_logits, -1).mean()
-    loss.backward()
-    torch.mps.synchronize()
-    if len(mps_fallback_ops) == before:
-        log.info("[mps] forward/backward self-check: no CPU fallback")
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cudnn.allow_tf32 = True
+    props = torch.cuda.get_device_properties(device)
+    build = f"ROCm {torch.version.hip}" if torch.version.hip else f"CUDA {torch.version.cuda}"
+    log.info("[cuda] %s, %.1f GiB, PyTorch %s (%s)", props.name, props.total_memory / 2**30,
+             torch.__version__, build)
+
+
+def warn_slow_amp(amp: str, device: torch.device) -> None:
+    """bfloat16 runs on the tensor cores from NVIDIA Ampere (compute capability 8.0) on: before,
+    it is emulated, and slower than float32."""
+    if amp != "bf16" or device.type != "cuda" or torch.version.hip:
+        return
+    capability = torch.cuda.get_device_capability(device)
+    if capability < (8, 0):
+        log.warning("[cuda] --amp bf16 on %s (compute capability %d.%d): bfloat16 is emulated before "
+                    "8.0, expect it slower than float32", torch.cuda.get_device_name(device), *capability)
 
 
 # --------------------------------------------------------------------------

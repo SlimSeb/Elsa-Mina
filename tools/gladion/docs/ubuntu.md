@@ -9,7 +9,7 @@ changes from the Mac:
 | `caffeinate -is bash -c '...'` | `systemd-inhibit --what=idle:sleep --who=gladion --why=... bash -c '...'` |
 | a terminal window | a `tmux` session: the queue stays a blocking foreground command, and survives SSH disconnects |
 | Showdown clone in `tools/gladion/pokemon-showdown` | wherever it is: `$SHOWDOWN` below |
-| MPS | `--device auto` picks the GPU (ROCm's PyTorch calls it `cuda`) |
+| no GPU: `--device auto` trains on the CPU | `--device auto` picks the GPU (ROCm's PyTorch calls it `cuda`) |
 | 16 GB, 3 data processes | `--processes` sized to the machine's RAM: ~0.8 GB per data process |
 
 Every command runs from `tools/gladion`, in the venv, with `$SHOWDOWN` exported (step 0). `ubuntu`
@@ -116,7 +116,10 @@ python train.py eval --ckpt checkpoints/v3/awbc-large/offline.pt --vs-ckpt $M/Gl
 
 - The 22M memorizes one-hot labels: watch the validation NLL (`runs/<run>/train.log`); `--dropout 0.1`
   is an option for a new model. `--size wide-medium` (4.4M) trains much faster for quick comparisons.
-- `--minibatch` 512 takes about 3.2 GiB with the desktop.
+- `--minibatch` 512 takes about 3.2 GiB with the desktop. Each epoch's log line gives what the run held
+  at most (`MiB GPU`).
+- `--amp bf16` is for NVIDIA tensor cores (Ampere or newer). The 6600 XT has no matrix cores: time an
+  epoch both ways before using it there.
 - If a run stops, continue it with `python train.py offline --resume checkpoints/v3/<run>/offline_last.pt --data $D`.
 
 ## Back to the Mac

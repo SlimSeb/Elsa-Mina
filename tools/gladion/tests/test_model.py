@@ -122,23 +122,69 @@ def test_without_move_tokens_the_move_head_reads_the_move_vectors():
         torch.testing.assert_close(captured["x"][b, :, 2 * d:], move_vec[b, active[b]])
 
 
-@pytest.mark.skipif(not torch.backends.mps.is_available(), reason="no MPS")
+# --------------------------------------------------------------------------
+# Devices
+# --------------------------------------------------------------------------
+DEVICES = ["cpu"] + (["cuda"] if torch.cuda.is_available() else [])
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="no GPU")
 @pytest.mark.parametrize("name", list(CONFIGS))
-def test_forward_and_backward_on_mps(name):
-    import runtime
-    runtime.install_mps_fallback_warning()
-    before = len(runtime.mps_fallback_ops)
-    model = make_model("small", **CONFIGS[name]).to("mps").train()
-    obs = {k: v.to("mps") for k, v in batch_for(model, n=8).items()}
+def test_forward_and_backward_on_cuda(name):
+    model = make_model("small", **CONFIGS[name]).to("cuda").train()
+    obs = {k: v.to("cuda") for k, v in batch_for(model, n=8).items()}
     logits, value, _ = model.forward_train(obs)
     (torch.log_softmax(logits, -1).mean() + value.mean()).backward()
-    torch.mps.synchronize()
+    assert all(torch.isfinite(p.grad).all() for p in model.parameters() if p.grad is not None)
     with torch.no_grad():
         cpu_logits, _ = make_model("small", **CONFIGS[name]).eval()(
             {k: v.cpu() for k, v in obs.items()})
     legal = obs["mask"].cpu()
     torch.testing.assert_close(logits.detach().cpu()[legal], cpu_logits[legal], atol=1e-3, rtol=1e-3)
-    assert len(runtime.mps_fallback_ops) == before, runtime.mps_fallback_ops
+
+
+@pytest.mark.parametrize("device", DEVICES)
+@pytest.mark.parametrize("name", list(CONFIGS))
+def test_bf16_autocast_forward_stays_close_to_float32(name, device):
+    """train.py offline --amp bf16: the training forward pass in bfloat16 autocast."""
+    model = make_model("small", **CONFIGS[name]).to(device).train()
+    obs = {k: v.to(device) for k, v in batch_for(model, n=8).items()}
+    with torch.autocast(device, dtype=torch.bfloat16):
+        logits, value, _ = model.forward_train(obs)
+    logits, value = logits.float(), value.float()
+    (torch.log_softmax(logits, -1).mean() + value.mean()).backward()
+    assert all(p.grad.dtype == torch.float32 and torch.isfinite(p.grad).all()
+               for p in model.parameters() if p.grad is not None)
+    with torch.no_grad():
+        ref_logits, ref_value = model(obs)
+    legal = obs["mask"]
+    assert (logits[~legal] <= -1e8).all()
+    torch.testing.assert_close(logits.detach()[legal], ref_logits[legal], atol=5e-2, rtol=5e-2)
+    torch.testing.assert_close(value.detach(), ref_value, atol=5e-2, rtol=5e-2)
+
+
+def test_pick_device_takes_auto_cuda_or_cpu():
+    from model import pick_device
+    assert pick_device("auto").type == ("cuda" if torch.cuda.is_available() else "cpu")
+    assert pick_device("cpu") == torch.device("cpu")
+    with pytest.raises(ValueError, match="auto, cuda, cuda:N or cpu"):
+        pick_device("mps")
+    if not torch.cuda.is_available():
+        with pytest.raises(ValueError, match="sees no GPU"):
+            pick_device("cuda")
+
+
+@pytest.mark.parametrize("device", DEVICES)
+def test_to_tensors_keeps_dtypes_and_values(device):
+    import numpy as np
+    from model import to_tensors
+    batch = {"ids": np.arange(6, dtype=np.int64).reshape(2, 3), "mask": np.array([True, False]),
+             "feats": np.linspace(0, 1, 4)}                          # float64 -> float32
+    out = to_tensors(batch, device)
+    assert {k: v.dtype for k, v in out.items()} == {"ids": torch.int64, "mask": torch.bool,
+                                                    "feats": torch.float32}
+    assert all(v.device.type == device for v in out.values())
+    assert out["ids"].cpu().tolist() == [[0, 1, 2], [3, 4, 5]] and out["mask"].cpu().tolist() == [True, False]
 
 
 # --------------------------------------------------------------------------

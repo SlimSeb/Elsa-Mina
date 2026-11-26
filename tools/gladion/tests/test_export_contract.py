@@ -146,6 +146,8 @@ V2_MODELS = {
     "v2-wide-medium-history": dict(size="wide-medium", encoder_version=2, history=True),
     "v2-typed-ffn": dict(size="small", encoder_version=2, move_tokens=True, typed_ffn=True),
     "v2-history-tokens": dict(size="small", encoder_version=2, history_tokens=8, typed_ffn=True),
+    "v2.1-history-tokens": dict(size="small", encoder_version=2, history=True, history_tokens=8,
+                                move_effects=True),
     "v2-matchups": dict(size="small", encoder_version=2, matchup_tokens=True),
     "v2-history-effects": dict(size="small", encoder_version=2, history=True, move_effects=True),
     "v2-move-tokens-effects": dict(size="small", encoder_version=2, move_tokens=True,
@@ -176,7 +178,7 @@ def test_v2_export_takes_v1s_inputs_then_its_own(exported_v2):
     assert [n for n, *_ in got[6:11]] == ["cand_ids", "cand_feats", "prior_ids", "prior_w",
                                           "prior_feats"]
     extra = [n for n, *_ in got[11:]]
-    assert ("hist_ids" in extra) == (model.cfg.history and not model.cfg.history_tokens)
+    assert ("hist_ids" in extra) == model.cfg.history
     assert ("event_ids" in extra) == bool(model.cfg.history_tokens)
     assert ("matchup_feats" in extra) == model.cfg.matchup_tokens
     assert ("effect_feats" in extra) == ("cand_effect_feats" in extra) == model.cfg.move_effects

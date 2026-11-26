@@ -26,7 +26,8 @@ protocol log (history.recent_events), oldest first, padded at the front:
                                              resisted, immune, failed, KO,
                                              turns ago (min 10) / 10
 
-They replace the `history` arrays below (a model with both only gets the events).
+With `history` too, they come after its two arrays below (the two inputs used to exclude each
+other: no saved model has both).
 
 With `matchup_tokens` (ModelConfig.matchup_tokens), damage.py's estimates:
 
@@ -131,7 +132,7 @@ class EncoderV2(EncoderV1):
         self.priors = priors
         self.k = cand_moves
         self.history_tokens = history_tokens
-        self.history = history and not history_tokens  # events replace the features
+        self.history = history
         self.layout.update({
             "cand_ids": ((E.N_SLOTS, cand_moves), "int64"),
             "cand_feats": ((E.N_SLOTS, cand_moves, F_CAND), "float32"),

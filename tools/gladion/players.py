@@ -38,8 +38,9 @@ log = logging.getLogger("gladion")
 class InferenceBatcher:
     """Collects decisions from concurrent battles and runs them as one batch.
 
-    The model here is the *inference copy* (usually on CPU: for batches of a
-    few dozen states, CPU beats MPS dispatch overhead on an M-series chip).
+    The model here is the *inference copy* (on the CPU unless --infer-device
+    says otherwise: a batch is a few dozen states, and every eval process
+    holds its own copy).
     `encoder` builds that model's observations (V1 or v2): players feeding this
     batcher encode with it.
     """

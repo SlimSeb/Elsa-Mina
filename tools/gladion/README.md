@@ -43,7 +43,7 @@ cd tools/gladion
 
 # 1. Python env
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt          # torch from PyPI includes MPS on macOS
+pip install -r requirements.txt          # on macOS, torch runs on the CPU only: train on a CUDA GPU
 pip install -r requirements-dev.txt      # + pytest, matplotlib, psutil
 
 # 2. One local Showdown server (current Showdown needs Node 22+), for eval, elo, the search,
@@ -200,6 +200,14 @@ the best one (validation NLL) is `offline.pt` (`offline_last.pt` is the last, wi
 needs), and training stops after `--patience` (2) epochs without a better one. At the end, the best
 epoch is measured on the test battles (`offline_metrics.json`).
 
+Training targets a CUDA GPU: `--device auto` picks it when PyTorch sees one (ROCm's PyTorch also calls
+its GPU `cuda`), else the CPU. On the GPU, float32 matmuls use TF32 (the tensor cores of NVIDIA Ampere
+and newer), batches are copied through pinned memory, and nothing in an epoch waits for the GPU but the
+finite-loss check, so the next batch is prepared while the GPU computes. Each epoch's log line gives the
+most GPU memory the run held (`gpu_peak_mib` in the history). `--amp bf16` runs the training forward
+passes in bfloat16 autocast; the weights, their gradients, the losses and the validation stay float32.
+On the test datasets its losses stay within 0.3% of float32's; it is not measured on a real run yet.
+
 | Option | Default | |
 |---|---|---|
 | `--size` | `wide-medium` | a new model's architecture (below); it reads the dataset's observation (encoder flags, set priors) |
@@ -215,6 +223,8 @@ epoch is measured on the test battles (`offline_metrics.json`).
 | `--opp-heads` | off | training-only opponent heads (below), on a new model or added to `--init`'s; the dataset needs their targets |
 | `--opp-coef` | 0.5 | x the opponent heads' loss, for a model that has them (0: not trained) |
 | `--run` | the checkpoint folder's name | `runs/<run>/train.log` |
+| `--device` | `auto` | `auto` (the GPU, else the CPU), `cuda`, `cuda:N` or `cpu` |
+| `--amp` | `off` | `bf16`: bfloat16 autocast for the training forward passes (NVIDIA Ampere or newer); also applies to `--resume` |
 
 ### Sizes
 
@@ -452,7 +462,7 @@ through the move MLP (with a known/candidate flag and their fraction), and their
 the ability and item prior embeddings and the prior features join its token. The policy head is a
 pointer head: switch logits from our 6 Pokémon tokens, move logits from the active Pokémon's 4 move
 vectors (normal and tera). The value head is scalar or 51-bin distributional; `forward()` always returns
-its expected value. Attention is `scaled_dot_product_attention` with a boolean mask (MPS, CUDA and ONNX
+its expected value. Attention is `scaled_dot_product_attention` with a boolean mask (CUDA, CPU and ONNX
 export). Architecture options for a new model: `--move-tokens` (one token per Pokémon and move slot; the
 move head reads our active's move tokens after the transformer) and `--typed-ffn` (one feed-forward
 block per token type). They change no observation, and gained nothing under self-play.
@@ -667,8 +677,8 @@ data made it moot.
   checkpoints (weights, config, optimizer, set priors).
 - `offline.py`: BC and AWBC, the value loss, the offline metrics, `OnnxPolicy` (a released model as a
   policy).
-- `train.py`: the CLI (`offline`, `offline-eval`, `eval`, `elo`). `runtime.py`: logging, the Showdown
-  launcher, MPS fallback detection, memory reporting.
+- `train.py`: the CLI (`offline`, `offline-eval`, `eval`, `elo`). `runtime.py`: logging, the CUDA setup,
+  the Showdown launcher, memory reporting.
 - `players.py`: `InferenceBatcher` (batches the decisions of concurrent battles) and `ModelPlayer` (plays
   a model greedily). `matches.py`: scripted players and matches with a watchdog. `paired.py`: paired
   teams. `elo.py`: the round-robin fit. `search.py` and `search_sim.js`: the one-turn search.

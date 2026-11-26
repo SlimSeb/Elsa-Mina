@@ -48,10 +48,11 @@ import torch.nn.functional as F
 
 from dataset import ShardDataset
 from encoder import N_SLOTS, UNK_ID
-from model import to_tensors
+from model import to_device, to_tensors
 from opp_targets import OPP_EXTRA
 
 ALGOS = ("bc", "awbc")
+AMP = ("off", "bf16")
 
 
 @dataclass
@@ -152,7 +153,7 @@ def _target_logp(logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
 
 
 def opp_targets_of(mb: Dict[str, np.ndarray], device) -> Dict[str, torch.Tensor]:
-    return {k: torch.from_numpy(mb[k]).to(device) for k in OPP_EXTRA}
+    return {k: to_device(mb[k], device) for k in OPP_EXTRA}
 
 
 def opp_loss(out: Dict[str, torch.Tensor], targets: Dict[str, torch.Tensor]):
@@ -193,12 +194,14 @@ def opp_metrics(model, data: ShardDataset, device, batch: int = 1024) -> Dict[st
     (mon_ids UNK_ID), tera type top-1, and recall@4 of the moves not revealed yet (the 4 likeliest
     moves among those our view does not show)."""
     model.eval()
-    sums = {k: 0.0 for k in ("choice_n", "choice_top1", "choice_nll", "tera_n", "tera_ok", "item_n",
-                             "item_ok", "ability_n", "ability_ok", "tera_type_n", "tera_type_ok",
-                             "moves_n", "moves_hit")}
+    # Summed on the device: reading them back after every batch would wait for the GPU each time
+    sums = {k: torch.zeros((), dtype=torch.float64, device=device)
+            for k in ("choice_n", "choice_top1", "choice_nll", "tera_n", "tera_ok", "item_n",
+                      "item_ok", "ability_n", "ability_ok", "tera_type_n", "tera_type_ok",
+                      "moves_n", "moves_hit")}
 
     def add(key: str, x: torch.Tensor) -> None:
-        sums[key] += float(x.sum())
+        sums[key] += x.sum(dtype=torch.float64)
 
     for mb in data.batches("train", batch):
         obs = to_tensors(mb["obs"], device)
@@ -230,6 +233,7 @@ def opp_metrics(model, data: ShardDataset, device, batch: int = 1024) -> Dict[st
         hidden = (real > UNK_ID) & ~(real.unsqueeze(-1) == known.unsqueeze(-2)).any(-1)
         add("moves_n", hidden)
         add("moves_hit", (real.unsqueeze(-1) == top.unsqueeze(-2)).any(-1) & hidden)
+    sums = {k: float(v) for k, v in sums.items()}
 
     def ratio(key: str, n: str) -> float:
         return sums[key] / sums[n] if sums[n] else float("nan")
@@ -260,9 +264,13 @@ def ordered_pass(model, data: ShardDataset, device, batch: int = 1024) -> np.nda
     """V(s) for every row of `data`, in global row order."""
     model.eval()
     values = np.zeros(len(data), dtype=np.float32)
+    rows, parts = [], []   # read back once at the end, not after every batch (a wait for the GPU)
     for mb in data.batches("train", batch):
         _, v = model(to_tensors(mb["obs"], device))
-        values[mb["row"]] = v.float().cpu().numpy()
+        rows.append(mb["row"])
+        parts.append(v.float())
+    if parts:
+        values[np.concatenate(rows)] = torch.cat(parts).cpu().numpy()
     return values
 
 
@@ -331,18 +339,21 @@ def predict(model, data: ShardDataset, device, batch: int = 1024) -> Dict[str, n
     action, label, rating, result and return, over a whole split (row order)."""
     if hasattr(model, "eval"):
         model.eval()
-    keys = ("logp", "argmax", "value", "entropy", "action", "label_ok", "rating", "result", "ret", "turn")
-    out = {k: [] for k in keys}
+    computed = ("logp", "argmax", "value", "entropy")   # kept on the device until the end
+    read = ("action", "label_ok", "rating", "result", "ret", "turn")
+    out = {k: [] for k in computed + read}
     for mb in data.batches("train", batch):
         logits, values = model(to_tensors(mb["obs"], device))
         logq = F.log_softmax(logits.float(), -1)
-        action = torch.from_numpy(mb["action"]).to(logq.device)
-        out["logp"].append(logq.gather(1, action.clamp_min(0).unsqueeze(1)).squeeze(1).cpu().numpy())
-        out["argmax"].append(logits.argmax(-1).cpu().numpy())
-        out["entropy"].append(-(logq.exp() * logq.clamp_min(-1e4)).sum(-1).cpu().numpy())
-        out["value"].append(values.float().cpu().numpy())
-        for k in ("action", "label_ok", "rating", "result", "ret", "turn"):
+        action = to_device(mb["action"], logq.device)
+        out["logp"].append(logq.gather(1, action.clamp_min(0).unsqueeze(1)).squeeze(1))
+        out["argmax"].append(logits.argmax(-1))
+        out["entropy"].append(-(logq.exp() * logq.clamp_min(-1e4)).sum(-1))
+        out["value"].append(values.float())
+        for k in read:
             out[k].append(mb[k] if k in mb else np.zeros(len(mb["action"])))
+    for k in computed:
+        out[k] = [torch.cat(out[k]).cpu().numpy()] if out[k] else []
     return {k: np.concatenate(v) if v else np.zeros(0) for k, v in out.items()}
 
 
@@ -401,13 +412,23 @@ def describe_metrics(m: Dict[str, object]) -> str:
 # Training
 # --------------------------------------------------------------------------
 def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: Path, save,
-                  seed: int = 0, log=print, resume: Optional[dict] = None) -> Dict[str, object]:
+                  seed: int = 0, log=print, resume: Optional[dict] = None,
+                  amp: str = "off") -> Dict[str, object]:
     """Trains `model` on data["train"], early-stopping on data["val"]'s NLL. `save(path, model,
     optimizer, **extra)` writes a checkpoint; the best epoch goes to out_dir/offline.pt, the last
     to out_dir/offline_last.pt with the optimizer and what continuing the run needs (step, best
     epoch, history, shuffle state). `resume` (offline_last.pt's "offline" entry, plus its "opt")
-    continues a stopped run after its last finished epoch, as if it had not stopped. Returns the
-    history and the best epoch's validation metrics."""
+    continues a stopped run after its last finished epoch, as if it had not stopped. `amp`
+    "bf16" runs the training forward passes in bfloat16 autocast (the losses, the backward pass,
+    the weights and the validation stay float32). Returns the history and the best epoch's
+    validation metrics.
+
+    Nothing reads a training step's results back from a GPU but the finite-loss check: the
+    losses are summed on the device, so the next batch is prepared while the GPU computes."""
+    if amp not in AMP:
+        raise ValueError(f"unknown amp {amp!r}: one of {AMP}")
+    device = torch.device(device)
+    cuda = device.type == "cuda"
     rng = np.random.default_rng(seed)
     train, val = data["train"], data["val"]
     n = len(train)
@@ -473,6 +494,8 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
         weights = None
         stats = {"actor": 0.0, "value": 0.0, "opp": 0.0 if opp else float("nan"),
                  "w_mean": float("nan"), "w_pos": float("nan")}
+        if cuda:
+            torch.cuda.reset_peak_memory_stats(device)
         if cfg.algo == "awbc" and epoch > cfg.warmup_epochs:
             values = ordered_pass(model, train, device)
             adv = gae(values, cols["reward"], cols["done"], cols["traj"], cols["step"], cfg.gamma, cfg.lam)["adv"]
@@ -481,21 +504,25 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
             stats["w_pos"] = float((adv[labelled] > 0).mean())
         model.train()
         seen = 0
+        sums = torch.zeros(3, dtype=torch.float64, device=device)   # actor, value, opp x rows
+        no_opp_loss = torch.zeros((), device=device)
         for mb in train.batches("train", cfg.minibatch, rng=rng):
             for group in opt.param_groups:
                 group["lr"] = lr_at(step)
             obs = to_tensors(mb["obs"], device)
             rows = mb["row"]
-            out = model.forward_train(obs, opp=True) if opp else model.forward_train(obs)
-            logits, values, value_logits = out[:3]
-            action = torch.from_numpy(mb["action"]).to(device)
-            lab = torch.from_numpy(labelled[rows]).to(device)
-            w = torch.from_numpy(weights[rows]).to(device) if weights is not None else lab.float()
+            with torch.autocast(device.type, dtype=torch.bfloat16, enabled=amp == "bf16"):
+                out = model.forward_train(obs, opp=True) if opp else model.forward_train(obs)
+            logits, values, value_logits = (None if t is None else t.float() for t in out[:3])
+            action = to_device(mb["action"], device)
+            lab = to_device(labelled[rows], device)
+            w = to_device(weights[rows], device) if weights is not None else lab.float()
             logp = F.log_softmax(logits, -1).gather(1, action.clamp_min(0).unsqueeze(1)).squeeze(1)
             actor = -(w * logp * lab).sum() / lab.sum().clamp_min(1)
-            ret = torch.from_numpy(mb["ret"]).to(device)
+            ret = to_device(mb["ret"], device)
             v_loss = value_loss(model, values, value_logits, ret, cfg.value_ce_norm)
             loss = actor + cfg.vf_coef * v_loss
+            o_loss = no_opp_loss
             if opp:
                 o_loss, _ = opp_loss(out[3], opp_targets_of(mb, device))
                 loss = loss + cfg.opp_coef * o_loss
@@ -506,21 +533,25 @@ def offline_train(model, data: HumanData, cfg: OfflineConfig, device, out_dir: P
             torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.max_grad_norm)
             opt.step()
             step += 1
-            stats["actor"] += actor.item() * len(rows)
-            stats["value"] += v_loss.item() * len(rows)
-            if opp:
-                stats["opp"] += o_loss.item() * len(rows)
+            sums += torch.stack([actor, v_loss, o_loss]).detach().double() * len(rows)
             seen += len(rows)
-        for k in ("actor", "value") + (("opp",) if opp else ()):
-            stats[k] /= max(seen, 1)
+        actor_sum, value_sum, opp_sum = sums.tolist()
+        stats["actor"], stats["value"] = actor_sum / max(seen, 1), value_sum / max(seen, 1)
+        if opp:
+            stats["opp"] = opp_sum / max(seen, 1)
         p = predict(model, val, device)
         vm = {**policy_metrics(p, 0), "value_auc": value_metrics(p)["auc"]}
         if opp:
             vm["opp_top1"] = opp_metrics(model, val, device)["choice"]["top1"]
         row = {"epoch": epoch, "seconds": time.time() - t0, "lr": lr_at(step), **stats,
                **{f"val_{k}": v for k, v in vm.items()}}
+        if cuda:
+            # What the caching allocator held at most: what has to fit in the GPU's memory
+            row["gpu_peak_mib"] = torch.cuda.max_memory_reserved(device) / 2**20
         history.append(row)
-        log(f"[offline] epoch {epoch}/{cfg.epochs} ({row['seconds']:.0f} s)  actor {stats['actor']:.4f}  "
+        log(f"[offline] epoch {epoch}/{cfg.epochs} ({row['seconds']:.0f} s"
+            + (f", {row['gpu_peak_mib']:.0f} MiB GPU" if cuda else "")
+            + f")  actor {stats['actor']:.4f}  "
             f"value {stats['value']:.4f}"
             + (f"  opp {stats['opp']:.4f}" if opp else "")
             + (f"  w mean {stats['w_mean']:.2f} (A>0 {stats['w_pos']:.2f})" if weights is not None else "")

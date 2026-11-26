@@ -236,7 +236,7 @@ def test_auc():
 # --------------------------------------------------------------------------
 # Training end to end
 # --------------------------------------------------------------------------
-def run(human_data, tmp_path, model=None, resume=None, save=None, **cfg):
+def run(human_data, tmp_path, model=None, resume=None, save=None, amp="off", **cfg):
     from checkpoint import save_checkpoint
     torch.manual_seed(0)
     if model is None:
@@ -246,7 +246,7 @@ def run(human_data, tmp_path, model=None, resume=None, save=None, **cfg):
     out = tmp_path / cfg.get("algo", "bc")
     out.mkdir(parents=True, exist_ok=True)
     result = O.offline_train(model, data, config, "cpu", out, save or save_checkpoint,
-                             log=lambda *_: None, resume=resume)
+                             log=lambda *_: None, resume=resume, amp=amp)
     return result, out
 
 
@@ -329,6 +329,23 @@ def test_offline_training_runs_and_keeps_the_best_epoch(human_data, tmp_path, al
 def test_offline_training_refuses_an_unknown_algorithm(human_data, tmp_path):
     with pytest.raises(ValueError, match="unknown offline algorithm"):
         run(human_data, tmp_path, algo="q", epochs=1)
+
+
+@pytest.mark.parametrize("algo", ["bc", "awbc"])
+def test_bf16_autocast_training_learns_like_float32(human_data, tmp_path, algo):
+    """--amp bf16 (here on the CPU): same run, the forward passes in bfloat16."""
+    full, _ = run(human_data, tmp_path / "fp32", algo=algo, epochs=3, warmup_epochs=1, patience=5, lr=3e-3)
+    half, out = run(human_data, tmp_path / "bf16", amp="bf16", algo=algo, epochs=3, warmup_epochs=1,
+                    patience=5, lr=3e-3)
+    assert (out / "offline.pt").exists() and len(half["history"]) == 3
+    for a, b in zip(full["history"], half["history"]):     # measured: within 0.3%
+        for k in ("actor", "value", "val_nll"):
+            assert b[k] == pytest.approx(a[k], rel=0.02), (k, a[k], b[k])
+
+
+def test_offline_training_refuses_an_unknown_amp(human_data, tmp_path):
+    with pytest.raises(ValueError, match="unknown amp"):
+        run(human_data, tmp_path, amp="fp8", epochs=1)
 
 
 def test_checkpoints_with_retired_training_only_heads_still_load():

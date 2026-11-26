@@ -235,19 +235,16 @@ def test_checkpoints_from_before_the_new_fields_load_with_their_defaults():
     assert loaded.cfg.move_pool == "concat" and not loaded.cfg.opp_heads
 
 
-@pytest.mark.skipif(not torch.backends.mps.is_available(), reason="no MPS")
-def test_opponent_heads_and_meanmax_train_on_mps_without_cpu_fallback():
-    import runtime
-    runtime.install_mps_fallback_warning()
-    before = len(runtime.mps_fallback_ops)
-    model = make_model("small", opp_heads=True, move_pool="meanmax", **RELEASED_OBS).to("mps").train()
-    obs = {k: v.to("mps") for k, v in batch_for(model, n=8).items()}
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="no GPU")
+def test_opponent_heads_and_meanmax_train_on_cuda():
+    model = make_model("small", opp_heads=True, move_pool="meanmax", **RELEASED_OBS).to("cuda").train()
+    obs = {k: v.to("cuda") for k, v in batch_for(model, n=8).items()}
     out = model.forward_train(obs, opp=True)[3]
-    targets = {k: torch.from_numpy(v).to("mps") for k, v in synthetic_targets(np.random.default_rng(0), 8).items()}
+    targets = {k: torch.from_numpy(v).to("cuda") for k, v in synthetic_targets(np.random.default_rng(0), 8).items()}
     loss, _ = O.opp_loss(out, targets)
     loss.backward()
-    torch.mps.synchronize()
-    assert torch.isfinite(loss) and len(runtime.mps_fallback_ops) == before, runtime.mps_fallback_ops
+    assert torch.isfinite(loss)
+    assert all(torch.isfinite(p.grad).all() for p in model.parameters() if p.grad is not None)
 
 
 # --------------------------------------------------------------------------
@@ -543,12 +540,13 @@ def old_data(tmp_path):
     return make_dataset(tmp_path / "old", targets=False)
 
 
-def train_offline(root, out, model, **cfg):
+def train_offline(root, out, model, amp="off", **cfg):
     from checkpoint import save_checkpoint
     torch.manual_seed(0)
     config = O.OfflineConfig(minibatch=64, warmup_steps=2, patience=5, **cfg)
     out.mkdir(parents=True, exist_ok=True)
-    return O.offline_train(model, O.HumanData(root), config, "cpu", out, save_checkpoint, log=lambda *_: None)
+    return O.offline_train(model, O.HumanData(root), config, "cpu", out, save_checkpoint, log=lambda *_: None,
+                           amp=amp)
 
 
 def test_offline_training_with_opp_coef_lowers_the_opponent_loss(opp_data, tmp_path):
@@ -563,6 +561,13 @@ def test_offline_training_with_opp_coef_lowers_the_opponent_loss(opp_data, tmp_p
     assert m["choice"]["n"] > 0 and 0 <= m["choice"]["top1"] <= 1 and m["choice"]["nll"] > 0
     assert m["item"]["top1"] > 0.3 and m["moves"]["recall4"] > 0.5   # learned the few values used
     assert "recall@4" in O.describe_opp_metrics(m)
+
+
+def test_bf16_autocast_trains_the_opponent_heads(opp_data, tmp_path):
+    result = train_offline(opp_data, tmp_path / "run", make_model("small", opp_heads=True),
+                           amp="bf16", epochs=3, lr=3e-3, opp_coef=0.5)
+    opp = [h["opp"] for h in result["history"]]
+    assert all(math.isfinite(x) for x in opp) and opp[-1] < 0.8 * opp[0], opp
 
 
 def test_offline_training_refuses_opp_coef_without_heads_or_targets(opp_data, old_data, tmp_path):
