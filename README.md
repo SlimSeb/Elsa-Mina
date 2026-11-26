@@ -85,6 +85,7 @@ dotnet ef migrations remove --project src/ElsaMina.DataAccess
 | `ElsaMina.Cloud` | S3 uploads, Google Drive and Google Sheets |
 | `ElsaMina.Logging` | Logging abstraction over Serilog |
 | `tools/gladion` | Python training code for the battle models (see [its README](tools/gladion/README.md)) |
+| `tools/showdown-assistant` | Firefox extension and local server that show the Gladion model's advice in your own battles (see [its README](tools/showdown-assistant/README.md)) |
 
 Dependencies between projects are checked by a unit test: Core knows no feature or infrastructure project, and
 `Commands` and `Battles` never reference each other. See [CLAUDE.md](CLAUDE.md) and [CONTRIBUTING.md](CONTRIBUTING.md)
@@ -201,7 +202,8 @@ Every game can be listed with `-games`, and room staff can mute them during even
 
 ### Room Management
 - **Room Dashboard**: Overview of room configuration, diagnostics, and quick-start games
-- **Room Config**: Tune parameters: locale, timezone, auto-correct, error messages, preview toggles, bucks, streaks
+- **Room Config**: Tune parameters: locale, timezone, auto-correct, error messages, preview toggles, bucks, streaks,
+  joining tournaments with the battle bot
 - **Custom Commands**: Add, edit, delete room-specific commands
 - **Repeating Messages**: Schedule recurring announcements, persisted across restarts
 - **Shop**: Virtual item shop with configurable listings
@@ -244,7 +246,7 @@ Every game can be listed with `-games`, and room staff can mute them during even
 - **Razor component HTML templates**: `.razor` templates compiled at build time and rendered with `HtmlRenderer` for rich HTML responses
 
 ### Per-room Configuration
-- **Configurable settings**: each room independently controls locale, timezone, command autocorrect, error message visibility, previews, economy, streaks, and announcements
+- **Configurable settings**: each room independently controls locale, timezone, command autocorrect, error message visibility, previews, economy, streaks, announcements, and whether the battle bot joins its tournaments
 - **Persistent storage**: parameters are stored in the database via Entity Framework and applied at runtime
 
 ### Instrumentation & Observability
@@ -260,8 +262,12 @@ damage-based choice.
   `-useteam`, or else a saved team the server validates. Without one, the bot rejects the challenge and says why.
 - **Laddering**: `-laddering <format>` searches a new battle after each one ends, staying under Showdown's search
   rate limit (`-laddering off` stops it). `-search <format>` starts a single search.
+- **Tournaments**: `-jointour` makes the bot join the room's tournament and play its matches, `-leavetour` takes
+  it out (it forfeits once the tournament has started). The room parameter `AutoJoinTournaments` makes it join
+  every tournament created in the room. Only [Gen 9] Random Battle tournaments are supported.
 - **Gladion strategies**: a small transformer model (~22M parameters) trained in [`tools/gladion`](tools/gladion/README.md)
-  on human ladder replays and exported to ONNX, run inside the bot:
+  on 258k human gen9randombattle replays (players rated 1500+, advantage-weighted behavioural cloning) and
+  exported to ONNX, run inside the bot:
   - `gladionv1-22m`: the model alone
   - `gladionv1-22m+search` (default): the same model, looking one turn ahead on Showdown's simulator and playing
     the option its value head scores best (needs `ShowdownDirectory` and Node.js); 1800+ on the gen9randombattle
@@ -270,11 +276,16 @@ damage-based choice.
 - **Action guard**: vetoes moves that are sure to be wasted (healing at full HP, a maxed hazard, a move that already
   failed on the same target...)
 - **Battle chat**: greets the opponent and now and then reacts to crits, hax and the result
-- **Replay saving**: `-savereplays on` saves each battle's log and replay, used to train the models
+- **Replay saving**: `-savereplays on` saves each battle's log and replay. They are used to check the models (the
+  re-simulation parity check, the ladder analysis report), not to train them.
 - **Status**: `-battlestatus` shows the laddering state, rating and record per format and strategy; `-strategy`
   shows or switches the strategy
+- **Battle assistant**: [`tools/showdown-assistant`](tools/showdown-assistant/README.md) shows, during your own
+  battles, what the model would play, through a Firefox extension and a local server running the bot's battle
+  code
 
-Battle commands are restricted to whitelisted users.
+Battle commands are restricted to whitelisted users, except `-jointour` and `-leavetour`, which room staff from
+driver up can use.
 
 ## License
 MIT, see `LICENSE`.
